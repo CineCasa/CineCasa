@@ -15,20 +15,21 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { table, data } = await req.json();
+    const { table, raw_json } = await req.json();
 
-    if (!table || !data || !Array.isArray(data)) {
-      return new Response(JSON.stringify({ error: "Missing table or data" }), {
+    if (!table || !raw_json) {
+      return new Response(JSON.stringify({ error: "Missing table or raw_json" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Map JSON fields to DB columns based on table
+    const data = JSON.parse(raw_json);
+
     const mapped = data.map((item: any) => {
       if (table === "movies") {
         const cat = item.categories || item.genero || "";
-        const category = Array.isArray(cat) ? cat.join(", ") : cat;
+        const category = Array.isArray(cat) ? cat.join(", ") : String(cat);
         return {
           titulo: item.titulo,
           tmdb_id: item.tmdb_id || null,
@@ -78,19 +79,19 @@ Deno.serve(async (req) => {
     // Insert in batches of 50
     const batchSize = 50;
     let inserted = 0;
+    const errors: string[] = [];
+    
     for (let i = 0; i < mapped.length; i += batchSize) {
       const batch = mapped.slice(i, i + batchSize);
       const { error } = await supabase.from(table).insert(batch);
       if (error) {
-        return new Response(JSON.stringify({ error: error.message, batch: i }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        errors.push(`Batch ${i}: ${error.message}`);
+      } else {
+        inserted += batch.length;
       }
-      inserted += batch.length;
     }
 
-    return new Response(JSON.stringify({ success: true, inserted }), {
+    return new Response(JSON.stringify({ success: true, inserted, total: data.length, errors }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
