@@ -1,1 +1,4 @@
 project_id = "eqhstnlsmfrwxhvcwoid"
+
+[functions.bulk-insert]
+verify_jwt = false
