@@ -14,9 +14,10 @@ export type Database = {
   }
   public: {
     Tables: {
-      movies: {
+      cinema: {
         Row: {
           category: string | null
+          created_at: string | null
           description: string | null
           id: number
           poster: string | null
@@ -30,8 +31,9 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          created_at?: string | null
           description?: string | null
-          id?: number
+          id?: never
           poster?: string | null
           rating?: string | null
           titulo: string
@@ -43,8 +45,9 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          created_at?: string | null
           description?: string | null
-          id?: number
+          id?: never
           poster?: string | null
           rating?: string | null
           titulo?: string
@@ -56,8 +59,9 @@ export type Database = {
         }
         Relationships: []
       }
-      movies_kids: {
+      filmes_kids: {
         Row: {
+          created_at: string | null
           description: string | null
           genero: string | null
           id: number
@@ -69,9 +73,10 @@ export type Database = {
           year: string | null
         }
         Insert: {
+          created_at?: string | null
           description?: string | null
           genero?: string | null
-          id?: number
+          id?: never
           poster?: string | null
           rating?: string | null
           titulo: string
@@ -80,9 +85,10 @@ export type Database = {
           year?: string | null
         }
         Update: {
+          created_at?: string | null
           description?: string | null
           genero?: string | null
-          id?: number
+          id?: never
           poster?: string | null
           rating?: string | null
           titulo?: string
@@ -94,6 +100,7 @@ export type Database = {
       }
       series: {
         Row: {
+          created_at: string | null
           id: number
           identificador_archive: string | null
           titulo: string
@@ -102,7 +109,8 @@ export type Database = {
           type: string | null
         }
         Insert: {
-          id?: number
+          created_at?: string | null
+          id?: never
           identificador_archive?: string | null
           titulo: string
           tmdb_id?: string | null
@@ -110,7 +118,8 @@ export type Database = {
           type?: string | null
         }
         Update: {
-          id?: number
+          created_at?: string | null
+          id?: never
           identificador_archive?: string | null
           titulo?: string
           tmdb_id?: string | null
@@ -121,6 +130,7 @@ export type Database = {
       }
       series_kids: {
         Row: {
+          created_at: string | null
           description: string | null
           genero: string | null
           id: number
@@ -132,9 +142,10 @@ export type Database = {
           year: string | null
         }
         Insert: {
+          created_at?: string | null
           description?: string | null
           genero?: string | null
-          id?: number
+          id?: never
           identificador_archive?: string | null
           poster?: string | null
           rating?: string | null
@@ -143,15 +154,43 @@ export type Database = {
           year?: string | null
         }
         Update: {
+          created_at?: string | null
           description?: string | null
           genero?: string | null
-          id?: number
+          id?: never
           identificador_archive?: string | null
           poster?: string | null
           rating?: string | null
           titulo?: string
           type?: string | null
           year?: string | null
+        }
+        Relationships: []
+      }
+      tv_ao_vivo: {
+        Row: {
+          created_at: string | null
+          grupo: string | null
+          id: number
+          logo: string | null
+          nome: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          grupo?: string | null
+          id?: never
+          logo?: string | null
+          nome: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          grupo?: string | null
+          id?: never
+          logo?: string | null
+          nome?: string
+          url?: string
         }
         Relationships: []
       }
