@@ -27,8 +27,8 @@ Deno.serve(async (req) => {
     }
 
     const mapped = data.map((item: any) => {
-      if (table === "movies") {
-        const cat = item.categories || item.genero || "";
+      if (table === "cinema") {
+        const cat = item.categories || item.genero || item.category || "";
         const category = Array.isArray(cat) ? cat.join(", ") : String(cat);
         return {
           titulo: item.titulo,
@@ -37,19 +37,19 @@ Deno.serve(async (req) => {
           trailer: item.trailer || null,
           year: item.year || null,
           rating: item.rating || null,
-          description: item.desc || null,
+          description: item.desc || item.description || null,
           poster: item.poster || null,
           category: category || null,
           type: item.type || "movie",
         };
-      } else if (table === "movies_kids") {
+      } else if (table === "filmes_kids") {
         return {
           titulo: item.titulo,
           url: item.url || null,
           genero: item.genero || null,
           year: item.year || null,
           rating: item.rating || null,
-          description: item.desc || null,
+          description: item.desc || item.description || null,
           poster: item.poster || null,
           type: item.type || "movie",
         };
@@ -68,9 +68,16 @@ Deno.serve(async (req) => {
           genero: item.genero || null,
           year: item.year || null,
           rating: item.rating || null,
-          description: item.desc || null,
+          description: item.desc || item.description || null,
           poster: item.poster || null,
           type: item.type || "serie",
+        };
+      } else if (table === "tv_ao_vivo") {
+        return {
+          nome: item.nome || item.name,
+          url: item.url,
+          logo: item.logo || null,
+          grupo: item.grupo || item.group || null,
         };
       }
       return item;
@@ -79,7 +86,7 @@ Deno.serve(async (req) => {
     const batchSize = 50;
     let inserted = 0;
     const errors: string[] = [];
-    
+
     for (let i = 0; i < mapped.length; i += batchSize) {
       const batch = mapped.slice(i, i + batchSize);
       const { error } = await supabase.from(table).insert(batch);

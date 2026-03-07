@@ -14,7 +14,186 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cinema: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: number
+          poster: string | null
+          rating: string | null
+          titulo: string
+          tmdb_id: string | null
+          trailer: string | null
+          type: string | null
+          url: string | null
+          year: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          poster?: string | null
+          rating?: string | null
+          titulo: string
+          tmdb_id?: string | null
+          trailer?: string | null
+          type?: string | null
+          url?: string | null
+          year?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: never
+          poster?: string | null
+          rating?: string | null
+          titulo?: string
+          tmdb_id?: string | null
+          trailer?: string | null
+          type?: string | null
+          url?: string | null
+          year?: string | null
+        }
+        Relationships: []
+      }
+      filmes_kids: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          genero: string | null
+          id: number
+          poster: string | null
+          rating: string | null
+          titulo: string
+          type: string | null
+          url: string | null
+          year: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          genero?: string | null
+          id?: never
+          poster?: string | null
+          rating?: string | null
+          titulo: string
+          type?: string | null
+          url?: string | null
+          year?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          genero?: string | null
+          id?: never
+          poster?: string | null
+          rating?: string | null
+          titulo?: string
+          type?: string | null
+          url?: string | null
+          year?: string | null
+        }
+        Relationships: []
+      }
+      series: {
+        Row: {
+          created_at: string | null
+          id: number
+          identificador_archive: string | null
+          titulo: string
+          tmdb_id: string | null
+          trailer: string | null
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: never
+          identificador_archive?: string | null
+          titulo: string
+          tmdb_id?: string | null
+          trailer?: string | null
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: never
+          identificador_archive?: string | null
+          titulo?: string
+          tmdb_id?: string | null
+          trailer?: string | null
+          type?: string | null
+        }
+        Relationships: []
+      }
+      series_kids: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          genero: string | null
+          id: number
+          identificador_archive: string | null
+          poster: string | null
+          rating: string | null
+          titulo: string
+          type: string | null
+          year: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          genero?: string | null
+          id?: never
+          identificador_archive?: string | null
+          poster?: string | null
+          rating?: string | null
+          titulo: string
+          type?: string | null
+          year?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          genero?: string | null
+          id?: never
+          identificador_archive?: string | null
+          poster?: string | null
+          rating?: string | null
+          titulo?: string
+          type?: string | null
+          year?: string | null
+        }
+        Relationships: []
+      }
+      tv_ao_vivo: {
+        Row: {
+          created_at: string | null
+          grupo: string | null
+          id: number
+          logo: string | null
+          nome: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          grupo?: string | null
+          id?: never
+          logo?: string | null
+          nome: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          grupo?: string | null
+          id?: never
+          logo?: string | null
+          nome?: string
+          url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
