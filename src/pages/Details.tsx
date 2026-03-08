@@ -176,7 +176,10 @@ const Details = () => {
       {type === "series" && data.seasons && (
         <section className="relative z-10 w-full px-4 md:px-12 py-12 bg-background mx-auto max-w-[1400px]">
           <div className="flex items-center gap-6 mb-8 border-b border-white/10 pb-4 overflow-x-auto scrollbar-hide">
-            {data.seasons.filter((s:any) => s.season_number > 0).map((season: any) => (
+            {data.seasons
+              .filter((s: any) => s.season_number > 0)
+              .sort((a: any, b: any) => a.season_number - b.season_number)
+              .map((season: any) => (
               <button
                 key={season.id}
                 onClick={() => setSelectedSeason(season.season_number)}

@@ -216,7 +216,8 @@ export const useSupabaseContent = () => {
 
       // Fetch real TMDB data for series because the table is missing it
       const seriesWithData = series ? await Promise.all(
-        series.slice(0, 100).map(async (s: any) => { // Limit to 100 for safety
+        // Remove limitations, load everything
+        series.map(async (s: any) => {
           if (!s.tmdb_id) return mapSeries(s);
           const data = await fetchTmdbDetails(s.tmdb_id, "tv");
           if (!data) return mapSeries(s);
@@ -227,67 +228,36 @@ export const useSupabaseContent = () => {
             backdrop: tmdbImageUrl(data.backdrop_path, "original"),
             year: parseInt(data.first_air_date?.split("-")[0] || "0"),
             rating: data.vote_average?.toFixed(1) || "N/A",
-            genre: data.genres?.map((g: any) => g.name) || ["Drama"],
+            // Strictly get official TMDB genres
+            genre: data.genres?.map((g: any) => g.name) || ["Série"],
             description: data.overview || ""
           };
         })
       ) : [];
 
       if (seriesWithData.length > 0) {
-        // Add a primary "Séries" category for HeroBanner
-        categories.push({
-          id: "series-all",
-          title: "Séries",
-          items: seriesWithData
-        });
-
-        // 4. Agrupar as séries com a nova lógica Prime Video exclusiva
-        // Precisamos converter `seriesWithData` de volta ao formato que `groupItems` espera ou chamá-lo
-        // Como groupItems foi projetado para ler category/genero da tabela raw, ele não funciona perfeitamente
-        // com o ContentItem mapeado. Vamos fazer o agrupamento localmente.
+        // Group series exactly by their primary TMDB genre (Zero repeats)
         const groupedSeries: Record<string, ContentItem[]> = {};
-        SERIES_MASTER_CATEGORIES.forEach(catName => {
-          groupedSeries[catName] = [];
-        });
 
         seriesWithData.forEach(s => {
-          let allocated = false;
+          // Get the primary official TMDB genre, or fallback to 'Série'
+          const primaryGenre = s.genre && s.genre.length > 0 ? s.genre[0] : "Série";
           
-          for (const g of s.genre) {
-             const catLower = g.toLowerCase();
-             if ((catLower.includes("drama") || catLower.includes("soap")) && groupedSeries["Séries dramáticas de sucesso"]) {
-                groupedSeries["Séries dramáticas de sucesso"].push(s); allocated = true; break;
-             }
-             if ((catLower.includes("sci-fi") || catLower.includes("fantasia") || catLower.includes("ficção")) && groupedSeries["Sci-Fi e Fantasia aclamadas"]) {
-                groupedSeries["Sci-Fi e Fantasia aclamadas"].push(s); allocated = true; break;
-             }
-             if ((catLower.includes("crime") || catLower.includes("mistério") || catLower.includes("policial")) && groupedSeries["Investigação e Mistério"]) {
-                groupedSeries["Investigação e Mistério"].push(s); allocated = true; break;
-             }
-             if (catLower.includes("comédia") && groupedSeries["Comédias de TV populares"]) {
-                groupedSeries["Comédias de TV populares"].push(s); allocated = true; break;
-             }
-             if (catLower.includes("animação") && groupedSeries["Animações que você precisa ver"]) {
-                groupedSeries["Animações que você precisa ver"].push(s); allocated = true; break;
-             }
-             if (catLower.includes("reality") && groupedSeries["Reality Shows em alta"]) {
-                groupedSeries["Reality Shows em alta"].push(s); allocated = true; break;
-             }
+          if (!groupedSeries[primaryGenre]) {
+            groupedSeries[primaryGenre] = [];
           }
-
-          if (!allocated) {
-             groupedSeries["Séries que achamos que você vai curtir"].push(s);
-          }
+          groupedSeries[primaryGenre].push(s);
         });
 
-        SERIES_MASTER_CATEGORIES.forEach(title => {
-          if (groupedSeries[title].length > 0) {
-            categories.push({
-              id: `series-${title.toLowerCase().replace(/\s+/g, "-")}`,
-              title,
-              items: groupedSeries[title]
-            });
-          }
+        // Insert categories alphabetically sorted, and series alphabetically sorted inside them
+        Object.keys(groupedSeries).sort().forEach(genre => {
+          const sortedItems = groupedSeries[genre].sort((a, b) => a.title.localeCompare(b.title));
+          
+          categories.push({
+            id: `series-${genre.toLowerCase().replace(/\s+/g, "-")}`,
+            title: genre,
+            items: sortedItems
+          });
         });
       }
 
