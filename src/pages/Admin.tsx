@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Users, Settings, CheckCircle, XCircle, ShieldCheck, Mail, Calendar, CreditCard } from "lucide-react";
+import { Users, CheckCircle, XCircle, ShieldCheck, Mail, Calendar, CreditCard, LogOut, Home } from "lucide-react";
 
 interface Profile {
   id: string;
@@ -15,9 +16,15 @@ interface Profile {
 }
 
 const Admin = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   const fetchProfiles = async () => {
     setLoading(true);
@@ -95,7 +102,19 @@ const Admin = () => {
             </div>
             <p className="text-white/40">Gerencie usuários, planos e liberações do sistema.</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg transition-colors text-sm font-bold"
+            >
+              <Home size={16} /> Início
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-lg transition-all text-sm font-bold"
+            >
+              <LogOut size={16} /> Sair
+            </button>
             <div className="bg-[#151515] p-4 rounded-xl border border-white/5 flex flex-col items-center">
               <span className="text-[10px] uppercase font-bold text-white/40 mb-1">Total Usuários</span>
               <span className="text-2xl font-black text-[#00A8E1]">{profiles.length}</span>
