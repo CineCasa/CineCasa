@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import Cinema from "./pages/Cinema";
 import Series from "./pages/Series";
@@ -15,6 +15,7 @@ import Details from "./pages/Details";
 import Favorites from "./pages/Favorites";
 import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+import NetflixLoader from "./components/NetflixLoader";
 
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -65,18 +66,27 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <HomeRedirect>
-          <AppRoutes />
-        </HomeRedirect>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [loading, setLoading] = useState(true);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AnimatePresence>
+          {loading && <NetflixLoader onComplete={() => setLoading(false)} />}
+        </AnimatePresence>
+        {!loading && (
+          <BrowserRouter>
+            <HomeRedirect>
+              <AppRoutes />
+            </HomeRedirect>
+          </BrowserRouter>
+        )}
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

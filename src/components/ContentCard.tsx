@@ -117,6 +117,22 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div
@@ -137,12 +153,16 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
     >
       {/* BASE PORTRAIT IMAGE */}
       <div className={`w-full h-full rounded-lg overflow-hidden bg-secondary shadow-lg transition-opacity duration-300 ${isHovered ? "opacity-0" : "opacity-100"}`}>
-        <img
-          src={item.image}
-          alt={item.title}
-          className="w-full h-full object-cover"
-          loading="lazy"
-        />
+        {isVisible ? (
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover animate-in fade-in duration-500"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-secondary animate-pulse" />
+        )}
         {item.isComingSoon && (
            <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-black uppercase px-2 py-1 rounded shadow-lg z-30">
              Em Breve
