@@ -54,8 +54,13 @@ const Navbar = () => {
             {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
 
-          <Link to="/" className="text-2xl sm:text-3xl font-black tracking-tight text-[#00A8E1] hover:text-white transition-colors flex items-center min-w-max">
-            STREAM<span className="text-white">+</span>
+          <Link to="/" className="flex flex-col items-start leading-none group">
+            <span className="text-2xl sm:text-3xl font-black tracking-tighter text-[#00A8E1] group-hover:text-white transition-colors">
+              CINECASA
+            </span>
+            <span className="text-[10px] sm:text-[11px] font-bold text-white/50 tracking-widest uppercase">
+              Entretenimento e lazer
+            </span>
           </Link>
 
           {/* Desktop Nav */}

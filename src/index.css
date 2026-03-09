@@ -9,7 +9,7 @@
     --background: 222 47% 6%;
     --foreground: 210 40% 98%;
 
-    /* PaixãFlix Aesthetics */
+    /* Cinecasa Aesthetics */
     --glow: #ffc107;
     --red: #e50914;
     --glass: rgba(20,20,20,.75);
@@ -100,7 +100,7 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.5);
   }
 
-  /* PaixãFlix 3D Glowing Buttons */
+  /* Cinecasa 3D Glowing Buttons */
   .btn-glow-primary, .btn-glow-secondary {
     transition: 0.2s;
     box-shadow: 0 4px 0 var(--glow);
@@ -127,7 +127,7 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--glow) !important; /* PaixãFlix TV Style Focus */
+    outline: 3px solid var(--glow) !important; /* Cinecasa TV Style Focus */
     outline-offset: 4px;
     box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
   }

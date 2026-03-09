@@ -13,9 +13,14 @@ const Footer = () => (
           </button>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground/60">
-        © 2025 Stream+. Todos os direitos reservados.
-      </p>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-white/5 pt-8">
+        <p className="text-xs text-muted-foreground/60">
+          © {new Date().getFullYear()} Cinecasa. Todos os direitos reservados.
+        </p>
+        <span className="text-[10px] font-bold text-white/30 tracking-[0.3em] uppercase">
+          Entretenimento e lazer
+        </span>
+      </div>
     </div>
   </footer>
 );
