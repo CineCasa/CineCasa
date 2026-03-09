@@ -250,6 +250,10 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
                   <span className="text-white/60 text-xs">{metadata.duration}</span>
                 )}
               </div>
+
+              <p className="text-white/80 text-[10px] sm:text-xs line-clamp-2 leading-relaxed">
+                {item.description}
+              </p>
             </div>
           </motion.div>
         )}
