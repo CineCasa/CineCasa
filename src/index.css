@@ -127,9 +127,10 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--glow) !important; /* Cinecasa TV Style Focus */
+    outline: 4px solid #00A8E1 !important; /* Cinecasa TV Style Focus */
     outline-offset: 4px;
-    box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+    box-shadow: 0 0 20px rgba(0, 168, 225, 0.8) !important;
+    border-radius: 8px;
   }
 
   /* Universal Overlap & Expansion Utilities */

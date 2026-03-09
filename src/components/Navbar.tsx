@@ -51,9 +51,17 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = async () => {
-    await signOut();
-    navigate("/login");
+  const handleNavKeyDown = (e: React.KeyboardEvent, index: number) => {
+    const items = document.querySelectorAll('.nav-link-item');
+    if (e.key === "ArrowRight") {
+      (items[index + 1] as HTMLElement)?.focus();
+    } else if (e.key === "ArrowLeft") {
+      (items[index - 1] as HTMLElement)?.focus();
+    } else if (e.key === "ArrowDown") {
+      // Pular para o primeiro card de conteúdo
+      const firstCard = document.querySelector('[tabindex="0"]') as HTMLElement;
+      firstCard?.focus();
+    }
   };
 
   return (
@@ -84,13 +92,14 @@ const Navbar = () => {
 
           {/* Desktop Nav */}
           <ul className="hidden lg:flex items-center gap-6">
-            {navItems.map((item) => {
+            {navItems.map((item, idx) => {
               const isActive = location.pathname === item.path;
               return (
                 <li key={item.path} className="relative">
                   <Link 
                     to={item.path}
-                    className={`text-[17px] font-semibold transition-colors px-2 py-1 rounded-md focus-visible ${
+                    onKeyDown={(e) => handleNavKeyDown(e, idx)}
+                    className={`nav-link-item text-[17px] font-semibold transition-colors px-2 py-1 rounded-md focus-visible ${
                       isActive ? "text-white" : "text-[#aaaaaa] hover:text-white hover:bg-white/5"
                     }`}
                   >
@@ -140,7 +149,7 @@ const Navbar = () => {
           <div className="relative" ref={menuRef}>
             <button 
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="p-2 text-white/80 hover:text-white transition-colors rounded-full focus-visible flex items-center gap-2"
+              className="user-menu-btn p-2 text-white/80 hover:text-white transition-colors rounded-full focus-visible flex items-center gap-2"
             >
               <User size={26} />
               <span className="hidden sm:inline text-xs truncate max-w-[100px] text-white/60">
