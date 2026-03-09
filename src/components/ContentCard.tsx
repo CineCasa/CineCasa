@@ -7,12 +7,13 @@ import { fetchTmdbDetails, getTmdbTrailerUrl } from "@/services/tmdb";
 import NetflixPlayer from "./NetflixPlayer";
 
 interface ContentCardProps {
-  item: ContentItem;
+  item: ContentItem & { progress?: number, isComingSoon?: boolean };
   index: number;
   isLast?: boolean;
+  showProgress?: boolean;
 }
 
-const ContentCard = ({ item, index, isLast }: ContentCardProps) => {
+const ContentCard = ({ item, index, isLast = false, showProgress = false }: ContentCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(item.trailer || null);
@@ -24,6 +25,7 @@ const ContentCard = ({ item, index, isLast }: ContentCardProps) => {
   const navigate = useNavigate();
 
   const handleNavigateToDetails = () => {
+    if (item.isComingSoon) return;
     const typePath = item.id.includes("series") ? "series" : "cinema";
     // If the item doesn't have a tmdbId, we might pass its ID
     navigate(`/details/${typePath}/${item.tmdbId || item.id}`);
@@ -69,7 +71,7 @@ const ContentCard = ({ item, index, isLast }: ContentCardProps) => {
       e.preventDefault();
       if (!isHovered) {
         setIsHovered(true);
-      } else {
+      } else if (!item.isComingSoon) {
         setIsPlayerOpen(true);
       }
     }
@@ -80,14 +82,16 @@ const ContentCard = ({ item, index, isLast }: ContentCardProps) => {
 
   const getTransformOrigin = () => {
     const el = containerRef.current;
-    if (!el) return "center center";
+    if (!el) return "left center"; // Default Prime Video style: expand from left to right
     
     const rect = el.getBoundingClientRect();
     const windowWidth = window.innerWidth;
     
-    if (rect.left < 100) return "left center";
-    if (rect.right > windowWidth - 100) return "right center";
-    return "center center";
+    // Se estiver muito perto da borda direita, expande para a esquerda para não sumir da tela
+    if (rect.right > windowWidth - 150) return "right center";
+    
+    // Padrão Prime: Fixa a esquerda e cresce para a direita
+    return "left center";
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,7 +105,11 @@ const ContentCard = ({ item, index, isLast }: ContentCardProps) => {
       onBlur={() => setIsHovered(false)}
       onKeyDown={handleKeyDown}
       tabIndex={0}
-      className={`relative flex-shrink-0 w-[220px] sm:w-[250px] md:w-[280px] lg:w-[320px] aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black rounded-lg ${
+      className={`relative flex-shrink-0 
+        w-[calc((100vw-32px-16px)/2)] 
+        md:w-[calc((100vw-64px-48px)/3)] 
+        lg:w-[calc((100vw-96px-96px)/5)] 
+        aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black rounded-lg ${
         isHovered ? "z-[99999]" : "z-0"
       }`}
     >
@@ -113,6 +121,16 @@ const ContentCard = ({ item, index, isLast }: ContentCardProps) => {
           className="w-full h-full object-cover"
           loading="lazy"
         />
+        {item.isComingSoon && (
+           <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-black uppercase px-2 py-1 rounded shadow-lg z-30">
+             Em Breve
+           </div>
+        )}
+        {showProgress && item.progress && (
+           <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/50 overflow-hidden z-20">
+              <div className="h-full bg-[var(--glow)] transition-all" style={{ width: `${item.progress}%` }} />
+           </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent p-4 flex flex-col justify-end">
            <h3 className="text-sm font-bold text-white truncate drop-shadow-md">{item.title}</h3>
            <div className="flex items-center gap-2 mt-1">
@@ -128,111 +146,95 @@ const ContentCard = ({ item, index, isLast }: ContentCardProps) => {
           <motion.div
             initial={{ scale: 1, opacity: 0, y: 0 }}
             animate={{ 
-              scale: 1.15, // Estilo Prime Video: Expansão sutil
+              scale: 1.25, // Expansão mais agressiva estilo Prime Video
               opacity: 1,
-              y: -10, // Pequeno salto para frente
+              y: -10,
+              width: "160%", // Aumenta a largura para simular o formato landscape (16:9) a partir do portrait
             }}
-            exit={{ scale: 1, opacity: 0, y: 0 }}
-            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            exit={{ scale: 1, opacity: 0, y: 0, width: "100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
             style={{ 
               transformOrigin: getTransformOrigin(),
-              zIndex: 100000 
+              zIndex: 100000,
+              aspectRatio: "16 / 9" // Força o formato de vídeo
             }}
-            className="absolute top-0 left-0 w-full bg-[#1b1b1b] rounded-lg shadow-[0_20px_40px_rgba(0,0,0,0.8)] overflow-hidden ring-1 ring-white/10"
+            className="absolute top-0 left-0 bg-[#1b1b1b] rounded-lg shadow-[0_20px_40px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-white/20"
           >
-            {/* TOP: MEDIA SECTION (VIDEO OR PHOTO) */}
-            <div className="relative aspect-video w-full overflow-hidden bg-black">
+            {/* TOP: MEDIA SECTION (VIDEO OR PHOTO) - Preenche tudo se tiver trailer */}
+            <div className={`relative w-full h-full overflow-hidden bg-black ${showTrailer ? "" : "aspect-video"}`}>
               {showTrailer && trailerUrl ? (
                 <iframe
-                  src={trailerUrl.includes("?") ? `${trailerUrl}&origin=${window.location.origin}` : `${trailerUrl}?origin=${window.location.origin}`}
-                  className="w-full h-full object-cover scale-[1.05]"
+                  src={trailerUrl.includes("?") 
+                    ? `${trailerUrl}&autoplay=1&controls=0&mute=0&loop=1&origin=${window.location.origin}` 
+                    : `${trailerUrl}?autoplay=1&controls=0&mute=0&loop=1&origin=${window.location.origin}`}
+                  className="absolute inset-0 w-full h-full object-cover scale-[1.05]"
                   allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
                   title={item.title}
                   frameBorder="0"
                 />
               ) : (
-                <img
-                  src={item.backdrop || item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <img
+                    src={item.backdrop || item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-4 left-4 z-10">
+                    <h3 className="text-white font-black text-sm drop-shadow-lg text-shadow-premium">{item.title}</h3>
+                  </div>
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#141414] to-transparent" />
+                </>
               )}
-              <div className="absolute bottom-4 left-4 z-10">
-                 <h3 className="text-white font-black text-sm drop-shadow-lg text-shadow-premium">{item.title}</h3>
-              </div>
-              <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#141414] to-transparent" />
             </div>
 
-            {/* BOTTOM: METADATA SECTION (Outside and below the image) */}
-            <div className="p-4 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => setIsPlayerOpen(true)}
-                    className="p-2 rounded-full bg-white text-black hover:bg-white/80 transition-colors"
-                  >
-                    <Play size={16} fill="currentColor" />
-                  </button>
-                  <button className="p-2 rounded-full border border-white/40 text-white hover:bg-white/10 transition-colors">
-                    <Plus size={16} />
-                  </button>
-                  <button 
-                    onClick={handleNavigateToDetails}
-                    className="p-2 rounded-full border border-white/40 text-white hover:bg-white/10 transition-colors"
-                    title="Mais Informações"
-                  >
-                    <Info size={16} />
-                  </button>
+            {/* BOTTOM: METADATA SECTION (Only visible if NOT playing trailer) */}
+            {!showTrailer && (
+              <div className="p-4 flex flex-col gap-3 bg-[#1b1b1b]">
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => !item.isComingSoon && setIsPlayerOpen(true)}
+                      className={`p-2 rounded-full transition-colors ${item.isComingSoon ? "bg-white/30 text-white/50 cursor-not-allowed" : "bg-white text-black hover:bg-white/80"}`}
+                    >
+                      <Play size={16} fill="currentColor" />
+                    </button>
+                    <button className="p-2 rounded-full border border-white/40 text-white hover:bg-white/10 transition-colors">
+                      <Plus size={16} />
+                    </button>
+                    <button 
+                      onClick={handleNavigateToDetails}
+                      className={`p-2 rounded-full border border-white/40 transition-colors ${item.isComingSoon ? "text-white/30 border-white/20 cursor-not-allowed" : "text-white hover:bg-white/10"}`}
+                      title="Mais Informações"
+                    >
+                      <Info size={16} />
+                    </button>
+                  </div>
                 </div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsFavorite(!isFavorite);
-                  }}
-                  className={`p-2 rounded-full border border-white/40 transition-all ${
-                    isFavorite ? "bg-red-600 border-red-600 text-white" : "text-white hover:bg-white/10"
-                  }`}
-                >
-                  <Heart size={16} fill={isFavorite ? "currentColor" : "none"} />
-                </button>
-              </div>
 
-              <div className="flex items-center gap-3">
-                <span className="text-[#ffff5c] font-black text-xs whitespace-nowrap">
-                  {metadata?.rating || item.rating} Relevante
-                </span>
-                <span className="text-white font-bold text-[10px] px-1.5 py-0.5 border border-white/40 rounded leading-none">
-                  {item.rating}
-                </span>
-                <span className="text-white/60 text-xs">{item.year}</span>
-                <span className="text-white text-xs font-bold ml-auto">
-                  {metadata?.duration || "Carregando..."}
-                </span>
-              </div>
-
-              <div className="flex gap-2 flex-wrap">
-                {item.genre.slice(0, 3).map((g) => (
-                  <span key={g} className="text-[10px] text-white/70 font-medium">
-                    {g}
+                <div className="flex items-center gap-3">
+                  <span className="text-[#ffff5c] font-black text-xs">
+                    {metadata?.rating || item.rating} Relevante
                   </span>
-                ))}
+                  <span className="text-white font-bold text-[10px] px-1.5 py-0.5 border border-white/40 rounded leading-none">
+                    {item.rating}
+                  </span>
+                  <span className="text-white/60 text-xs">{item.year}</span>
+                </div>
               </div>
-              <button 
-                onClick={() => setIsPlayerOpen(true)}
-                className="w-full py-2 mt-1 bg-white text-black font-black text-xs rounded hover:bg-white/80 transition-colors uppercase tracking-widest"
-              >
-                Assistir Agora
-              </button>
-            </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Fullscreen Video Player */}
       {isPlayerOpen && (
         <NetflixPlayer 
-          url={trailerUrl || ""} 
+          url={
+            item.type === "series" 
+              ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : `https://archive.org/embed/${item.identificadorArchive}`)
+              : (item.url || trailerUrl || "")
+          } 
           title={item.title} 
+          historyItem={item}
           onClose={() => setIsPlayerOpen(false)} 
         />
       )}

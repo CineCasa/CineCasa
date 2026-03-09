@@ -34,8 +34,8 @@ const AiRecommendationsRow = ({ items }: AiRecommendationsRowProps) => {
   if (!items || items.length === 0) return null;
 
   return (
-    <section className="relative group/row mb-2 md:mb-8 z-10 hover:z-[60] transition-all duration-300">
-      <h2 className="text-[clamp(1.4rem,2vw,1.8rem)] font-black px-4 md:px-8 lg:px-12 mb-6 tracking-tight drop-shadow-lg flex items-center gap-3">
+    <section className="row-wrapper">
+      <h2 className="row-title flex items-center gap-3">
         <span className="text-[var(--glow)]">💡 IA Local</span> 
         <span className="text-white/90">Baseado no que você curtiu</span>
       </h2>
@@ -53,11 +53,7 @@ const AiRecommendationsRow = ({ items }: AiRecommendationsRowProps) => {
         <div
           ref={scrollRef}
           onScroll={checkScroll}
-          className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-8 lg:px-12 py-24 -my-24 overflow-y-visible focus:outline-none"
-          style={{ 
-            scrollSnapType: "x mandatory",
-            paddingInline: "6vw",
-          }}
+          className="row-scroll-container"
         >
           {items.map((item, idx) => (
             <div key={`${item.id}-${idx}`} className="relative flex-shrink-0 group">

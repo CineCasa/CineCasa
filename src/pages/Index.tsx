@@ -5,28 +5,135 @@ import Footer from "@/components/Footer";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { useAiRecommendations } from "@/hooks/useAiRecommendations";
 import AiRecommendationsRow from "@/components/AiRecommendationsRow";
+import ContinueWatchingRow from "@/components/ContinueWatchingRow";
+import DynamicCategoryRow from "@/components/DynamicCategoryRow";
+import TrendingGlobalRow from "@/components/TrendingGlobalRow";
+import Top5StreamingRow from "@/components/Top5StreamingRow";
+
+// Helper for 'Sábado à noite merece'
+// Active from Saturday 16:49 to Sunday 12:59
+const isValidSabado = () => {
+  const now = new Date();
+  const day = now.getDay(); // 0 is Sunday, 6 is Saturday
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+
+  if (day === 6) { // Saturday
+    if (hours > 16 || (hours === 16 && minutes >= 49)) return true;
+  }
+  if (day === 0) { // Sunday
+    if (hours < 12 || (hours === 12 && minutes <= 59)) return true;
+  }
+  return false;
+};
 
 const Index = () => {
   const { data: categories, isLoading } = useSupabaseContent();
   const { recommendations } = useAiRecommendations();
+  
+  // 1. Filtragem Inicial: Remover TV e Canais
+  const filteredCategories = categories?.filter(cat => 
+    !cat.title.toLowerCase().includes("tv") && 
+    !cat.title.toLowerCase().includes("canais") &&
+    cat.id !== "tv-ao-vivo"
+  ) || [];
+
+  // 2. Unicidade de Conteúdo e Remoção de Temporadas
+  // Rastreamos o que já foi exibido para evitar duplicatas e múltiplas temporadas
+  const displayedIds = new Set<string>();
+
+  const getUniqueItems = (items: any[]) => {
+    return items.filter(item => {
+      // Usamos tmdbId se disponível, senão o título normalizado para detectar temporadas/duplicatas
+      const uniqueId = item.tmdbId || item.title.toLowerCase().replace(/temporada\s+\d+/g, "").trim();
+      
+      if (displayedIds.has(uniqueId) || item.type === "tv") {
+        return false;
+      }
+      displayedIds.add(uniqueId);
+      return true;
+    });
+  };
+
+  // Flatten items for Dynamic Categories (já filtrados por unicidade)
+  const allItems = filteredCategories.flatMap(c => c.items);
+  
+  const isWeekendActive = isValidSabado();
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pb-20">
         <HeroBanner />
-        <div className="relative z-10 pt-12 -mt-10">
-          {recommendations && recommendations.length > 0 && (
-            <AiRecommendationsRow items={recommendations} />
+        <div className="relative z-10 pt-12 -mt-10 flex flex-col gap-4">
+          <ContinueWatchingRow />
+
+          {/* Lançamentos & Novidades (2025/2026) */}
+          <DynamicCategoryRow 
+            title="Lançamentos & Novidades" 
+            items={getUniqueItems(allItems)} 
+            filterFn={(item) => Number(item.year) >= 2025} 
+          />
+
+          {/* Sábado à noite merece (Conditional) */}
+          {isWeekendActive && (
+             <DynamicCategoryRow 
+               title="Sábado à noite merece" 
+               items={getUniqueItems(allItems)} 
+               filterFn={(item) => {
+                 const g = item.genre.map(x => x.toLowerCase());
+                 return g.includes("comédia") || g.includes("religioso") || g.includes("suspense") || g.includes("ação") || g.includes("action");
+               }} 
+               limit={5}
+             />
           )}
-          {isLoading ? (
-            <div className="flex items-center justify-center p-20 text-muted-foreground">
-              Carregando conteúdos...
+
+          {/* Séries em Alta (Filtrando TV global se for canal) */}
+          <TrendingGlobalRow title="Séries em Alta" type="tv" />
+
+          {/* Indicações IA */}
+          {recommendations && recommendations.length > 0 && (
+            <div className="relative">
+              <h2 className="absolute top-0 opacity-0 pointer-events-none">Indicações exclusivas para você</h2>
+              <AiRecommendationsRow items={getUniqueItems(recommendations).slice(0, 5)} />
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center p-20 text-muted-foreground italic">
-              Adicione novas seções aqui...
-            </div>
+          )}
+
+          <DynamicCategoryRow 
+            title="Negritude em Destaque" 
+            items={getUniqueItems(allItems)} 
+            filterFn={(item) => item.genre.some(g => g.toLowerCase().includes("negritude"))} 
+          />
+
+          <TrendingGlobalRow title="Indicados ao Oscar 25/26" type="movie" />
+
+          <DynamicCategoryRow 
+            title="Cinema Nacional" 
+            items={getUniqueItems(allItems)} 
+            filterFn={(item) => item.genre.some(g => g.toLowerCase().includes("nacional"))} 
+          />
+
+          <DynamicCategoryRow 
+            title="Animações para a Família" 
+            items={getUniqueItems(allItems)} 
+            filterFn={(item) => item.genre.some(g => g.toLowerCase().includes("animação") || g.toLowerCase().includes("animation"))} 
+          />
+
+          <DynamicCategoryRow 
+            title="Romances para se inspirar" 
+            items={getUniqueItems(allItems)} 
+            filterFn={(item) => item.genre.some(g => g.toLowerCase().includes("romance"))} 
+          />
+
+          <Top5StreamingRow title="Top 5 Netflix" providerId={8} />
+          <Top5StreamingRow title="Top 5 Prime Vídeo" providerId={119} />
+          <Top5StreamingRow title="Top 5 Globoplay" providerId={307} />
+          <Top5StreamingRow title="Top 5 Disney+" providerId={337} />
+          <Top5StreamingRow title="Top 5 Max" providerId={384} />
+          <Top5StreamingRow title="Top 5 Paramount+" providerId={531} />
+
+          {isLoading && (
+            <div className="flex justify-center p-10 text-white/50">Carregando catálogo completo...</div>
           )}
         </div>
       </main>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, Bell, User, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const navItems = [
   { label: "Início", path: "/" },
@@ -16,14 +16,26 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    if (val.trim()) {
+      navigate(`/search?q=${encodeURIComponent(val)}`);
+    } else if (location.pathname === "/search") {
+      navigate("/");
+    }
+  };
 
   return (
     <nav
@@ -76,11 +88,19 @@ const Navbar = () => {
             {searchOpen && (
               <input
                 autoFocus
+                value={searchQuery}
+                onChange={handleSearchChange}
                 placeholder="Busca"
                 className="bg-transparent text-sm sm:text-base text-white placeholder:text-[#aaaaaa] px-2 py-1 w-28 sm:w-48 outline-none"
                 onBlur={() => {
-                  // Small delay to allow click on search icon to register
-                  setTimeout(() => setSearchOpen(false), 200);
+                  if (!searchQuery) {
+                    setTimeout(() => setSearchOpen(false), 200);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSearchOpen(false);
+                  }
                 }}
               />
             )}

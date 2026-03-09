@@ -11,6 +11,8 @@ export interface ContentItem {
   description: string;
   type: "movie" | "series";
   trailer?: string;
+  url?: string;
+  identificadorArchive?: string;
 }
 
 export interface HeroItem {

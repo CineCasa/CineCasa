@@ -5,9 +5,10 @@ import ContentCard from "./ContentCard";
 
 interface ContentRowProps {
   category: Category;
+  showProgress?: boolean;
 }
 
-const ContentRow = ({ category }: ContentRowProps) => {
+const ContentRow = ({ category, showProgress = false }: ContentRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -32,8 +33,8 @@ const ContentRow = ({ category }: ContentRowProps) => {
   };
 
   return (
-    <section className="relative group/row mb-2 md:mb-4 z-10 hover:z-[60] transition-all duration-300">
-      <h2 className="text-[clamp(1.2rem,1.8vw,1.6rem)] font-bold text-white px-4 md:px-8 lg:px-12 mb-6 tracking-tight drop-shadow-lg text-shadow-premium">
+    <section className="row-wrapper">
+      <h2 className="row-title">
         {category.title}
       </h2>
 
@@ -52,11 +53,7 @@ const ContentRow = ({ category }: ContentRowProps) => {
         <div
           ref={scrollRef}
           onScroll={checkScroll}
-          className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-8 lg:px-12 py-24 -my-24 overflow-y-visible focus:outline-none"
-          style={{ 
-            scrollSnapType: "x mandatory",
-            paddingInline: "6vw",
-          }}
+          className="row-scroll-container"
         >
           {category.items.map((item, idx) => (
             <ContentCard 
@@ -64,6 +61,7 @@ const ContentRow = ({ category }: ContentRowProps) => {
               item={item} 
               index={idx} 
               isLast={idx === category.items.length - 1} 
+              showProgress={showProgress}
             />
           ))}
         </div>

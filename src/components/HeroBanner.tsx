@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
 import { useNavigate } from "react-router-dom";
+import NetflixPlayer from "./NetflixPlayer";
 
 interface HeroBannerProps {
   filterCategory?: string;
@@ -15,10 +16,18 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const { data: categories, isLoading } = useSupabaseContent();
   const trailerTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const navigate = useNavigate();
 
+  const normalizedFilter = filterCategory?.toLowerCase().trim();
   const filteredItems = filterCategory 
-    ? categories?.find(cat => cat.title.toLowerCase().includes(filterCategory.toLowerCase()))?.items || []
+    ? categories?.filter(cat => {
+        if (normalizedFilter === "cinema") return cat.id.startsWith("cinema-");
+        if (normalizedFilter === "séries") return cat.id.startsWith("series-");
+        if (normalizedFilter === "filmes infantis") return cat.id === "kids-movies";
+        if (normalizedFilter?.startsWith("séries infant")) return cat.id === "kids-series";
+        return cat.title.toLowerCase().includes(normalizedFilter!);
+      }).flatMap(cat => cat.items) || []
     : categories?.flatMap(cat => cat.items.slice(0, 2)) || [];
 
   const heroItems = filteredItems.slice(0, 6);
@@ -36,7 +45,21 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
     const hero = heroItems[current];
     
     const loadDetails = async () => {
-      if (hero.tmdbId) {
+      // 1. Prioritize DB Trailer as requested
+      if (hero.trailer) {
+        trailerTimeout.current = setTimeout(() => {
+          setTrailerUrl(hero.trailer);
+          setShowTrailer(true);
+        }, 300);
+        
+        // Still fetch TMDB details for metadata if missing
+        if (hero.tmdbId) {
+          const type = hero.id.includes("series") ? "tv" : "movie";
+          const data = await fetchTmdbDetails(hero.tmdbId, type);
+          if (data) setCurrentHeroData(data);
+        }
+      } else if (hero.tmdbId) {
+        // 2. Fallback to TMDB lookup
         const type = hero.id.includes("series") ? "tv" : "movie";
         const data = await fetchTmdbDetails(hero.tmdbId, type);
         if (data) {
@@ -48,11 +71,6 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
             setShowTrailer(true);
           }, 300);
         }
-      } else if (hero.trailer) {
-        trailerTimeout.current = setTimeout(() => {
-          setTrailerUrl(hero.trailer);
-          setShowTrailer(true);
-        }, 300);
       }
     };
 
@@ -140,7 +158,10 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
               {hero.description}
             </p>
             <div className="flex gap-4">
-              <button className="flex items-center gap-3 btn-glow-primary font-bold text-[clamp(0.9rem,1.2vw,1.1rem)] px-6 sm:px-8 py-3 sm:py-4 transition-transform z-10">
+              <button 
+                onClick={() => setIsPlayerOpen(true)}
+                className="flex items-center gap-3 btn-glow-primary font-bold text-[clamp(0.9rem,1.2vw,1.1rem)] px-6 sm:px-8 py-3 sm:py-4 transition-transform z-10"
+              >
                 <Play size={24} fill="currentColor" /> Assistir Agora
               </button>
               <button 
@@ -153,6 +174,19 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {isPlayerOpen && (
+        <NetflixPlayer 
+          url={
+            hero.type === "series" 
+              ? (hero.identificadorArchive?.startsWith("http") ? hero.identificadorArchive : `https://archive.org/embed/${hero.identificadorArchive}`)
+              : (hero.url || trailerUrl || "")
+          } 
+          title={hero.title} 
+          historyItem={hero}
+          onClose={() => setIsPlayerOpen(false)} 
+        />
+      )}
 
       {/* Shadow Overlays (Vignette) */}
       <div className="absolute inset-0 bg-black/20 shadow-[inset_0_0_200px_rgba(0,0,0,0.8)] z-[2]" />

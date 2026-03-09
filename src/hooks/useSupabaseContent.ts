@@ -69,7 +69,8 @@ export const useSupabaseContent = () => {
           genre: genres.length > 0 ? genres : ["Filme"],
           description: item.description || "",
           type: (item.type as any) || "movie",
-          trailer: item.trailer
+          trailer: item.trailer,
+          url: item.url
         };
       };
 
@@ -77,6 +78,7 @@ export const useSupabaseContent = () => {
         const genres = splitGenres(item.genero || item.category);
         return {
           id: `kids-movie-${item.id}`,
+          tmdbId: item.tmdb_id,
           title: item.titulo,
           image: item.poster ? tmdbImageUrl(item.poster, "w500") : "",
           backdrop: item.poster ? tmdbImageUrl(item.poster, "original") : "",
@@ -85,7 +87,9 @@ export const useSupabaseContent = () => {
           duration: "",
           genre: genres.length > 0 ? genres : ["Infantil"],
           description: item.description || "",
-          type: "movie"
+          type: "movie",
+          url: item.url,
+          trailer: item.trailer
         };
       };
 
@@ -103,7 +107,8 @@ export const useSupabaseContent = () => {
           genre: genres.length > 0 ? genres : ["Série"],
           description: item.description || "",
           type: "series",
-          trailer: item.trailer
+          trailer: item.trailer,
+          identificadorArchive: item.identificador_archive
         };
       };
 
@@ -111,6 +116,7 @@ export const useSupabaseContent = () => {
         const genres = splitGenres(item.genero || item.category);
         return {
           id: `kids-series-${item.id}`,
+          tmdbId: item.tmdb_id,
           title: item.titulo,
           image: item.poster ? tmdbImageUrl(item.poster, "w500") : "",
           backdrop: item.poster ? tmdbImageUrl(item.poster, "original") : "",
@@ -119,7 +125,9 @@ export const useSupabaseContent = () => {
           duration: "",
           genre: genres.length > 0 ? genres : ["Infantil"],
           description: item.description || "",
-          type: "series"
+          type: "series",
+          identificadorArchive: item.identificador_archive,
+          trailer: item.trailer
         };
       };
 
@@ -189,7 +197,7 @@ export const useSupabaseContent = () => {
                 if (hasMatch && grouped[catName]) {
                    grouped[catName].push(item);
                    allocated = true;
-                   break;
+                   // Removed break to allow multiple categories
                 }
              }
           }
@@ -211,8 +219,41 @@ export const useSupabaseContent = () => {
           .filter(cat => cat.items.length > 0);
       };
 
+      let cinemaWithData: ContentItem[] = [];
       if (cinema && cinema.length > 0) {
-        categories.push(...allocateItemsToMasterCategories(cinema.map(mapCinema), "cinema", "Ação"));
+        const chunkSize = 50;
+        for (let i = 0; i < cinema.length; i += chunkSize) {
+          const chunk = cinema.slice(i, i + chunkSize);
+          const chunkResults = await Promise.all(
+            chunk.map(async (item: any) => {
+              const base = mapCinema(item);
+              if (!item.tmdb_id) return base;
+              const data = await fetchTmdbDetails(item.tmdb_id, "movie");
+              if (!data) return base;
+              return {
+                ...base,
+                image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : base.image,
+                backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : base.backdrop,
+                year: parseInt(data.release_date?.split("-")[0] || item.year || "0"),
+                rating: data.vote_average?.toFixed(1) || item.rating || "N/A",
+                genre: data.genres?.map((g: any) => g.name) || base.genre
+              };
+            })
+          );
+          cinemaWithData.push(...chunkResults);
+          if (cinema.length > 500) await new Promise(r => setTimeout(r, 100));
+        }
+      }
+
+      if (cinemaWithData.length > 0) {
+        const uniqueCinemaMap = new Map();
+        cinemaWithData.forEach(c => {
+           const key = c.title.toLowerCase().trim();
+           if (!uniqueCinemaMap.has(key)) {
+             uniqueCinemaMap.set(key, c);
+           }
+        });
+        categories.push(...allocateItemsToMasterCategories(Array.from(uniqueCinemaMap.values()), "cinema", "Ação"));
       }
 
       // Fetch TMDB data for SERIES safely in batches. Covers are wrong/blank without this!
@@ -248,22 +289,89 @@ export const useSupabaseContent = () => {
       }
 
       if (seriesWithData.length > 0) {
-         categories.push(...allocateItemsToMasterCategories(seriesWithData, "series", "Drama"));
+         const uniqueSeriesMap = new Map();
+         seriesWithData.forEach(s => {
+           const key = s.title.toLowerCase().trim();
+           if (!uniqueSeriesMap.has(key)) {
+             uniqueSeriesMap.set(key, s);
+           }
+         });
+         categories.push(...allocateItemsToMasterCategories(Array.from(uniqueSeriesMap.values()), "series", "Drama"));
       }
 
+      let kidsMoviesWithData: ContentItem[] = [];
       if (filmesKids && filmesKids.length > 0) {
+        const chunkSize = 50;
+        for (let i = 0; i < filmesKids.length; i += chunkSize) {
+          const chunk = filmesKids.slice(i, i + chunkSize);
+          const chunkResults = await Promise.all(
+            chunk.map(async (item: any) => {
+              const base = mapFilmesKids(item);
+              if (!item.tmdb_id) return base;
+              const data = await fetchTmdbDetails(item.tmdb_id, "movie");
+              if (!data) return base;
+              return {
+                ...base,
+                image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : base.image,
+                backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : base.backdrop,
+                year: parseInt(data.release_date?.split("-")[0] || item.year || "0"),
+                rating: data.vote_average?.toFixed(1) || item.rating || "L",
+                genre: data.genres?.map((g: any) => g.name) || base.genre
+              };
+            })
+          );
+          kidsMoviesWithData.push(...chunkResults);
+        }
+      }
+
+      if (kidsMoviesWithData.length > 0) {
+        const uniqueKidsMap = new Map();
+        kidsMoviesWithData.forEach(c => {
+           const key = c.title.toLowerCase().trim();
+           if (!uniqueKidsMap.has(key)) uniqueKidsMap.set(key, c);
+        });
         categories.push({
           id: "kids-movies",
           title: "Filmes Infantis",
-          items: filmesKids.map(mapFilmesKids)
+          items: Array.from(uniqueKidsMap.values())
         });
       }
 
+      let kidsSeriesWithData: ContentItem[] = [];
       if (seriesKids && seriesKids.length > 0) {
+        const chunkSize = 50;
+        for (let i = 0; i < seriesKids.length; i += chunkSize) {
+          const chunk = seriesKids.slice(i, i + chunkSize);
+          const chunkResults = await Promise.all(
+            chunk.map(async (item: any) => {
+              const base = mapSeriesKids(item);
+              if (!item.tmdb_id) return base;
+              const data = await fetchTmdbDetails(item.tmdb_id, "tv");
+              if (!data) return base;
+              return {
+                ...base,
+                image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : base.image,
+                backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : base.backdrop,
+                year: parseInt(data.first_air_date?.split("-")[0] || item.year || "0"),
+                rating: data.vote_average?.toFixed(1) || item.rating || "L",
+                genre: data.genres?.map((g: any) => g.name) || base.genre
+              };
+            })
+          );
+          kidsSeriesWithData.push(...chunkResults);
+        }
+      }
+
+      if (kidsSeriesWithData.length > 0) {
+        const uniqueSeriesKidsMap = new Map();
+        kidsSeriesWithData.forEach(c => {
+           const key = c.title.toLowerCase().trim();
+           if (!uniqueSeriesKidsMap.has(key)) uniqueSeriesKidsMap.set(key, c);
+        });
         categories.push({
           id: "kids-series",
           title: "Séries Infantis",
-          items: seriesKids.map(mapSeriesKids)
+          items: Array.from(uniqueSeriesKidsMap.values())
         });
       }
 

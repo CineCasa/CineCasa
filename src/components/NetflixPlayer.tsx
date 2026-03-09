@@ -22,15 +22,19 @@ const NetflixPlayer = ({ url, title, historyItem, onClose }: NetflixPlayerProps)
   const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    // Initial history save when player opens (progress 0 or previous)
     if (historyItem) {
       try {
         const historyStr = localStorage.getItem("paixaohist");
         let history = historyStr ? JSON.parse(historyStr) : [];
+        const existing = history.find((h: any) => h.id === historyItem.id);
+        const startProgress = existing?.progress || 0;
+        
         history = history.filter((h: any) => h.id !== historyItem.id);
-        history.unshift({ ...historyItem, timestamp: Date.now() });
+        history.unshift({ ...historyItem, timestamp: Date.now(), progress: startProgress });
         localStorage.setItem("paixaohist", JSON.stringify(history.slice(0, 50)));
       } catch (e) {
-        console.error("Failed to save history:", e);
+        console.error("Failed to init history:", e);
       }
     }
   }, [historyItem]);
@@ -48,7 +52,26 @@ const NetflixPlayer = ({ url, title, historyItem, onClose }: NetflixPlayerProps)
       const current = videoRef.current.currentTime;
       const total = videoRef.current.duration;
       setCurrentTime(current);
-      setProgress((current / total) * 100);
+      const pct = (current / total) * 100;
+      setProgress(pct);
+      
+      // Save progress to local storage (throttled naturally by timeUpdate rate)
+      if (historyItem && total > 0 && Math.floor(current) % 5 === 0) {
+         try {
+           const historyStr = localStorage.getItem("paixaohist");
+           let history = historyStr ? JSON.parse(historyStr) : [];
+           const idx = history.findIndex((h: any) => h.id === historyItem.id);
+           if (idx >= 0) {
+             history[idx].progress = pct;
+             history[idx].timestamp = Date.now();
+           } else {
+             history.unshift({ ...historyItem, timestamp: Date.now(), progress: pct });
+           }
+           localStorage.setItem("paixaohist", JSON.stringify(history.slice(0, 50)));
+         } catch (e) {
+           console.error("Failed to update progress:", e);
+         }
+      }
     }
   };
 

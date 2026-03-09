@@ -42,6 +42,32 @@ export const fetchTmdbSeries = async (tmdbId: string) => {
   return fetchTmdbDetails(tmdbId, "tv");
 };
 
+export const fetchTmdbDiscoverWatchProvider = async (providerId: number) => {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&language=pt-BR&with_watch_providers=${providerId}&watch_region=BR&sort_by=popularity.desc&page=1`
+    );
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error(`Error fetching provider ${providerId}:`, error);
+    return null;
+  }
+};
+
+export const fetchTmdbTrendingWeek = async (type: "movie" | "tv") => {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE_URL}/trending/${type}/week?api_key=${TMDB_API_KEY}&language=pt-BR`
+    );
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error(`Error fetching trending ${type}:`, error);
+    return null;
+  }
+};
+
 export const getTmdbTrailerUrl = (videos: any) => {
   if (!videos?.results?.length) return null;
   // Prioritize YouTube Trailers

@@ -12,7 +12,11 @@ import FilmesKids from "./pages/FilmesKids";
 import SeriesKids from "./pages/SeriesKids";
 import DataLoader from "./pages/DataLoader";
 import Details from "./pages/Details";
+import Favorites from "./pages/Favorites";
+import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
+
+import { motion, AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +25,6 @@ const HomeRedirect = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
-    // Redireciona para Home apenas no primeiro carregamento real (sessionStorage)
     const hasRedirected = sessionStorage.getItem("initialRedirect");
     if (!hasRedirected && location.pathname !== "/") {
        navigate("/", { replace: true });
@@ -32,6 +35,36 @@ const HomeRedirect = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const AppRoutes = () => {
+  const location = useLocation();
+  
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<Index />} />
+          <Route path="/cinema" element={<Cinema />} />
+          <Route path="/series" element={<Series />} />
+          <Route path="/tv-live" element={<TvAoVivo />} />
+          <Route path="/kids-movies" element={<FilmesKids />} />
+          <Route path="/kids-series" element={<SeriesKids />} />
+          <Route path="/details/:type/:id" element={<Details />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/admin/data-loader" element={<DataLoader />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -39,17 +72,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <HomeRedirect>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/cinema" element={<Cinema />} />
-            <Route path="/series" element={<Series />} />
-            <Route path="/tv-live" element={<TvAoVivo />} />
-            <Route path="/kids-movies" element={<FilmesKids />} />
-            <Route path="/kids-series" element={<SeriesKids />} />
-            <Route path="/details/:type/:id" element={<Details />} />
-            <Route path="/admin/data-loader" element={<DataLoader />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </HomeRedirect>
       </BrowserRouter>
     </TooltipProvider>

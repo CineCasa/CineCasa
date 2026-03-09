@@ -131,4 +131,19 @@
     outline-offset: 4px;
     box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
   }
+
+  /* Universal Overlap & Expansion Utilities */
+  .row-wrapper {
+    @apply relative mb-8 z-10 transition-all duration-300;
+  }
+  .row-wrapper:hover {
+    @apply z-[60];
+  }
+  .row-scroll-container {
+    @apply flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-8 lg:px-12 py-24 -my-24 overflow-y-visible focus:outline-none;
+    scroll-snap-type: x mandatory;
+  }
+  .row-title {
+    @apply text-[clamp(1.2rem,1.8vw,1.6rem)] font-bold text-white px-4 md:px-8 lg:px-12 mb-6 tracking-tight drop-shadow-lg text-shadow-premium;
+  }
 }
