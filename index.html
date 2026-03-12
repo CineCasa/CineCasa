@@ -18,6 +18,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Cinecasa - Entretenimento e lazer</title>
     <meta name="description" content="Entretenimento e lazer">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#00A8E1" />
+    <meta name="background-color" content="#000000" />
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CineCasa" />
+    <meta name="application-name" content="CineCasa Entretenimento" />
+    <meta name="msapplication-TileColor" content="#00A8E1" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('Service Worker registrado com sucesso:', registration);
+            })
+            .catch(function(error) {
+              console.log('Erro no registro do Service Worker:', error);
+            });
+        });
+      }
+    </script>
+    
+    <!-- PWA Install Prompt -->
+    <script>
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        window.deferredPrompt = deferredPrompt;
+      });
+    </script>
+    
+    <!-- Video Player Fix Script -->
+    <script src="/video-player-fix.js"></script>
     <meta name="theme-color" content="#000000">
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Cinecasa - Entretenimento e lazer">

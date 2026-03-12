@@ -45,31 +45,32 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
     const hero = heroItems[current];
     
     const loadDetails = async () => {
-      // 1. Prioritize DB Trailer as requested
+      // 1. Priorizar trailer do Supabase
       if (hero.trailer) {
+        setTrailerUrl(hero.trailer);
         trailerTimeout.current = setTimeout(() => {
-          setTrailerUrl(hero.trailer);
           setShowTrailer(true);
-        }, 300);
+        }, 100);
         
-        // Still fetch TMDB details for metadata if missing
+        // Buscar metadados do TMDB se necessário
         if (hero.tmdbId) {
           const type = hero.id.includes("series") ? "tv" : "movie";
           const data = await fetchTmdbDetails(hero.tmdbId, type);
           if (data) setCurrentHeroData(data);
         }
       } else if (hero.tmdbId) {
-        // 2. Fallback to TMDB lookup
+        // 2. Fallback para TMDB
         const type = hero.id.includes("series") ? "tv" : "movie";
         const data = await fetchTmdbDetails(hero.tmdbId, type);
         if (data) {
           setCurrentHeroData(data);
           const url = getTmdbTrailerUrl(data.videos);
-          setTrailerUrl(url);
-          
-          trailerTimeout.current = setTimeout(() => {
-            setShowTrailer(true);
-          }, 300);
+          if (url) {
+            setTrailerUrl(url);
+            trailerTimeout.current = setTimeout(() => {
+              setShowTrailer(true);
+            }, 100);
+          }
         }
       }
     };
@@ -85,7 +86,7 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
     if (heroItems.length <= 1) return;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % heroItems.length);
-    }, 15000); // More time for trailers
+    }, 10000); // Tempo reduzido para melhor experiência
     return () => clearInterval(timer);
   }, [heroItems.length]);
 
@@ -115,9 +116,16 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
           {showTrailer && trailerUrl ? (
             <div className="absolute inset-0 scale-[1.3] pointer-events-none">
               <iframe
-                src={trailerUrl.includes("?") ? `${trailerUrl}&controls=0` : `${trailerUrl}?controls=0`}
+                src={trailerUrl.includes("?") 
+                  ? `${trailerUrl}&autoplay=1&mute=0&controls=0&loop=1&playsinline=1&origin=${window.location.origin}&widget_referrer=${window.location.href}&volume=100` 
+                  : `${trailerUrl}?autoplay=1&mute=0&controls=0&loop=1&playsinline=1&origin=${window.location.origin}&widget_referrer=${window.location.href}&volume=100`}
                 className="w-full h-full object-cover"
-                allow="autoplay; encrypted-media; fullscreen"
+                allow="autoplay; fullscreen; encrypted-media; picture-in-picture; web-share"
+                allowFullScreen
+                frameBorder="0"
+                loading="eager"
+                referrerPolicy="no-referrer-when-downgrade"
+                sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
               />
             </div>
           ) : (

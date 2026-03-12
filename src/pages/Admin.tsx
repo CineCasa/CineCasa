@@ -4,7 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Users, CheckCircle, XCircle, ShieldCheck, Mail, Calendar, CreditCard, LogOut, Home } from "lucide-react";
+import { Users, CheckCircle, XCircle, ShieldCheck, Mail, Calendar, CreditCard, LogOut, Home, Trash2 } from "lucide-react";
+import FinanceSection from "@/components/FinanceSection";
+import SubscriptionChart from "@/components/SubscriptionChart";
 
 interface Profile {
   id: string;
@@ -49,7 +51,24 @@ const Admin = () => {
     }
   }, [isAdmin]);
 
-  const handleUpdateStatus = async (id: string, active: boolean) => {
+  const handleDeleteUser = async (id: string) => {
+  if (!confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) return;
+  
+  try {
+    const { error } = await supabase
+      .from("profiles" as any)
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+    toast.success("Usuário excluído com sucesso!");
+    fetchProfiles();
+  } catch (error: any) {
+    toast.error("Erro ao excluir usuário: " + error.message);
+  }
+};
+
+const handleUpdateStatus = async (id: string, active: boolean) => {
     try {
       const { error } = await supabase
         .from("profiles" as any)
@@ -183,6 +202,15 @@ const Admin = () => {
 
                     <div className="h-8 w-px bg-white/5 mx-2 hidden lg:block" />
 
+                    {/* Botão Excluir Usuário */}
+                    <button 
+                      onClick={() => handleDeleteUser(profile.id)}
+                      className="flex items-center gap-2 px-3 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 text-sm font-bold rounded-lg transition-all hover:text-white"
+                      disabled={profile.is_admin}
+                    >
+                      <Trash2 size={16} /> EXCLUIR
+                    </button>
+
                     <div className="flex gap-2">
                        <button 
                         onClick={() => handleUpdatePlan(profile.id, 'basic')}
@@ -203,6 +231,12 @@ const Admin = () => {
             ))}
           </div>
         )}
+
+        {/* Gráfico de Controle de Assinaturas */}
+        <SubscriptionChart />
+
+        {/* Seção Financeira na Página Admin */}
+        <FinanceSection />
       </div>
     </div>
   );

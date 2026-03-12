@@ -22,8 +22,10 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const { signOut, user } = useAuth();
   const location = useLocation();
@@ -40,19 +42,45 @@ const Navbar = () => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
+      // NÃO fechar a pesquisa ao clicar fora - manter aberta
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Função de busca global em tempo real
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSearchQuery(val);
+    setSearchOpen(true); // Manter sempre aberto enquanto digita
+
     if (val.trim()) {
-      navigate(`/search?q=${encodeURIComponent(val)}`);
-    } else if (location.pathname === "/search") {
-      navigate("/");
+      // Buscar em todos os conteúdos
+      const allItems = categories?.flatMap(cat => cat.items) || [];
+      const results = allItems.filter(item => 
+        item.title.toLowerCase().includes(val.toLowerCase()) ||
+        item.genre.some(g => g.toLowerCase().includes(val.toLowerCase())) ||
+        item.description?.toLowerCase().includes(val.toLowerCase()) ||
+        item.year?.toString().includes(val)
+      ).slice(0, 8); // Limitar a 8 resultados
+      
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
     }
+  };
+
+  // Função para manter busca aberta
+  const handleSearchFocus = () => {
+    setSearchOpen(true);
+  };
+
+  // Função para selecionar resultado
+  const handleResultClick = (item: any) => {
+    navigate(`/content/${item.id}`);
+    setSearchQuery(item.title);
+    setSearchOpen(false);
+    setSearchResults([]);
   };
 
   const handleLogout = async () => {
@@ -97,9 +125,22 @@ const Navbar = () => {
           </button>
 
           <Link to="/" className="flex flex-col items-start leading-none group">
-            <span className="text-2xl sm:text-3xl font-black tracking-tighter text-[#00A8E1] group-hover:text-white transition-colors">
-              CINECASA
-            </span>
+            <div className="flex items-center gap-2">
+              <img 
+                src="/cinecasa-logo.png" 
+                alt="CineCasa" 
+                className="w-8 h-8 object-contain"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const textElement = target.nextElementSibling as HTMLElement;
+                  if (textElement) textElement.style.display = 'block';
+                }}
+              />
+              <span className="text-2xl sm:text-3xl font-black tracking-tighter text-[#00A8E1] group-hover:text-white transition-colors" style={{display: 'none'}}>
+                CINECASA
+              </span>
+            </div>
             <span className="text-[10px] sm:text-[11px] font-bold text-white/50 tracking-widest uppercase">
               Entretenimento e lazer
             </span>
@@ -114,8 +155,8 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Nav */}
-          <ul className="hidden lg:flex items-center gap-6">
-            {navItems.map((item, idx) => {
+          <ul className="hidden lg:flex items-center gap-6 flex-1 justify-end">
+            {navItems.filter(item => item.label !== "TV ao Vivo").map((item, idx) => {
               const isActive = location.pathname === item.path;
               return (
                 <li key={item.path} className="relative">
@@ -140,32 +181,63 @@ const Navbar = () => {
         {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-4 text-[#aaaaaa]">
           {/* Search */}
-          <div className="flex items-center border border-transparent hover:border-white/20 hover:bg-white/5 rounded-full transition-all px-1 sm:px-2 py-1 focus-within:border-white/40 focus-within:bg-white/5">
-            {searchOpen && (
+          <div className="relative" ref={searchRef}>
+            <div className="flex items-center border border-transparent hover:border-white/20 hover:bg-white/5 rounded-full transition-all px-1 sm:px-2 py-1 focus-within:border-white/40 focus-within:bg-white/5">
+              <Search 
+                size={18} 
+                className="text-white/60 hover:text-white cursor-pointer transition-colors"
+                onClick={handleSearchFocus}
+              />
               <input
-                autoFocus
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="Busca"
-                className="bg-transparent text-sm sm:text-base text-white placeholder:text-[#aaaaaa] px-2 py-1 w-28 sm:w-48 outline-none"
-                onBlur={() => {
-                  if (!searchQuery) {
-                    setTimeout(() => setSearchOpen(false), 200);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setSearchOpen(false);
-                  }
-                }}
+                onFocus={handleSearchFocus}
+                placeholder="Buscar filmes, séries..."
+                className="bg-transparent text-sm sm:text-base text-white placeholder:text-[#aaaaaa] px-2 py-1 w-32 sm:w-48 lg:w-64 outline-none"
+                // NUNCA fechar automaticamente
               />
+            </div>
+
+            {/* Dropdown de Resultados em Tempo Real */}
+            {(searchOpen && searchResults.length > 0) && (
+              <div className="absolute top-full mt-2 right-0 w-full max-w-md bg-[#1a1a1a] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-50">
+                <div className="max-h-96 overflow-y-auto">
+                  {searchResults.map((item, index) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleResultClick(item)}
+                      className="flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-b-0"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="w-12 h-16 object-cover rounded"
+                        loading="lazy"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-white font-medium text-sm truncate">{item.title}</h4>
+                        <p className="text-gray-400 text-xs truncate">{item.genre.join(", ")}</p>
+                        <p className="text-gray-500 text-xs">{item.year}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-2 border-t border-white/10 bg-[#0f0f0f]">
+                  <p className="text-gray-400 text-xs text-center">
+                    {searchResults.length} resultado{searchResults.length !== 1 ? 's' : ''} encontrado{searchResults.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
             )}
-            <button
-              onClick={() => setSearchOpen(!searchOpen)}
-              className="p-2 text-white/80 hover:text-white transition-colors rounded-full focus-visible"
-            >
-              <Search size={22} />
-            </button>
+
+            {/* Mensagem quando não há resultados */}
+            {(searchOpen && searchQuery && searchResults.length === 0) && (
+              <div className="absolute top-full mt-2 right-0 w-full max-w-md bg-[#1a1a1a] border border-white/10 rounded-lg shadow-2xl p-4 z-50">
+                <p className="text-gray-400 text-sm text-center">
+                  Nenhum resultado encontrado para "{searchQuery}"
+                </p>
+              </div>
+            )}
           </div>
 
           {/* User Menu */}

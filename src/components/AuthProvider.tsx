@@ -23,13 +23,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles" as any)
         .select("*")
         .eq("id", userId)
         .single();
       
       if (error && error.code !== "PGRST116") {
         console.error("Error fetching profile:", error);
+      }
+      
+      // Verificar se o usuário está ativo
+      if (data && !(data as any).is_active && !(data as any).is_admin) {
+        // Usuário não está ativo e não é admin, fazer logout
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+        return;
       }
       
       setProfile(data || null);

@@ -1,0 +1,78 @@
+{
+  "name": "CineCasa Entretenimento",
+  "short_name": "CineCasa",
+  "description": "A melhor plataforma de streaming de entretenimento",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00A8E1",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["entertainment", "streaming", "movies"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "192x192",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "512x512",
+      "type": "image/x-icon",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Tela principal do CineCasa"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "640x1136",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "CineCasa em dispositivos móveis"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ver Filmes",
+      "short_name": "Filmes",
+      "description": "Acesse a coleção completa de filmes",
+      "url": "/cinema",
+      "icons": [{ "src": "/favicon.ico", "sizes": "96x96" }]
+    },
+    {
+      "name": "Ver Séries",
+      "short_name": "Séries",
+      "description": "Assista às melhores séries",
+      "url": "/series",
+      "icons": [{ "src": "/favicon.ico", "sizes": "96x96" }]
+    },
+    {
+      "name": "Favoritos",
+      "short_name": "Favoritos",
+      "description": "Acesse seus conteúdos favoritos",
+      "url": "/favorites",
+      "icons": [{ "src": "/favicon.ico", "sizes": "96x96" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}

@@ -4,12 +4,11 @@ import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
 import Footer from "@/components/Footer";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
-import { useAiRecommendations } from "@/hooks/useAiRecommendations";
-import AiRecommendationsRow from "@/components/AiRecommendationsRow";
 import ContinueWatchingRow from "@/components/ContinueWatchingRow";
 import DynamicCategoryRow from "@/components/DynamicCategoryRow";
 import TrendingGlobalRow from "@/components/TrendingGlobalRow";
 import Top5StreamingRow from "@/components/Top5StreamingRow";
+import ContentCounter from "@/components/ContentCounter";
 
 // Helper for 'Sábado à noite merece'
 // Active from Saturday 16:49 to Sunday 12:59
@@ -30,7 +29,6 @@ const isValidSabado = () => {
 
 const Index = () => {
   const { data: categories, isLoading } = useSupabaseContent();
-  const { recommendations } = useAiRecommendations();
   
   // 1. Filtragem Inicial: Remover TV e Canais
   const filteredCategories = categories?.filter(cat => 
@@ -111,14 +109,7 @@ const Index = () => {
           {/* Séries em Alta (Filtrando TV global se for canal) */}
           <TrendingGlobalRow title="Séries em Alta" type="tv" />
 
-          {/* Indicações IA */}
-          {recommendations && recommendations.length > 0 && (
-            <div className="relative">
-              <h2 className="absolute top-0 opacity-0 pointer-events-none">Indicações exclusivas para você</h2>
-              <AiRecommendationsRow items={getUniqueItems(recommendations).slice(0, 5)} />
-            </div>
-          )}
-
+          {/* Negritude em Destaque */}
           <DynamicCategoryRow 
             title="Negritude em Destaque" 
             items={getUniqueItems(allItems)} 
@@ -151,6 +142,9 @@ const Index = () => {
           <Top5StreamingRow title="Top 5 Disney+" providerId={337} />
           <Top5StreamingRow title="Top 5 Max" providerId={384} />
           <Top5StreamingRow title="Top 5 Paramount+" providerId={531} />
+
+          {/* Contador de Conteúdo - Apenas para Admin */}
+          <ContentCounter />
 
           {isLoading && (
             <div className="flex justify-center p-10 text-white/50">Carregando catálogo completo...</div>

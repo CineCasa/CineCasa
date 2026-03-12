@@ -1,156 +1,294 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, Shield, Zap, Star } from "lucide-react";
+import { Check, Shield, Zap, Star, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 
 const Plans = () => {
   const navigate = useNavigate();
-  const { user, profile } = useAuth();
+  const location = useLocation();
+  const { user } = useAuth();
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [showPixModal, setShowPixModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSelectPlan = async (plan: string) => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+  const PIX_KEY = "cinecasa@exemplo.com.br";
 
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from("profiles" as any)
-        .upsert({
-          id: user.id,
-          plan: plan,
-          is_active: false, // Wait for admin confirmation
-          updated_at: new Date().toISOString(),
-        });
+  const handleSelectPlan = (plan: string) => {
+    setSelectedPlan(plan);
+    setShowPixModal(true);
+  };
 
-      if (error) throw error;
-      
-      toast.success(`Plano ${plan.toUpperCase()} selecionado! Aguarde a ativação pelo administrador.`);
-      navigate("/");
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao selecionar plano.");
-    } finally {
-      setIsLoading(false);
-    }
+  const copyPixKey = () => {
+    navigator.clipboard.writeText(PIX_KEY);
+    toast.success("Chave Pix copiada!");
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans py-20 px-4 overflow-hidden relative">
-      {/* Background decoration */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-[#00A8E1]/10 blur-[120px] rounded-full" />
-        <div className="absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] bg-[#00A8E1]/10 blur-[120px] rounded-full" />
+    <div className="min-h-screen bg-black text-white font-sans overflow-hidden relative">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"
+        style={{
+          backgroundImage: 'url(/plans-bg.jpg)',
+        }}
+      />
+      
+      {/* Overlay for better text visibility */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/40 to-black/60" />
+      {/* Background */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] bg-[#00A8E1]/8 blur-[150px] rounded-full" />
+        <div className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] bg-[#00A8E1]/8 blur-[150px] rounded-full" />
+        <div className="absolute inset-0 bg-[url('/placeholder.svg')] opacity-[0.02] bg-repeat bg-[length:300px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center gap-2 mb-6"
-          >
-             <span className="text-[#00A8E1] font-black tracking-[0.3em] uppercase text-xs sm:text-sm">Assine o Cinecasa</span>
-             <h1 className="text-4xl sm:text-6xl font-[900] tracking-tighter italic">ESCOLHA SEU PLANO</h1>
-          </motion.div>
-          <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
-            Seja bem-vindo ao melhor do entretenimento. Escolha o plano que melhor se adapta a você e comece sua jornada agora mesmo.
-          </p>
+      {/* Header */}
+      <nav className="relative z-20 flex items-center justify-between px-6 sm:px-12 py-6">
+        <div className="flex flex-col items-start leading-none">
+          <div className="relative">
+            <img 
+              src="/cinecasa-logo.png" 
+              alt="CineCasa" 
+              className="h-12 sm:h-16 w-auto object-contain mb-2 relative z-10"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = "/favicon.ico";
+              }}
+              onLoad={() => {
+                console.log('Logo carregado com sucesso');
+              }}
+            />
+            <div className="absolute inset-0 bg-[#00A8E1]/20 rounded-full blur-2xl -z-10 scale-150"></div>
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-bold text-white/50 tracking-widest uppercase">
+            Entretenimento e lazer
+          </span>
         </div>
+        <Link
+          to="/login"
+          className="flex items-center gap-2 px-4 py-2 border border-white/20 hover:border-[#00A8E1] text-white/70 hover:text-white rounded-lg transition-all text-sm font-bold"
+        >
+          Já tem conta? Entrar
+        </Link>
+      </nav>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {/* Plano Básico */}
+      {/* Content */}
+      <div className="relative z-20 max-w-6xl mx-auto px-4 sm:px-8 pb-20 pt-8">
+        {/* Hero text */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-16"
+        >
+          <span className="text-[#00A8E1] font-black tracking-[0.3em] uppercase text-xs sm:text-sm">
+            Escolha sua assinatura
+          </span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mt-4 mb-6">
+            Filmes, séries e muito mais
+          </h1>
+          <p className="text-white/80 text-lg max-w-2xl mx-auto">
+            Assine agora e tenha acesso a um catálogo com milhares de títulos
+          </p>
+        </motion.div>
+
+        {/* Plans Grid */}
+        <div className="grid md:grid-cols-2 gap-8 mb-16">
+          {/* Basic Plan */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-[#151515] rounded-2xl p-8 border border-white/10 hover:border-[#00A8E1]/50 transition-all group flex flex-col h-full"
+            className="relative group"
           >
-            <div className="mb-8">
-              <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Zap className="text-[#00A8E1]" size={28} />
+            <div className="relative bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all duration-300">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent" />
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold text-white mb-2">Básico</h3>
+                <div className="mb-6">
+                  <span className="text-4xl font-black text-white">R$4,99</span>
+                  <span className="text-white/60">/mês</span>
+                </div>
+                
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-center gap-3 text-white/80">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <span>Acesso a todo o catálogo</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <span>Qualidade HD</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <span>1 dispositivo simultâneo</span>
+                  </li>
+                </ul>
+
+                <button
+                  onClick={() => handleSelectPlan("BASIC")}
+                  className="w-full py-4 bg-white/10 border border-white/20 text-white rounded-xl font-semibold hover:bg-white/20 transition-all duration-300"
+                >
+                  SELECIONAR BÁSICO — R$4,99
+                </button>
               </div>
-              <h3 className="text-2xl font-black mb-2 italic">PLANO BÁSICO</h3>
-              <p className="text-white/40 text-sm">O essencial para sua diversão diária.</p>
             </div>
-
-            <div className="space-y-4 mb-10 flex-grow">
-              <FeatureItem text="50 Filmes (Até 2024)" />
-              <FeatureItem text="50 Séries (Até 2023)" />
-              <FeatureItem text="10 Filmes Kids" />
-              <FeatureItem text="5 Séries Kids" />
-              <FeatureItem text="Sem TV ao Vivo" disabled />
-              <FeatureItem text="Sem Lançamentos 2025/2026" disabled />
-            </div>
-
-            <button
-              onClick={() => handleSelectPlan("basic")}
-              disabled={isLoading}
-              className="w-full py-4 bg-white/5 border border-white/10 rounded-xl font-black italic hover:bg-white/10 transition-all active:scale-95"
-            >
-              SELECIONAR BÁSICO
-            </button>
           </motion.div>
 
-          {/* Plano Pro */}
+          {/* Pro Plan */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-[#1c1c1c] to-[#0f171e] rounded-2xl p-8 border-2 border-[#00A8E1] shadow-[0_0_40px_rgba(0,168,225,0.2)] group relative flex flex-col h-full overflow-hidden"
+            transition={{ delay: 0.3 }}
+            className="relative group"
           >
-            <div className="absolute top-4 right-4 bg-[#00A8E1] text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
-              Recomendado
+            <div className="absolute inset-0 rounded-2xl border-2 border-[#00A8E1] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 -z-10 animate-pulse">
+              <div className="absolute inset-0 rounded-2xl bg-black/20 backdrop-blur-sm" />
             </div>
-            
-            <div className="mb-8">
-              <div className="w-12 h-12 bg-[#00A8E1]/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Star className="text-[#00A8E1]" size={28} />
+            <div className="relative bg-gradient-to-br from-[#00A8E1]/10 to-transparent border border-[#00A8E1]/30 rounded-2xl p-8 hover:border-[#00A8E1]/60 transition-all duration-300">
+              <div className="absolute top-4 right-4">
+                <span className="bg-[#00A8E1] text-white text-xs font-bold px-3 py-1 rounded-full">
+                  MAIS POPULAR
+                </span>
               </div>
-              <h3 className="text-2xl font-black mb-2 italic">PLANO PRO</h3>
-              <p className="text-white/40 text-sm">Acesso total sem limites ou restrições.</p>
-            </div>
+              
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold text-white mb-2">PRO</h3>
+                <div className="mb-6">
+                  <span className="text-4xl font-black text-white">R$9,99</span>
+                  <span className="text-white/60">/mês</span>
+                </div>
+                
+                <ul className="space-y-4 mb-8">
+                  <li className="flex items-center gap-3 text-white/80">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <span>Tudo do Básico +</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <span>Qualidade 4K + HDR</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <span>4 dispositivos simultâneos</span>
+                  </li>
+                  <li className="flex items-center gap-3 text-white/80">
+                    <Check className="w-5 h-5 text-green-400" />
+                    <span>Downloads offline</span>
+                  </li>
+                </ul>
 
-            <div className="space-y-4 mb-10 flex-grow">
-              <FeatureItem text="Todos os Conteúdos Liberados" highlight />
-              <FeatureItem text="Lançamentos 2025 e 2026" highlight />
-              <FeatureItem text="Canais de TV ao Vivo" highlight />
-              <FeatureItem text="Catálogo Kids Completo" highlight />
-              <FeatureItem text="Suporte Prioritário" highlight />
-              <FeatureItem text="Qualidade máxima de imagem" highlight />
+                <button
+                  className="w-full py-4 backdrop-blur-md bg-gradient-to-r from-[#00A8E1] to-[#0090c0] text-white rounded-xl font-normal hover:from-[#0090c0] hover:to-[#00A8E1] transition-all duration-300 shadow-[0_0_20px_rgba(0,168,225,0.4)] hover:shadow-[0_0_30px_rgba(0,168,225,0.6)]"
+                  onClick={() => handleSelectPlan("PRO")}
+                >
+                  SELECIONAR PRO — R$9,99
+                </button>
+              </div>
             </div>
-
-            <button
-              onClick={() => handleSelectPlan("pro")}
-              disabled={isLoading}
-              className="w-full py-4 bg-[#00A8E1] text-white rounded-xl font-black italic hover:bg-[#00A8E1]/80 transition-all active:scale-95 shadow-[0_10px_20px_rgba(0,168,225,0.3)]"
-            >
-              ASSINAR AGORA (PRO)
-            </button>
           </motion.div>
         </div>
 
-        <div className="mt-20 text-center">
-            <p className="text-white/40 text-sm flex items-center justify-center gap-2">
-                <Shield size={16} /> Pagamento 100% seguro via confirmação administrativa.
+        {/* Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="grid md:grid-cols-3 gap-8"
+        >
+          <div className="text-center">
+            <div className="w-16 h-16 bg-[#00A8E1]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Zap className="w-8 h-8 text-[#00A8E1]" />
+            </div>
+            <h4 className="text-xl font-bold text-white mb-2">Streaming Rápido</h4>
+            <p className="text-white/60">
+              Sem buffer e com qualidade superior em qualquer dispositivo
             </p>
-        </div>
+          </div>
+
+          <div className="text-center">
+            <div className="w-16 h-16 bg-[#00A8E1]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-8 h-8 text-[#00A8E1]" />
+            </div>
+            <h4 className="text-xl font-bold text-white mb-2">Assinatura Segura</h4>
+            <p className="text-white/60">
+              Pagamentos protegidos e cancelamento a qualquer momento
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="w-16 h-16 bg-[#00A8E1]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Star className="w-8 h-8 text-[#00A8E1]" />
+            </div>
+            <h4 className="text-xl font-bold text-white mb-2">Catálogo Premium</h4>
+            <p className="text-white/60">
+              Os melhores filmes, séries e conteúdos exclusivos
+            </p>
+          </div>
+        </motion.div>
       </div>
+
+      {/* PIX Modal */}
+      {showPixModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPixModal(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-black/90 border border-white/20 rounded-2xl p-8 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Assinatura {selectedPlan}
+            </h3>
+            
+            <div className="bg-white/10 rounded-lg p-6 mb-6">
+              <p className="text-white/60 mb-2">Chave PIX:</p>
+              <p className="text-[#00A8E1] font-mono text-sm mb-4">{PIX_KEY}</p>
+              <button
+                onClick={copyPixKey}
+                className="w-full py-2 bg-[#00A8E1] text-white rounded-lg hover:bg-[#0090c0] transition-colors"
+              >
+                Copiar Chave PIX
+              </button>
+            </div>
+
+            <div className="text-white/60 text-sm mb-6">
+              <p>Após o pagamento, envie o comprovante para:</p>
+              <p className="text-[#00A8E1]">suporte@cinecasa.com</p>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                className="flex-1 py-3 bg-white/10 border border-white/20 text-white rounded-xl hover:bg-white/20 transition-all"
+                onClick={() => setShowPixModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="flex-1 py-3 bg-[#00A8E1] text-white rounded-xl font-black hover:bg-[#0090c0] transition-all border-2 border-[#00A8E1] animate-pulse"
+                onClick={() => {
+                  localStorage.setItem("selectedPlan", selectedPlan || "");
+                  setShowPixModal(false);
+                  navigate("/login");
+                }}
+              >
+                Já fiz o pagamento
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };
-
-const FeatureItem = ({ text, disabled = false, highlight = false }: { text: string; disabled?: boolean; highlight?: boolean }) => (
-  <div className={`flex items-center gap-3 ${disabled ? "opacity-30" : "opacity-100"}`}>
-    <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${highlight ? "bg-[#00A8E1]/20 text-[#00A8E1]" : "bg-white/10 text-white/60"}`}>
-      <Check size={14} />
-    </div>
-    <span className={`text-sm font-semibold ${highlight ? "text-white" : "text-white/70"}`}>{text}</span>
-  </div>
-);
 
 export default Plans;

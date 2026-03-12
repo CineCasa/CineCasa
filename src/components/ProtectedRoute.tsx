@@ -14,12 +14,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (!session) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  // Se o usuário não tem plano e não está na página de planos, redireciona
-  if (plan === "none" && location.pathname !== "/plans") {
-    return <Navigate to="/plans" replace />;
+    return <Navigate to="/plans" state={{ from: location }} replace />;
   }
 
   return <>{children}</>;

@@ -1,0 +1,39 @@
+name: Deploy CineCasa
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: "https://eqhstnlsmfrwxhvcwoid.supabase.co"
+          VITE_SUPABASE_PUBLISHABLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxaHN0bmxzbWZyd3hodmN3b2lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MTg1NTcsImV4cCI6MjA4ODI5NDU1N30.6AmJi7zs-1QDnStIIN5bJGoFFhv4WveC1NUAHKI0Qlo"
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
+          clean: true

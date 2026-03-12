@@ -1,15 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
+import PWADownloadPopup from "@/components/PWADownloadPopup";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showPWAPopup, setShowPWAPopup] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<'mobile' | 'tv' | null>(null);
   const navigate = useNavigate();
+
+  const { profile } = useAuth();
+
+  useEffect(() => {
+    // Verifica se há um plano selecionado no localStorage
+    const selectedPlan = localStorage.getItem("selectedPlan");
+    if (selectedPlan) {
+      // Remove o plano selecionado para não mostrar novamente
+      localStorage.removeItem("selectedPlan");
+      toast.info(`Plano ${selectedPlan.toUpperCase()} selecionado! Faça login para continuar.`);
+    }
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +38,7 @@ const Login = () => {
           password,
         });
         if (error) throw error;
-        toast.success("Conta criada! Verifique seu email para confirmar.");
+        toast.success("Conta criada! Aguarde liberação do administrador.");
         setIsRegistering(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -38,6 +54,11 @@ const Login = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDeviceSelection = (device: 'mobile' | 'tv') => {
+    setSelectedDevice(device);
+    setShowPWAPopup(true);
   };
 
   return (
@@ -74,6 +95,30 @@ const Login = () => {
           {isRegistering ? "Criar Conta" : "Entrar"}
         </h1>
 
+        {!isRegistering && (
+          <p className="text-[#b3b3b3] text-sm mb-6">
+            Não tem uma conta?{" "}
+            <button 
+              onClick={() => setIsRegistering(true)}
+              className="text-[#00A8E1] hover:underline font-medium"
+            >
+              Crie agora
+            </button>
+          </p>
+        )}
+
+        {isRegistering && (
+          <p className="text-[#b3b3b3] text-sm mb-6">
+            Já tem uma conta?{" "}
+            <button 
+              onClick={() => setIsRegistering(false)}
+              className="text-[#00A8E1] hover:underline font-medium"
+            >
+              Faça login
+            </button>
+          </p>
+        )}
+
         <form onSubmit={handleAuth} className="flex flex-col gap-4">
           <div className="relative group">
             <input
@@ -106,6 +151,71 @@ const Login = () => {
             </label>
           </div>
 
+          {isRegistering && (
+            <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3">
+              <p className="text-yellow-300 text-sm text-center">
+                ⚠️ Após o cadastro, aguarde liberação do administrador para acessar o sistema.
+              </p>
+            </div>
+          )}
+
+          {/* Reconhecimento de Plano - Mostra apenas se usuário tiver plano ativo */}
+          {profile?.plan && profile.is_active && !isRegistering && (
+            <div className="text-center mt-4 p-3 bg-green-500/20 rounded-lg border border-green-500/50">
+              <p className="text-green-400 font-medium mb-3">
+                🎉 Você tem direito a {profile.plan === 'basic' ? '1' : '2'} tela(s).
+              </p>
+              {profile.plan === 'basic' ? (
+                <div className="space-y-2">
+                  <p className="text-green-300 text-sm mb-2">Escolha seu dispositivo:</p>
+                  <button 
+                    onClick={() => handleDeviceSelection('mobile')}
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg transition-colors hover:bg-blue-700"
+                  >
+                    📱 Dispositivo Móvel
+                  </button>
+                  <button 
+                    onClick={() => handleDeviceSelection('tv')}
+                    className="w-full bg-purple-600 text-white py-2 rounded-lg transition-colors hover:bg-purple-700"
+                  >
+                    📺 Smart TV
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-green-300 text-sm mb-2">Escolha seu dispositivo:</p>
+                  <button 
+                    onClick={() => handleDeviceSelection('mobile')}
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg transition-colors hover:bg-blue-700"
+                  >
+                    📱 Dispositivo Móvel 1
+                  </button>
+                  <button 
+                    onClick={() => handleDeviceSelection('mobile')}
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg transition-colors hover:bg-blue-700"
+                  >
+                    📱 Dispositivo Móvel 2
+                  </button>
+                  <button 
+                    onClick={() => handleDeviceSelection('tv')}
+                    className="w-full bg-purple-600 text-white py-2 rounded-lg transition-colors hover:bg-purple-700"
+                  >
+                    📺 Smart TV
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Mensagem para Smart TV */}
+          {selectedDevice === 'tv' && (
+            <div className="bg-blue-500/20 border border-blue-500/50 rounded-lg p-3 mt-3">
+              <p className="text-blue-300 text-sm text-center">
+                📺 Faça seu cadastro na Smart TV para login. Acesse o site para instalar o aplicativo.
+              </p>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={isLoading}
@@ -137,15 +247,24 @@ const Login = () => {
               onClick={() => setIsRegistering(!isRegistering)}
               className="text-white hover:underline font-medium"
             >
-              {isRegistering ? "Entrar agora." : "Assine agora."}
+              {isRegistering ? "Entrar agora." : "Criar conta."}
             </button>
           </p>
+          <p className="text-[11px] mt-2">
+            Ou <Link to="/plans" className="text-[#0071eb] hover:underline">clique aqui para ver os planos diretamente</Link>
+          </p>
           <p className="text-[11px] mt-4 leading-relaxed">
-            Esta página é protegida pelo Google reCAPTCHA para garantir que você não é um robô.{" "}
-            <button className="text-[#0071eb] hover:underline">Saiba mais.</button>
+            ⚠️ <strong>Importante:</strong> Após o cadastro, seu acesso será liberado apenas após aprovação do administrador. Não é necessária confirmação por email.
           </p>
         </div>
       </motion.div>
+
+      {/* Popup de Download PWA */}
+      <PWADownloadPopup 
+        isOpen={showPWAPopup}
+        onClose={() => setShowPWAPopup(false)}
+        deviceType={selectedDevice || 'mobile'}
+      />
     </div>
   );
 };

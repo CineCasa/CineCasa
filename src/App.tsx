@@ -1,49 +1,44 @@
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "./components/AuthProvider";
+import { AuthProvider } from "./components/AuthProvider";
+import DeviceAccessManager from "./components/DeviceAccessManager";
+import NavigationManager from "./components/NavigationManager";
+import KeyboardNavigation from "./components/KeyboardNavigation";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import Index from "./pages/Index";
 import Cinema from "./pages/Cinema";
 import Series from "./pages/Series";
-import TvAoVivo from "./pages/TvAoVivo";
-import FilmesKids from "./pages/FilmesKids";
-import SeriesKids from "./pages/SeriesKids";
-import DataLoader from "./pages/DataLoader";
-import Details from "./pages/Details";
 import Favorites from "./pages/Favorites";
-import Search from "./pages/Search";
-import NotFound from "./pages/NotFound";
-import NetflixLoader from "./components/NetflixLoader";
 import Login from "./pages/Login";
 import Plans from "./pages/Plans";
 import Admin from "./pages/Admin";
-import { AuthProvider } from "./components/AuthProvider";
+import Content from "./pages/Content";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-import { motion, AnimatePresence } from "framer-motion";
 
 const queryClient = new QueryClient();
 
 const HomeRedirect = ({ children }: { children: React.ReactNode }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const hasRedirected = sessionStorage.getItem("initialRedirect");
-    if (!hasRedirected && location.pathname !== "/" && location.pathname !== "/login" && location.pathname !== "/plans") {
-       navigate("/", { replace: true });
-       sessionStorage.setItem("initialRedirect", "true");
-    }
-  }, [navigate, location.pathname]);
-
   return <>{children}</>;
 };
 
 const AppRoutes = () => {
   const location = useLocation();
-  
+  const { session, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#00A8E1] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -54,45 +49,92 @@ const AppRoutes = () => {
         transition={{ duration: 0.3, ease: "easeOut" }}
       >
         <Routes location={location}>
+          {/* Rotas públicas - não requerem login */}
+          <Route path="/plans" element={<Plans />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/plans" element={<ProtectedRoute><Plans /></ProtectedRoute>} />
+
+          {/* Rotas protegidas */}
           <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/cinema" element={<ProtectedRoute><Cinema /></ProtectedRoute>} />
           <Route path="/series" element={<ProtectedRoute><Series /></ProtectedRoute>} />
-          <Route path="/tv-live" element={<ProtectedRoute><TvAoVivo /></ProtectedRoute>} />
-          <Route path="/kids-movies" element={<ProtectedRoute><FilmesKids /></ProtectedRoute>} />
-          <Route path="/kids-series" element={<ProtectedRoute><SeriesKids /></ProtectedRoute>} />
-          <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />
+          <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
           <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
-          <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-          <Route path="/admin/data-loader" element={<DataLoader />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </motion.div>
     </AnimatePresence>
   );
 };
 
+const InitialRedirect = ({ children }: { children: React.ReactNode }) => {
+  return <>{children}</>;
+};
+
 const App = () => {
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <Toaster />
+        <Sonner />
         <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <AnimatePresence>
-            {loading && <NetflixLoader onComplete={() => setLoading(false)} />}
-          </AnimatePresence>
-          {!loading && (
-            <BrowserRouter>
-              <HomeRedirect>
-                <AppRoutes />
-              </HomeRedirect>
-            </BrowserRouter>
-          )}
+          <DeviceAccessManager>
+            <NavigationManager>
+              <AnimatePresence mode="wait">
+                {loading && (
+                  <div className="fixed inset-0 bg-gradient-to-br from-black via-[#0f171e] to-black flex items-center justify-center z-50">
+                    <div className="text-center">
+                      <div className="mb-8 relative">
+                        <img 
+                          src="/cinecasa-logo.png" 
+                          alt="CineCasa" 
+                          className="w-32 h-32 mx-auto animate-pulse"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "/favicon.ico";
+                            target.className = "w-16 h-16 mx-auto mb-4";
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-[#00A8E1]/20 rounded-full blur-3xl animate-pulse"></div>
+                      </div>
+                      
+                      <div className="relative">
+                        <div className="w-16 h-16 border-4 border-[#00A8E1] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                        <div className="absolute inset-0 border-4 border-[#00A8E1]/30 border-t-transparent rounded-full animate-spin animation-delay-150"></div>
+                        <div className="absolute inset-0 border-4 border-[#00A8E1]/20 border-t-transparent rounded-full animate-spin animation-delay-300"></div>
+                      </div>
+                      
+                      <div className="mt-6 space-y-2">
+                        <p className="text-white/80 font-semibold text-lg">Carregando CineCasa</p>
+                        <p className="text-[#00A8E1]/60 text-sm">Preparando sua experiência...</p>
+                      </div>
+                      
+                      <div className="mt-8 flex justify-center space-x-2">
+                        <div className="w-2 h-2 bg-[#00A8E1] rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-[#00A8E1] rounded-full animate-bounce animation-delay-100"></div>
+                        <div className="w-2 h-2 bg-[#00A8E1] rounded-full animate-bounce animation-delay-200"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {!loading && (
+                  <BrowserRouter>
+                    <KeyboardNavigation>
+                      <AppRoutes />
+                      <PWAInstallPrompt />
+                    </KeyboardNavigation>
+                  </BrowserRouter>
+                )}
+              </AnimatePresence>
+            </NavigationManager>
+          </DeviceAccessManager>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

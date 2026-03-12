@@ -40,7 +40,8 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
       console.error(e);
     }
 
-    if (isHovered && item.tmdbId && !metadata) {
+    // Carregar trailer e metadados imediatamente quando disponível
+    if (item.tmdbId && !metadata) {
       const type = item.id.includes("series") ? "tv" : "movie";
       fetchTmdbDetails(item.tmdbId, type).then((data) => {
         if (data) {
@@ -51,13 +52,20 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
             duration,
             rating: data.vote_average?.toFixed(1) || item.rating
           });
-          if (!trailerUrl) {
-            setTrailerUrl(getTmdbTrailerUrl(data.videos));
+          // Sempre tentar carregar trailer
+          const trailer = getTmdbTrailerUrl(data.videos);
+          if (trailer) {
+            setTrailerUrl(trailer);
           }
         }
       });
     }
-  }, [isHovered, item.tmdbId, item.id]);
+    
+    // Se já tem trailer no item, usar imediatamente
+    if (item.trailer && !trailerUrl) {
+      setTrailerUrl(item.trailer);
+    }
+  }, [item.tmdbId, item.id, item.trailer]);
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -79,9 +87,9 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   const handleMouseEnter = () => {
     hoverTimeout.current = setTimeout(() => {
       setIsHovered(true);
-      // Trailer delay reduced for faster response
-      trailerLoadTimeout.current = setTimeout(() => setShowTrailer(true), 1000);
-    }, 150);
+      // Trailer delay reduzido para resposta mais rápida
+      trailerLoadTimeout.current = setTimeout(() => setShowTrailer(true), 300);
+    }, 100);
   };
 
   const handleMouseLeave = () => {
@@ -303,12 +311,16 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
               {showTrailer && trailerUrl ? (
                 <iframe
                   src={trailerUrl.includes("?") 
-                    ? `${trailerUrl}&autoplay=1&mute=1&controls=0&loop=1&origin=${window.location.origin}` 
-                    : `${trailerUrl}?autoplay=1&mute=1&controls=0&loop=1&origin=${window.location.origin}`}
+                    ? `${trailerUrl}&autoplay=1&mute=0&controls=1&loop=1&playsinline=1&origin=${window.location.origin}&widget_referrer=${window.location.href}&volume=100` 
+                    : `${trailerUrl}?autoplay=1&mute=0&controls=1&loop=1&playsinline=1&origin=${window.location.origin}&widget_referrer=${window.location.href}&volume=100`}
                   className="absolute inset-0 w-full h-full object-cover scale-[1.05]"
-                  allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+                  allow="autoplay; fullscreen; encrypted-media; picture-in-picture; web-share"
+                  allowFullScreen
                   title={item.title}
                   frameBorder="0"
+                  loading="eager"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
                 />
               ) : (
                 <>
@@ -316,6 +328,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
                     src={item.backdrop || item.image}
                     alt={item.title}
                     className="w-full h-full object-cover"
+                    loading="eager"
                   />
                   <div className="absolute bottom-4 left-4 z-10">
                     <h3 className="text-white font-black text-sm drop-shadow-lg text-shadow-premium">{item.title}</h3>

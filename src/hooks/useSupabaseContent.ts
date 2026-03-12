@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ContentItem, Category } from "@/data/content";
+import { ContentItem, Category, movieCategories } from "@/data/content";
 import { tmdbImageUrl, fetchTmdbDetails } from "@/services/tmdb";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -60,6 +60,8 @@ export const useSupabaseContent = () => {
 
       const mapCinema = (item: any): ContentItem => {
         const genres = splitGenres(item.category || item.genero);
+        const category = item.category || item.genero || "Ação"; // Categoria principal
+        
         return {
           id: `cinema-${item.id}`,
           tmdbId: item.tmdb_id,
@@ -70,6 +72,7 @@ export const useSupabaseContent = () => {
           rating: item.rating || "N/A",
           duration: "",
           genre: genres.length > 0 ? genres : ["Filme"],
+          category: category, // Usar categoria do Supabase
           description: item.description || "",
           type: (item.type as any) || "movie",
           trailer: item.trailer,
@@ -79,6 +82,8 @@ export const useSupabaseContent = () => {
 
       const mapFilmesKids = (item: any): ContentItem => {
         const genres = splitGenres(item.genero || item.category);
+        const category = item.category || item.genero || "Animação"; // Categoria principal
+        
         return {
           id: `kids-movie-${item.id}`,
           tmdbId: item.tmdb_id,
@@ -89,6 +94,7 @@ export const useSupabaseContent = () => {
           rating: item.rating || "L",
           duration: "",
           genre: genres.length > 0 ? genres : ["Infantil"],
+          category: category, // Usar categoria do Supabase
           description: item.description || "",
           type: "movie",
           url: item.url,
@@ -98,6 +104,8 @@ export const useSupabaseContent = () => {
 
       const mapSeries = (item: any): ContentItem => {
         const genres = splitGenres(item.genero || item.category);
+        const category = item.category || item.genero || "Drama"; // Categoria principal
+        
         return {
           id: `series-${item.id}`,
           tmdbId: item.tmdb_id,
@@ -108,6 +116,7 @@ export const useSupabaseContent = () => {
           rating: item.rating || "N/A",
           duration: "",
           genre: genres.length > 0 ? genres : ["Série"],
+          category: category, // Usar categoria do Supabase
           description: item.description || "",
           type: "series",
           trailer: item.trailer,
@@ -117,6 +126,8 @@ export const useSupabaseContent = () => {
 
       const mapSeriesKids = (item: any): ContentItem => {
         const genres = splitGenres(item.genero || item.category);
+        const category = item.category || item.genero || "Animação"; // Categoria principal
+        
         return {
           id: `kids-series-${item.id}`,
           tmdbId: item.tmdb_id,
@@ -127,6 +138,7 @@ export const useSupabaseContent = () => {
           rating: item.rating || "L",
           duration: "",
           genre: genres.length > 0 ? genres : ["Infantil"],
+          category: category, // Usar categoria do Supabase
           description: item.description || "",
           type: "series",
           identificadorArchive: item.identificador_archive,
@@ -142,83 +154,11 @@ export const useSupabaseContent = () => {
         rating: "L",
         duration: "AO VIVO",
         genre: item.grupo ? [item.grupo] : ["TV"],
+        category: "TV ao Vivo", // Categoria fixa
         description: "Canal de TV ao Vivo",
         type: "movie",
         trailer: item.url
       });
-
-      const MASTER_CATEGORIES = [
-        "Lançamento 2026", "Lançamento 2025", "Ação", "Aventura", "Anime", "Animação", 
-        "Comédia", "Drama", "Dorama", "Clássicos", "Negritude", "Crime", "Policial", 
-        "Família", "Musical", "Documentário", "Faroeste", "Ficção", "Nacional", 
-        "Religioso", "Romance", "Terror", "Suspense", "Adulto"
-      ];
-
-      const categories: Category[] = [];
-
-      const allocateItemsToMasterCategories = (items: ContentItem[], prefix: string, fallback: string) => {
-        const grouped: Record<string, ContentItem[]> = {};
-        MASTER_CATEGORIES.forEach(cat => {
-          grouped[cat] = [];
-        });
-
-        items.forEach(item => {
-          const itemYear = item.year?.toString() || "0";
-          const itemCats = item.genre.map(g => g.toLowerCase());
-          let allocated = false;
-
-          // 1. Check for launches first
-          if (itemYear === "2026" && grouped["Lançamento 2026"]) {
-             grouped["Lançamento 2026"].push(item); allocated = true;
-          } else if (itemYear === "2025" && grouped["Lançamento 2025"]) {
-             grouped["Lançamento 2025"].push(item); allocated = true;
-          }
-
-          // 2. Map to master categories
-          if (!allocated) {
-             for (const catName of MASTER_CATEGORIES) {
-                if (catName.startsWith("Lançamento")) continue;
-                
-                const catNameLower = catName.toLowerCase();
-                const hasMatch = itemCats.some(g => {
-                  if (g === catNameLower || g.includes(catNameLower)) return true;
-                  if (catNameLower === "ação" && g.includes("action")) return true;
-                  if (catNameLower === "aventura" && g.includes("adventure")) return true;
-                  if (catNameLower === "ficção" && (g.includes("sci") || g.includes("fantasy") || g.includes("fantasia"))) return true;
-                  if (catNameLower === "policial" && (g.includes("police") || g.includes("investiga") || g.includes("mistério") || g.includes("mystery"))) return true;
-                  if (catNameLower === "terror" && g.includes("horror")) return true;
-                  if (catNameLower === "comédia" && g.includes("comedy")) return true;
-                  if (catNameLower === "família" && g.includes("family")) return true;
-                  if (catNameLower === "documentário" && g.includes("documentary")) return true;
-                  if (catNameLower === "faroeste" && g.includes("western")) return true;
-                  if (catNameLower === "romance" && g.includes("romântico")) return true;
-                  if (catNameLower === "adulto" && g.includes("aduto")) return true;
-                  return false;
-                });
-                
-                if (hasMatch && grouped[catName]) {
-                   grouped[catName].push(item);
-                   allocated = true;
-                }
-             }
-          }
-
-          // 3. Fallback
-          if (!allocated && grouped[fallback]) {
-             grouped[fallback].push(item);
-          } else if (!allocated && grouped["Ação"]) {
-             grouped["Ação"].push(item);
-          }
-        });
-
-        return MASTER_CATEGORIES
-          .map(title => ({
-            id: `${prefix}-${title.toLowerCase().replace(/\s+/g, "-")}`,
-            title,
-            items: grouped[title].sort((a, b) => a.title.localeCompare(b.title))
-          }))
-          .filter(cat => cat.items.length > 0);
-      };
 
       // Fetch TMDB data in chunks for all tables
       const cinemaWithData: ContentItem[] = [];
@@ -321,24 +261,72 @@ export const useSupabaseContent = () => {
         finalTv = [];
       }
 
-      if (finalCinema.length > 0) {
-        const uniqueCinemaMap = new Map();
-        finalCinema.forEach(c => {
-           const key = c.title.toLowerCase().trim();
-           if (!uniqueCinemaMap.has(key)) uniqueCinemaMap.set(key, c);
+      // 3. Criar categorias EXATAS conforme movieCategories
+      const categories: Category[] = [];
+
+      // Função para alocar itens às categorias mestras
+      const allocateItemsToCategories = (items: ContentItem[], prefix: string) => {
+        const grouped: Record<string, ContentItem[]> = {};
+        
+        // Inicializar todas as categorias
+        movieCategories.forEach(cat => {
+          grouped[cat] = [];
         });
-        categories.push(...allocateItemsToMasterCategories(Array.from(uniqueCinemaMap.values()), "cinema", "Ação"));
+
+        items.forEach(item => {
+          const itemCategories = [item.category, ...item.genre];
+          let allocated = false;
+
+          // Verificar lançamentos primeiro (prioridade máxima)
+          if (item.year === 2026 && grouped["Lançamento 2026"]) {
+            grouped["Lançamento 2026"].push(item);
+            allocated = true;
+          } else if (item.year === 2025 && grouped["Lançamento 2025"]) {
+            grouped["Lançamento 2025"].push(item);
+            allocated = true;
+          }
+
+          // Se não foi alocado como lançamento, procurar categoria exata
+          if (!allocated) {
+            for (const catName of movieCategories) {
+              if (catName.startsWith("Lançamento")) continue;
+              
+              // Verificar se a categoria do item corresponde exatamente
+              if (itemCategories.includes(catName)) {
+                grouped[catName].push(item);
+                allocated = true;
+                break;
+              }
+            }
+          }
+
+          // Fallback para Ação se não encontrar categoria
+          if (!allocated && grouped["Ação"]) {
+            grouped["Ação"].push(item);
+          }
+        });
+
+        // Retornar categorias com itens, mantendo ordem original
+        return movieCategories
+          .map(title => ({
+            id: `${prefix}-${title.toLowerCase().replace(/\s+/g, "-")}`,
+            title,
+            items: grouped[title].sort((a, b) => a.title.localeCompare(b.title))
+          }))
+          .filter(cat => cat.items.length > 0);
+      };
+
+      // Adicionar categorias de cinema
+      if (finalCinema.length > 0) {
+        categories.push(...allocateItemsToCategories(finalCinema, "cinema"));
       }
 
+      // Adicionar categorias de séries
       if (finalSeries.length > 0) {
-         const uniqueSeriesMap = new Map();
-         finalSeries.forEach(s => {
-           const key = s.title.toLowerCase().trim();
-           if (!uniqueSeriesMap.has(key)) uniqueSeriesMap.set(key, s);
-         });
-         categories.push(...allocateItemsToMasterCategories(Array.from(uniqueSeriesMap.values()), "series", "Drama"));
+        categories.push(...allocateItemsToCategories(finalSeries, "series"));
       }
 
+      // Categorias infantis (mantém estrutura atual)
       if (finalKidsMovies.length > 0) {
         const uniqueKidsMap = new Map();
         finalKidsMovies.forEach(c => {
