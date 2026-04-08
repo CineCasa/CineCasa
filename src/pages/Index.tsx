@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import Navbar from "@/components/Navbar";
+import PremiumNavbar from "@/components/PremiumNavbar";
 import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
-import Footer from "@/components/Footer";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import ContinueWatchingRow from "@/components/ContinueWatchingRow";
 import DynamicCategoryRow from "@/components/DynamicCategoryRow";
@@ -80,8 +79,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <main className="pb-20">
+      <PremiumNavbar />
+      <main className="pb-20 pt-0">
         <HeroBanner />
         <div className="relative z-10 pt-12 -mt-10 flex flex-col gap-4">
           <ContinueWatchingRow />
@@ -151,7 +150,6 @@ const Index = () => {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

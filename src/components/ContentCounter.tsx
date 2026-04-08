@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Film, Tv, Baby, Users } from "lucide-react";
+import { Film, Monitor, Baby, Users } from "lucide-react";
 
 interface ContentCount {
   movies: number;
@@ -106,19 +106,19 @@ const ContentCounter = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-[#2a2a2a] rounded-lg p-4 text-center">
           <Film className="text-red-500 mx-auto mb-2" size={24} />
-          <div className="text-2xl font-bold text-white">{counts.movies.toLocaleString()}</div>
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-white">{counts.movies.toLocaleString()}</div>
           <div className="text-sm text-white/60">Filmes</div>
         </div>
 
         <div className="bg-[#2a2a2a] rounded-lg p-4 text-center">
-          <Tv className="text-blue-500 mx-auto mb-2" size={24} />
-          <div className="text-2xl font-bold text-white">{counts.series.toLocaleString()}</div>
+          <Monitor className="text-blue-500 mx-auto mb-2" size={24} />
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-white">{counts.series.toLocaleString()}</div>
           <div className="text-sm text-white/60">Séries</div>
         </div>
 
         <div className="bg-[#2a2a2a] rounded-lg p-4 text-center">
           <Baby className="text-green-500 mx-auto mb-2" size={24} />
-          <div className="text-2xl font-bold text-white">
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-white">
             {(counts.kidsMovies + counts.kidsSeries).toLocaleString()}
           </div>
           <div className="text-sm text-white/60">Infantil</div>
@@ -126,7 +126,7 @@ const ContentCounter = () => {
 
         <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-4 text-center">
           <Users className="text-white mx-auto mb-2" size={24} />
-          <div className="text-2xl font-bold text-white">{counts.total.toLocaleString()}</div>
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-white">{counts.total.toLocaleString()}</div>
           <div className="text-sm text-white/90">Total</div>
         </div>
       </div>

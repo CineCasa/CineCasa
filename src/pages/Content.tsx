@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import VideoPlayer from "@/components/VideoPlayer";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import PremiumNavbar from "@/components/PremiumNavbar";
 import SeriesEpisodes from "@/components/SeriesEpisodes";
+import PremiumHeroBanner from "@/components/PremiumHeroBanner";
 
 const Content = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +12,14 @@ const Content = () => {
   const { data: categories } = useSupabaseContent();
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const handleHeroPlay = () => {
+    console.log("Playing hero content");
+  };
+
+  const handleHeroDetails = () => {
+    console.log("Showing hero details");
+  };
 
   useEffect(() => {
     if (!id || !categories) return;
@@ -44,7 +52,19 @@ const Content = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <PremiumNavbar />
+      
+      {/* Hero Banner - Igual da Home */}
+      <PremiumHeroBanner
+        title={content.title}
+        description={content.description || 'Sem descrição disponível'}
+        backdrop={content.backdrop || content.image || '/api/placeholder/1920/1080'}
+        year={content.year}
+        rating={content.rating}
+        onPlay={handleHeroPlay}
+        onDetails={handleHeroDetails}
+      />
+
       <div className="pt-20 pb-12 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -135,7 +155,6 @@ const Content = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

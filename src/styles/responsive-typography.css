@@ -1,0 +1,481 @@
+/* ========================================
+   RESPONSIVE TYPOGRAPHY SYSTEM
+   ======================================== */
+
+/* Base font sizes - Mobile First */
+:root {
+  /* Font sizes escaláveis em rem */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+  --font-size-6xl: 3.75rem;   /* 60px */
+  --font-size-7xl: 4.5rem;    /* 72px */
+  --font-size-8xl: 5.25rem;   /* 84px */
+  --font-size-9xl: 6rem;      /* 96px */
+
+  /* Line heights proporcionais */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --line-height-loose: 2;
+
+  /* Letter spacing para legibilidade */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+}
+
+/* ========================================
+   FLUID TYPOGRAPHY CLASSES
+   ======================================== */
+
+/* Text classes - Mobile First */
+.text-xs {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-sm {
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-base {
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-lg {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-xl {
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-2xl {
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-3xl {
+  font-size: var(--font-size-3xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-4xl {
+  font-size: var(--font-size-4xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-5xl {
+  font-size: var(--font-size-5xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-6xl {
+  font-size: var(--font-size-6xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-7xl {
+  font-size: var(--font-size-7xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-8xl {
+  font-size: var(--font-size-8xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.text-9xl {
+  font-size: var(--font-size-9xl);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+/* Small devices (576px and up) */
+@media (min-width: 576px) {
+  .text-xs { font-size: 0.875rem; }    /* 14px */
+  .text-sm { font-size: 1rem; }      /* 16px */
+  .text-base { font-size: 1.125rem; }  /* 18px */
+  .text-lg { font-size: 1.25rem; }    /* 20px */
+  .text-xl { font-size: 1.5rem; }    /* 24px */
+  .text-2xl { font-size: 1.75rem; }   /* 28px */
+  .text-3xl { font-size: 2rem; }     /* 32px */
+  .text-4xl { font-size: 2.25rem; }   /* 36px */
+  .text-5xl { font-size: 2.5rem; }   /* 40px */
+  .text-6xl { font-size: 2.75rem; }   /* 44px */
+  .text-7xl { font-size: 3rem; }     /* 48px */
+  .text-8xl { font-size: 3.25rem; }   /* 52px */
+  .text-9xl { font-size: 3.5rem; }   /* 56px */
+}
+
+/* Medium devices (768px and up) */
+@media (min-width: 768px) {
+  .text-xs { font-size: 1rem; }      /* 16px */
+  .text-sm { font-size: 1.125rem; }  /* 18px */
+  .text-base { font-size: 1.25rem; }  /* 20px */
+  .text-lg { font-size: 1.375rem; }   /* 22px */
+  .text-xl { font-size: 1.5rem; }    /* 24px */
+  .text-2xl { font-size: 1.75rem; }   /* 28px */
+  .text-3xl { font-size: 2rem; }     /* 32px */
+  .text-4xl { font-size: 2.25rem; }   /* 36px */
+  .text-5xl { font-size: 2.5rem; }   /* 40px */
+  .text-6xl { font-size: 2.75rem; }   /* 44px */
+  .text-7xl { font-size: 3rem; }     /* 48px */
+  .text-8xl { font-size: 3.25rem; }   /* 52px */
+  .text-9xl { font-size: 3.5rem; }   /* 56px */
+}
+
+/* Large devices (992px and up) */
+@media (min-width: 992px) {
+  .text-xs { font-size: 1.125rem; }  /* 18px */
+  .text-sm { font-size: 1.25rem; }   /* 20px */
+  .text-base { font-size: 1.375rem; } /* 22px */
+  .text-lg { font-size: 1.5rem; }    /* 24px */
+  .text-xl { font-size: 1.75rem; }   /* 28px */
+  .text-2xl { font-size: 2rem; }     /* 32px */
+  .text-3xl { font-size: 2.25rem; }   /* 36px */
+  .text-4xl { font-size: 2.5rem; }   /* 40px */
+  .text-5xl { font-size: 2.75rem; }   /* 44px */
+  .text-6xl { font-size: 3rem; }     /* 48px */
+  .text-7xl { font-size: 3.25rem; }   /* 52px */
+  .text-8xl { font-size: 3.5rem; }   /* 56px */
+  .text-9xl { font-size: 3.75rem; }   /* 60px */
+}
+
+/* Extra Large devices (1200px and up) */
+@media (min-width: 1200px) {
+  .text-xs { font-size: 1.25rem; }   /* 20px */
+  .text-sm { font-size: 1.375rem; }  /* 22px */
+  .text-base { font-size: 1.5rem; }  /* 24px */
+  .text-lg { font-size: 1.75rem; }   /* 28px */
+  .text-xl { font-size: 2rem; }     /* 32px */
+  .text-2xl { font-size: 2.25rem; }   /* 36px */
+  .text-3xl { font-size: 2.5rem; }   /* 40px */
+  .text-4xl { font-size: 2.75rem; }   /* 44px */
+  .text-5xl { font-size: 3rem; }     /* 48px */
+  .text-6xl { font-size: 3.25rem; }   /* 52px */
+  .text-7xl { font-size: 3.5rem; }   /* 56px */
+  .text-8xl { font-size: 3.75rem; }   /* 60px */
+  .text-9xl { font-size: 4rem; }     /* 64px */
+}
+
+/* Extra Extra Large devices (1400px and up) */
+@media (min-width: 1400px) {
+  .text-xs { font-size: 1.375rem; }  /* 22px */
+  .text-sm { font-size: 1.5rem; }    /* 24px */
+  .text-base { font-size: 1.75rem; }  /* 28px */
+  .text-lg { font-size: 2rem; }     /* 32px */
+  .text-xl { font-size: 2.25rem; }   /* 36px */
+  .text-2xl { font-size: 2.5rem; }   /* 40px */
+  .text-3xl { font-size: 2.75rem; }   /* 44px */
+  .text-4xl { font-size: 3rem; }     /* 48px */
+  .text-5xl { font-size: 3.25rem; }   /* 52px */
+  .text-6xl { font-size: 3.5rem; }   /* 56px */
+  .text-7xl { font-size: 3.75rem; }   /* 60px */
+  .text-8xl { font-size: 4rem; }     /* 64px */
+  .text-9xl { font-size: 4.25rem; }   /* 68px */
+}
+
+/* ========================================
+   SPECIALIZED TYPOGRAPHY
+   ======================================== */
+
+/* Hero Titles */
+.hero-title-xs {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.hero-title-sm {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.hero-title-md {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.hero-title-lg {
+  font-size: var(--font-size-5xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.hero-title-xl {
+  font-size: var(--font-size-6xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+/* Section Titles */
+.section-title-xs {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.section-title-sm {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.section-title-md {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+.section-title-lg {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+}
+
+/* Card Titles */
+.card-title-xs {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+}
+
+.card-title-sm {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+}
+
+.card-title-md {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+}
+
+/* Body Text */
+.body-xs {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.body-sm {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.body-md {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+.body-lg {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+/* ========================================
+   RESPONSIVE SPECIALIZED CLASSES
+   ======================================== */
+
+/* Responsive Hero Titles */
+@media (min-width: 576px) {
+  .hero-title-xs { font-size: var(--font-size-3xl); }
+  .hero-title-sm { font-size: var(--font-size-4xl); }
+  .hero-title-md { font-size: var(--font-size-5xl); }
+  .hero-title-xl { font-size: var(--font-size-6xl); }
+}
+
+@media (min-width: 768px) {
+  .hero-title-xs { font-size: var(--font-size-4xl); }
+  .hero-title-sm { font-size: var(--font-size-5xl); }
+  .hero-title-md { font-size: var(--font-size-6xl); }
+  .hero-title-xl { font-size: var(--font-size-7xl); }
+}
+
+@media (min-width: 992px) {
+  .hero-title-xs { font-size: var(--font-size-5xl); }
+  .hero-title-sm { font-size: var(--font-size-6xl); }
+  .hero-title-md { font-size: var(--font-size-7xl); }
+  .hero-title-xl { font-size: var(--font-size-8xl); }
+}
+
+@media (min-width: 1200px) {
+  .hero-title-xs { font-size: var(--font-size-6xl); }
+  .hero-title-sm { font-size: var(--font-size-7xl); }
+  .hero-title-md { font-size: var(--font-size-8xl); }
+  .hero-title-xl { font-size: var(--font-size-9xl); }
+}
+
+/* Responsive Section Titles */
+@media (min-width: 576px) {
+  .section-title-xs { font-size: var(--font-size-2xl); }
+  .section-title-sm { font-size: var(--font-size-3xl); }
+  .section-title-md { font-size: var(--font-size-4xl); }
+  .section-title-lg { font-size: var(--font-size-5xl); }
+}
+
+@media (min-width: 768px) {
+  .section-title-xs { font-size: var(--font-size-3xl); }
+  .section-title-sm { font-size: var(--font-size-4xl); }
+  .section-title-md { font-size: var(--font-size-5xl); }
+  .section-title-lg { font-size: var(--font-size-6xl); }
+}
+
+@media (min-width: 992px) {
+  .section-title-xs { font-size: var(--font-size-4xl); }
+  .section-title-sm { font-size: var(--font-size-5xl); }
+  .section-title-md { font-size: var(--font-size-6xl); }
+  .section-title-lg { font-size: var(--font-size-7xl); }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Text truncation */
+.text-truncate-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-truncate-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-truncate-3 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  display: -moz-box;
+  -moz-line-clamp: 2;
+  -moz-box-orient: vertical;
+  display: box;
+  line-clamp: 2;
+  box-orient: vertical;
+}
+
+.text-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  display: -moz-box;
+  -moz-line-clamp: 3;
+  -moz-box-orient: vertical;
+  display: box;
+  line-clamp: 3;
+  box-orient: vertical;
+}
+
+/* Font weights */
+.font-light { font-weight: var(--font-weight-light); }
+.font-normal { font-weight: var(--font-weight-normal); }
+.font-medium { font-weight: var(--font-weight-medium); }
+.font-semibold { font-weight: var(--font-weight-semibold); }
+.font-bold { font-weight: var(--font-weight-bold); }
+.font-extrabold { font-weight: var(--font-weight-extrabold); }
+.font-black { font-weight: var(--font-weight-black); }
+
+/* Line heights */
+.leading-tight { line-height: var(--line-height-tight); }
+.leading-normal { line-height: var(--line-height-normal); }
+.leading-relaxed { line-height: var(--line-height-relaxed); }
+.leading-loose { line-height: var(--line-height-loose); }
+
+/* Letter spacing */
+.tracking-tight { letter-spacing: var(--letter-spacing-tight); }
+.tracking-normal { letter-spacing: var(--letter-spacing-normal); }
+.tracking-wide { letter-spacing: var(--letter-spacing-wide); }
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus visible */
+.focus-visible:focus {
+  outline: 2px solid #e50914;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

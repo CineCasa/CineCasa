@@ -1,62 +1,281 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Play, Plus, ThumbsUp, Heart, ChevronLeft } from "lucide-react";
-import { fetchTmdbDetails, fetchTmdbSeason, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { ChevronLeft, Play, Plus, ThumbsUp, Share2, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import NetflixPlayer from "@/components/NetflixPlayer";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
+
+interface MovieData {
+  id: string;
+  title: string;
+  name?: string;
+  overview: string;
+  description?: string;
+  poster_path?: string;
+  backdrop_path?: string;
+  banner?: string;
+  release_date?: string;
+  first_air_date?: string;
+  runtime?: number;
+  vote_average?: number;
+  genres?: { name: string }[];
+  credits?: {
+    cast: { name: string; profile_path?: string; character?: string }[];
+    crew: { name: string; job: string }[];
+  };
+  adult?: boolean;
+  number_of_seasons?: number;
+  seasons?: any[];
+  tagline?: string;
+  production_companies?: { name: string; logo_path?: string }[];
+  spoken_languages?: { english_name: string }[];
+  status?: string;
+  origin_country?: string[];
+  awards?: { name: string; year: number }[];
+}
+
+interface Recommendation {
+  id: string;
+  title: string;
+  poster_path: string;
+  backdrop_path?: string;
+  vote_average: number;
+  release_date?: string;
+}
 
 const Details = () => {
-  const { type, id } = useParams<{ type: string; id: string }>();
+  const { id, type } = useParams<{ id: string; type: string }>();
   const navigate = useNavigate();
-  const [data, setData] = useState<any>(null);
+  const { user } = useAuth();
+  const heroRef = useRef<HTMLDivElement>(null);
+  
+  const [data, setData] = useState<MovieData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
-  const [seasonData, setSeasonData] = useState<any>(null);
-  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const [isTrailerMode, setIsTrailerMode] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false);
+  const [castList, setCastList] = useState<{ name: string; profile_path?: string; character?: string }[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const fetchTmdbDetails = async (tmdbId: string, mediaType: string) => {
+    try {
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      if (!apiKey || apiKey === 'undefined') {
+        console.warn('TMDB API key not configured');
+        return null;
+      }
+      const response = await fetch(
+        `https://api.themoviedb.org/3/${mediaType}/${tmdbId}?api_key=${apiKey}&language=pt-BR&append_to_response=credits,videos`
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Erro ao buscar TMDB:", error);
+      return null;
+    }
+  };
+
+  const fetchRecommendations = async (searchId: string, searchType: string) => {
+    setRecommendationsLoading(true);
+    try {
+      // Validate searchId before querying
+      const numericId = Number(searchId);
+      if (isNaN(numericId)) {
+        console.warn('Invalid searchId for recommendations:', searchId);
+        setRecommendations([]);
+        return;
+      }
+
+      const table = searchType === "cinema" ? "cinema" : "series";
+      const idColumn = searchType === "cinema" ? "id" : "id_n";
+      
+      const { data: supabaseData, error } = await supabase
+        .from(table)
+        .select("id, titulo, poster, rating, year, genero")
+        .neq(idColumn, numericId)
+        .limit(12);
+
+      if (error) throw error;
+
+      if (supabaseData && supabaseData.length > 0) {
+        const formattedItems = supabaseData.map((item: any) => ({
+          id: item.id?.toString() || item.id_n?.toString(),
+          title: item.titulo,
+          poster_path: item.poster,
+          vote_average: parseFloat(item.rating) || 0,
+          release_date: item.year?.toString(),
+        }));
+        // Shuffle recommendations randomly on every load
+        const shuffledItems = formattedItems.sort(() => Math.random() - 0.5);
+        setRecommendations(shuffledItems);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar recomendações:", error);
+      setRecommendations([]);
+    } finally {
+      setRecommendationsLoading(false);
+    }
+  };
+
+  const fetchLocalData = async (itemId: string, itemType: string) => {
+    try {
+      const table = itemType === "cinema" ? "cinema" : "series";
+      const idColumn = itemType === "cinema" ? "id" : "id_n";
+      
+      const { data, error } = await supabase
+        .from(table)
+        .select("*, tmdb_id")
+        .eq(idColumn, Number(itemId))
+        .maybeSingle();
+      
+      if (error) {
+        console.error("Erro:", error);
+        return null;
+      }
+      
+      if (!data) {
+        console.warn("Nenhum dado encontrado para ID:", itemId);
+        return null;
+      }
+      
+      return data;
+    } catch (error) {
+      console.error("Erro:", error);
+      return null;
+    }
+  };
+
+  const mergeData = (localData: any, tmdbData: any): MovieData => {
+    // Start with local data as base
+    const baseData: MovieData = {
+      id: localData.id || localData.id_n,
+      title: localData.titulo,
+      overview: localData.description || "",
+      poster_path: localData.poster,
+      backdrop_path: localData.banner,
+      release_date: localData.year?.toString(),
+      vote_average: parseFloat(localData.rating) || 0,
+      genres: localData.genero ? localData.genero.split(",").map((g: string) => ({ name: g.trim() })) : [],
+      credits: { cast: [], crew: [] },
+      origin_country: [],
+      awards: [],
+    };
+    
+    // If no TMDB data, return base local data
+    if (!tmdbData) {
+      return baseData;
+    }
+    
+    // Helper to build TMDB image URL
+    const getTmdbImageUrl = (path: string | null) => {
+      if (!path) return null;
+      if (path.startsWith('http')) return path;
+      return `https://image.tmdb.org/t/p/original${path}`;
+    };
+    
+    // Merge TMDB data with local data (TMDB enriches local data)
+    return {
+      ...baseData,
+      // TMDB enriches these fields
+      overview: tmdbData.overview || baseData.overview,
+      backdrop_path: getTmdbImageUrl(tmdbData.backdrop_path) || baseData.backdrop_path,
+      poster_path: getTmdbImageUrl(tmdbData.poster_path) || baseData.poster_path,
+      release_date: tmdbData.release_date || tmdbData.first_air_date || baseData.release_date,
+      runtime: tmdbData.runtime,
+      vote_average: tmdbData.vote_average || baseData.vote_average,
+      genres: tmdbData.genres || baseData.genres,
+      credits: tmdbData.credits || baseData.credits,
+      adult: tmdbData.adult,
+      tagline: tmdbData.tagline,
+      production_companies: tmdbData.production_companies,
+      spoken_languages: tmdbData.spoken_languages,
+      status: tmdbData.status,
+      origin_country: tmdbData.origin_country || baseData.origin_country,
+      // For series
+      number_of_seasons: tmdbData.number_of_seasons,
+      seasons: tmdbData.seasons,
+    };
+  };
+
+  const fetchVideoUrl = async (searchId: string) => {
+    try {
+      const table = type === "cinema" ? "cinema" : "series";
+      
+      const { data: result } = await supabase
+        .from(table)
+        .select("id, url, trailer, titulo, tmdb_id")
+        .eq("id", Number(searchId))
+        .maybeSingle();
+
+      if (result?.url) return result.url;
+      if (result?.trailer) return result.trailer;
+      return null;
+    } catch (error) {
+      console.error("Erro ao buscar vídeo:", error);
+      return null;
+    }
+  };
+
+  const getTmdbTrailerUrl = (videos: any): string | null => {
+    if (!videos?.results?.length) return null;
+    const trailer = videos.results.find((v: any) => v.type === "Trailer" && v.site === "YouTube");
+    return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const loadDetails = async () => {
       setLoading(true);
+      
       if (id && (type === "cinema" || type === "series")) {
         const tmdbType = type === "cinema" ? "movie" : "tv";
-        // Simulando que o ID veio com o formato tmdb-ID. Ex: series-1234. No roteamento nós vamos passar o tmdb_id real.
-        const res = await fetchTmdbDetails(id, tmdbType);
-        if (res) {
-          setData(res);
-          setTrailerUrl(getTmdbTrailerUrl(res.videos));
-          if (tmdbType === "tv" && res.seasons && res.seasons.length > 0) {
-            // Find first real season (ignore specials if season 0)
-            const firstRealSeason = res.seasons.find((s: any) => s.season_number > 0) || res.seasons[0];
-            setSelectedSeason(firstRealSeason.season_number);
+        
+        const localData = await fetchLocalData(id, type);
+        
+        if (!localData) {
+          console.error("Conteúdo não encontrado no banco local");
+          setLoading(false);
+          return;
+        }
+        
+        const url = await fetchVideoUrl(id);
+        setVideoUrl(url);
+        
+        let tmdbData = null;
+        if (localData.tmdb_id) {
+          tmdbData = await fetchTmdbDetails(localData.tmdb_id.toString(), tmdbType);
+          if (tmdbData?.videos) {
+            setTrailerUrl(getTmdbTrailerUrl(tmdbData.videos));
+          }
+          if (tmdbData?.credits?.cast) {
+            setCastList(tmdbData.credits.cast.slice(0, 12));
           }
         }
+        
+        const mergedData = mergeData(localData, tmdbData);
+        setData(mergedData);
+        
+        await fetchRecommendations(id, type);
       }
+      
       setLoading(false);
     };
 
     loadDetails();
   }, [id, type]);
 
-  useEffect(() => {
-    if (type === "series" && data && selectedSeason !== null) {
-      const loadSeason = async () => {
-        const season = await fetchTmdbSeason(id!, selectedSeason);
-        setSeasonData(season);
-      };
-      loadSeason();
-    }
-  }, [selectedSeason, type, data, id]);
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex items-center justify-center animate-pulse pt-20">
-          <span className="text-white text-xl">Carregando detalhes...</span>
+      <div className="min-h-screen bg-[#000401] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-red-600 border-t-transparent" />
+          <span className="text-gray-400 text-sm">Carregando...</span>
         </div>
       </div>
     );
@@ -64,201 +283,358 @@ const Details = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Navbar />
-        <div className="flex-1 flex flex-col items-center justify-center pt-20 space-y-4">
-          <span className="text-white text-xl">Conteúdo não encontrado.</span>
-          <button onClick={() => navigate(-1)} className="text-primary hover:underline">Voltar</button>
+      <div className="min-h-screen bg-[#000401] flex flex-col items-center justify-center gap-6 px-4">
+        <div className="text-center">
+          <h1 className="text-white text-2xl md:text-3xl font-bold mb-2">Conteúdo não encontrado</h1>
+          <p className="text-gray-400">O conteúdo que você está procurando não está disponível.</p>
         </div>
+        <button 
+          onClick={() => navigate(-1)} 
+          className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded font-medium hover:bg-gray-200 transition-colors"
+        >
+          <ChevronLeft size={20} />
+          Voltar
+        </button>
       </div>
     );
   }
 
-  const duration =
-    type === "cinema"
-      ? `${Math.floor(data.runtime / 60)}h ${data.runtime % 60}min`
-      : `${data.number_of_seasons} Temporadas`;
+  const releaseYear = data.release_date || data.first_air_date
+    ? new Date(data.release_date || data.first_air_date || "").getFullYear()
+    : null;
 
-  const releaseYear = (data.release_date || data.first_air_date || "").split("-")[0];
-  const director = data.credits?.crew?.find((c: any) => c.job === "Director")?.name;
-  const cast = data.credits?.cast?.slice(0, 5).map((c: any) => c.name).join(", ");
+  const duration = data.runtime
+    ? `${Math.floor(data.runtime / 60)}h ${data.runtime % 60}min`
+    : data.number_of_seasons 
+    ? `${data.number_of_seasons} Temporada${data.number_of_seasons > 1 ? 's' : ''}`
+    : null;
+
+  const director = data.credits?.crew?.find((c) => c.job === "Director")?.name;
+  const genres = data.genres?.map((g) => g.name).join(" • ") || "";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
-      <Navbar />
-
-      {/* Hero Section Prime Style */}
-      <section className="relative w-full min-h-[85vh] md:min-h-[100vh] flex flex-col justify-end pt-32 pb-20 md:pb-40">
-        <div className="absolute inset-0 z-0">
+    <div className="min-h-screen bg-[#000401] text-white overflow-x-hidden">
+      {/* Hero Section - Netflix Style */}
+      <div ref={heroRef} className="relative w-full h-auto bg-[#1a1a1a] z-0 pb-20">
+        {/* Background Image */}
+        <div className="absolute inset-0 bg-[#1a1a1a]">
           <img
-            src={tmdbImageUrl(data.backdrop_path, "original")}
-            alt={data.title || data.name}
-            className="w-full h-full object-cover object-top opacity-70"
+            src={data.backdrop_path || data.banner || data.poster_path || "/placeholder-backdrop.jpg"}
+            alt={data.title}
+            className="w-full h-full object-cover object-top"
+            onError={(e) => {
+              const currentSrc = e.currentTarget.src;
+              console.error('[Details] Banner image failed to load:', currentSrc);
+              // Prevent infinite loop - only set fallback once
+              if (!currentSrc.includes('placeholder') && !currentSrc.includes('unsplash')) {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1920&auto=format&fit=crop";
+              }
+            }}
           />
-          {/* Gradients to fade smoothly into background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent w-[80%] md:w-[60%]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent h-full top-0" />
+          {/* Netflix-style Vignette */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-[#141414]/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
         </div>
 
-        <div className="container relative z-10 mx-auto px-4 md:px-12 flex flex-col gap-6 max-w-7xl">
-          {/* Back Button */}
-          <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors w-fit mb-4 group"
-          >
-            <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" /> 
-            <span className="font-semibold">Voltar</span>
-          </button>
-
-          <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-white leading-tight drop-shadow-2xl max-w-4xl tracking-tight">
-            {data.title || data.name}
-          </h1>
-
-          {/* Metadata Row */}
-          <div className="flex flex-wrap items-center gap-4 text-sm md:text-base font-semibold text-white/90">
-            <span className="text-[#00A8E1] font-bold text-lg drop-shadow-md">STREAM+</span>
-            <span className="text-[#ffff5c] font-bold text-lg">{(data.vote_average || 0).toFixed(1)}</span>
-            <span>{duration}</span>
-            <span>{releaseYear}</span>
-            <span className="px-2 py-0.5 border border-white/30 rounded scale-90 opacity-80 uppercase text-xs">
-              {data.adult ? "18+" : "Livre"}
-            </span>
-            <span>4K HDR</span>
-          </div>
-
-          <p className="text-lg md:text-xl text-white/80 max-w-3xl leading-relaxed drop-shadow-md font-medium">
-            {data.overview}
-          </p>
-
-          <div className="text-sm md:text-base text-white/60 space-y-1 max-w-3xl mt-2">
-             <p><span className="text-white/40">Estrelando</span> {cast}</p>
-             {director && <p><span className="text-white/40">Direção</span> {director}</p>}
-             <p><span className="text-white/40">Gêneros</span> {data.genres?.map((g: any) => g.name).join(", ")}</p>
-          </div>
-
-          {/* Core Actions */}
-          <div className="flex flex-wrap items-center gap-4 mt-6">
-            <button 
-              onClick={() => setIsPlayerOpen(true)}
-              className="flex items-center gap-3 bg-white text-black px-8 py-4 md:py-5 rounded-md font-bold text-lg md:text-xl hover:bg-white/90 transition-transform hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(255,255,255,0.2)] focus-visible"
-            >
-              <Play size={28} fill="currentColor" />
-              Assistir Agora
-            </button>
-            
-            {trailerUrl && (
-              <button 
-                 onClick={() => setIsPlayerOpen(true)}
-                 className="flex items-center gap-3 bg-white/10 text-white px-8 py-4 md:py-5 rounded-md font-bold text-lg md:text-xl hover:bg-white/20 transition-transform backdrop-blur-md border border-white/20 hover:scale-105 focus-visible"
+        {/* Hero Content */}
+        <div className="relative flex flex-col justify-start mt-[70px] pt-20 pb-8 md:pb-12 lg:pb-16">
+          <div className="w-full px-4 md:px-8 lg:px-12 xl:px-16">
+            <div className="max-w-2xl space-y-4 md:space-y-6">
+              {/* Back Button - Above Title */}
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.05 }}
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors bg-black/40 hover:bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg mb-2"
               >
-                Trailer
-              </button>
-            )}
+                <ChevronLeft size={24} />
+                <span className="text-sm font-medium">Voltar</span>
+              </motion.button>
 
-            <button 
-              onClick={() => setIsFavorite(!isFavorite)}
-              className={`p-4 md:p-5 rounded-full border transition-all hover:scale-105 focus-visible ${
-                isFavorite 
-                  ? "bg-primary border-primary text-white" 
-                  : "border-white/40 text-white hover:bg-white/20 bg-background/50 backdrop-blur-md"
-              }`}
-            >
-              <Plus size={24} className={isFavorite ? "rotate-45" : ""} />
-            </button>
-            <button className="p-4 md:p-5 rounded-full border border-white/40 text-white hover:bg-white/20 transition-all bg-background/50 backdrop-blur-md hover:scale-105 focus-visible">
-              <ThumbsUp size={24} />
-            </button>
+              {/* Title - Always visible */}
+              <div className="relative z-[9999]">
+                <motion.div
+                  initial={{ opacity: 1, y: 0 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  className="mt-16 md:mt-20"
+                >
+                {data.tagline && (
+                  <p className="text-gray-300 text-sm md:text-base mb-2 tracking-wide uppercase">{data.tagline}</p>
+                )}
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight drop-shadow-2xl text-white visible">
+                  {data.title}
+                </h1>
+              </motion.div>
+            </div>
+
+            {/* Metadata */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-300"
+              >
+                {releaseYear && <span>{releaseYear}</span>}
+                {data.adult && <><span className="text-gray-500">|</span><span className="px-1.5 py-0.5 border border-gray-500 rounded text-xs">A18</span></>}
+                {duration && <><span className="text-gray-500">|</span><span>{duration}</span></>}
+                {data.vote_average && data.vote_average > 0 && (
+                  <><span className="text-gray-500">|</span><span className="flex items-center gap-1"><span className="text-green-400 font-semibold">{data.vote_average.toFixed(1)}</span><span className="text-gray-400">rating</span></span></>
+                )}
+              </motion.div>
+
+              {/* Country Flags - Below metadata */}
+              {data.origin_country && data.origin_country.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.22 }}
+                  className="flex flex-wrap gap-2"
+                >
+                  {data.origin_country.map((country) => (
+                    <img
+                      key={country}
+                      src={`https://flagcdn.com/w40/${country.toLowerCase()}.png`}
+                      alt={country}
+                      className="w-6 h-4 md:w-8 md:h-5 rounded object-cover shadow-sm"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                  ))}
+                </motion.div>
+              )}
+
+              {/* Genres */}
+              {genres && (
+                <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }} className="text-sm md:text-base text-gray-300">
+                  {genres}
+                </motion.p>
+              )}
+
+              {/* Description */}
+              <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="text-sm md:text-base lg:text-lg text-gray-200 line-clamp-2 max-w-xl leading-relaxed">
+                {data.overview}
+              </motion.p>
+
+              {/* Action Buttons */}
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="flex flex-wrap items-center gap-3 md:gap-4 pt-2">
+                <button
+                  onClick={() => { if (videoUrl) { setIsTrailerMode(false); setIsPlayerOpen(true); } }}
+                  disabled={!videoUrl}
+                  className={`flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base transition-all duration-200 ${videoUrl ? "bg-white text-black hover:bg-gray-200 hover:scale-105" : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
+                >
+                  <Play size={20} className="md:w-6 md:h-6" fill="currentColor" />
+                  {videoUrl ? "Assistir" : "Indisponível"}
+                </button>
+
+                {trailerUrl && (
+                  <button
+                    onClick={() => { setIsTrailerMode(true); setIsPlayerOpen(true); }}
+                    className="flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base bg-gray-600/80 hover:bg-gray-500 text-white hover:scale-105 transition-all duration-200"
+                  >
+                    <Play size={20} className="md:w-6 md:h-6" />
+                    Trailer
+                  </button>
+                )}
+
+                <button onClick={() => setIsFavorite(!isFavorite)} className={`p-2.5 md:p-3.5 rounded-full border-2 transition-all duration-200 hover:scale-110 ${isFavorite ? "bg-white border-white text-black" : "border-gray-400 text-white hover:border-white"}`}>
+                  <Plus size={20} className={`md:w-6 md:h-6 transition-transform duration-200 ${isFavorite ? "rotate-45" : ""}`} />
+                </button>
+
+                <button className="p-2.5 md:p-3.5 rounded-full border-2 border-gray-400 text-white hover:border-white transition-all duration-200 hover:scale-110">
+                  <ThumbsUp size={20} className="md:w-6 md:h-6" />
+                </button>
+              </motion.div>
+            </div>
           </div>
         </div>
-      </section>
-
-      {/* Tabs / Episodes Section (For Series) */}
-      {type === "series" && data.seasons && (
-        <section className="relative z-10 w-full px-4 md:px-12 py-12 bg-background mx-auto max-w-[1400px]">
-          <div className="flex items-center gap-6 mb-8 border-b border-white/10 pb-4 overflow-x-auto scrollbar-hide">
-            {data.seasons
-              .filter((s: any) => s.season_number > 0)
-              .sort((a: any, b: any) => a.season_number - b.season_number)
-              .map((season: any) => (
-              <button
-                key={season.id}
-                onClick={() => setSelectedSeason(season.season_number)}
-                className={`text-xl md:text-2xl font-bold whitespace-nowrap transition-colors transition-transform focus-visible focus:outline-none rounded-sm ${
-                  selectedSeason === season.season_number
-                    ? "text-white scale-105"
-                    : "text-white/40 hover:text-white"
-                }`}
-              >
-                {season.name}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {!seasonData ? (
-               <div className="col-span-full py-20 text-center text-white/50 animate-pulse">Carregando episódios...</div>
-            ) : (
-               seasonData.episodes?.map((episode: any) => (
-                 <div 
-                   key={episode.id} 
-                   className="group relative flex flex-col gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer focus-visible focus:outline-none focus:ring-4 focus:ring-white"
-                   tabIndex={0}
-                 >
-                    <div className="relative aspect-video rounded-lg overflow-hidden bg-black/50">
-                      <img 
-                        src={tmdbImageUrl(episode.still_path, "w500")} 
-                        alt={episode.name}
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                         <Play size={40} fill="white" className="text-white" />
-                      </div>
-                      <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-white text-xs font-bold rounded">
-                         {episode.runtime ? `${episode.runtime} min` : "Lançamento"}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white text-base leading-tight group-hover:text-primary transition-colors">
-                        {episode.episode_number}. {episode.name}
-                      </h4>
-                      <p className="text-white/50 text-sm mt-2 line-clamp-3 leading-relaxed">
-                        {episode.overview || "Nenhuma sinopse disponível para este episódio."}
-                      </p>
-                    </div>
-                 </div>
-               ))
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Footer Pushed Down */}
-      <div className="mt-auto">
-        <Footer />
       </div>
 
-      {/* Fullscreen Video Player */}
-      {isPlayerOpen && (
-        <NetflixPlayer 
-          url={trailerUrl || ""} 
-          title={data.title || data.name} 
-          historyItem={{
-            id: id,
-            tmdbId: id,
-            title: data.title || data.name,
-            image: tmdbImageUrl(data.poster_path, "w500"),
-            backdrop: tmdbImageUrl(data.backdrop_path, "original"),
-            year: parseInt(releaseYear || "2000"),
-            rating: data.vote_average?.toString() || "0",
-            duration: duration,
-            genre: data.genres?.map((g: any) => g.name) || [],
-            description: data.overview,
-            type: type
-          }}
-          onClose={() => setIsPlayerOpen(false)} 
-        />
-      )}
+      {/* Main Content */}
+      <div className="px-4 md:px-8 lg:px-12 xl:px-16 relative z-10 pb-20">
+        <div className="max-w-7xl mx-auto">
+
+          {/* Cast & Awards Section - Above Indicações */}
+          {(castList.length > 0 || data.awards) && (
+            <section className="mt-12 md:mt-16">
+              <div className="flex flex-row gap-8 md:gap-12 items-start">
+                {/* Cast Photos */}
+                {castList.length > 0 && (
+                  <div className="flex-shrink-0">
+                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Elenco Principal</h3>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                      {castList.slice(0, 4).map((actor, index) => (
+                        <motion.div
+                          key={actor.name}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          className="flex-shrink-0 text-center"
+                        >
+                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-gray-800 border-2 border-gray-700">
+                            {actor.profile_path ? (
+                              <img
+                                src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
+                                alt={actor.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gray-700">
+                                <span className="text-xl">👤</span>
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-300 mt-2 w-[70px] leading-tight">{actor.name}</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Awards */}
+                {data.awards && data.awards.length > 0 && (
+                  <div className="flex-shrink-0">
+                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Prêmios</h3>
+                    <div className="space-y-2">
+                      {data.awards.slice(0, 3).map((award, index) => (
+                        <motion.div
+                          key={`${award.name}-${award.year}`}
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                          className="flex items-center gap-3 bg-[#1f1f1f] rounded-lg px-3 py-2"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-yellow-400 text-sm">🏆</span>
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm text-white font-medium line-clamp-1">{award.name}</p>
+                            <p className="text-xs text-gray-400">{award.year}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Metadata - All Movie Info */}
+          {(director || data.credits?.cast?.length || data.credits?.crew?.length || data.production_companies?.length || data.spoken_languages?.length || data.status) && (
+            <section className="mt-8 md:mt-12">
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Informações do Filme</h3>
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-wrap gap-x-4 gap-y-2 text-xs md:text-sm text-gray-400">
+                {director && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">Direção:</span>
+                    <span className="text-gray-300">{director}</span>
+                  </div>
+                )}
+                {data.credits?.cast && data.credits.cast.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">Elenco:</span>
+                    <span className="text-gray-300">{data.credits.cast.slice(0, 3).map(c => c.name).join(", ")}</span>
+                  </div>
+                )}
+                {data.credits?.crew?.filter(c => c.job === "Writer" || c.job === "Screenplay").length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">Roteiro:</span>
+                    <span className="text-gray-300">{data.credits.crew.filter(c => c.job === "Writer" || c.job === "Screenplay").slice(0, 2).map(c => c.name).join(", ")}</span>
+                  </div>
+                )}
+                {data.production_companies && data.production_companies.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">Produção:</span>
+                    <span className="text-gray-300">{data.production_companies.slice(0, 2).map(p => p.name).join(", ")}</span>
+                  </div>
+                )}
+                {data.spoken_languages && data.spoken_languages.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">Idioma:</span>
+                    <span className="text-gray-300">{data.spoken_languages.slice(0, 2).map(l => l.english_name).join(", ")}</span>
+                  </div>
+                )}
+                {data.status && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-500">Status:</span>
+                    <span className="text-gray-300">{data.status}</span>
+                  </div>
+                )}
+              </motion.div>
+            </section>
+          )}
+
+          {/* Recommendations - Infinite Horizontal Scroll */}
+          {recommendations.length > 0 && (
+            <section className="mt-12 md:mt-16 relative group/section">
+              <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h2 className="text-lg md:text-xl font-semibold text-white">Indicações</h2>
+              </div>
+              {recommendationsLoading ? (
+                <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="aspect-[2/3] w-[140px] md:w-[180px] bg-gray-800 rounded-md animate-pulse flex-shrink-0" />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
+                  {recommendations.slice(0, 5).map((movie, index) => (
+                    <motion.div
+                      key={movie.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      whileHover={{ scale: 1.05 }}
+                      className="aspect-[2/3] w-[140px] md:w-[180px] rounded-md overflow-hidden cursor-pointer bg-gray-800 relative group flex-shrink-0"
+                      onClick={() => navigate(`/details/cinema/${movie.id}`)}
+                    >
+                      <img
+                        src={movie.poster_path || "/placeholder-poster.jpg"}
+                        alt={movie.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
+                        <h3 className="text-sm font-semibold text-white line-clamp-2 mb-1">{movie.title}</h3>
+                        <div className="flex items-center gap-2 text-xs text-gray-300">
+                          <span className="text-green-400 font-medium">{movie.vote_average?.toFixed(1)}</span>
+                          {movie.release_date && (
+                            <span>{new Date(movie.release_date).getFullYear()}</span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+      </div>
+
+      {/* Video Player Modal */}
+      <AnimatePresence>
+        {isPlayerOpen && (
+          <NetflixPlayer
+            url={isTrailerMode ? trailerUrl || "" : videoUrl || ""}
+            title={data.title}
+            onClose={() => setIsPlayerOpen(false)}
+            contentType={type as 'movie' | 'series'}
+            contentId={id}
+            historyItem={{
+              id: id || "",
+              title: data.title,
+              poster: data.poster_path || "",
+              backdrop: data.backdrop_path || "",
+              type: type as 'movie' | 'series',
+              year: releaseYear?.toString() || "",
+              rating: data.vote_average?.toString() || "0",
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -1,6 +1,5 @@
-import Navbar from "@/components/Navbar";
+import PremiumNavbar from "@/components/PremiumNavbar";
 import ContentRow from "@/components/ContentRow";
-import Footer from "@/components/Footer";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 
 const TvAoVivo = () => {
@@ -10,7 +9,7 @@ const TvAoVivo = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <PremiumNavbar />
       <main className="pt-24 px-4 md:px-8 lg:px-12">
         <h1 className="text-3xl md:text-4xl font-black mb-8">TV ao Vivo</h1>
         <div>
@@ -25,7 +24,6 @@ const TvAoVivo = () => {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

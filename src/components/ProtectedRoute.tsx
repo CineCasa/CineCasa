@@ -13,10 +13,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!session) {
-    return <Navigate to="/plans" state={{ from: location }} replace />;
-  }
-
+  // Permitir acesso direto sem autenticação temporariamente
   return <>{children}</>;
 };
 

@@ -33,19 +33,55 @@ const Login = () => {
 
     try {
       if (isRegistering) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
-        toast.success("Conta criada! Aguarde liberação do administrador.");
+        
+        // Criar perfil como não aprovado
+        if (data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles' as any)
+            .insert({
+              id: data.user.id,
+              email: data.user.email,
+              approved: false,
+              is_admin: false,
+              is_active: true,
+              created_at: new Date().toISOString(),
+            });
+          
+          if (profileError) {
+            console.error('Erro ao criar perfil:', profileError);
+          }
+        }
+        
+        toast.success("Conta criada! Aguarde aprovação do administrador.");
         setIsRegistering(false);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (error) throw error;
+        
+        // Verificar se usuário está aprovado
+        const { data: profileData } = await supabase
+          .from('profiles' as any)
+          .select('approved, is_admin')
+          .eq('id', data.user.id)
+          .single();
+        
+        const profile = profileData as any;
+        
+        if (!profile?.approved && !profile?.is_admin) {
+          await supabase.auth.signOut();
+          toast.error("Sua conta está aguardando aprovação do administrador.");
+          setIsLoading(false);
+          return;
+        }
+        
         toast.success("Bem-vindo de volta!");
         navigate("/");
       }
@@ -170,13 +206,13 @@ const Login = () => {
                   <p className="text-green-300 text-sm mb-2">Escolha seu dispositivo:</p>
                   <button 
                     onClick={() => handleDeviceSelection('mobile')}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg transition-colors hover:bg-blue-700"
+                    className="w-full bg-blue-600 text-white py-2.5 px-4 sm:py-3 sm:px-6 rounded-lg transition-colors hover:bg-blue-700 text-sm sm:text-base font-medium min-h-[44px]"
                   >
                     📱 Dispositivo Móvel
                   </button>
                   <button 
                     onClick={() => handleDeviceSelection('tv')}
-                    className="w-full bg-purple-600 text-white py-2 rounded-lg transition-colors hover:bg-purple-700"
+                    className="w-full bg-purple-600 text-white py-2.5 px-4 sm:py-3 sm:px-6 rounded-lg transition-colors hover:bg-purple-700 text-sm sm:text-base font-medium min-h-[44px]"
                   >
                     📺 Smart TV
                   </button>
@@ -186,19 +222,19 @@ const Login = () => {
                   <p className="text-green-300 text-sm mb-2">Escolha seu dispositivo:</p>
                   <button 
                     onClick={() => handleDeviceSelection('mobile')}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg transition-colors hover:bg-blue-700"
+                    className="w-full bg-blue-600 text-white py-2.5 px-4 sm:py-3 sm:px-6 rounded-lg transition-colors hover:bg-blue-700 text-sm sm:text-base font-medium min-h-[44px]"
                   >
                     📱 Dispositivo Móvel 1
                   </button>
                   <button 
                     onClick={() => handleDeviceSelection('mobile')}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg transition-colors hover:bg-blue-700"
+                    className="w-full bg-blue-600 text-white py-2.5 px-4 sm:py-3 sm:px-6 rounded-lg transition-colors hover:bg-blue-700 text-sm sm:text-base font-medium min-h-[44px]"
                   >
                     📱 Dispositivo Móvel 2
                   </button>
                   <button 
                     onClick={() => handleDeviceSelection('tv')}
-                    className="w-full bg-purple-600 text-white py-2 rounded-lg transition-colors hover:bg-purple-700"
+                    className="w-full bg-purple-600 text-white py-2.5 px-4 sm:py-3 sm:px-6 rounded-lg transition-colors hover:bg-purple-700 text-sm sm:text-base font-medium min-h-[44px]"
                   >
                     📺 Smart TV
                   </button>
@@ -220,7 +256,7 @@ const Login = () => {
             type="submit"
             disabled={isLoading}
             tabIndex={3}
-            className="w-full bg-[#00A8E1] text-white font-bold py-3 mt-4 rounded transition-all hover:bg-[#00A8E1]/80 active:scale-[0.98] shadow-[0_0_20px_rgba(0,168,225,0.3)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-white"
+            className="w-full bg-[#00A8E1] text-white font-bold py-3 px-6 sm:py-3.5 sm:px-8 mt-4 rounded-lg transition-all hover:bg-[#00A8E1]/80 active:scale-[0.98] shadow-[0_0_20px_rgba(0,168,225,0.3)] disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-white text-sm sm:text-base md:text-lg font-medium min-h-[48px]"
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -251,7 +287,7 @@ const Login = () => {
             </button>
           </p>
           <p className="text-[11px] mt-2">
-            Ou <Link to="/plans" className="text-[#0071eb] hover:underline">clique aqui para ver os planos diretamente</Link>
+            <Link to="/login" className="text-[#0071eb] hover:underline">Faça login para acessar</Link>
           </p>
           <p className="text-[11px] mt-4 leading-relaxed">
             ⚠️ <strong>Importante:</strong> Após o cadastro, seu acesso será liberado apenas após aprovação do administrador. Não é necessária confirmação por email.

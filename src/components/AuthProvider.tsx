@@ -10,6 +10,8 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   plan: string;
+  isApproved: boolean;
+  approvalError: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,6 +21,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isApproved, setIsApproved] = useState(false);
+  const [approvalError, setApprovalError] = useState<string | null>(null);
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -32,9 +36,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Error fetching profile:", error);
       }
       
+      const profileData = data as any;
+      
+      // Verificar se o usuário está aprovado ou é admin
+      if (profileData) {
+        const approved = profileData.approved === true || profileData.is_admin === true;
+        setIsApproved(approved);
+        
+        if (!approved && !profileData.is_admin) {
+          setApprovalError("Sua conta está aguardando aprovação do administrador.");
+          // Não fazer logout automático, apenas marcar como não aprovado
+        }
+      } else {
+        // Perfil não existe, criar como não aprovado
+        setIsApproved(false);
+        setApprovalError("Sua conta está aguardando aprovação do administrador.");
+      }
+      
       // Verificar se o usuário está ativo
-      if (data && !(data as any).is_active && !(data as any).is_admin) {
-        // Usuário não está ativo e não é admin, fazer logout
+      if (profileData && !profileData.is_active && !profileData.is_admin) {
         await supabase.auth.signOut();
         setSession(null);
         setUser(null);
@@ -43,7 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
       
-      setProfile(data || null);
+      setProfile(profileData || null);
     } catch (e) {
       console.error("Profile fetch error:", e);
     } finally {
@@ -52,23 +72,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
+    // Get initial session
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error getting session:", error);
+          setLoading(false);
+          return;
+        }
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error("Session init error:", e);
         setLoading(false);
       }
-    });
+    };
+    
+    initSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
+      
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        }
+      } else if (event === 'SIGNED_OUT') {
         setProfile(null);
+        setIsApproved(false);
+        setApprovalError(null);
         setLoading(false);
       }
     });
@@ -84,7 +129,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const plan = profile?.plan || "none";
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, signOut, loading, isAdmin, plan }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user, 
+      profile, 
+      signOut, 
+      loading, 
+      isAdmin, 
+      plan,
+      isApproved,
+      approvalError 
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,0 +1,174 @@
+/* Modo Tela Cheia - Sem Bordas Pretas */
+
+/* Reset completo para tela cheia */
+* {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+
+#root {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* Forçar tela cheia em todos os conteúdos */
+.hero-banner,
+.netflix-player,
+.player-container,
+.video-container,
+.media-container {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 999999 !important;
+  border: none !important;
+  outline: none !important;
+  border-radius: 0 !important;
+}
+
+/* Videos e iframes sempre em tela cheia */
+video,
+iframe,
+.hero-banner video,
+.hero-banner iframe {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 999999 !important;
+  border: none !important;
+  outline: none !important;
+  object-fit: cover !important;
+  background: #000 !important;
+}
+
+/* Forçar fullscreen no hero banner */
+.hero-banner {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.hero-banner .absolute.inset-0 {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1 !important;
+}
+
+/* Remover scrollbars em modo tela cheia */
+::-webkit-scrollbar {
+  display: none !important;
+}
+
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Classes específicas para tela cheia */
+.fullscreen-mode {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+  background: #000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Forçar fullscreen em dispositivos móveis - APENAS quando player está ativo */
+@media (max-width: 768px) {
+  html.player-active, body.player-active, #root.player-active {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  html.player-active video, body.player-active video, #root.player-active video,
+  html.player-active iframe, body.player-active iframe, #root.player-active iframe {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    object-fit: cover !important;
+  }
+}
+
+/* Smart TV - Forçar tela cheia total */
+@media (min-width: 1920px) {
+  .hero-banner,
+  .netflix-player,
+  video,
+  iframe {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 999999 !important;
+  }
+}
+
+/* Animação de entrada em tela cheia */
+@keyframes fullscreenEnter {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.fullscreen-enter {
+  animation: fullscreenEnter 0.3s ease-out;
+}
+
+/* Remover qualquer elemento que possa causar bordas */
+.modal-overlay,
+.backdrop,
+.overlay {
+  background: #000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}

@@ -1,0 +1,736 @@
+/* ============================================
+   CLAPPR PLAYER - Estilos Completos
+   ============================================ */
+
+.clappr-player-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   PLAYER PRINCIPAL
+   ============================================ */
+
+.clappr-player {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.clappr-player.clappr-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999999;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ============================================
+   CONTROLES
+   ============================================ */
+
+.clappr-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    transparent 100%
+  );
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.clappr-controls.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.clappr-controls * {
+  pointer-events: auto;
+}
+
+/* ============================================
+   TÍTULO
+   ============================================ */
+
+.clappr-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: auto;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  line-height: 1.2;
+}
+
+.clappr-title h3 {
+  margin: 0;
+  flex: 1;
+  padding-right: 10px;
+  word-break: break-word;
+}
+
+.clappr-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.clappr-close-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.clappr-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   BARRA DE PROGRESSO
+   ============================================ */
+
+.clappr-progress-container {
+  width: 100%;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.clappr-progress-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: height 0.2s ease;
+}
+
+.clappr-progress-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00a8e1;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 168, 225, 0.6);
+  transition: all 0.2s ease;
+}
+
+.clappr-progress-bar::-webkit-slider-thumb:hover {
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 0 15px rgba(0, 168, 225, 0.8);
+}
+
+.clappr-progress-bar::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00a8e1;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 10px rgba(0, 168, 225, 0.6);
+  transition: all 0.2s ease;
+}
+
+.clappr-progress-bar::-moz-range-thumb:hover {
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 0 15px rgba(0, 168, 225, 0.8);
+}
+
+.clappr-progress-bar:hover {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.clappr-time-display {
+  color: #fff;
+  font-size: 12px;
+  text-align: right;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+/* ============================================
+   CONTROLES INFERIORES
+   ============================================ */
+
+.clappr-bottom-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.clappr-playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.clappr-secondary-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   BOTÕES DE CONTROLE
+   ============================================ */
+
+.clappr-control-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.clappr-control-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 168, 225, 0.3);
+}
+
+.clappr-control-btn:active {
+  transform: scale(0.95);
+}
+
+.clappr-control-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.clappr-play-btn {
+  width: 52px;
+  height: 52px;
+  background: #00a8e1;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 16px rgba(0, 168, 225, 0.4);
+}
+
+.clappr-play-btn:hover {
+  background: #0095c7;
+  box-shadow: 0 6px 20px rgba(0, 168, 225, 0.6);
+  transform: scale(1.1);
+}
+
+.clappr-play-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ============================================
+   CONTROLE DE VOLUME
+   ============================================ */
+
+.clappr-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clappr-volume-slider {
+  width: 80px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: width 0.3s ease;
+}
+
+.clappr-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00a8e1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clappr-volume-slider::-webkit-slider-thumb:hover {
+  width: 16px;
+  height: 16px;
+}
+
+.clappr-volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00a8e1;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.clappr-volume-slider::-moz-range-thumb:hover {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================
+   MENUS DROPDOWN
+   ============================================ */
+
+.clappr-menu-control {
+  position: relative;
+}
+
+.clappr-menu-dropdown {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  min-width: 100px;
+  overflow: hidden;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+  display: none;
+  z-index: 101;
+  backdrop-filter: blur(4px);
+}
+
+.clappr-menu-control:hover .clappr-menu-dropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.clappr-menu-dropdown button {
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 12px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.clappr-menu-dropdown button:last-child {
+  border-bottom: none;
+}
+
+.clappr-menu-dropdown button:hover {
+  background: rgba(0, 168, 225, 0.3);
+  color: #00a8e1;
+}
+
+.clappr-menu-dropdown button.active {
+  background: rgba(0, 168, 225, 0.5);
+  color: #00a8e1;
+  font-weight: bold;
+}
+
+/* ============================================
+   RESPONSIVIDADE - MOBILE
+   ============================================ */
+
+@media (max-width: 640px) {
+  .clappr-controls {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .clappr-title {
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+
+  .clappr-title h3 {
+    padding-right: 8px;
+  }
+
+  .clappr-close-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+
+  .clappr-progress-container {
+    margin: 12px 0;
+  }
+
+  .clappr-control-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .clappr-control-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .clappr-play-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .clappr-play-btn svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .clappr-volume-slider {
+    width: 60px;
+  }
+
+  .clappr-bottom-controls {
+    gap: 8px;
+  }
+
+  .clappr-playback-controls {
+    gap: 12px;
+  }
+
+  .clappr-secondary-controls {
+    gap: 6px;
+  }
+
+  .clappr-time-display {
+    font-size: 11px;
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE - TABLET
+   ============================================ */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .clappr-controls {
+    padding: 15px;
+  }
+
+  .clappr-control-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .clappr-play-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .clappr-volume-slider {
+    width: 70px;
+  }
+
+  .clappr-bottom-controls {
+    gap: 10px;
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE - DESKTOP
+   ============================================ */
+
+@media (min-width: 1025px) {
+  .clappr-controls {
+    padding: 25px;
+  }
+
+  .clappr-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .clappr-progress-container {
+    margin: 24px 0;
+  }
+
+  .clappr-volume-slider {
+    width: 100px;
+  }
+
+  .clappr-volume-slider:hover {
+    width: 120px;
+  }
+}
+
+/* ============================================
+   RESPONSIVIDADE - 4K
+   ============================================ */
+
+@media (min-width: 1920px) {
+  .clappr-controls {
+    padding: 30px;
+  }
+
+  .clappr-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .clappr-control-btn {
+    width: 52px;
+    height: 52px;
+  }
+
+  .clappr-control-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .clappr-play-btn {
+    width: 64px;
+    height: 64px;
+  }
+
+  .clappr-play-btn svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .clappr-time-display {
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   STATES & ANIMATIONS
+   ============================================ */
+
+/* Focus para acessibilidade */
+.clappr-control-btn:focus-visible,
+.clappr-progress-bar:focus-visible,
+.clappr-volume-slider:focus-visible {
+  outline: 2px solid #00a8e1;
+  outline-offset: 2px;
+}
+
+/* Animação de entrada */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.clappr-controls {
+  animation: slideUp 0.3s ease;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.clappr-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ============================================
+   MODO ESCURO (padrão)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  .clappr-player-container {
+    background-color: #000;
+  }
+}
+
+/* ============================================
+   MODO CLARO (rare case)
+   ============================================ */
+
+@media (prefers-color-scheme: light) {
+  .clappr-controls {
+    background: linear-gradient(
+      to top,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.7) 50%,
+      transparent 100%
+    );
+  }
+
+  .clappr-title,
+  .clappr-time-display {
+    color: #000;
+  }
+}
+
+/* ============================================
+   MOVIMENTO REDUZIDO
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .clappr-control-btn,
+  .clappr-controls,
+  .clappr-progress-bar,
+  .clappr-volume-slider {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ============================================
+   ORIENTAÇÃO LANDSCAPE (Celular/Tablet)
+   ============================================ */
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .clappr-controls {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .clappr-title {
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+
+  .clappr-title h3 {
+    max-height: 30px;
+    overflow: hidden;
+  }
+
+  .clappr-progress-container {
+    margin: 4px 0;
+  }
+
+  .clappr-control-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .clappr-play-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .clappr-bottom-controls {
+    gap: 4px;
+  }
+
+  .clappr-volume-slider {
+    width: 50px;
+  }
+}
+
+/* ============================================
+   HIGH DPI / RETINA DISPLAYS
+   ============================================ */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .clappr-control-btn {
+    border-width: 0.5px;
+  }
+}
+
+/* ============================================
+   TOUCH DEVICES
+   ============================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  .clappr-menu-dropdown {
+    display: flex;
+    flex-direction: column;
+    position: static;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    margin-top: 8px;
+    margin-bottom: 0;
+    order: -1;
+  }
+
+  .clappr-control-btn:active {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* ============================================
+   SUPORTE PARA SMART TV
+   ============================================ */
+
+@media (min-width: 1920px) and (max-height: 1080px) {
+  /* Aumentar tamanho dos controles para controle remoto */
+  .clappr-control-btn {
+    width: 64px;
+    height: 64px;
+    font-size: 16px;
+  }
+
+  .clappr-play-btn {
+    width: 80px;
+    height: 80px;
+  }
+
+  .clappr-controls {
+    padding: 40px;
+  }
+
+  .clappr-title {
+    font-size: 28px;
+  }
+}

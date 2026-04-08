@@ -145,7 +145,7 @@ const FinanceSection = () => {
             <Users className="text-blue-400" size={20} />
             <span className="text-white/60 text-sm">Total Usuários</span>
           </div>
-          <div className="text-2xl font-bold text-white">{stats.totalUsers}</div>
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-white">{stats.totalUsers}</div>
         </div>
 
         <div className="bg-[#2a2a2a] rounded-lg p-4">
@@ -153,7 +153,7 @@ const FinanceSection = () => {
             <CheckCircle className="text-green-400" size={20} />
             <span className="text-white/60 text-sm">Ativos</span>
           </div>
-          <div className="text-2xl font-bold text-green-400">{stats.activeUsers}</div>
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-400">{stats.activeUsers}</div>
         </div>
 
         <div className="bg-[#2a2a2a] rounded-lg p-4">
@@ -161,7 +161,7 @@ const FinanceSection = () => {
             <TrendingUp className="text-yellow-400" size={20} />
             <span className="text-white/60 text-sm">Receita Total</span>
           </div>
-          <div className="text-2xl font-bold text-yellow-400">
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-yellow-400">
             R$ {stats.totalRevenue.toFixed(2)}
           </div>
         </div>
@@ -171,7 +171,7 @@ const FinanceSection = () => {
             <CreditCard className="text-purple-400" size={20} />
             <span className="text-white/60 text-sm">Receita Mensal</span>
           </div>
-          <div className="text-2xl font-bold text-purple-400">
+          <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-400">
             R$ {stats.monthlyRevenue.toFixed(2)}
           </div>
         </div>

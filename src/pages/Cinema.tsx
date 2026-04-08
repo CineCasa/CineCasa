@@ -1,7 +1,6 @@
-import Navbar from "@/components/Navbar";
+import PremiumNavbar from "@/components/PremiumNavbar";
 import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
-import Footer from "@/components/Footer";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 
 const Cinema = () => {
@@ -13,22 +12,23 @@ const Cinema = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <PremiumNavbar />
       <main className="pb-20">
         <HeroBanner filterCategory="Cinema" />
-        <div className="relative z-10 pt-16 -mt-10">
+        <div className="relative pt-16 -mt-10 pointer-events-none">
           {isLoading ? (
             <div className="flex items-center justify-center p-20 text-muted-foreground">
               Carregando produções de cinema...
             </div>
           ) : (
             cinemaCategories.map((cat) => (
-              <ContentRow key={cat.id} category={cat} />
+              <div key={cat.id} className="pointer-events-auto">
+                <ContentRow category={cat} />
+              </div>
             ))
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

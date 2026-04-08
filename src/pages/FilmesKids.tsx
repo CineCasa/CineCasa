@@ -1,7 +1,6 @@
-import Navbar from "@/components/Navbar";
+import PremiumNavbar from "@/components/PremiumNavbar";
 import HeroBanner from "@/components/HeroBanner";
 import ContentCard from "@/components/ContentCard";
-import Footer from "@/components/Footer";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 
 const FilmesKids = () => {
@@ -11,7 +10,7 @@ const FilmesKids = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <PremiumNavbar />
       <main className="pb-20">
         <HeroBanner filterCategory="Filmes Infantis" />
         <div className="relative z-10 pt-16 -mt-10 px-4 md:px-8 lg:px-12">
@@ -32,7 +31,6 @@ const FilmesKids = () => {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 };

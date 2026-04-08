@@ -1,38 +1,69 @@
-import { useState, useEffect } from "react";
+import { useContinueWatching } from "@/hooks/useContinueWatching";
 import ContentRow from "./ContentRow";
+import { useNavigate } from 'react-router-dom';
+
+interface ContentItem {
+  id: string;
+  tmdbId?: string;
+  title: string;
+  image: string;
+  backdrop?: string;
+  year: number;
+  rating: string;
+  duration: string;
+  genre: string[];
+  category: string;
+  description: string;
+  type: "movie" | "series";
+  trailer?: string;
+  url?: string;
+  identificadorArchive?: string;
+}
 
 const ContinueWatchingRow = () => {
-  const [history, setHistory] = useState<any[]>([]);
+  const { rawItems, isLoading } = useContinueWatching();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadHistory = () => {
-      try {
-        const histStr = localStorage.getItem("paixaohist");
-        if (histStr) {
-          const parsed = JSON.parse(histStr);
-          // Only show items that have been watched for more than 1% but less than 95%
-          const validHistory = parsed.filter((h: any) => h.progress > 1 && h.progress < 95);
-          // Sort by recently watched first
-          validHistory.sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0));
-          setHistory(validHistory.slice(0, 5));
-        }
-      } catch (e) {
-        console.error("Failed to load history for Continue Watching:", e);
-      }
-    };
+  // Filtrar itens com progresso válido (entre 1% e 95%)
+  const validItems = rawItems.filter((item) => {
+    return item.progress > 1 && item.progress < 95;
+  });
 
-    loadHistory();
-    // Setting up an interval in case history changes in another tab or instance
-    const interval = setInterval(loadHistory, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  if (isLoading) {
+    return (
+      <div className="px-4 md:px-12 py-4">
+        <div className="flex items-center gap-4">
+          <div className="w-8 h-8 border-2 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+          <span className="text-white">Carregando continuar assistindo...</span>
+        </div>
+      </div>
+    );
+  }
 
-  if (history.length === 0) return null;
+  if (validItems.length === 0) {
+    return null;
+  }
+
+  // Converter ContinueWatchingItem para o formato esperado pelo ContentRow
+  const historyItems: ContentItem[] = validItems.map((item) => ({
+    id: item.contentId,
+    tmdbId: item.contentId,
+    title: item.title,
+    image: item.poster,
+    backdrop: item.banner,
+    year: new Date(item.updatedAt).getFullYear(),
+    rating: `${item.progress}%`,
+    duration: String(Math.round(item.duration / 60)) + ' min',
+    genre: [],
+    category: item.contentType === 'movie' ? 'Filmes' : 'Séries',
+    description: item.episodeTitle ? `Episódio: ${item.episodeTitle}` : '',
+    type: item.contentType,
+  }));
 
   return (
     <div className="relative">
       <ContentRow 
-        category={{ id: "continue-watching", title: "Continuar observando", items: history }} 
+        category={{ id: "continue-watching", title: "Continuar assistindo", items: historyItems }} 
         showProgress={true} 
       />
     </div>

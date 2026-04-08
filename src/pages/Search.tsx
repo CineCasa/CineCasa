@@ -1,8 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import PremiumNavbar from "@/components/PremiumNavbar";
 import ContentCard from "@/components/ContentCard";
-import Footer from "@/components/Footer";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { ContentItem } from "@/data/content";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,7 +41,7 @@ const Search = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Navbar />
+      <PremiumNavbar />
       <main className="pt-24 px-4 md:px-8 lg:px-12 pb-20">
         <div className="mb-10">
           <h1 className="text-2xl md:text-3xl font-bold text-white/60 mb-2">
@@ -94,7 +93,6 @@ const Search = () => {
            </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 };

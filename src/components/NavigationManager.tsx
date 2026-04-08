@@ -68,7 +68,9 @@ const NavigationManager = ({ children }: NavigationManagerProps) => {
         case 'ArrowRight':
           // Navegar para direita na mesma linha
           if (currentCol < currentRowElements.length - 1) {
-            currentRowElements[currentCol + 1].focus();
+            const nextElement = currentRowElements[currentCol + 1];
+            nextElement.focus();
+            nextElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
           } else {
             // Ir para primeira coluna da próxima linha
             const rows = Array.from(grid.keys());
@@ -76,7 +78,9 @@ const NavigationManager = ({ children }: NavigationManagerProps) => {
             if (currentIndex < rows.length - 1) {
               const nextRowElements = grid.get(rows[currentIndex + 1])!;
               if (nextRowElements.length > 0) {
-                nextRowElements[0].focus();
+                const firstElement = nextRowElements[0];
+                firstElement.focus();
+                firstElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
               }
             }
           }
@@ -85,7 +89,9 @@ const NavigationManager = ({ children }: NavigationManagerProps) => {
         case 'ArrowLeft':
           // Navegar para esquerda na mesma linha
           if (currentCol > 0) {
-            currentRowElements[currentCol - 1].focus();
+            const prevElement = currentRowElements[currentCol - 1];
+            prevElement.focus();
+            prevElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
           } else {
             // Ir para última coluna da linha anterior
             const rows = Array.from(grid.keys());
@@ -93,7 +99,9 @@ const NavigationManager = ({ children }: NavigationManagerProps) => {
             if (currentIndex > 0) {
               const prevRowElements = grid.get(rows[currentIndex - 1])!;
               if (prevRowElements.length > 0) {
-                prevRowElements[prevRowElements.length - 1].focus();
+                const lastElement = prevRowElements[prevRowElements.length - 1];
+                lastElement.focus();
+                lastElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
               }
             }
           }
@@ -120,6 +128,7 @@ const NavigationManager = ({ children }: NavigationManagerProps) => {
               });
               
               targetElement.focus();
+              targetElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
               break;
             }
           }
@@ -146,6 +155,7 @@ const NavigationManager = ({ children }: NavigationManagerProps) => {
               });
               
               targetElement.focus();
+              targetElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
               break;
             }
           }

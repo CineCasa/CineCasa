@@ -1,0 +1,340 @@
+/* ============================================
+   RESPONSIVE BUTTON SYSTEM - CineCasa
+   ============================================ */
+
+/* Reset base para todos os botões */
+button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  padding: 0;
+}
+
+/* Touch-friendly minimum size (44x44px) */
+button:not(.icon-only):not([class*="icon"]) {
+  min-height: 44px;
+  padding-inline: max(12px, env(safe-area-inset-left));
+  padding-inline-end: max(12px, env(safe-area-inset-right));
+}
+
+/* ============================================
+   MOBILE FIRST (< 640px)
+   ============================================ */
+@media (max-width: 639px) {
+  .responsive-button, button {
+    font-size: clamp(13px, 3vw, 16px);
+    padding: clamp(8px, 2.5vh, 12px) clamp(12px, 4vw, 16px);
+    border-radius: clamp(4px, 2vw, 8px);
+    min-height: 44px;
+    gap: clamp(4px, 1.5vw, 8px);
+  }
+
+  .button-sm {
+    font-size: clamp(12px, 2.5vw, 14px);
+    padding: clamp(4px, 1.5vh, 8px) clamp(8px, 2.5vw, 12px);
+  }
+
+  .button-lg {
+    font-size: clamp(15px, 3.5vw, 18px);
+    padding: clamp(10px, 2.5vh, 14px) clamp(16px, 5vw, 20px);
+  }
+
+  .button-xl {
+    font-size: clamp(16px, 4vw, 20px);
+    padding: clamp(12px, 3vh, 16px) clamp(20px, 6vw, 24px);
+  }
+
+  /* Icons mobile */
+  button.icon-only, [class*="icon"]:not(svg) {
+    min-width: 44px;
+    min-height: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Full width buttons */
+  .button-full, .w-full {
+    width: 100%;
+    display: flex;
+  }
+
+  /* Premium buttons mobile */
+  .premium-button {
+    font-size: clamp(13px, 3vw, 15px);
+    padding: clamp(8px, 2.5vh, 12px) clamp(12px, 4vw, 16px) !important;
+    min-height: 44px;
+  }
+
+  .premium-button-secondary {
+    font-size: clamp(12px, 2.5vw, 14px);
+    padding: clamp(8px, 2.5vh, 12px) clamp(12px, 4vw, 16px) !important;
+    min-height: 44px;
+  }
+}
+
+/* ============================================
+   TABLET (640px - 1023px)
+   ============================================ */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .responsive-button, button {
+    font-size: clamp(14px, 2.5vw, 17px);
+    padding: clamp(10px, 2vh, 14px) clamp(14px, 3vw, 18px);
+    border-radius: clamp(5px, 1.5vw, 8px);
+    min-height: 48px;
+    gap: clamp(6px, 1.5vw, 10px);
+  }
+
+  .button-sm {
+    font-size: clamp(13px, 2vw, 15px);
+    padding: clamp(6px, 1.5vh, 10px) clamp(10px, 2.5vw, 14px);
+    min-height: 42px;
+  }
+
+  .button-lg {
+    font-size: clamp(16px, 3vw, 19px);
+    padding: clamp(12px, 2.5vh, 16px) clamp(18px, 4vw, 22px);
+    min-height: 52px;
+  }
+
+  .button-xl {
+    font-size: clamp(17px, 3.5vw, 21px);
+    padding: clamp(14px, 2.5vh, 18px) clamp(22px, 5vw, 28px);
+    min-height: 56px;
+  }
+
+  /* Icons tablet */
+  button.icon-only, [class*="icon"]:not(svg) {
+    min-width: 48px;
+    min-height: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  /* Premium buttons tablet */
+  .premium-button {
+    font-size: clamp(14px, 2.5vw, 16px);
+    padding: clamp(10px, 2vh, 14px) clamp(14px, 3vw, 18px) !important;
+    min-height: 48px;
+  }
+}
+
+/* ============================================
+   DESKTOP (1024px - 1919px)
+   ============================================ */
+@media (min-width: 1024px) and (max-width: 1919px) {
+  .responsive-button, button {
+    font-size: clamp(15px, 1.5vw, 18px);
+    padding: clamp(12px, 1.5vh, 16px) clamp(16px, 2.5vw, 20px);
+    border-radius: clamp(6px, 1vw, 8px);
+    min-height: 52px;
+    gap: clamp(8px, 1vw, 12px);
+  }
+
+  .button-sm {
+    font-size: clamp(14px, 1.2vw, 16px);
+    padding: clamp(8px, 1.2vh, 12px) clamp(12px, 2vw, 16px);
+    min-height: 44px;
+  }
+
+  .button-lg {
+    font-size: clamp(17px, 2vw, 20px);
+    padding: clamp(14px, 1.8vh, 18px) clamp(20px, 3vw, 24px);
+    min-height: 56px;
+  }
+
+  .button-xl {
+    font-size: clamp(18px, 2.5vw, 22px);
+    padding: clamp(16px, 2vh, 20px) clamp(24px, 4vw, 32px);
+    min-height: 60px;
+  }
+
+  /* Icons desktop */
+  button.icon-only, [class*="icon"]:not(svg) {
+    min-width: 52px;
+    min-height: 52px;
+    width: 52px;
+    height: 52px;
+  }
+
+  /* Premium buttons desktop */
+  .premium-button {
+    font-size: clamp(15px, 1.5vw, 18px);
+    padding: clamp(12px, 1.5vh, 16px) clamp(16px, 2.5vw, 20px) !important;
+    min-height: 52px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .premium-button:hover {
+    transform: scale(1.05);
+  }
+
+  .premium-button:active {
+    transform: scale(0.95);
+  }
+
+  .premium-button-secondary {
+    font-size: clamp(14px, 1.3vw, 17px);
+    padding: clamp(12px, 1.5vh, 16px) clamp(16px, 2.5vw, 20px) !important;
+    min-height: 48px;
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP (1920px+)
+   ============================================ */
+@media (min-width: 1920px) {
+  .responsive-button, button {
+    font-size: 18px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    min-height: 56px;
+    gap: 12px;
+  }
+
+  .button-sm {
+    font-size: 16px;
+    padding: 12px 16px;
+    min-height: 44px;
+  }
+
+  .button-lg {
+    font-size: 20px;
+    padding: 18px 28px;
+    min-height: 60px;
+  }
+
+  .button-xl {
+    font-size: 22px;
+    padding: 20px 36px;
+    min-height: 64px;
+  }
+
+  /* Icons large desktop */
+  button.icon-only, [class*="icon"]:not(svg) {
+    min-width: 56px;
+    min-height: 56px;
+    width: 56px;
+    height: 56px;
+  }
+
+  /* Premium buttons large desktop */
+  .premium-button {
+    font-size: 18px;
+    padding: 16px 28px !important;
+    min-height: 56px;
+  }
+
+  .premium-button-secondary {
+    font-size: 17px;
+    padding: 16px 24px !important;
+    min-height: 52px;
+  }
+}
+
+/* ============================================
+   UNIVERSAL STYLES
+   ============================================ */
+
+/* Flex alignment for icon + text */
+button:has(svg),
+[role="button"]:has(svg) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* SVG sizing */
+button svg, [role="button"] svg {
+  width: clamp(16px, 4vw, 24px);
+  height: clamp(16px, 4vw, 24px);
+  flex-shrink: 0;
+}
+
+/* Transitions */
+button, [role="button"] {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus states */
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid;
+  outline-offset: 2px;
+}
+
+/* Disabled state */
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Active/Pressed state */
+button:active,
+button:active:hover,
+[role="button"]:active {
+  transform: scale(0.95);
+}
+
+/* Hover scale */
+button:not(:disabled):not([aria-disabled="true"]):hover {
+  transform: translateY(-1px);
+}
+
+/* ============================================
+   LANDSCAPE MODE ADJUSTMENTS
+   ============================================ */
+@media (max-height: 500px) and (orientation: landscape) {
+  button, .responsive-button, [role="button"] {
+    min-height: 36px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  button.icon-only, [class*="icon"]:not(svg) {
+    min-width: 36px;
+    min-height: 36px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ============================================
+   HIGH DPI DISPLAYS (Retina)
+   ============================================ */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  button, [role="button"] {
+    border-width: 0.5px;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY & REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  button, [role="button"], button *, [role="button"] * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  button {
+    color-scheme: dark;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  button, [role="button"] {
+    display: none;
+  }
+}

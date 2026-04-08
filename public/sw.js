@@ -1,5 +1,10 @@
 // Service Worker para CineCasa PWA
 const CACHE_NAME = 'cinecasa-v1';
+
+// Detectar modo de desenvolvimento (localhost)
+const isDevelopment = self.location.hostname === 'localhost' || 
+                      self.location.hostname === '127.0.0.1';
+
 const urlsToCache = [
   '/',
   '/index.html',
@@ -10,6 +15,13 @@ const urlsToCache = [
 
 // Instalação do Service Worker
 self.addEventListener('install', event => {
+  // Pular cache em modo de desenvolvimento
+  if (isDevelopment) {
+    console.log('Service Worker: Modo DEV - cache desativado');
+    self.skipWaiting();
+    return;
+  }
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -21,6 +33,18 @@ self.addEventListener('install', event => {
 
 // Ativação do Service Worker
 self.addEventListener('activate', event => {
+  if (isDevelopment) {
+    console.log('Service Worker: Modo DEV - limpando caches antigos');
+    event.waitUntil(
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cache => caches.delete(cache))
+        );
+      })
+    );
+    return;
+  }
+  
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
@@ -37,6 +61,12 @@ self.addEventListener('activate', event => {
 
 // Interceptação de requisições
 self.addEventListener('fetch', event => {
+  // Em desenvolvimento: não usar cache, sempre buscar da rede
+  if (isDevelopment) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -69,8 +99,8 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   const options = {
     body: event.data.text(),
-    icon: '/favicon.ico',
-    badge: '/favicon.ico',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-72x72.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -80,12 +110,12 @@ self.addEventListener('push', event => {
       {
         action: 'explore',
         title: 'Abrir CineCasa',
-        icon: '/favicon.ico'
+        icon: '/icons/icon-48x48.png'
       },
       {
         action: 'close',
         title: 'Fechar notificação',
-        icon: '/favicon.ico'
+        icon: '/icons/icon-48x48.png'
       }
     ]
   };

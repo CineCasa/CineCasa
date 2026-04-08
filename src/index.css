@@ -1,73 +1,132 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+/* Import streaming components styles */
+@import './styles/streaming-components.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-
-    /* Cinecasa Aesthetics */
-    --glow: #ffc107;
-    --red: #e50914;
-    --glass: rgba(20,20,20,.75);
-
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 100% 56%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 222 30% 14%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 222 30% 18%;
-    --muted-foreground: 215 20% 55%;
-
-    --accent: 210 100% 56%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 222 30% 18%;
-    --input: 222 30% 18%;
-    --ring: 210 100% 56%;
-
-    --radius: 0.5rem;
-
-    --nav-height: 4rem;
-
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 210 100% 56%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 222 30% 14%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 210 100% 56%;
-  }
+:root {
+  /* Fontes cinematográficas */
+  --font-titles: 'Cinzel', 'Trajan Pro', 'Playfair Display', serif;
+  --font-buttons: 'Open Sans', 'Montserrat', 'Futura', sans-serif;
+  --font-body: 'Inter', 'Helvetica Neue', 'Arial', sans-serif;
 }
 
+/* Reset e Base Styles Netflix-style */
 @layer base {
   * {
-    @apply border-border;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    overflow-x: hidden;
-    overscroll-behavior: none;
-    text-rendering: optimizeLegibility;
+  html {
+    scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  html, body {
+    background-color: #000401;
+    color: #ffffff;
+    line-height: 1.6;
+    font-weight: 400;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Garantir layout correto para rolagem */
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    position: relative;
+  }
+
+  /* GPU Acceleration for smooth animations on TVs */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform, opacity;
+  }
+
+  /* Full width layouts - use 100% screen */
+  .full-width-container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Content aligned with CineCasa logo - left aligned */
+  .content-aligned {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-left: 0;
+    margin-right: 0;
+    text-align: left;
+  }
+
+  @media (min-width: 1280px) {
+    .content-aligned {
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
+  }
+
+  /* Remover bordas de todos os elementos principais */
+  .hero-banner,
+  .netflix-player {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    outline: none !important;
+  }
+
+  /* Scrollbar cinematográfica premium */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0a0d15;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1a1d29;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a2d3a;
+  }
+
+  /* Selection premium */
+  ::selection {
+    background: #00ffff;
+    color: #1a1d29;
+  }
+
+  ::-moz-selection {
+    background: #00ffff;
+    color: #1a1d29;
+  }
+}
+
+/* Glass effect for navbar - not too transparent */
+.glass-navbar {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* GPU Acceleration for smooth animations on TVs */
@@ -89,9 +148,40 @@
 
 /* Touch support for carousels */
 .row-scroll-container {
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  -webkit-overflow-scrolling: touch !important;
+  scroll-snap-type: x mandatory !important;
+  scroll-behavior: smooth !important;
+  touch-action: pan-x !important;
+}
+
+.row-scroll-container > * {
+  flex: 0 0 auto !important;
+}
+
+/* Mobile row scroll fix - ensure horizontal scroll works on mobile */
+@media (max-width: 768px) {
+  .row-scroll-container {
+    overflow-x: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-x pan-y !important;
+  }
+  
+  .row-scroll-container::-webkit-scrollbar {
+    height: 4px !important;
+    display: block !important;
+  }
+  
+  .row-scroll-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .row-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-radius: 2px !important;
+  }
 }
 
 /* Universal Overlap & Expansion Utilities */
@@ -111,9 +201,9 @@
   }
 
   :focus-visible {
-    outline: 4px solid #00A8E1 !important; /* Cinecasa TV Style Focus */
-    outline-offset: 4px;
-    box-shadow: 0 0 30px rgba(0, 168, 225, 0.9) !important;
+    outline: 3px solid #00ffff !important;
+    outline-offset: 3px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6) !important;
     border-radius: 8px;
   }
 
@@ -122,5 +212,33 @@
     :root {
       font-size: 20px;
     }
+  }
+}
+
+/* Mobile Bottom Navigation - Force fixed positioning */
+.mobile-bottom-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 999999 !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+}
+
+/* Hide on larger screens */
+@media (min-width: 768px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+}
+
+/* iOS Safari specific fix */
+@supports (-webkit-touch-callout: none) {
+  .mobile-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
 }

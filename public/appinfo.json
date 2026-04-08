@@ -1,0 +1,59 @@
+{
+  "id": "cinecasa.app",
+  "version": "1.0.0",
+  "vendor": "CineCasa",
+  "type": "web",
+  "main": "index.html",
+  "title": "CineCasa",
+  "icon": "icons/icon-512x512.png",
+  "largeIcon": "icons/icon-512x512.png",
+  "bgImage": "icons/icon-1920x1080.png",
+  "bgColor": "#000000",
+  "fontColor": "#00A8E1",
+  "disableBackHistoryAPI": false,
+  "screenSaverDisabled": true,
+  "dialAppName": "cinecasa",
+  "supportDIAL": true,
+  "supportCrossOrigin": true,
+  "supportVideoUHD": true,
+  "supportHDR": true,
+  "supportDolbyVision": true,
+  "supportDolbyAtmos": true,
+  "support5_1SurroundSound": true,
+  "supportedLocales": ["pt-BR", "en-US", "es-ES"],
+  "requiredEULA": ["generalTerms", "privacyPolicy"],
+  "handlesRelaunch": true,
+  "appDescription": "O melhor do entretenimento para sua Smart TV LG",
+  "splashBackground": {
+    "color": "#000000",
+    "image": "icons/splash-1920x1080.png",
+    "imagePosition": "center",
+    "text": "CineCasa",
+    "textColor": "#00A8E1",
+    "textSize": "72px",
+    "textPosition": "center"
+  },
+  "mediaContents": {
+    "video": {
+      "codecs": ["H.264", "H.265", "VP9", "AV1"],
+      "containers": ["mp4", "webm", "mkv", "m3u8"],
+      "drm": ["Widevine", "PlayReady"]
+    },
+    "audio": {
+      "codecs": ["AAC", "MP3", "AC3", "EAC3", "OPUS"],
+      "containers": ["mp4", "mp3", "webm"]
+    }
+  },
+  "inputDevices": {
+    "remoteControl": true,
+    "mouse": true,
+    "keyboard": true,
+    "gamepad": false
+  },
+  "permissions": [
+    "filesystem",
+    "media",
+    "network",
+    "webviews"
+  ]
+}

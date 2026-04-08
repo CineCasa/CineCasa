@@ -27,8 +27,9 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   const handleNavigateToDetails = () => {
     if (item.isComingSoon) return;
     const typePath = item.id.includes("series") ? "series" : "cinema";
-    // If the item doesn't have a tmdbId, we might pass its ID
-    navigate(`/details/${typePath}/${item.tmdbId || item.id}`);
+    // Usar o ID do banco de dados (prioridade) em vez do tmdbId
+    const id = item.id || item.tmdbId;
+    navigate(`/details/${typePath}/${id}`);
   };
 
   useEffect(() => {
@@ -102,11 +103,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-      if (!isHovered) {
-        setIsHovered(true);
-      } else if (!item.isComingSoon) {
-        setIsPlayerOpen(true);
-      }
+      handleNavigateToDetails();
     }
 
     if (e.key === "ArrowRight") {
@@ -246,17 +243,22 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
       onFocus={() => setIsHovered(true)}
       onBlur={() => setIsHovered(false)}
       onKeyDown={handleKeyDown}
+      onClick={handleNavigateToDetails}
       tabIndex={0}
       className={`relative flex-shrink-0 
-        w-[calc((100vw-32px-16px)/2)] 
-        md:w-[calc((100vw-64px-48px)/3)] 
+        w-[calc(50vw-12px)] 
+        sm:w-[calc((100vw-32px-16px)/3)] 
+        md:w-[calc((100vw-64px-48px)/4)] 
         lg:w-[calc((100vw-96px-96px)/5)] 
-        aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black rounded-lg ${
+        xl:w-[calc((100vw-128px-128px)/6)] 
+        aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black rounded-lg cursor-pointer ${
         isHovered ? "z-[99999]" : "z-0"
       }`}
     >
       {/* BASE PORTRAIT IMAGE */}
-      <div className={`w-full h-full rounded-lg overflow-hidden bg-secondary shadow-lg transition-opacity duration-300 ${isHovered ? "opacity-0" : "opacity-100"}`}>
+      <div 
+        onClick={handleNavigateToDetails}
+        className={`w-full h-full rounded-lg overflow-hidden bg-secondary shadow-lg transition-opacity duration-300 ${isHovered ? "opacity-0" : "opacity-100"} ${!item.isComingSoon && 'cursor-pointer hover:opacity-90'}`}>
         {isVisible ? (
           <img
             src={item.image}
@@ -272,18 +274,22 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
              Em Breve
            </div>
         )}
-        {showProgress && item.progress && (
-           <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/50 overflow-hidden z-20">
-              <div className="h-full bg-[var(--glow)] transition-all" style={{ width: `${item.progress}%` }} />
+        {showProgress && item.progress && item.progress > 0 && item.progress < 100 && (
+           <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 z-20">
+             <div className="w-full h-1 bg-gray-600 rounded-full overflow-hidden">
+               <div 
+                 className="h-full bg-red-600 rounded-full transition-all duration-300"
+                 style={{ width: `${item.progress}%` }}
+               />
+             </div>
+             <div className="flex justify-between items-center mt-1">
+               <span className="text-xs text-white font-medium">{item.progress}%</span>
+               {item.episodeNumber && (
+                 <span className="text-xs text-gray-300">E{item.episodeNumber}</span>
+               )}
+             </div>
            </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent p-4 flex flex-col justify-end">
-           <h3 className="text-sm font-bold text-white truncate drop-shadow-md">{item.title}</h3>
-           <div className="flex items-center gap-2 mt-1">
-              <span className="text-primary text-xs font-black drop-shadow-sm">{item.rating}</span>
-              <span className="text-white/60 text-[10px] uppercase font-bold">{item.year}</span>
-           </div>
-        </div>
       </div>
 
       {/* EXPANDED STATE */}
@@ -331,42 +337,15 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
                     loading="eager"
                   />
                   <div className="absolute bottom-4 left-4 z-10">
-                    <h3 className="text-white font-black text-sm drop-shadow-lg text-shadow-premium">{item.title}</h3>
+                    <h3 className="text-white font-black text-[30px] drop-shadow-lg text-shadow-premium">{item.title}</h3>
                   </div>
                   <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#141414] to-transparent" />
                 </>
               )}
             </div>
 
-            {/* BOTTOM: METADATA & ACTIONS */}
+            {/* BOTTOM: METADATA */}
             <div className="p-4 flex flex-col gap-3 bg-[#1b1b1b] border-t border-white/5">
-              <div className="flex items-center justify-between">
-                <div className="flex gap-2 items-center">
-                  <button 
-                    onClick={() => !item.isComingSoon && setIsPlayerOpen(true)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md font-bold text-xs transition-all ${item.isComingSoon ? "bg-white/30 text-white/50 cursor-not-allowed" : "bg-white text-black hover:bg-white/80 active:scale-95"}`}
-                    title="Assistir Agora"
-                  >
-                    <Play size={14} fill="currentColor" />
-                    Assistir Agora
-                  </button>
-                  <button 
-                    onClick={toggleFavorite}
-                    className="p-2 rounded-full border border-white/40 text-red-600 hover:bg-white/10 transition-colors active:scale-90"
-                    title={isFavorite ? "Remover dos Favoritos" : "Adicionar aos Favoritos"}
-                  >
-                    <Heart size={18} fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" />
-                  </button>
-                  <button 
-                    onClick={handleNavigateToDetails}
-                    className={`p-2 rounded-full border border-white/40 transition-colors ${item.isComingSoon ? "text-white/30 border-white/20 cursor-not-allowed" : "text-white hover:bg-white/10"}`}
-                    title="Mais Informações"
-                  >
-                    <Info size={18} />
-                  </button>
-                </div>
-              </div>
-
               <div className="flex items-center gap-3">
                 <span className="text-[#ffff5c] font-black text-xs">
                   {metadata?.rating || item.rating} Relevante
@@ -397,6 +376,8 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
           } 
           title={item.title} 
           historyItem={item}
+          contentType={item.type as 'movie' | 'series'}
+          contentId={item.id}
           onClose={() => setIsPlayerOpen(false)} 
         />
       )}

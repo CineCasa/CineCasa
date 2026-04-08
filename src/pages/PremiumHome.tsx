@@ -1,0 +1,680 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import PremiumNavbar from '../components/PremiumNavbar';
+import PremiumHeroBanner from '../components/PremiumHeroBanner';
+import ContentCarousel from '../components/ContentCarousel';
+import { useContinueWatching } from '../hooks/useContinueWatching';
+import { useTop5Streamings } from '../hooks/useTop5Streamings';
+import { useLancamentos } from '../hooks/useLancamentos';
+import { useRomances } from '../hooks/useRomances';
+import { useFinancas } from '../hooks/useFinancas';
+import { useNegritude } from '../hooks/useNegritude';
+import { usePreparePipoca } from '../hooks/usePreparePipoca';
+import { useInfantil } from '../hooks/useInfantil';
+import { useOscarWinners } from '../hooks/useOscarWinners';
+import { useTravesseiroEdredon } from '../hooks/useTravesseiroEdredon';
+import { usePoderiaSerMelhor } from '../hooks/usePoderiaSerMelhor';
+import { useRecomendacoes } from '../hooks/useRecomendacoes';
+import { useAuth } from '../components/AuthProvider';
+import ContinueWatching from '../components/ContinueWatching';
+import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
+
+// Mock data para demonstração
+const mockHeroContent = {
+  title: "A ORIGEM DO AMANHÃ",
+  description: "Em um futuro distante, a humanidade enfrenta sua maior crise quando uma ameaça alienígena coloca em risco a existência da Terra. Uma equipe de elite deve viajar através do tempo para descobrir a origem do ataque e salvar o futuro da humanidade.",
+  backdrop: "/api/placeholder/1920/1080",
+  year: "2026",
+  rating: "8.5",
+  duration: "2h 28min"
+};
+
+const mockContinueWatching = [
+  {
+    id: "1",
+    title: "Guardiões da Galáxia Vol. 3",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    progress: 65,
+    year: "2023",
+    rating: "8.2"
+  },
+  {
+    id: "2", 
+    title: "The Last of Us",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    progress: 40,
+    year: "2023",
+    rating: "9.0"
+  },
+  {
+    id: "3",
+    title: "Oppenheimer",
+    poster: "/api/placeholder/300/450", 
+    type: "movie" as const,
+    progress: 85,
+    year: "2023",
+    rating: "8.4"
+  },
+  {
+    id: "4",
+    title: "House of the Dragon",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    progress: 30,
+    year: "2022",
+    rating: "8.6"
+  }
+];
+
+const mockNewReleases = [
+  {
+    id: "5",
+    title: "Duna: Parte Dois",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2024",
+    rating: "8.8",
+    isNew: true
+  },
+  {
+    id: "6",
+    title: "The Bear - Temporada 3",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    year: "2024",
+    rating: "8.7",
+    isNew: true
+  },
+  {
+    id: "7",
+    title: "Godzilla x Kong",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2024",
+    rating: "7.9",
+    isNew: true
+  }
+];
+
+const mockExclusiveContent = [
+  {
+    id: "8",
+    title: "Mistérios de CineCasa",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    year: "2024",
+    rating: "8.1"
+  },
+  {
+    id: "9",
+    title: "Ação Imediata",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2024",
+    rating: "7.8"
+  }
+];
+
+const mockRomanceInspiration = [
+  {
+    id: "10",
+    title: "O Amor nos Tempos da Cholera",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2007",
+    rating: "7.3"
+  },
+  {
+    id: "11",
+    title: "Como Eu Era Antes de Você",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2016",
+    rating: "7.4"
+  },
+  {
+    id: "12",
+    title: "Antes do Amanhecer",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "1995",
+    rating: "8.1"
+  },
+  {
+    id: "13",
+    title: "A Notebook - Diário de uma Paixão",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2004",
+    rating: "7.8"
+  },
+  {
+    id: "14",
+    title: "Orgulho e Preconceito",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2005",
+    rating: "7.8"
+  }
+];
+
+const mockPrepareAPipoca = [
+  {
+    id: "15",
+    title: "Velozes e Furiosos 10",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "6.0"
+  },
+  {
+    id: "16",
+    title: "Missão Impossível: Acerto de Contas",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "7.8"
+  },
+  {
+    id: "17",
+    title: "Guardiões da Galáxia Vol. 3",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "7.9"
+  },
+  {
+    id: "18",
+    title: "John Wick 4: Baba Yaga",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "7.7"
+  },
+  {
+    id: "19",
+    title: "Duna: Parte Dois",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2024",
+    rating: "8.5"
+  }
+];
+
+const mockComoEBomSerCrianca = [
+  {
+    id: "20",
+    title: "Divertida Mente 2",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2024",
+    rating: "7.6"
+  },
+  {
+    id: "21",
+    title: "Moana 2",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2024",
+    rating: "7.0"
+  },
+  {
+    id: "22",
+    title: "Kung Fu Panda 4",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2024",
+    rating: "6.7"
+  },
+  {
+    id: "23",
+    title: "O Rei Leão",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2019",
+    rating: "6.8"
+  },
+  {
+    id: "24",
+    title: "Frozen II",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2019",
+    rating: "6.8"
+  }
+];
+
+const mockTop5Streamings = [
+  {
+    id: "25",
+    title: "Stranger Things",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    year: "2022",
+    rating: "8.7"
+  },
+  {
+    id: "26",
+    title: "The Last of Us",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    year: "2023",
+    rating: "8.8"
+  },
+  {
+    id: "27",
+    title: "The Witcher",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    year: "2023",
+    rating: "7.5"
+  },
+  {
+    id: "28",
+    title: "Casa de Papel",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    year: "2021",
+    rating: "8.2"
+  },
+  {
+    id: "29",
+    title: "Round 6",
+    poster: "/api/placeholder/300/450",
+    type: "series" as const,
+    year: "2021",
+    rating: "8.0"
+  }
+];
+
+const mockVencedoresOscar = [
+  {
+    id: "30",
+    title: "Oppenheimer",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "8.4"
+  },
+  {
+    id: "31",
+    title: "Pobres Criaturas",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "7.9"
+  },
+  {
+    id: "32",
+    title: "Anatomia de uma Queda",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "7.6"
+  },
+  {
+    id: "33",
+    title: "American Fiction",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "7.5"
+  },
+  {
+    id: "34",
+    title: "Zona de Interesse",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2023",
+    rating: "7.4"
+  }
+];
+
+const mockTravesseiroEdredon = [
+  {
+    id: "35",
+    title: "Amelie Poulain",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2001",
+    rating: "8.3"
+  },
+  {
+    id: "36",
+    title: "Antes do Amanhecer",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "1995",
+    rating: "8.1"
+  },
+  {
+    id: "37",
+    title: "A Vida é Bela",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "1997",
+    rating: "8.6"
+  },
+  {
+    id: "38",
+    title: "As Aventuras de Pi",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2012",
+    rating: "7.9"
+  },
+  {
+    id: "39",
+    title: "Chef",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2014",
+    rating: "7.3"
+  }
+];
+
+const mockPoderiaSerMelhor = [
+  {
+    id: "40",
+    title: "The Room",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2003",
+    rating: "3.7"
+  },
+  {
+    id: "41",
+    title: "Sharknado",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2013",
+    rating: "3.3"
+  },
+  {
+    id: "42",
+    title: "Birdemic",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "2010",
+    rating: "1.8"
+  },
+  {
+    id: "43",
+    title: "Troll 2",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "1990",
+    rating: "2.9"
+  },
+  {
+    id: "44",
+    title: "Plan 9 from Outer Space",
+    poster: "/api/placeholder/300/450",
+    type: "movie" as const,
+    year: "1957",
+    rating: "4.0"
+  }
+];
+
+const PremiumHome: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const { items: continueWatchingItems, isLoading: isLoadingContinue } = useContinueWatching();
+  const { top5: top5Streamings, isLoading: isLoadingTop5 } = useTop5Streamings();
+  const { user } = useAuth();
+  const { lancamentos, isLoading: isLoadingLancamentos } = useLancamentos(user?.email);
+  const { recomendacoes, isLoading: isLoadingRecomendacoes, topGenres } = useRecomendacoes(user?.email);
+  const { romances, isLoading: isLoadingRomances } = useRomances(user?.email);
+  const { financas, isLoading: isLoadingFinancas } = useFinancas(user?.email);
+  const { negritude, isLoading: isLoadingNegritude } = useNegritude(user?.email);
+  const { series: pipocaSeries, isLoading: isLoadingPipoca } = usePreparePipoca(user?.email);
+  const { infantil, isLoading: isLoadingInfantil } = useInfantil(user?.email);
+  const { oscarWinners, isLoading: isLoadingOscar } = useOscarWinners();
+  const { content: travesseiroContent, isLoading: isLoadingTravesseiro } = useTravesseiroEdredon(user?.email);
+  const { content: poderiaContent, isLoading: isLoadingPoderia } = usePoderiaSerMelhor(user?.email);
+
+  // Sistema para evitar duplicatas entre seções
+  const usedIds = new Set<string>();
+  
+  const filterUniqueItems = (items: any[], limit: number = 5) => {
+    const unique = items.filter(item => {
+      const id = item.tmdbId || item.id;
+      if (usedIds.has(id)) return false;
+      usedIds.add(id);
+      return true;
+    });
+    return unique.slice(0, limit);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    console.log("Searching for:", query);
+  };
+
+  const handleCardClick = (item: any) => {
+    console.log("🎯 PremiumHome - Card clicado:", item);
+    const typePath = item.type === 'movie' ? 'cinema' : 'series';
+    // Usar o ID do banco de dados (prioridade) em vez do tmdbId
+    const id = item.id || item.tmdbId;
+    console.log("🧭 Navegando para:", `/details/${typePath}/${id}`, "com:", { tmdbId: item.tmdbId, id: item.id, finalId: id });
+    navigate(`/details/${typePath}/${id}`);
+  };
+
+  const handleHeroPlay = () => {
+    console.log("Playing hero content");
+  };
+
+  const handleHeroDetails = () => {
+    console.log("Showing hero details");
+  };
+
+  return (
+    <div className="streaming-container min-h-screen pt-[94px]">
+      {/* Navbar */}
+      <PremiumNavbar onSearch={handleSearch} />
+
+      {/* Continue Watching - First Section */}
+      {!isLoadingContinue && continueWatchingItems.length > 0 && (
+        <div className="relative z-30 mt-[70px] mb-4">
+          <ContinueWatching
+            items={continueWatchingItems.slice(0, 3)}
+            onRemove={(id, type, episodeId) => {
+              // Remover item ao clicar no X
+              console.log("Removendo item:", id, type, episodeId);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Hero Banner */}
+      <PremiumHeroBanner
+        {...mockHeroContent}
+        onPlay={handleHeroPlay}
+        onDetails={handleHeroDetails}
+      />
+
+      {/* Content Sections */}
+      <div className="pb-20 mt-[70px] relative z-30">
+        {/* Lançamentos & Novidades - Inteligente: 3 de 2026 + 2 de 2025 */}
+        <ContentCarousel
+          title="Lançamentos & Novidades"
+          items={!isLoadingLancamentos ? filterUniqueItems((lancamentos || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.category === 'Lançamento 2026' ? '2026' : '2025',
+            isNew: true
+          })), 5) : []}
+          isLoading={isLoadingLancamentos}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Exclusivos para Você - Inteligente: baseado nos 5 gêneros mais vistos */}
+        {!isLoadingRecomendacoes && recomendacoes.length > 0 && (
+          <ContentCarousel
+            title={`Exclusivos para Você${topGenres.length > 0 ? ` • ${topGenres.slice(0, 2).map(g => g.genre).join(', ')}` : ''}`}
+            items={filterUniqueItems((recomendacoes || []).map(item => ({
+              id: item.id,
+              tmdbId: item.tmdbId,
+              title: item.title,
+              poster: item.poster,
+              type: item.type,
+              year: item.year,
+              rating: `${Math.round(item.matchScore * 10)}% match`,
+              isNew: true
+            })), 5)}
+            onCardClick={handleCardClick}
+          />
+        )}
+
+        {/* Porque você assistiu - Recomendações baseadas no histórico */}
+        <BecauseYouWatchedRow />
+
+        {/* Romances para se Inspirar - Fixa: 5 capas da categoria romance */}
+        <ContentCarousel
+          title="Romances para se Inspirar 💕"
+          items={filterUniqueItems((romances || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5)}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Dinheiro Importa! - Fixa: 5 capas da categoria Finanças */}
+        <ContentCarousel
+          title="Dinheiro Importa! 💰"
+          items={filterUniqueItems((financas || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5)}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Negritude em Alta - Fixa: 5 capas da categoria Negritude */}
+        <ContentCarousel
+          title="Negritude em Alta ✊🏾"
+          items={filterUniqueItems((negritude || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5)}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Prepare a Pipoca - Fixa: 5 séries aleatórias */}
+        <ContentCarousel
+          title="Prepare a Pipoca 🍿"
+          items={filterUniqueItems((pipocaSeries || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5)}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Como é bom ser criança - Inteligente: 5 capas aleatórias da categoria infantil */}
+        <ContentCarousel
+          title="Como é bom ser criança 🧸"
+          items={!isLoadingInfantil ? filterUniqueItems((infantil || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating,
+            isNew: true
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Top 5 dos streamings - Inteligente: carrega top 1 de cada streaming */}
+        <ContentCarousel
+          title="Top 5 dos streamings"
+          items={!isLoadingTop5 ? filterUniqueItems((top5Streamings || []).map(item => ({
+            id: item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: `${item.platform.toUpperCase()} #${item.platformRank}`,
+            isComingSoon: !item.existsInDatabase,
+            isNew: item.existsInDatabase
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Vencedores de Oscar - Inteligente: 5 capas de conteúdos premiados desde 2000 */}
+        <ContentCarousel
+          title="Vencedores de Oscar 🏆"
+          items={!isLoadingOscar ? filterUniqueItems((oscarWinners || []).map(item => ({
+            id: item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: `Oscar ${item.oscarYear || item.year}`,
+            rating: item.rating,
+            isNew: true
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Travesseiro e Edredon - Inteligente: 5 capas de conteúdos relaxantes/calmos */}
+        <ContentCarousel
+          title="Travesseiro e Edredon 🌙"
+          items={!isLoadingTravesseiro ? filterUniqueItems((travesseiroContent || []).map(item => ({
+            id: item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating,
+            isNew: true
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Poderia ser melhor! - Inteligente: 5 capas de conteúdos de gêneros fracos/ruins */}
+        <ContentCarousel
+          title="Poderia ser melhor! 😬"
+          items={!isLoadingPoderia ? filterUniqueItems((poderiaContent || []).map(item => ({
+            id: item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating,
+            isNew: true
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default PremiumHome;

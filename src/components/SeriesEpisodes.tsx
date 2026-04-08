@@ -2,18 +2,9 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, ChevronDown, ChevronUp, Clock, Calendar, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Episode {
-  id: string;
-  episode_number: number;
-  season_number: number;
-  name: string;
-  overview: string;
-  air_date: string;
-  runtime: number;
-  still_path: string;
-  vote_average: number;
-}
+import { usePlayer } from "@/contexts/PlayerContext";
+import { Episodio } from "@/types/database";
+import NetflixPlayer from "@/components/NetflixPlayer";
 
 interface Season {
   season_number: number;
@@ -22,19 +13,35 @@ interface Season {
   overview: string;
   poster_path: string;
   air_date: string;
-  episodes: Episode[];
+  episodes: Episodio[];
 }
 
 interface SeriesEpisodesProps {
   seriesId: string;
   tmdbId?: number;
+  seriesTitle?: string;
+  seriesPoster?: string;
+  seriesBackdrop?: string;
 }
 
-const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
+const SeriesEpisodes = ({ seriesId, tmdbId, seriesTitle, seriesPoster, seriesBackdrop }: SeriesEpisodesProps) => {
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [loading, setLoading] = useState(true);
   const [expandedEpisodes, setExpandedEpisodes] = useState<Set<string>>(new Set());
+  const { setIsPlayerOpen } = usePlayer();
+  
+  // Estados para o player e episódio atual
+  const [isPlayerOpen, setIsPlayerOpenLocal] = useState(false);
+  const [currentEpisode, setCurrentEpisode] = useState<{
+    id: string;
+    title: string;
+    arquivo: string;
+    seasonNumber: number;
+    episodeNumber: number;
+    duracao?: number;
+    capa?: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchSeriesData();
@@ -110,32 +117,53 @@ const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
 
   const fetchSupabaseEpisodes = async (seriesId: string): Promise<Season[]> => {
     try {
-      const { data, error } = await supabase
-        .from('episodes')
+      // Primeiro buscar as temporadas da série
+      const { data: temporadasData, error: temporadasError } = await supabase
+        .from('temporadas')
         .select('*')
-        .eq('series_id', seriesId)
-        .order('season_number', { ascending: true })
-        .order('episode_number', { ascending: true });
+        .eq('serie_id', seriesId)
+        .order('numero_temporada', { ascending: true });
 
-      if (error) throw error;
+      if (temporadasError) throw temporadasError;
+      if (!temporadasData || temporadasData.length === 0) {
+        console.log('Nenhuma temporada encontrada para a série:', seriesId);
+        return [];
+      }
+
+      // Buscar episódios para cada temporada
+      const temporadaIds = temporadasData.map(t => t.id_n || t.id);
+      const { data: episodiosData, error: episodiosError } = await supabase
+        .from('episodios')
+        .select('*')
+        .in('temporada_id', temporadaIds)
+        .order('numero_episodio', { ascending: true });
+
+      if (episodiosError) throw episodiosError;
 
       // Agrupar episódios por temporada
-      const episodesBySeason: { [key: number]: Episode[] } = {};
+      const episodesBySeason: { [key: number]: any[] } = {};
       
-      (data as any)?.forEach((episode: any) => {
-        if (!episodesBySeason[episode.season_number]) {
-          episodesBySeason[episode.season_number] = [];
-        }
-        episodesBySeason[episode.season_number].push({
-          id: episode.id,
-          episode_number: episode.episode_number,
-          season_number: episode.season_number,
-          name: episode.name,
-          overview: episode.overview || '',
-          air_date: episode.air_date || '',
-          runtime: episode.runtime || 0,
-          still_path: episode.still_path || '',
-          vote_average: episode.vote_average || 0
+      temporadasData.forEach((temp: any) => {
+        const seasonNumber = temp.numero_temporada || 1;
+        episodesBySeason[seasonNumber] = [];
+      });
+
+      (episodiosData as any)?.forEach((episode: any) => {
+        const temporada = temporadasData.find((t: any) => 
+          t.id_n === episode.temporada_id || t.id === episode.temporada_id
+        );
+        const seasonNumber = temporada?.numero_temporada || 1;
+        
+        episodesBySeason[seasonNumber].push({
+          id: episode.id_n || episode.id,
+          numero_episodio: episode.numero_episodio,
+          numero_temporada: seasonNumber,
+          titulo: episode.titulo,
+          descricao: episode.descricao || '',
+          duracao: episode.duracao,
+          capa: episode.imagem_342 || episode.imagem_185 || episode.banner || '',
+          arquivo: episode.arquivo || '',
+          temporada_id: episode.temporada_id
         });
       });
 
@@ -169,6 +197,82 @@ const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
     });
   };
 
+  // Função para reproduzir um episódio específico
+  const playEpisode = (episode: Episodio, seasonNum: number) => {
+    if (!episode.arquivo) {
+      console.log('❌ Episódio não possui arquivo de vídeo');
+      return;
+    }
+
+    console.log('🎬 Reproduzindo episódio:', episode.titulo);
+    console.log('📁 Arquivo do episódio:', episode.arquivo);
+
+    setCurrentEpisode({
+      id: episode.id,
+      title: episode.titulo,
+      arquivo: episode.arquivo,
+      seasonNumber: seasonNum,
+      episodeNumber: episode.numero_episodio,
+      duracao: episode.duracao ? Number(episode.duracao) : undefined,
+      capa: episode.capa
+    });
+
+    setIsPlayerOpenLocal(true);
+    setIsPlayerOpen(true);
+  };
+
+  // Função para encontrar o próximo episódio
+  const getNextEpisode = () => {
+    if (!currentEpisode || !seasons.length) return null;
+
+    const currentSeasonIndex = seasons.findIndex(s => s.season_number === currentEpisode.seasonNumber);
+    const currentSeason = seasons[currentSeasonIndex];
+    
+    if (!currentSeason) return null;
+
+    const currentEpisodeIndex = currentSeason.episodes.findIndex(
+      ep => ep.numero_episodio === currentEpisode.episodeNumber
+    );
+    
+    if (currentEpisodeIndex === -1) return null;
+
+    const nextEpisodeInSeason = currentSeason.episodes[currentEpisodeIndex + 1];
+    
+    if (nextEpisodeInSeason) {
+      return {
+        episode: nextEpisodeInSeason,
+        seasonNumber: currentEpisode.seasonNumber
+      };
+    }
+
+    // Verificar próxima temporada
+    const nextSeason = seasons[currentSeasonIndex + 1];
+    if (nextSeason && nextSeason.episodes.length > 0) {
+      return {
+        episode: nextSeason.episodes[0],
+        seasonNumber: nextSeason.season_number
+      };
+    }
+
+    return null;
+  };
+
+  // Verificar se existe próximo episódio
+  const hasNextEpisode = () => {
+    return getNextEpisode() !== null;
+  };
+
+  // Handler para quando o usuário clica em "Próximo Episódio" ou o countdown termina
+  const handleNextEpisode = () => {
+    const next = getNextEpisode();
+    if (next) {
+      console.log('⏭️ Avançando para o próximo episódio:', next.episode.titulo);
+      playEpisode(next.episode, next.seasonNumber);
+    } else {
+      console.log('🏁 Último episódio alcançado');
+    }
+  };
+
   const currentSeason = seasons.find(s => s.season_number === selectedSeason) || seasons[0];
 
   if (loading) {
@@ -191,7 +295,7 @@ const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
     <div className="bg-black/20 backdrop-blur-md rounded-2xl p-6 border border-white/10">
       {/* Seletor de Temporadas */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-white">Episódios</h2>
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">Episódios</h2>
         
         {seasons.length > 1 && (
           <div className="flex gap-2">
@@ -257,11 +361,14 @@ const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
                 <div className="flex items-start gap-4">
                   {/* Thumbnail do Episódio */}
                   <div className="relative flex-shrink-0">
-                    {episode.still_path ? (
+                    {episode.capa ? (
                       <img
-                        src={`https://image.tmdb.org/t/p/w300${episode.still_path}`}
-                        alt={episode.name}
+                        src={episode.capa}
+                        alt={episode.titulo}
                         className="w-32 h-20 object-cover rounded-lg"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://picsum.photos/seed/episode-${episode.numero_episodio}/320/180.jpg`;
+                        }}
                       />
                     ) : (
                       <div className="w-32 h-20 bg-[#00A8E1]/20 rounded-lg flex items-center justify-center">
@@ -278,36 +385,24 @@ const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <h4 className="text-white font-semibold mb-1">
-                          {episode.episode_number}. {episode.name}
+                          {episode.numero_episodio}. {episode.titulo}
                         </h4>
                         <div className="flex items-center gap-3 text-white/60 text-sm mb-2">
-                          {episode.runtime && (
+                          {episode.duracao && (
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {episode.runtime}min
-                            </span>
-                          )}
-                          {episode.air_date && (
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              {new Date(episode.air_date).toLocaleDateString('pt-BR')}
-                            </span>
-                          )}
-                          {episode.vote_average > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Star className="w-3 h-3 text-yellow-500" />
-                              {episode.vote_average.toFixed(1)}
+                              {episode.duracao}min
                             </span>
                           )}
                         </div>
                         
                         {/* Descrição (expansível) */}
-                        {episode.overview && (
+                        {episode.descricao && (
                           <div className="text-white/70 text-sm">
                             <p className={`${expandedEpisodes.has(episode.id) ? '' : 'line-clamp-2'}`}>
-                              {episode.overview}
+                              {episode.descricao}
                             </p>
-                            {episode.overview.length > 100 && (
+                            {episode.descricao.length > 100 && (
                               <button
                                 onClick={() => toggleEpisodeExpansion(episode.id)}
                                 className="flex items-center gap-1 text-[#00A8E1] hover:text-[#0090c0] transition-colors mt-1"
@@ -332,10 +427,7 @@ const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
                       {/* Botão de Play */}
                       <button
                         className="flex-shrink-0 w-10 h-10 bg-[#00A8E1] rounded-full flex items-center justify-center hover:bg-[#0090c0] transition-colors"
-                        onClick={() => {
-                          // Implementar lógica de reprodução do episódio
-                          console.log('Reproduzir episódio:', episode.id);
-                        }}
+                        onClick={() => playEpisode(episode, currentSeason.season_number)}
                       >
                         <Play className="w-4 h-4 text-white ml-0.5" />
                       </button>
@@ -347,6 +439,38 @@ const SeriesEpisodes = ({ seriesId, tmdbId }: SeriesEpisodesProps) => {
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Netflix Player com autoplay do próximo episódio */}
+      {isPlayerOpen && currentEpisode && (
+        <NetflixPlayer
+          url={currentEpisode.arquivo}
+          title={`${seriesTitle || 'Série'} - S${currentEpisode.seasonNumber}:E${currentEpisode.episodeNumber} ${currentEpisode.title}`}
+          onClose={() => {
+            setIsPlayerOpenLocal(false);
+            setIsPlayerOpen(false);
+            setCurrentEpisode(null);
+          }}
+          onNextEpisode={hasNextEpisode() ? handleNextEpisode : undefined}
+          hasNextEpisode={hasNextEpisode()}
+          contentType="series"
+          contentId={seriesId}
+          seasonNumber={currentEpisode.seasonNumber}
+          episodeNumber={currentEpisode.episodeNumber}
+          historyItem={{
+            id: currentEpisode.id,
+            title: `${seriesTitle || 'Série'} - ${currentEpisode.title}`,
+            poster: seriesPoster || currentEpisode.capa || '',
+            banner: seriesBackdrop || currentEpisode.capa || '',
+            type: 'series',
+            progress: 0,
+            year: new Date().getFullYear().toString(),
+            rating: '',
+            episodeId: currentEpisode.id,
+            seasonNumber: currentEpisode.seasonNumber,
+            episodeNumber: currentEpisode.episodeNumber
+          }}
+        />
+      )}
     </div>
   );
 };

@@ -1,0 +1,423 @@
+/* Componentes Premium Dark - Disney+ Style */
+
+@layer components {
+  /* Títulos responsivos sem quebra */
+  .section-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Line clamp utilities */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Scrollbar hide */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Fontes cinematográficas */
+  .font-titles {
+    font-family: var(--font-titles);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .font-buttons {
+    font-family: var(--font-buttons);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* Container principal */
+  .streaming-container {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0a0d15 0%, #0d1117 50%, #111820 100%);
+  }
+
+  /* Glassmorphism navbar */
+  .glass-navbar {
+    background: rgba(26, 29, 41, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Cards cinematográficos premium */
+  .premium-card {
+    background: rgba(42, 45, 58, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(138, 43, 226, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .premium-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0, 255, 255, 0.2), 0 0 10px rgba(138, 43, 226, 0.1);
+    border-color: rgba(0, 255, 255, 0.3);
+  }
+
+  .premium-card:hover::before {
+    opacity: 1;
+  }
+
+  /* Carousel optimizations for mobile - 2 cards per line */
+  @media (max-width: 640px) {
+    .carousel-container {
+      scroll-padding-left: 8px;
+      scroll-padding-right: 8px;
+    }
+    
+    .carousel-item {
+      margin-right: 8px;
+      width: calc(50vw - 12px);
+      flex-shrink: 0;
+    }
+    
+    .carousel-item:last-child {
+      margin-right: 16px;
+    }
+    
+    .premium-card:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 5px 10px rgba(0, 255, 255, 0.15), 0 0 5px rgba(138, 43, 226, 0.08);
+    }
+  }
+
+  @media (min-width: 641px) and (max-width: 768px) {
+    .carousel-container {
+      scroll-padding-left: 16px;
+      scroll-padding-right: 16px;
+    }
+    
+    .carousel-item {
+      margin-right: 12px;
+    }
+    
+    .carousel-item:last-child {
+      margin-right: 20px;
+    }
+  }
+
+  /* Botões premium */
+  .premium-button {
+    background: linear-gradient(135deg, #00ffff 0%, #00cccc 100%);
+    color: #1a1d29;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .premium-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .premium-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.5);
+  }
+
+  .premium-button:hover::before {
+    left: 100%;
+  }
+
+  .premium-button-secondary {
+    background: rgba(138, 43, 226, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(138, 43, 226, 0.4);
+  }
+
+  .premium-button-secondary:hover {
+    background: rgba(138, 43, 226, 0.3);
+    border-color: rgba(138, 43, 226, 0.6);
+    box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+  }
+
+  /* Texto premium */
+  .text-primary {
+    color: #ffffff;
+  }
+
+  .text-secondary {
+    color: #a0a0a0;
+  }
+
+  .text-accent {
+    color: #00ffff;
+  }
+
+  .text-purple {
+    color: #8a2be2;
+  }
+
+  /* Streaming Hero - Netflix/Prime style */
+  .streaming-hero {
+    position: relative;
+    height: calc(85vh - 15px);
+    min-height: 450px;
+    background: linear-gradient(135deg, #0a0d15 0%, #1a1d29 100%);
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .streaming-hero {
+      height: 85vh;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .streaming-hero {
+      height: 90vh;
+    }
+  }
+
+  /* Hero banner */
+  .hero-banner {
+    position: relative;
+    height: calc(60vh - 15px);
+    min-height: 350px;
+    background: linear-gradient(135deg, #0a0d15 0%, #1a1d29 100%);
+    overflow: hidden;
+  }
+
+  @media (min-width: 640px) {
+    .hero-banner {
+      height: 70vh;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .hero-banner {
+      height: 80vh;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .hero-banner {
+      height: 85vh;
+    }
+  }
+
+  .hero-banner::after,
+  .streaming-hero::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Carrossel horizontal */
+  .carousel-container {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 1rem 0;
+  }
+
+  .carousel-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carousel-item {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  /* Respiro de 5px apenas no último item do carrossel */
+  .carousel-item:last-child {
+    margin-right: 5px;
+  }
+
+  /* Grid responsiva */
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(192px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    justify-items: start;
+  }
+
+  @media (min-width: 768px) {
+    .content-grid {
+      grid-template-columns: repeat(auto-fill, minmax(224px, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .content-grid {
+      grid-template-columns: repeat(auto-fill, minmax(256px, 1fr));
+    }
+  }
+
+  /* Filtros */
+  .filter-button {
+    background: rgba(42, 45, 58, 0.6);
+    color: #a0a0a0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .filter-button {
+      border-radius: 24px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .filter-button {
+      border-radius: 28px;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .filter-button {
+      border-radius: 32px;
+    }
+  }
+
+  .filter-button:hover {
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    border-color: rgba(0, 255, 255, 0.3);
+  }
+
+  .filter-button.active {
+    background: linear-gradient(135deg, #00ffff 0%, #00cccc 100%);
+    color: #1a1d29;
+    border-color: transparent;
+  }
+
+  /* Barra de progresso */
+  .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #00ffff 0%, #8a2be2 100%);
+    border-radius: 0 0 10px 10px;
+    transition: width 0.3s ease;
+  }
+
+  /* Tags */
+  .content-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #00ffff 0%, #8a2be2 100%);
+    color: #1a1d29;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    z-index: 10;
+  }
+
+  .coming-soon-tag {
+    position: absolute;
+    top: 50%;
+    left: -30px;
+    transform: translateY(-50%) rotate(-45deg);
+    background: linear-gradient(135deg, #8a2be2 0%, #ff00ff 100%);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 30px;
+    z-index: 10;
+    width: 120px;
+    text-align: center;
+  }
+
+  /* Footer responsivo - Ocultar em mobile */
+  footer {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    footer {
+      display: block;
+    }
+  }
+
+  /* Conteúdo principal com padding para mobile bottom nav */
+  main {
+    padding-bottom: 0;
+  }
+
+  @media (max-width: 1023px) {
+    main {
+      padding-bottom: 4rem;
+    }
+  }
+}

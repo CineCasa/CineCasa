@@ -59,6 +59,42 @@ export type Database = {
         }
         Relationships: []
       }
+      series: {
+        Row: {
+          id_n: number
+          tmdb_id: string | null
+          titulo: string
+          descricao: string | null
+          ano: string | null
+          capa: string | null
+          banner: string | null
+          trailer: string | null
+          genero: string | null
+        }
+        Insert: {
+          id_n?: number
+          tmdb_id?: string | null
+          titulo: string
+          descricao?: string | null
+          ano?: string | null
+          capa?: string | null
+          banner?: string | null
+          trailer?: string | null
+          genero?: string | null
+        }
+        Update: {
+          id_n?: number
+          tmdb_id?: string | null
+          titulo?: string
+          descricao?: string | null
+          ano?: string | null
+          capa?: string | null
+          banner?: string | null
+          trailer?: string | null
+          genero?: string | null
+        }
+        Relationships: []
+      }
       filmes_kids: {
         Row: {
           created_at: string | null
@@ -98,33 +134,36 @@ export type Database = {
         }
         Relationships: []
       }
-      series: {
+      profiles: {
         Row: {
+          approved: boolean | null
           created_at: string | null
-          id: number
-          identificador_archive: string | null
-          titulo: string
-          tmdb_id: string | null
-          trailer: string | null
-          type: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          is_admin: boolean | null
+          plan: string | null
+          updated_at: string | null
         }
         Insert: {
+          approved?: boolean | null
           created_at?: string | null
-          id?: never
-          identificador_archive?: string | null
-          titulo: string
-          tmdb_id?: string | null
-          trailer?: string | null
-          type?: string | null
+          email?: string | null
+          id: string
+          is_active?: boolean | null
+          is_admin?: boolean | null
+          plan?: string | null
+          updated_at?: string | null
         }
         Update: {
+          approved?: boolean | null
           created_at?: string | null
-          id?: never
-          identificador_archive?: string | null
-          titulo?: string
-          tmdb_id?: string | null
-          trailer?: string | null
-          type?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_admin?: boolean | null
+          plan?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -193,6 +232,193 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      tmdb_low_rated_cache: {
+        Row: {
+          id: string
+          data: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          id: string
+          data?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          data?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      episodios: {
+        Row: {
+          id_n: number
+          temporada_id: number
+          numero_episodio: number
+          titulo: string
+          descricao: string | null
+          duracao: string | null
+          arquivo: string | null
+          imagem_185: string | null
+          imagem_342: string | null
+          imagem_500: string | null
+          banner: string | null
+          trailer: string | null
+        }
+        Insert: {
+          id_n?: number
+          temporada_id: number
+          numero_episodio: number
+          titulo: string
+          descricao?: string | null
+          duracao?: string | null
+          arquivo?: string | null
+          imagem_185?: string | null
+          imagem_342?: string | null
+          imagem_500?: string | null
+          banner?: string | null
+          trailer?: string | null
+        }
+        Update: {
+          id_n?: number
+          temporada_id?: number
+          numero_episodio?: number
+          titulo?: string
+          descricao?: string | null
+          duracao?: string | null
+          arquivo?: string | null
+          imagem_185?: string | null
+          imagem_342?: string | null
+          imagem_500?: string | null
+          banner?: string | null
+          trailer?: string | null
+        }
+        Relationships: []
+      }
+      temporadas: {
+        Row: {
+          id_n: number
+          serie_id: number
+          numero_temporada: number
+          titulo: string | null
+          capa: string | null
+          banner: string | null
+        }
+        Insert: {
+          id_n?: number
+          serie_id: number
+          numero_temporada: number
+          titulo?: string | null
+          capa?: string | null
+          banner?: string | null
+        }
+        Update: {
+          id_n?: number
+          serie_id?: number
+          numero_temporada?: number
+          titulo?: string | null
+          capa?: string | null
+          banner?: string | null
+        }
+        Relationships: []
+      }
+      favorites: {
+        Row: {
+          id: string
+          user_id: string
+          content_id: number
+          content_type: string
+          titulo: string | null
+          poster: string | null
+          banner: string | null
+          rating: string | null
+          year: string | null
+          genero: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content_id: number
+          content_type: string
+          titulo?: string | null
+          poster?: string | null
+          banner?: string | null
+          rating?: string | null
+          year?: string | null
+          genero?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content_id?: number
+          content_type?: string
+          titulo?: string | null
+          poster?: string | null
+          banner?: string | null
+          rating?: string | null
+          year?: string | null
+          genero?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      watch_progress: {
+        Row: {
+          id: string
+          user_id: string
+          content_type: string
+          cinema_id: number | null
+          serie_id: number | null
+          episodio_id: number | null
+          season_number: number | null
+          current_time: number
+          duration: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content_type: string
+          cinema_id?: number | null
+          serie_id?: number | null
+          episodio_id?: number | null
+          season_number?: number | null
+          current_time: number
+          duration: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content_type?: string
+          cinema_id?: number | null
+          serie_id?: number | null
+          episodio_id?: number | null
+          season_number?: number | null
+          current_time?: number
+          duration?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

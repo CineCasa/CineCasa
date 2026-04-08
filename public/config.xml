@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="https://cinecasa.com.br" version="1.0.0" viewmodes="maximized">
+    <tizen:application id="cinecasa.app" package="cinecasa.app" required_version="6.0"/>
+    <author href="https://cinecasa.com.br" email="suporte@cinecasa.com.br">CineCasa</author>
+    <content src="index.html"/>
+    <description>CineCasa - O melhor do entretenimento para sua Smart TV Samsung</description>
+    <icon src="icons/icon-512x512.png"/>
+    <icon src="icons/icon-192x192.png"/>
+    <name>CineCasa</name>
+    <tizen:privilege name="http://tizen.org/privilege/internet"/>
+    <tizen:privilege name="http://tizen.org/privilege/fullscreen"/>
+    <tizen:privilege name="http://developer.samsung.com/privilege/network.public"/>
+    <tizen:profile name="tv-samsung-8.0"/>
+    <tizen:setting screen-orientation="landscape" context-menu="enable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable"/>
+    <feature name="http://tizen.org/feature/screen.size.normal.1080.1920"/>
+    <feature name="http://tizen.org/feature/tv.inputdevice"/>
+    <access origin="*" subdomains="true"/>
+    <tizen:app-control>
+        <tizen:src name="index.html" reload="true"/>
+    </tizen:app-control>
+    <tizen:capability system="http://tizen.org/system/tv.inputdevice"/>
+</widget>

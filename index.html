@@ -17,27 +17,76 @@
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Cinecasa - Entretenimento e lazer</title>
-    <meta name="description" content="Entretenimento e lazer">
+    <meta name="description" content="O melhor do entretenimento para você e sua família">
+    <meta name="keywords" content="filmes, séries, streaming, entretenimento, TV, cinema">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#00A8E1" />
     <meta name="background-color" content="#000000" />
     
-    <!-- PWA Icons -->
+    <!-- PWA Icons - All Sizes -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="152x152" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="167x167" href="/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon.ico" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     
-    <!-- PWA Meta Tags -->
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-167x167.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png" />
+    
+    <!-- PWA Meta Tags - Mobile & Desktop -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="CineCasa" />
     <meta name="application-name" content="CineCasa Entretenimento" />
     <meta name="msapplication-TileColor" content="#00A8E1" />
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta name="msapplication-starturl" content="/" />
+    
+    <!-- Android TV / TV App Meta Tags -->
+    <meta name="tv-app" content="true" />
+    <meta name="google-site-verification" content="true" />
+    
+    <!-- Samsung Smart TV (Tizen) -->
+    <meta name="tizen-application-id" content="cinecasa.app" />
+    <meta name="tizen-application-name" content="CineCasa" />
+    
+    <!-- LG WebOS -->
+    <meta name="webos-app" content="true" />
+    <meta name="webos-large-icon" content="/icons/icon-512x512.png" />
+    
+    <!-- Roku -->
+    <meta name="roku-app" content="true" />
+    
+    <!-- Android TV -->
+    <meta name="android-tv-app" content="true" />
+    <meta name="com.android.tv.default" content="true" />
+    <meta name="leanback" content="true" />
+    
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://cinecasa.com.br" />
+    <meta property="og:title" content="Cinecasa - Entretenimento e lazer">
+    <meta property="og:description" content="O melhor do entretenimento na palma da sua mão">
+    <meta property="og:image" content="/icons/icon-512x512.png" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="app" />
+    <meta name="twitter:title" content="CineCasa" />
+    <meta name="twitter:description" content="O melhor do entretenimento para você" />
+    <meta name="twitter:image" content="/icons/icon-512x512.png" />
     
     <!-- Service Worker Registration -->
     <script>
@@ -45,7 +94,7 @@
         window.addEventListener('load', function() {
           navigator.serviceWorker.register('/sw.js')
             .then(function(registration) {
-              console.log('Service Worker registrado com sucesso:', registration);
+              console.log('Service Worker registrado:', registration.scope);
             })
             .catch(function(error) {
               console.log('Erro no registro do Service Worker:', error);
@@ -54,7 +103,7 @@
       }
     </script>
     
-    <!-- PWA Install Prompt -->
+    <!-- PWA Install Prompt Handler -->
     <script>
       let deferredPrompt;
       window.addEventListener('beforeinstallprompt', function(e) {
@@ -66,10 +115,21 @@
     
     <!-- Video Player Fix Script -->
     <script src="/video-player-fix.js"></script>
-    <meta name="theme-color" content="#000000">
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Cinecasa - Entretenimento e lazer">
-    <meta property="og:description" content="O melhor do entretenimento na palma da sua mão">
+    
+    <!-- Smart TV Navigation Support -->
+    <script>
+      // Detect Smart TV platforms
+      window.isSmartTV = /(Tizen|webOS|SmartTV|Roku|Android.*TV|GoogleTV|AppleTV|CrKey)/i.test(navigator.userAgent);
+      window.isAndroidTV = /Android.*TV|GoogleTV|Android.*Leanback/i.test(navigator.userAgent);
+      window.isTizen = /Tizen/i.test(navigator.userAgent);
+      window.isWebOS = /webOS|Web0S/i.test(navigator.userAgent);
+      window.isRoku = /Roku/i.test(navigator.userAgent);
+      
+      // Enable TV-specific features
+      if (window.isSmartTV) {
+        document.documentElement.classList.add('smart-tv');
+      }
+    </script>
   </head>
 
   <body>

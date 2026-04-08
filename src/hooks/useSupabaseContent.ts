@@ -6,6 +6,9 @@ import { useAuth } from "@/components/AuthProvider";
 
 export const useSupabaseContent = () => {
   const { plan } = useAuth();
+  
+  // Forçar atualização sempre em localhost
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
   return useQuery({
     queryKey: ["supabase-content", plan],
@@ -254,10 +257,10 @@ export const useSupabaseContent = () => {
       let finalTv = tvAoVivo;
 
       if (plan === "basic") {
-        finalCinema = cinemaWithData.filter(c => c.year < 2025).slice(0, 50);
-        finalSeries = seriesWithData.filter(s => s.year <= 2023).slice(0, 50);
-        finalKidsMovies = kidsMoviesWithData.slice(0, 10);
-        finalKidsSeries = kidsSeriesWithData.slice(0, 5);
+        finalCinema = cinemaWithData.filter(c => c.year < 2025);
+        finalSeries = seriesWithData.filter(s => s.year <= 2023);
+        finalKidsMovies = kidsMoviesWithData;
+        finalKidsSeries = kidsSeriesWithData;
         finalTv = [];
       }
 
@@ -350,6 +353,10 @@ export const useSupabaseContent = () => {
       }
 
       return categories;
-    }
+    },
+    // Forçar atualização sempre em localhost, cache normal em produção
+    staleTime: isLocalhost ? 0 : 10 * 60 * 1000, // 0 em localhost, 10 minutos em produção
+    refetchOnWindowFocus: false,
+    refetchOnMount: isLocalhost ? 'always' : false
   });
 };

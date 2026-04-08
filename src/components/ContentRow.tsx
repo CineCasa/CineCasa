@@ -6,29 +6,113 @@ import ContentCard from "./ContentCard";
 interface ContentRowProps {
   category: Category;
   showProgress?: boolean;
+  infiniteScroll?: boolean;
+  maxItems?: number;
+  layout?: 'scroll' | 'grid';
 }
 
-const ContentRow = ({ category, showProgress = false }: ContentRowProps) => {
+const ContentRow = ({ category, showProgress = false, infiniteScroll = false, maxItems = 5, layout = 'scroll' }: ContentRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Limitar a 5 itens
+  const limitedItems = category.items.slice(0, maxItems);
 
   const checkScroll = () => {
     const el = scrollRef.current;
     if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
     setCanScrollLeft(el.scrollLeft > 10);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+    setCanScrollRight(el.scrollLeft < maxScroll - 10);
   };
 
+  // Efeito de rolagem infinita automática em mobile
   useEffect(() => {
-    checkScroll();
-  }, [category.items]);
+    if (!infiniteScroll || !scrollRef.current) return;
+
+    const el = scrollRef.current;
+    let autoScrollInterval: NodeJS.Timeout;
+
+    const startAutoScroll = () => {
+      autoScrollInterval = setInterval(() => {
+        const cardWidth = el.scrollWidth / limitedItems.length;
+        const containerWidth = el.clientWidth;
+        const cardsPerView = Math.floor(containerWidth / cardWidth) || 1;
+        
+        let newIndex = currentIndex + cardsPerView;
+
+        // Quando chegar no final, volta para o início sem passar pelas anteriores
+        if (newIndex >= limitedItems.length) {
+          el.scrollTo({ left: 0, behavior: 'smooth' });
+          setCurrentIndex(0);
+          return;
+        }
+
+        const scrollAmount = newIndex * cardWidth;
+        el.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+        setCurrentIndex(newIndex);
+      }, 3000); // Roda a cada 3 segundos
+    };
+
+    const stopAutoScroll = () => {
+      clearInterval(autoScrollInterval);
+    };
+
+    // Iniciar auto-scroll
+    startAutoScroll();
+
+    // Parar quando o usuário interagir
+    el.addEventListener('touchstart', stopAutoScroll);
+    el.addEventListener('mousedown', stopAutoScroll);
+
+    // Retomar após 5 segundos sem interação
+    const resumeTimeout = setTimeout(startAutoScroll, 5000);
+
+    return () => {
+      clearInterval(autoScrollInterval);
+      clearTimeout(resumeTimeout);
+      el.removeEventListener('touchstart', stopAutoScroll);
+      el.removeEventListener('mousedown', stopAutoScroll);
+    };
+  }, [infiniteScroll, limitedItems.length, currentIndex]);
 
   const scroll = (dir: number) => {
     const el = scrollRef.current;
     if (!el) return;
-    const amount = el.clientWidth * 0.8;
-    el.scrollBy({ left: dir * amount, behavior: "smooth" });
+
+    const cardWidth = el.scrollWidth / limitedItems.length;
+    const containerWidth = el.clientWidth;
+    const cardsPerView = Math.floor(containerWidth / cardWidth) || 5;
+    
+    let newIndex = currentIndex + (dir * cardsPerView);
+
+    // Rolagem infinita: quando chegar no final, volta para o início
+    if (infiniteScroll) {
+      if (newIndex >= limitedItems.length) {
+        newIndex = 0;
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+        setCurrentIndex(0);
+        setTimeout(checkScroll, 400);
+        return;
+      }
+      if (newIndex < 0) {
+        newIndex = Math.max(0, limitedItems.length - cardsPerView);
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        el.scrollTo({ left: maxScroll, behavior: 'smooth' });
+        setCurrentIndex(newIndex);
+        setTimeout(checkScroll, 400);
+        return;
+      }
+    } else {
+      // Limitar aos bounds
+      newIndex = Math.max(0, Math.min(newIndex, limitedItems.length - cardsPerView));
+    }
+
+    const scrollAmount = newIndex * cardWidth;
+    el.scrollTo({ left: scrollAmount, behavior: 'smooth' });
+    setCurrentIndex(newIndex);
     setTimeout(checkScroll, 400);
   };
 
@@ -38,45 +122,73 @@ const ContentRow = ({ category, showProgress = false }: ContentRowProps) => {
         {category.title}
       </h2>
 
-      <div className="relative isolate">
-        {/* Left arrow */}
-        {canScrollLeft && (
-          <button
-            onClick={() => scroll(-1)}
-            className="absolute left-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
-          >
-            <ChevronLeft size={40} className="text-white" />
-          </button>
-        )}
-
-        {/* Scrollable row */}
-        <div
-          ref={scrollRef}
-          onScroll={checkScroll}
-          className="row-scroll-container snap-x snap-proximity"
-        >
-          {category.items.map((item, idx) => (
-            <div key={`${item.id}-${idx}`} className="snap-center">
-              <ContentCard 
-                item={item} 
-                index={idx} 
-                isLast={idx === category.items.length - 1} 
-                showProgress={showProgress}
-              />
-            </div>
-          ))}
+      {layout === 'grid' ? (
+        // Layout em grid: 5 capas por linha
+        <div className="px-4 lg:px-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {limitedItems.map((item, idx) => (
+              <div key={`${item.id}-${idx}`}>
+                <ContentCard 
+                  item={item} 
+                  index={idx} 
+                  isLast={idx === limitedItems.length - 1} 
+                  showProgress={showProgress}
+                />
+              </div>
+            ))}
+          </div>
         </div>
+      ) : (
+        // Layout scroll horizontal (original) - sem setas em mobile com infinite scroll
+        <div className="relative isolate group/row">
+          {/* Left arrow - apenas desktop ou quando não é infinite scroll */}
+          {canScrollLeft && !infiniteScroll && (
+            <button
+              onClick={() => scroll(-1)}
+              className="absolute left-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
+            >
+              <ChevronLeft size={40} className="text-white" />
+            </button>
+          )}
 
-        {/* Right arrow */}
-        {canScrollRight && (
-          <button
-            onClick={() => scroll(1)}
-            className="absolute right-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
+          {/* Scrollable row */}
+          <div
+            ref={scrollRef}
+            onScroll={checkScroll}
+            className="row-scroll-container snap-x snap-mandatory overflow-x-auto scrollbar-hide"
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              flexWrap: 'nowrap',
+              WebkitOverflowScrolling: 'touch',
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              touchAction: 'pan-x'
+            }}
           >
-            <ChevronRight size={40} className="text-white" />
-          </button>
-        )}
-      </div>
+            {limitedItems.map((item, idx) => (
+              <div key={`${item.id}-${idx}`} className="snap-start flex-shrink-0">
+                <ContentCard 
+                  item={item} 
+                  index={idx} 
+                  isLast={idx === limitedItems.length - 1} 
+                  showProgress={showProgress}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Right arrow - apenas desktop ou quando não é infinite scroll */}
+          {canScrollRight && !infiniteScroll && (
+            <button
+              onClick={() => scroll(1)}
+              className="absolute right-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
+            >
+              <ChevronRight size={40} className="text-white" />
+            </button>
+          )}
+        </div>
+      )}
     </section>
   );
 };

@@ -18,7 +18,8 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({ children }) => 
         'input:not([disabled])',
         'select:not([disabled])',
         'textarea:not([disabled])',
-        '[tabindex]:not([tabindex="-1"])'
+        '[tabindex]:not([tabindex="-1"])',
+        '[data-navigable="true"]' // Adicionar elementos navegáveis personalizados
       ];
 
       try {
@@ -55,7 +56,7 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({ children }) => 
         return;
       }
 
-      // Navegação por setas
+      // Navegação por setas - Navegação 2D espacial
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
         e.preventDefault();
         
@@ -64,40 +65,136 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({ children }) => 
         }
 
         const elements = focusableElementsRef.current;
-        const currentIndex = currentFocusIndexRef.current;
+        const currentElement = document.activeElement as HTMLElement;
         
-        let nextIndex = currentIndex;
-        
-        switch (key) {
-          case 'ArrowUp':
-          case 'ArrowLeft':
-            nextIndex = currentIndex - 1;
-            if (nextIndex < 0) nextIndex = elements.length - 1;
-            break;
-          case 'ArrowDown':
-          case 'ArrowRight':
-            nextIndex = currentIndex + 1;
-            if (nextIndex >= elements.length) nextIndex = 0;
-            break;
+        if (!currentElement || !elements.includes(currentElement)) {
+          // Se não há elemento focado ou o elemento atual não está na lista, focar o primeiro
+          if (elements[0]) {
+            elements[0].focus();
+            currentFocusIndexRef.current = 0;
+          }
+          return;
         }
 
-        if (elements[nextIndex]) {
-          elements[nextIndex].focus();
-          currentFocusIndexRef.current = nextIndex;
+        const currentRect = currentElement.getBoundingClientRect();
+        const currentCenterX = currentRect.left + currentRect.width / 2;
+        const currentCenterY = currentRect.top + currentRect.height / 2;
+
+        let bestCandidate: HTMLElement | null = null;
+        let bestDistance = Infinity;
+        let bestAlignment = Infinity;
+
+        for (const element of elements) {
+          if (element === currentElement) continue;
+
+          const rect = element.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+
+          const deltaX = centerX - currentCenterX;
+          const deltaY = centerY - currentCenterY;
+
+          let isValidDirection = false;
+          let distance = Infinity;
+          let alignment = Infinity;
+
+          switch (key) {
+            case 'ArrowUp':
+              // Elemento deve estar ACIMA (deltaY < 0)
+              if (deltaY < -10) {
+                isValidDirection = true;
+                distance = Math.abs(deltaY);
+                alignment = Math.abs(deltaX);
+              }
+              break;
+            case 'ArrowDown':
+              // Elemento deve estar ABAIXO (deltaY > 0)
+              if (deltaY > 10) {
+                isValidDirection = true;
+                distance = Math.abs(deltaY);
+                alignment = Math.abs(deltaX);
+              }
+              break;
+            case 'ArrowLeft':
+              // Elemento deve estar à ESQUERDA (deltaX < 0)
+              if (deltaX < -10) {
+                isValidDirection = true;
+                distance = Math.abs(deltaX);
+                alignment = Math.abs(deltaY);
+              }
+              break;
+            case 'ArrowRight':
+              // Elemento deve estar à DIREITA (deltaX > 0)
+              if (deltaX > 10) {
+                isValidDirection = true;
+                distance = Math.abs(deltaX);
+                alignment = Math.abs(deltaY);
+              }
+              break;
+          }
+
+          if (isValidDirection) {
+            // Priorizar elementos alinhados (menor alignment) e depois mais próximos
+            const score = distance + alignment * 2;
+            if (score < bestDistance) {
+              bestDistance = score;
+              bestCandidate = element;
+            }
+          }
+        }
+
+        if (bestCandidate) {
+          bestCandidate.focus();
+          const newIndex = elements.indexOf(bestCandidate);
+          currentFocusIndexRef.current = newIndex;
           
           // Scroll para o elemento se necessário
-          const rect = elements[nextIndex].getBoundingClientRect();
+          const rect = bestCandidate.getBoundingClientRect();
           const isInViewport = rect.top >= 0 && rect.left >= 0 && 
                               rect.bottom <= window.innerHeight && 
                               rect.right <= window.innerWidth;
           
           if (!isInViewport) {
-            elements[nextIndex].scrollIntoView({
+            bestCandidate.scrollIntoView({
               behavior: 'smooth',
               block: 'nearest',
               inline: 'nearest'
             });
           }
+        }
+      }
+
+      // Navegação por seções (Ctrl + Arrow)
+      if (e.ctrlKey && ['ArrowUp', 'ArrowDown'].includes(key)) {
+        e.preventDefault();
+        
+        const currentElement = document.activeElement as HTMLElement;
+        if (!currentElement) return;
+        
+        // Encontrar seção atual
+        const currentSection = currentElement.closest('[data-nav-section]');
+        if (!currentSection) return;
+        
+        const allSections = Array.from(document.querySelectorAll('[data-nav-section]'));
+        const currentSectionIndex = allSections.indexOf(currentSection);
+        
+        let nextSectionIndex = currentSectionIndex;
+        
+        if (key === 'ArrowUp') {
+          nextSectionIndex = currentSectionIndex - 1;
+          if (nextSectionIndex < 0) nextSectionIndex = allSections.length - 1;
+        } else if (key === 'ArrowDown') {
+          nextSectionIndex = currentSectionIndex + 1;
+          if (nextSectionIndex >= allSections.length) nextSectionIndex = 0;
+        }
+        
+        const nextSection = allSections[nextSectionIndex] as HTMLElement;
+        if (nextSection) {
+          const firstFocusable = nextSection.querySelector('[data-navigable="true"], button, [href], [tabindex]:not([tabindex="-1"])') as HTMLElement;
+          if (firstFocusable) {
+            firstFocusable.focus();
+          }
+          nextSection.scrollIntoView({ behavior: 'smooth' });
         }
       }
 
@@ -203,80 +300,7 @@ const KeyboardNavigation: React.FC<KeyboardNavigationProps> = ({ children }) => 
     };
   }, [navigate]);
 
-  // Adicionar indicadores visuais de navegação
-  useEffect(() => {
-    const addNavigationIndicators = () => {
-      try {
-        // Adicionar tooltip para elementos navegáveis
-        const style = document.createElement('style');
-        style.textContent = `
-          [data-keyboard-nav="true"] {
-            position: relative;
-          }
-          
-          [data-keyboard-nav="true"]:focus {
-            outline: 2px solid #00A8E1;
-            outline-offset: 2px;
-          }
-          
-          .keyboard-nav-hint {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #00A8E1;
-            color: white;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            z-index: 1000;
-            pointer-events: none;
-          }
-          
-          @media (hover: hover) {
-            .keyboard-nav-hint {
-              opacity: 0;
-              transition: opacity 0.2s;
-            }
-            
-            [data-keyboard-nav="true"]:hover .keyboard-nav-hint {
-              opacity: 1;
-            }
-          }
-        `;
-        document.head.appendChild(style);
 
-        // Marcar elementos navegáveis
-        const focusableElements = document.querySelectorAll(
-          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-
-        focusableElements.forEach((element, index) => {
-          if (index < 9) { // Apenas os 9 primeiros elementos
-            (element as HTMLElement).setAttribute('data-keyboard-nav', 'true');
-            
-            const hint = document.createElement('div');
-            hint.className = 'keyboard-nav-hint';
-            hint.textContent = (index + 1).toString();
-            (element as HTMLElement).appendChild(hint);
-          }
-        });
-      } catch (error) {
-        console.error('Error adding navigation indicators:', error);
-      }
-    };
-
-    // Adicionar indicadores após um pequeno delay para garantir que o DOM esteja pronto
-    const timeout = setTimeout(addNavigationIndicators, 1000);
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, []);
 
   return <>{children}</>;
 };

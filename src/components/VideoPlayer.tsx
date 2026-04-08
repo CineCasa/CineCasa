@@ -21,6 +21,25 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, title }) => {
   useEffect(() => {
     if (!containerRef.current || !src) return;
 
+    // Função para forçar orientação landscape em dispositivos móveis
+    const forceLandscape = async () => {
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape');
+          console.log('📱 Orientação travada em landscape');
+        }
+      } catch (error) {
+        console.warn('Não foi possível travar orientação:', error);
+      }
+    };
+
+    // Verificar se é dispositivo móvel
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      forceLandscape();
+    }
+
     // Carregar Clappr e plugins dinamicamente via CDN
     const loadClappr = async () => {
       try {
@@ -210,6 +229,16 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, title }) => {
         } catch (error) {
           console.error('Error destroying player:', error);
         }
+      }
+      
+      // Restaurar orientação ao sair
+      try {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+          console.log('📱 Orientação restaurada');
+        }
+      } catch (error) {
+        console.warn('Não foi possível restaurar orientação:', error);
       }
     };
   }, [src]);

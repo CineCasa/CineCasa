@@ -7,8 +7,8 @@ import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 const navItems = [
   { label: "Início", path: "/" },
   { label: "Cinema", path: "/cinema" },
-  { label: "Séries", path: "/series" },
-  { label: "Tv ao Vivo", path: "/tv-live" },
+  { label: "Séries", path: "/series-categorias" },
+  { label: "TV", path: "/tv-live" },
   { label: "Filmes Kids", path: "/kids-movies" },
   { label: "Séries Kids", path: "/kids-series" },
   { label: "Meus Favoritos", path: "/favorites" },
@@ -22,7 +22,7 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<{id: string | number; title: string; genre: string[]; description?: string; year?: number; image: string}[]>([]);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -76,7 +76,7 @@ const Navbar = () => {
   };
 
   // Função para selecionar resultado
-  const handleResultClick = (item: any) => {
+  const handleResultClick = (item: {id: string | number; title: string}) => {
     navigate(`/content/${item.id}`);
     setSearchQuery(item.title);
     setSearchOpen(false);
@@ -116,9 +116,9 @@ const Navbar = () => {
       <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 h-16 sm:h-20">
         {/* Logo and Main Nav Desktop */}
         <div className="flex items-center gap-6 md:gap-10">
-          {/* Mobile menu toggle (Left side on Prime Video) */}
+          {/* Mobile menu toggle - Hidden on small devices, shown on tablets */}
           <button
-            className="p-1 -ml-1 text-white/80 hover:text-white transition-colors lg:hidden focus-visible rounded-sm"
+            className="p-1 -ml-1 text-white/80 hover:text-white transition-colors md:lg:hidden lg:hidden focus-visible rounded-sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -137,7 +137,7 @@ const Navbar = () => {
                   if (textElement) textElement.style.display = 'block';
                 }}
               />
-              <span className="text-2xl sm:text-3xl font-black tracking-tighter text-[#00A8E1] group-hover:text-white transition-colors" style={{display: 'none'}}>
+              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black tracking-tighter text-[#00A8E1] group-hover:text-white transition-colors" style={{display: 'none'}}>
                 CINECASA
               </span>
             </div>
@@ -271,9 +271,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Slide-down Prime Style */}
+      {/* Mobile Menu Slide-down Prime Style - Hidden on small devices */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#19232b] absolute top-[100%] left-0 w-full shadow-2xl border-b border-white/5">
+        <div className="md:lg:hidden lg:hidden bg-[#19232b] absolute top-[100%] left-0 w-full shadow-2xl border-b border-white/5">
           <ul className="flex flex-col p-2 gap-1 max-h-[70vh] overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;

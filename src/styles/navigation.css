@@ -1,0 +1,250 @@
+/* Estilos de Navegação Universal - Mobile, Smart TV, Desktop */
+
+/* Base para elementos navegáveis */
+[data-navigable] {
+  position: relative;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* Foco ativo - Universal */
+.nav-focused {
+  transform: scale(1.05);
+  z-index: 10;
+  position: relative;
+}
+
+/* Foco para Desktop/Mouse */
+@media (hover: hover) and (pointer: fine) {
+  .nav-focused {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+    border-radius: 8px;
+  }
+  
+  [data-navigable]:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Foco para Smart TV */
+@media (hover: none) and (pointer: coarse) {
+  .nav-focused {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.8);
+    border-radius: 12px;
+    animation: pulse-tv 1.5s infinite;
+  }
+}
+
+/* Foco para Mobile */
+@media (max-width: 768px) {
+  .nav-focused {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.6);
+    border-radius: 8px;
+    transform: scale(1.03);
+  }
+}
+
+/* Animação para Smart TV */
+@keyframes pulse-tv {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.4);
+  }
+}
+
+/* Seções de navegação */
+[data-nav-section] {
+  position: relative;
+}
+
+/* Indicador visual de seção ativa */
+.nav-section-indicator {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav-section-active .nav-section-indicator {
+  opacity: 1;
+}
+
+/* Cards de conteúdo navegáveis */
+.premium-card[data-navigable] {
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.premium-card.nav-focused {
+  transform: scale(1.05) translateY(-2px);
+}
+
+/* Botões de navegação */
+.nav-button[data-navigable] {
+  border: 2px solid transparent;
+  border-radius: 6px;
+  padding: 8px 16px;
+  transition: all 0.2s ease;
+}
+
+.nav-button.nav-focused {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: white;
+}
+
+/* Menu items */
+.nav-item[data-navigable] {
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 2px;
+  transition: all 0.2s ease;
+}
+
+.nav-item.nav-focused {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: white;
+}
+
+/* Hero buttons */
+.hero-action-btn[data-navigable] {
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.hero-action-btn.nav-focused {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* Thumbnail images em cards */
+.premium-card[data-navigable] img {
+  transition: transform 0.3s ease;
+}
+
+.premium-card.nav-focused img {
+  transform: scale(1.05);
+}
+
+/* Scroll indicators para navegação */
+.nav-scroll-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.nav-scroll-left {
+  left: 10px;
+}
+
+.nav-scroll-right {
+  right: 10px;
+}
+
+.nav-scroll-indicator.visible {
+  opacity: 1;
+}
+
+/* Feedback visual para seleção */
+.nav-selected {
+  animation: nav-select 0.3s ease;
+}
+
+@keyframes nav-select {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Acessibilidade */
+[data-navigable] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus states para acessibilidade */
+[data-navigable]:focus {
+  outline: none;
+}
+
+[data-navigable].nav-focused:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Performance para Smart TV - EXCETO elementos fixed e body */
+@media (hover: none) and (pointer: coarse) {
+  *:not(.mobile-bottom-nav):not(.mobile-bottom-nav *):not(body):not(html) {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  .nav-focused {
+    will-change: transform, box-shadow;
+  }
+}
+
+/* Mobile specific optimizations */
+@media (max-width: 768px) and (hover: none) {
+  .nav-focused {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Debug mode (remover em produção) */
+.nav-debug [data-nav-section]::before {
+  content: attr(data-nav-section);
+  position: absolute;
+  top: -20px;
+  left: 0;
+  font-size: 10px;
+  color: red;
+  background: yellow;
+  padding: 2px 4px;
+  border-radius: 2px;
+  z-index: 100;
+}
+
+.nav-debug [data-navigable]::after {
+  content: attr(data-nav-row) "," attr(data-nav-col);
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 8px;
+  color: blue;
+  background: white;
+  padding: 1px 2px;
+  border-radius: 2px;
+  z-index: 100;
+}
