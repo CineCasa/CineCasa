@@ -28,9 +28,13 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
     setCanScrollRight(el.scrollLeft < maxScroll - 10);
   };
 
-  // Efeito de rolagem infinita automática em mobile
+  // Efeito de rolagem infinita automática apenas em mobile
   useEffect(() => {
     if (!infiniteScroll || !scrollRef.current) return;
+
+    // Detectar se é mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    if (!isMobile) return; // Não ativar em desktop
 
     const el = scrollRef.current;
     let autoScrollInterval: NodeJS.Timeout;
@@ -60,14 +64,14 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
       clearInterval(autoScrollInterval);
     };
 
-    // Iniciar auto-scroll
+    // Iniciar auto-scroll apenas em mobile
     startAutoScroll();
 
-    // Parar quando o usuário interagir
+    // Parar quando o usuário interagir (apenas em mobile)
     el.addEventListener('touchstart', stopAutoScroll);
     el.addEventListener('mousedown', stopAutoScroll);
 
-    // Retomar após 5 segundos sem interação
+    // Retomar após 5 segundos sem interação (apenas em mobile)
     const resumeTimeout = setTimeout(startAutoScroll, 5000);
 
     return () => {
@@ -87,6 +91,9 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
     const cardsPerView = Math.floor(containerWidth / cardWidth) || 5;
     
     let newIndex = currentIndex + (dir * cardsPerView);
+
+    // Detectar se é mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 
     // Rolagem infinita: quando chegar no final, volta para o início
     if (infiniteScroll) {
@@ -116,6 +123,9 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
     setTimeout(checkScroll, 400);
   };
 
+  // Detectar se é mobile para controle de setas
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
   return (
     <section className="row-wrapper">
       <h2 className="row-title">
@@ -142,7 +152,7 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
         // Layout scroll horizontal (original) - sem setas em mobile com infinite scroll
         <div className="relative isolate group/row">
           {/* Left arrow - apenas desktop ou quando não é infinite scroll */}
-          {canScrollLeft && !infiniteScroll && (
+          {canScrollLeft && !infiniteScroll && !isMobile && (
             <button
               onClick={() => scroll(-1)}
               className="absolute left-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
@@ -179,7 +189,7 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
           </div>
 
           {/* Right arrow - apenas desktop ou quando não é infinite scroll */}
-          {canScrollRight && !infiniteScroll && (
+          {canScrollRight && !infiniteScroll && !isMobile && (
             <button
               onClick={() => scroll(1)}
               className="absolute right-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
