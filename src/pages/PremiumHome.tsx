@@ -5,7 +5,6 @@ import PremiumNavbar from '../components/PremiumNavbar';
 import PremiumHeroBanner from '../components/PremiumHeroBanner';
 import ContentCarousel from '../components/ContentCarousel';
 import { useContinueWatching } from '../hooks/useContinueWatching';
-import { useTop5Streamings } from '../hooks/useTop5Streamings';
 import { useLancamentos } from '../hooks/useLancamentos';
 import { useRomances } from '../hooks/useRomances';
 import { useFinancas } from '../hooks/useFinancas';
@@ -14,7 +13,7 @@ import { usePreparePipoca } from '../hooks/usePreparePipoca';
 import { useInfantil } from '../hooks/useInfantil';
 import { useOscarWinners } from '../hooks/useOscarWinners';
 import { useTravesseiroEdredon } from '../hooks/useTravesseiroEdredon';
-import { usePoderiaSerMelhor } from '../hooks/usePoderiaSerMelhor';
+import { useWorstRated } from '../hooks/useWorstRated';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -247,48 +246,6 @@ const mockComoEBomSerCrianca = [
   }
 ];
 
-const mockTop5Streamings = [
-  {
-    id: "25",
-    title: "Stranger Things",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    year: "2022",
-    rating: "8.7"
-  },
-  {
-    id: "26",
-    title: "The Last of Us",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    year: "2023",
-    rating: "8.8"
-  },
-  {
-    id: "27",
-    title: "The Witcher",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    year: "2023",
-    rating: "7.5"
-  },
-  {
-    id: "28",
-    title: "Casa de Papel",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    year: "2021",
-    rating: "8.2"
-  },
-  {
-    id: "29",
-    title: "Round 6",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    year: "2021",
-    rating: "8.0"
-  }
-];
 
 const mockVencedoresOscar = [
   {
@@ -423,7 +380,6 @@ const PremiumHome: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const { items: continueWatchingItems, isLoading: isLoadingContinue } = useContinueWatching();
-  const { top5: top5Streamings, isLoading: isLoadingTop5 } = useTop5Streamings();
   const { user } = useAuth();
   const { lancamentos, isLoading: isLoadingLancamentos } = useLancamentos(user?.email);
   const { recomendacoes, isLoading: isLoadingRecomendacoes, topGenres } = useRecomendacoes(user?.email);
@@ -434,7 +390,7 @@ const PremiumHome: React.FC = () => {
   const { infantil, isLoading: isLoadingInfantil } = useInfantil(user?.email);
   const { oscarWinners, isLoading: isLoadingOscar } = useOscarWinners();
   const { content: travesseiroContent, isLoading: isLoadingTravesseiro } = useTravesseiroEdredon(user?.email);
-  const { content: poderiaContent, isLoading: isLoadingPoderia } = usePoderiaSerMelhor(user?.email);
+  const { content: worstRatedContent, isLoading: isLoadingWorstRated } = useWorstRated(user?.email);
 
   // Sistema para evitar duplicatas entre seções
   const usedIds = new Set<string>();
@@ -612,22 +568,7 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        {/* Top 5 dos streamings - Inteligente: carrega top 1 de cada streaming */}
-        <ContentCarousel
-          title="Top 5 dos streamings"
-          items={!isLoadingTop5 ? filterUniqueItems((top5Streamings || []).map(item => ({
-            id: item.id,
-            title: item.title,
-            poster: item.poster,
-            type: item.type,
-            year: item.year,
-            rating: `${item.platform.toUpperCase()} #${item.platformRank}`,
-            isComingSoon: !item.existsInDatabase,
-            isNew: item.existsInDatabase
-          })), 5) : []}
-          onCardClick={handleCardClick}
-        />
-
+        
         {/* Vencedores de Oscar - Inteligente: 5 capas de conteúdos premiados desde 2000 */}
         <ContentCarousel
           title="Vencedores de Oscar 🏆"
@@ -658,16 +599,17 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        {/* Poderia ser melhor! - Inteligente: 5 capas de conteúdos de gêneros fracos/ruins */}
+        {/* Poderia ser melhor! - 5 capas com piores notas do TMDB */}
         <ContentCarousel
           title="Poderia ser melhor! 😬"
-          items={!isLoadingPoderia ? filterUniqueItems((poderiaContent || []).map(item => ({
+          items={!isLoadingWorstRated ? filterUniqueItems((worstRatedContent || []).map(item => ({
             id: item.id,
+            tmdbId: item.tmdb_id,
             title: item.title,
             poster: item.poster,
             type: item.type,
             year: item.year,
-            rating: item.rating,
+            rating: item.tmdb_rating ? `${item.tmdb_rating.toFixed(1)}/10` : item.rating,
             isNew: true
           })), 5) : []}
           onCardClick={handleCardClick}

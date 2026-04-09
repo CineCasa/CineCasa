@@ -1,0 +1,435 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cinecasa-blue
+  namespace: production
+  labels:
+    app: cinecasa
+    env: blue
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: cinecasa
+      env: blue
+  template:
+    metadata:
+      labels:
+        app: cinecasa
+        env: blue
+        version: v1
+    spec:
+      containers:
+      - name: cinecasa
+        image: cinecasa/app:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: ENVIRONMENT_COLOR
+          value: "blue"
+        - name: VITE_API_URL
+          valueFrom:
+            secretKeyRef:
+              name: cinecasa-secrets
+              key: API_URL
+        - name: VITE_SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: cinecasa-secrets
+              key: SUPABASE_URL
+        - name: VITE_SUPABASE_ANON_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cinecasa-secrets
+              key: SUPABASE_ANON_KEY
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]
+      imagePullSecrets:
+      - name: registry-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cinecasa-blue-service
+  namespace: production
+  labels:
+    app: cinecasa
+    env: blue
+spec:
+  selector:
+    app: cinecasa
+    env: blue
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cinecasa-green
+  namespace: production
+  labels:
+    app: cinecasa
+    env: green
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: cinecasa
+      env: green
+  template:
+    metadata:
+      labels:
+        app: cinecasa
+        env: green
+        version: v1
+    spec:
+      containers:
+      - name: cinecasa
+        image: cinecasa/app:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: ENVIRONMENT_COLOR
+          value: "green"
+        - name: VITE_API_URL
+          valueFrom:
+            secretKeyRef:
+              name: cinecasa-secrets
+              key: API_URL
+        - name: VITE_SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: cinecasa-secrets
+              key: SUPABASE_URL
+        - name: VITE_SUPABASE_ANON_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cinecasa-secrets
+              key: SUPABASE_ANON_KEY
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/sh", "-c", "sleep 15"]
+      imagePullSecrets:
+      - name: registry-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cinecasa-green-service
+  namespace: production
+  labels:
+    app: cinecasa
+    env: green
+spec:
+  selector:
+    app: cinecasa
+    env: green
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cinecasa-ingress
+  namespace: production
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Environment: $upstream_addr";
+spec:
+  tls:
+  - hosts:
+    - cinecasa.com.br
+    - www.cinecasa.com.br
+    secretName: cinecasa-tls
+  rules:
+  - host: cinecasa.com.br
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: cinecasa-api-service
+            port:
+              number: 3000
+      - path: /(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: cinecasa-active-service
+            port:
+              number: 80
+  - host: www.cinecasa.com.br
+    http:
+      paths:
+      - path: /api(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: cinecasa-api-service
+            port:
+              number: 3000
+      - path: /(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: cinecasa-active-service
+            port:
+              number: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cinecasa-active-service
+  namespace: production
+  labels:
+    app: cinecasa
+    type: active
+spec:
+  selector:
+    app: cinecasa
+    active: "true"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: active-env-config
+  namespace: production
+data:
+  active: "blue"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: active-env-controller
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: active-env-controller
+  template:
+    metadata:
+      labels:
+        app: active-env-controller
+    spec:
+      containers:
+      - name: controller
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          while true; do
+            ACTIVE=$(kubectl get configmap active-env-config -o jsonpath='{.data.active}')
+            echo "Active environment: $ACTIVE"
+            
+            # Update service selector
+            kubectl patch service cinecasa-active-service -p '{"spec":{"selector":{"app":"cinecasa","env":"'$ACTIVE'"}}}'
+            
+            sleep 30
+          done
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cinecasa-pdb
+  namespace: production
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: cinecasa
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cinecasa-hpa
+  namespace: production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cinecasa-blue
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cinecasa-secrets
+  namespace: production
+type: Opaque
+data:
+  # Base64 encoded values
+  API_URL: aHR0cHM6Ly9hcGkuY2luZWNhc2EuY29tLmJy
+  SUPABASE_URL: aHR0cHM6Ly9hcGlzdXBhYmFzZS5jb20=
+  SUPABASE_ANON_KEY: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbWxoZENJNklqSjNJbjA=
+---
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: cinecasa-monitor
+  namespace: production
+  labels:
+    app: cinecasa
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: cinecasa
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: health-check-cron
+  namespace: production
+spec:
+  schedule: "*/5 * * * *"  # A cada 5 minutos
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: health-check
+            image: curlimages/curl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Health check principal
+              if ! curl -f https://cinecasa.com.br/health; then
+                echo "Health check failed" >&2
+                exit 1
+              fi
+              
+              # Verificar ambiente ativo
+              ACTIVE=$(curl -s https://cinecasa.com.br/api/active-env)
+              echo "Active environment: $ACTIVE"
+              
+              # Se health check falhar, fazer rollback
+              if ! curl -f https://cinecasa.com.br/health; then
+                echo "Triggering rollback..."
+                curl -X POST https://api.cinecasa.com.br/rollback \
+                  -H "Content-Type: application/json" \
+                  -d '{"reason": "Health check failure"}'
+              fi
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3

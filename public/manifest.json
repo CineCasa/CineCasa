@@ -175,6 +175,13 @@
   ],
   "shortcuts": [
     {
+      "name": "Continuar Assistindo",
+      "short_name": "Continuar",
+      "description": "Retomar o último conteúdo assistido",
+      "url": "/continue-watching",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
       "name": "Filmes",
       "short_name": "Filmes",
       "description": "Ver filmes disponíveis",
@@ -193,6 +200,20 @@
       "short_name": "Favoritos",
       "description": "Ver meus favoritos",
       "url": "/favoritos",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Busca Rápida",
+      "short_name": "Buscar",
+      "description": "Buscar filmes e séries",
+      "url": "/search",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Novidades",
+      "short_name": "Novos",
+      "description": "Ver novos lançamentos",
+      "url": "/new-releases",
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],

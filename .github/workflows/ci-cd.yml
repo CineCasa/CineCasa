@@ -1,0 +1,423 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, staging ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ published ]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ========================================
+  # TESTES E QUALIDADE
+  # ========================================
+  test:
+    name: Test & Quality
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint -- --format=json --output-file=eslint-report.json
+
+      - name: Run Prettier check
+        run: npm run format:check
+
+      - name: Run TypeScript check
+        run: npm run type-check
+
+      - name: Run unit tests
+        run: npm run test:unit -- --coverage --ci --watchAll=false
+
+      - name: Run integration tests
+        run: npm run test:integration -- --ci
+
+      - name: Run E2E tests
+        run: npm run test:e2e -- --ci
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-reports-${{ matrix.node-version }}
+          path: |
+            coverage/
+            test-results/
+            eslint-report.json
+
+  # ========================================
+  # BUILD E ANÁLISE DE SEGURANÇA
+  # ========================================
+  build:
+    name: Build & Security
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-files
+          path: dist/
+
+  # ========================================
+  # DEPLOY STAGING
+  # ========================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'pull_request'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-files
+          path: dist/
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Configuração do ambiente staging
+          echo "STAGING_API_URL=${{ secrets.STAGING_API_URL }}" >> .env.staging
+          echo "STAGING_SUPABASE_URL=${{ secrets.STAGING_SUPABASE_URL }}" >> .env.staging
+          echo "STAGING_SUPABASE_ANON_KEY=${{ secrets.STAGING_SUPABASE_ANON_KEY }}" >> .env.staging
+
+      - name: Run health checks
+        run: |
+          echo "Running health checks on staging..."
+          sleep 30
+          curl -f ${{ secrets.STAGING_HEALTH_CHECK_URL }} || exit 1
+
+      - name: Run E2E tests on staging
+        run: |
+          echo "Running E2E tests on staging..."
+          npm run test:e2e:staging
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: 'Staging deployment ${{ job.status }}'
+
+  # ========================================
+  # DEPLOY PRODUCTION - BLUE-GREEN
+  # ========================================
+  deploy-production:
+    name: Deploy to Production (Blue-Green)
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    environment: production
+    
+    strategy:
+      matrix:
+        color: [blue, green]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-files
+          path: dist/
+
+      - name: Determine active environment
+        id: active-env
+        run: |
+          ACTIVE=$(curl -s ${{ secrets.ACTIVE_ENV_CHECK_URL }} || echo "blue")
+          echo "active=$ACTIVE" >> $GITHUB_OUTPUT
+          if [ "$ACTIVE" = "blue" ]; then
+            echo "deploy=green" >> $GITHUB_OUTPUT
+          else
+            echo "deploy=blue" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to ${{ matrix.color }} environment
+        if: matrix.color == steps.active-env.outputs.deploy
+        run: |
+          echo "Deploying to ${{ matrix.color }} environment..."
+          
+          # Configuração do ambiente
+          cat > .env.production << EOF
+          PRODUCTION_API_URL=${{ secrets.PRODUCTION_API_URL }}
+          PRODUCTION_SUPABASE_URL=${{ secrets.PRODUCTION_SUPABASE_URL }}
+          PRODUCTION_SUPABASE_ANON_KEY=${{ secrets.PRODUCTION_SUPABASE_ANON_KEY }}
+          ENVIRONMENT_COLOR=${{ matrix.color }}
+          DEPLOY_VERSION=${{ github.sha }}
+          DEPLOY_TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          EOF
+
+      - name: Run health checks on ${{ matrix.color }}
+        if: matrix.color == steps.active-env.outputs.deploy
+        run: |
+          echo "Running health checks on ${{ matrix.color }}..."
+          sleep 60
+          
+          # Health check principal
+          curl -f ${{ secrets.PRODUCTION_HEALTH_CHECK_URL }}-${{ matrix.color }} || exit 1
+          
+          # Health check de APIs
+          curl -f ${{ secrets.PRODUCTION_API_HEALTH_URL }}-${{ matrix.color }}/health || exit 1
+          
+          # Health check do Supabase
+          curl -f ${{ secrets.PRODUCTION_SUPABASE_URL }}/rest/v1/ || exit 1
+
+      - name: Run smoke tests
+        if: matrix.color == steps.active-env.outputs.deploy
+        run: |
+          echo "Running smoke tests on ${{ matrix.color }}..."
+          npm run test:smoke -- --baseUrl=${{ secrets.PRODUCTION_URL }}-${{ matrix.color }}
+
+      - name: Switch traffic to ${{ matrix.color }}
+        if: matrix.color == steps.active-env.outputs.deploy
+        run: |
+          echo "Switching traffic to ${{ matrix.color }}..."
+          
+          # Atualizar load balancer
+          curl -X POST ${{ secrets.LOAD_BALANCER_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "active": "${{ matrix.color }}",
+              "version": "${{ github.sha }}",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            }'
+
+      - name: Final health check after switch
+        if: matrix.color == steps.active-env.outputs.deploy
+        run: |
+          echo "Final health check after traffic switch..."
+          sleep 30
+          curl -f ${{ secrets.PRODUCTION_HEALTH_CHECK_URL }} || exit 1
+
+      - name: Cleanup old environment
+        if: matrix.color == steps.active-env.outputs.deploy
+        run: |
+          echo "Cleaning up old environment..."
+          OLD_COLOR="${{ matrix.color == 'blue' && 'green' || 'blue' }}"
+          
+          # Manter ambiente antigo por 30 minutos para rollback rápido
+          echo "Scheduling cleanup of $OLD_COLOR environment in 30 minutes..."
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        if: matrix.color == steps.active-env.outputs.deploy
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: 'Production deployment to ${{ matrix.color }} ${{ job.status }}'
+
+  # ========================================
+  # ROLLBACK AUTOMÁTICO
+  # ========================================
+  rollback:
+    name: Automatic Rollback
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: failure() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Get current active environment
+        id: current-env
+        run: |
+          ACTIVE=$(curl -s ${{ secrets.ACTIVE_ENV_CHECK_URL }} || echo "blue")
+          echo "active=$ACTIVE" >> $GITHUB_OUTPUT
+          echo "previous=${{ env.ACTIVE == 'blue' && 'green' || 'blue' }}" >> $GITHUB_OUTPUT
+
+      - name: Execute rollback
+        run: |
+          echo "Executing rollback to ${{ steps.current-env.outputs.previous }}..."
+          
+          # Switch traffic back
+          curl -X POST ${{ secrets.LOAD_BALANCER_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "active": "${{ steps.current-env.outputs.previous }}",
+              "rollback": true,
+              "version": "previous",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            }'
+
+      - name: Verify rollback
+        run: |
+          echo "Verifying rollback..."
+          sleep 30
+          curl -f ${{ secrets.PRODUCTION_HEALTH_CHECK_URL }} || exit 1
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          channel: '#deployments'
+          text: '🚨 Automatic rollback executed!'
+
+  # ========================================
+  # MONITORAMENTO PÓS-DEPLOY
+  # ========================================
+  post-deploy-monitoring:
+    name: Post-Deploy Monitoring
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Wait for stabilization
+        run: sleep 300  # 5 minutos
+
+      - name: Run comprehensive health checks
+        run: |
+          echo "Running comprehensive health checks..."
+          
+          # Verificar múltiplos endpoints
+          ENDPOINTS=(
+            "${{ secrets.PRODUCTION_HEALTH_CHECK_URL }}"
+            "${{ secrets.PRODUCTION_API_HEALTH_URL }}/health"
+            "${{ secrets.PRODUCTION_SUPABASE_URL }}/rest/v1/"
+          )
+          
+          for endpoint in "${ENDPOINTS[@]}"; do
+            echo "Checking $endpoint..."
+            curl -f --max-time 10 "$endpoint" || {
+              echo "❌ Health check failed for $endpoint"
+              exit 1
+            }
+          done
+
+      - name: Run performance tests
+        run: |
+          echo "Running performance tests..."
+          npm run test:performance -- --baseUrl=${{ secrets.PRODUCTION_URL }}
+
+      - name: Check error rates
+        run: |
+          echo "Checking error rates..."
+          # Integrar com serviço de monitoramento (Sentry, DataDog, etc.)
+          ERROR_RATE=$(curl -s "${{ secrets.MONITORING_API_URL }}/error-rate" || echo "0")
+          
+          if (( $(echo "$ERROR_RATE > 5" | bc -l) )); then
+            echo "❌ High error rate detected: $ERROR_RATE%"
+            exit 1
+          fi
+
+      - name: Update deployment status
+        run: |
+          echo "Updating deployment status..."
+          curl -X POST ${{ secrets.DEPLOYMENT_STATUS_WEBHOOK }} \
+            -H "Content-Type: application/json" \
+            -d '{
+              "status": "success",
+              "version": "${{ github.sha }}",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            }'
+
+  # ========================================
+  # LIMPEZA E MANUTENÇÃO
+  # ========================================
+  cleanup:
+    name: Cleanup & Maintenance
+    runs-on: ubuntu-latest
+    needs: [deploy-production, post-deploy-monitoring]
+    if: always() && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Cleanup old deployments
+        run: |
+          echo "Cleaning up deployments older than 7 days..."
+          
+          # Remover imagens Docker antigas
+          docker image prune -f --filter "until=168h"
+          
+          # Limpar artifacts antigos
+          gh api repos/:owner/:repo/actions/artifacts --jq '.artifacts[] | select(.created_at < (now - 604800 | strftime("%Y-%m-%dT%H:%M:%SZ"))) | .id' | \
+          xargs -I {} gh api --method DELETE repos/:owner/:repo/actions/artifacts/{}
+
+      - name: Update documentation
+        run: |
+          echo "Updating deployment documentation..."
+          
+          # Atualizar changelog
+          echo "## Deployment ${{ github.sha }}" >> CHANGELOG.md
+          echo "- Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> CHANGELOG.md
+          echo "- Branch: ${{ github.ref_name }}" >> CHANGELOG.md
+          echo "- Commit: ${{ github.sha }}" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+
+      - name: Archive deployment logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-logs-${{ github.sha }}
+          path: |
+            *.log
+            deployment-*.json

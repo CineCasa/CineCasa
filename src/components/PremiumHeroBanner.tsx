@@ -266,9 +266,10 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                 <button
                   onClick={handleTrailer}
                   title="Trailer"
-                  className="bg-white/20 backdrop-blur-sm text-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center font-semibold hover:bg-white/30 transition-colors"
+                  className="bg-white/20 backdrop-blur-sm text-white px-3 py-2 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center font-semibold hover:bg-white/30 transition-colors"
                 >
                   <Play size={20} />
+                  <span className="hidden sm:inline ml-2">Trailer</span>
                 </button>
 
                 <button

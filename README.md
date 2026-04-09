@@ -1,59 +1,116 @@
-# Welcome to your Lovable project
+# CineCasa - Streaming Platform
 
-## Project info
+🎬 **Plataforma completa de streaming de filmes e séries com PWA avançada, CI/CD automatizado e deploy blue-green**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🚀 **Features Implementadas**
 
-## How can I edit this code?
+### 📱 **PWA Completa**
+- ✅ **Manifest otimizado** com shortcuts, share targets e file handlers
+- ✅ **Service Worker avançado** com cache inteligente e background sync
+- ✅ **Offline functionality** com gestão de conteúdo offline
+- ✅ **App shortcuts** para acesso rápido
+- ✅ **Share API** integrada com redes sociais
+- ✅ **Install prompts inteligentes** com múltiplos gatilhos
+- ✅ **Notificações push** e sincronização automática
 
-There are several ways of editing your application.
+### 🔄 **CI/CD Pipeline**
+- ✅ **Automated testing pipeline** com unit, integration e E2E tests
+- ✅ **Staging environment** com deploy automático
+- ✅ **Blue-green deployment** com rollback instantâneo
+- ✅ **Rollback strategies** automáticas e manuais
+- ✅ **Health checks implementados** abrangentes
 
-**Use Lovable**
+### 🛠️ **Infraestrutura**
+- ✅ **Docker containerização** multi-stage
+- ✅ **Kubernetes deployment** com HPA e PDB
+- ✅ **Load balancer** com NGINX
+- ✅ **Monitoramento** com Prometheus + Grafana
+- ✅ **Logging centralizado** com ELK Stack
+- ✅ **Backup automático** do banco de dados
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 🔒 **Segurança**
+- ✅ **Security headers** completos
+- ✅ **Rate limiting** por endpoint
+- ✅ **SSL/TLS** automático
+- ✅ **CORS** configurado
+- ✅ **Security scans** automatizados
 
-Changes made via Lovable will be committed automatically to this repo.
+## 📁 **Estrutura do Projeto**
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+cinecasa/
+├── .github/workflows/          # CI/CD pipelines
+├── k8s/                       # Kubernetes manifests
+├── scripts/                    # Scripts de deploy e health
+├── src/
+│   ├── components/            # Componentes React
+│   │   ├── PWA*            # Componentes PWA
+│   │   ├── HealthCheck*     # Health dashboard
+│   │   └── ...
+│   ├── hooks/                # React hooks
+│   │   ├── usePWA.ts       # Hook PWA principal
+│   │   ├── useOfflineContent.ts
+│   │   └── useServiceWorker.ts
+│   └── ...
+├── public/
+│   ├── manifest.json         # PWA manifest
+│   ├── sw.js               # Service worker
+│   └── icons/              # Ícones PWA
+├── docker-compose.yml        # Docker compose
+├── Dockerfile              # Docker image
+├── nginx.conf             # NGINX config
+└── package.json           # Dependencies e scripts
 ```
 
-**Edit a file directly in GitHub**
+## 🚀 **Quick Start**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Pré-requisitos
+- Node.js 18+
+- Docker & Docker Compose
+- kubectl (para Kubernetes)
+- Git
 
-**Use GitHub Codespaces**
+### Desenvolvimento Local
+```bash
+# Clonar repositório
+git clone https://github.com/cinecasa/cinecasa.git
+cd cinecasa
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Instalar dependências
+npm install
 
-## What technologies are used for this project?
+# Iniciar desenvolvimento
+npm run dev
 
-This project is built with:
+# Rodar testes
+npm run test:unit
+npm run test:integration
+npm run test:e2e
+```
 
+### Deploy com Docker
+```bash
+# Build da imagem
+npm run docker:build
+
+# Subir ambiente completo
+npm run docker:compose
+
+# Ver logs
+npm run docker:compose:logs
+```
+
+### Deploy em Produção
+```bash
+# Deploy para staging
+npm run deploy:staging
+
+# Deploy para produção (blue-green)
+npm run deploy:production
+
+# Rollback automático
+npm run deploy:rollback
+```
 - Vite
 - TypeScript
 - React

@@ -105,7 +105,7 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
 
   return (
     <section 
-      className="relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] min-h-[300px] max-h-[900px] overflow-hidden"
+      className="hero-banner relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] min-h-[300px] max-h-[900px] overflow-hidden"
       onClick={(e) => console.log('[HeroBanner] Section clicked at:', e.clientX, e.clientY, 'target:', e.target)}
     >
       <AnimatePresence mode="wait">
@@ -224,7 +224,7 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
                 }}
                 className="hero-action-btn flex items-center gap-3 btn-glow-secondary font-bold text-[clamp(0.9rem,1.2vw,1.1rem)] px-6 sm:px-8 py-3 sm:py-4 transition-transform z-50 focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black outline-none relative"
               >
-                <Play size={24} fill="currentColor" /> TRAILER
+                <Play size={24} fill="currentColor" /> Trailer
               </button>
             </div>
           </motion.div>

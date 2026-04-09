@@ -420,4 +420,14 @@
       padding-bottom: 4rem;
     }
   }
-}
+
+  /* Hero gradient overlays */
+  .gradient-hero-bottom {
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 40%, transparent 70%);
+  }
+
+  .gradient-hero-left {
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.3) 30%, transparent 60%);
+  }
+
+  }

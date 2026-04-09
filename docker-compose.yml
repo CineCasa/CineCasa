@@ -1,0 +1,295 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # APLICAÇÃO PRINCIPAL
+  # ========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: cinecasa-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:8080"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3001}
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - ENVIRONMENT_COLOR=${ENVIRONMENT_COLOR:-blue}
+      - DEPLOY_VERSION=${DEPLOY_VERSION:-latest}
+      - DEPLOY_TIMESTAMP=${DEPLOY_TIMESTAMP:-}
+    volumes:
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/cache:/var/cache/nginx
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/health-check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cinecasa-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cinecasa.rule=Host(`${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.cinecasa.entrypoints=web"
+      - "traefik.http.services.cinecasa.loadbalancer.server.port=8080"
+
+  # ========================================
+  # APP VERDE (BLUE-GREEN)
+  # ========================================
+  app-green:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: cinecasa-app-green
+    restart: unless-stopped
+    ports:
+      - "${APP_GREEN_PORT:-3001}:8080"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3001}
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - ENVIRONMENT_COLOR=green
+      - DEPLOY_VERSION=${DEPLOY_VERSION_GREEN:-latest}
+      - DEPLOY_TIMESTAMP=${DEPLOY_TIMESTAMP_GREEN:-}
+    volumes:
+      - ./nginx/logs-green:/var/log/nginx
+      - ./nginx/cache-green:/var/cache/nginx
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/health-check.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cinecasa-network
+    profiles:
+      - green
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cinecasa-green.rule=Host(`${DOMAIN:-localhost}`) && Headers(`X-Environment`, `green`)"
+      - "traefik.http.routers.cinecasa-green.entrypoints=web"
+
+  # ========================================
+  # LOAD BALANCER
+  # ========================================
+  nginx-lb:
+    image: nginx:alpine
+    container_name: cinecasa-lb
+    restart: unless-stopped
+    ports:
+      - "${LB_PORT:-80}:80"
+      - "${LB_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/lb.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/lb-ssl:/etc/nginx/ssl:ro
+      - ./nginx/lb-logs:/var/log/nginx
+    depends_on:
+      - app
+      - app-green
+    networks:
+      - cinecasa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ========================================
+  # API BACKEND
+  # ========================================
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: cinecasa-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-3001}:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+    volumes:
+      - ./api/logs:/app/logs
+      - ./api/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - cinecasa-network
+    depends_on:
+      - postgres
+      - redis
+
+  # ========================================
+  # BANCO DE DADOS
+  # ========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: cinecasa-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-cinecasa}
+      - POSTGRES_USER=${POSTGRES_USER:-cinecasa}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cinecasa} -d ${POSTGRES_DB:-cinecasa}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cinecasa-network
+
+  # ========================================
+  # REDIS CACHE
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    container_name: cinecasa-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - cinecasa-network
+
+  # ========================================
+  # MONITORAMENTO
+  # ========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cinecasa-prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - cinecasa-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cinecasa-grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3002}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - cinecasa-network
+
+  # ========================================
+  # LOGS
+  # ========================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: cinecasa-elasticsearch
+    restart: unless-stopped
+    ports:
+      - "${ELASTICSEARCH_PORT:-9200}:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - cinecasa-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: cinecasa-kibana
+    restart: unless-stopped
+    ports:
+      - "${KIBANA_PORT:-5601}:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - cinecasa-network
+
+  # ========================================
+  # BACKUP
+  # ========================================
+  backup:
+    image: postgres:15-alpine
+    container_name: cinecasa-backup
+    restart: unless-stopped
+    environment:
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+      - backup_scripts:/scripts
+    command: |
+      sh -c "
+        while true; do
+          echo 'Creating backup...'
+          pg_dump -h postgres -U ${POSTGRES_USER:-cinecasa} -d ${POSTGRES_DB:-cinecasa} > /backups/backup_$(date +%Y%m%d_%H%M%S).sql
+          echo 'Backup completed'
+          find /backups -name '*.sql' -mtime +7 -delete
+          sleep 86400
+        done
+      "
+    depends_on:
+      - postgres
+    networks:
+      - cinecasa-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  backup_scripts:
+    driver: local
+
+networks:
+  cinecasa-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

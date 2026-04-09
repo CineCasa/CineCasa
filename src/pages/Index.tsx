@@ -80,7 +80,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <PremiumNavbar />
-      <main className="pb-20 pt-0">
+      <main className="pb-20">
         <HeroBanner />
         <div className="relative z-10 pt-12 -mt-10 flex flex-col gap-4">
           <ContinueWatchingRow />

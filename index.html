@@ -15,22 +15,38 @@
         }
       }(window.location))
     </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Cinecasa - Entretenimento e lazer</title>
-    <meta name="description" content="O melhor do entretenimento para você e sua família">
-    <meta name="keywords" content="filmes, séries, streaming, entretenimento, TV, cinema">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>CineCasa - Streaming de Filmes e Séries</title>
+    <meta name="description" content="Assista a filmes e séries online com a melhor experiência de streaming">
+    <meta name="keywords" content="filmes, séries, streaming, entretenimento, TV, cinema, PWA, offline">
+    <meta name="author" content="CineCasa" />
+    <meta name="robots" content="index, follow" />
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#00A8E1" />
     <meta name="background-color" content="#000000" />
+    <meta name="display" content="standalone" />
     
-    <!-- PWA Icons - All Sizes -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <!-- PWA Icons - All Sizes with Purpose -->
+    <link rel="icon" type="image/x-icon" href="/icons/icon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/x-icon" href="/icons/icon-16x16.png" sizes="16x16" />
     <link rel="shortcut icon" href="/favicon.ico" />
     
+    <!-- Standard Icons -->
+    <link rel="icon" sizes="16x16" href="/icons/icon-16x16.png" type="image/png" />
+    <link rel="icon" sizes="32x32" href="/icons/icon-32x32.png" type="image/png" />
+    <link rel="icon" sizes="48x48" href="/icons/icon-48x48.png" type="image/png" />
+    <link rel="icon" sizes="96x96" href="/icons/icon-96x96.png" type="image/png" />
+    <link rel="icon" sizes="128x128" href="/icons/icon-128x128.png" type="image/png" />
+    <link rel="icon" sizes="192x192" href="/icons/icon-192x192.png" type="image/png" />
+    <link rel="icon" sizes="256x256" href="/icons/icon-256x256.png" type="image/png" />
+    <link rel="icon" sizes="384x384" href="/icons/icon-384x384.png" type="image/png" />
+    <link rel="icon" sizes="512x512" href="/icons/icon-512x512.png" type="image/png" />
+    <link rel="icon" sizes="1024x1024" href="/icons/icon-1024x1024.png" type="image/png" />
+    
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="57x57" href="/icons/icon-57x57.png" />
     <link rel="apple-touch-icon" sizes="60x60" href="/icons/icon-60x60.png" />
     <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
@@ -49,26 +65,40 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="CineCasa" />
-    <meta name="application-name" content="CineCasa Entretenimento" />
+    <meta name="application-name" content="CineCasa Streaming" />
+    <meta name="application-url" content="https://cinecasa.com.br" />
     <meta name="msapplication-TileColor" content="#00A8E1" />
     <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
     <meta name="msapplication-starturl" content="/" />
+    <meta name="msapplication-navbutton-color" content="#00A8E1" />
+    
+    <!-- Maskable Icons for Android -->
+    <link rel="icon" href="/icons/maskable-icon-192x192.png" type="image/png" sizes="192x192" purpose="maskable" />
+    <link rel="icon" href="/icons/maskable-icon-512x512.png" type="image/png" sizes="512x512" purpose="maskable" />
+    
+    <!-- Monochrome Icons for Android -->
+    <link rel="icon" href="/icons/monochrome-icon-192x192.png" type="image/png" sizes="192x192" purpose="monochrome" />
+    <link rel="icon" href="/icons/monochrome-icon-512x512.png" type="image/png" sizes="512x512" purpose="monochrome" />
     
     <!-- Android TV / TV App Meta Tags -->
     <meta name="tv-app" content="true" />
     <meta name="google-site-verification" content="true" />
+    <meta name="google-play-app" content="app-id=com.cinecasa.app" />
     
     <!-- Samsung Smart TV (Tizen) -->
     <meta name="tizen-application-id" content="cinecasa.app" />
     <meta name="tizen-application-name" content="CineCasa" />
+    <meta name="tizen-application-package" content="com.cinecasa.app" />
     
     <!-- LG WebOS -->
     <meta name="webos-app" content="true" />
     <meta name="webos-large-icon" content="/icons/icon-512x512.png" />
+    <meta name="webos-app-id" content="com.cinecasa.app" />
     
     <!-- Roku -->
     <meta name="roku-app" content="true" />
+    <meta name="roku-channel-id" content="12" />
     
     <!-- Android TV -->
     <meta name="android-tv-app" content="true" />
@@ -78,39 +108,149 @@
     <!-- Open Graph / Social -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://cinecasa.com.br" />
-    <meta property="og:title" content="Cinecasa - Entretenimento e lazer">
-    <meta property="og:description" content="O melhor do entretenimento na palma da sua mão">
+    <meta property="og:title" content="CineCasa - Streaming de Filmes e Séries" />
+    <meta property="og:description" content="Assista a filmes e séries online com a melhor experiência de streaming" />
     <meta property="og:image" content="/icons/icon-512x512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:site_name" content="CineCasa" />
+    <meta property="og:locale" content="pt_BR" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="app" />
+    <meta name="twitter:site" content="@cinecasa" />
+    <meta name="twitter:creator" content="@cinecasa" />
     <meta name="twitter:title" content="CineCasa" />
-    <meta name="twitter:description" content="O melhor do entretenimento para você" />
+    <meta name="twitter:description" content="Assista a filmes e séries online com a melhor experiência" />
     <meta name="twitter:image" content="/icons/icon-512x512.png" />
+    <meta name="twitter:app:country" content="BR" />
+    <meta name="twitter:app:name:iphone" content="CineCasa" />
+    <meta name="twitter:app:id:iphone" content="1234567890" />
+    <meta name="twitter:app:name:ipad" content="CineCasa" />
+    <meta name="twitter:app:id:ipad" content="1234567890" />
+    <meta name="twitter:app:name:googleplay" content="CineCasa" />
+    <meta name="twitter:app:id:googleplay" content="com.cinecasa.app" />
     
-    <!-- Service Worker Registration -->
+    <!-- Security and Performance -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://api.themoviedb.org" />
+    <link rel="preconnect" href="https://image.tmdb.org" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="//api.themoviedb.org" />
+    <link rel="dns-prefetch" href="//image.tmdb.org" />
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
+    
+    <!-- Service Worker Registration with Advanced Features -->
     <script>
+      // PWA Service Worker Registration
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-              console.log('Service Worker registrado:', registration.scope);
-            })
-            .catch(function(error) {
-              console.log('Erro no registro do Service Worker:', error);
+          navigator.serviceWorker.register('/sw.js', {
+            scope: '/',
+            updateViaCache: 'none'
+          })
+          .then(function(registration) {
+            console.log('Service Worker registrado:', registration.scope);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', function() {
+              console.log('Nova versão do Service Worker encontrada');
             });
+            
+            // Handle controller change
+            registration.addEventListener('controllerchange', function() {
+              console.log('Service Worker controller mudou');
+              window.location.reload();
+            });
+            
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+              Notification.requestPermission().then(function(permission) {
+                console.log('Permissão de notificação:', permission);
+              });
+            }
+          })
+          .catch(function(error) {
+            console.log('Erro no registro do Service Worker:', error);
+          });
         });
       }
     </script>
     
-    <!-- PWA Install Prompt Handler -->
+    <!-- PWA Install Prompt Handler with Smart Detection -->
     <script>
       let deferredPrompt;
+      let installPromptShown = false;
+      
+      // Smart install prompt detection
       window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault();
         deferredPrompt = e;
         window.deferredPrompt = deferredPrompt;
+        
+        // Show prompt after user engagement
+        if (!installPromptShown) {
+          setTimeout(function() {
+            if (!installPromptShown && localStorage.getItem('pwa-install-dismissed') === null) {
+              // Fire custom event for React components
+              window.dispatchEvent(new CustomEvent('pwa-install-available', {
+                detail: { prompt: deferredPrompt }
+              }));
+            }
+          }, 3000); // Show after 3 seconds
+        }
       });
+      
+      // Track installation
+      window.addEventListener('appinstalled', function(e) {
+        console.log('PWA instalada com sucesso');
+        installPromptShown = true;
+        
+        // Analytics event
+        if ('gtag' in window) {
+          gtag('event', 'pwa_installed', {
+            event_category: 'PWA',
+            event_label: 'success'
+          });
+        }
+        
+        // Fire custom event
+        window.dispatchEvent(new CustomEvent('pwa-installed', {
+          detail: { timestamp: Date.now() }
+        }));
+      });
+      
+      // Handle install prompt dismissal
+      window.addEventListener('pwa-install-dismissed', function(e) {
+        installPromptShown = true;
+        localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+      });
+      
+      // Expose install function globally
+      window.installPWA = function() {
+        if (deferredPrompt && !installPromptShown) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(function(choiceResult) {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('Usuário aceitou instalação');
+            } else {
+              console.log('Usuário recusou instalação');
+            }
+            deferredPrompt = null;
+          });
+        }
+      };
     </script>
     
     <!-- Video Player Fix Script -->
@@ -118,17 +258,116 @@
     
     <!-- Smart TV Navigation Support -->
     <script>
-      // Detect Smart TV platforms
-      window.isSmartTV = /(Tizen|webOS|SmartTV|Roku|Android.*TV|GoogleTV|AppleTV|CrKey)/i.test(navigator.userAgent);
-      window.isAndroidTV = /Android.*TV|GoogleTV|Android.*Leanback/i.test(navigator.userAgent);
+      // Enhanced Smart TV platform detection
+      window.isSmartTV = /(Tizen|webOS|SmartTV|Roku|Android.*TV|GoogleTV|AppleTV|CrKey|FireTV|Xbox|PlayStation)/i.test(navigator.userAgent);
+      window.isAndroidTV = /Android.*TV|GoogleTV|Android.*Leanback|FireTV/i.test(navigator.userAgent);
       window.isTizen = /Tizen/i.test(navigator.userAgent);
       window.isWebOS = /webOS|Web0S/i.test(navigator.userAgent);
       window.isRoku = /Roku/i.test(navigator.userAgent);
+      window.isXbox = /Xbox/i.test(navigator.userAgent);
+      window.isPlayStation = /PlayStation/i.test(navigator.userAgent);
+      window.isFireTV = /FireTV/i.test(navigator.userAgent);
+      
+      // Device capabilities
+      window.deviceCapabilities = {
+        hasTouch: 'ontouchstart' in window,
+        hasPointer: 'onpointerdown' in window,
+        hasKeyboard: 'onkeydown' in window,
+        hasGamepad: 'getGamepads' in navigator,
+        hasVibration: 'vibrate' in navigator,
+        hasFullscreen: 'fullscreenEnabled' in document,
+        hasOrientation: 'orientation' in screen,
+        hasWakeLock: 'wakeLock' in navigator,
+        hasBluetooth: 'bluetooth' in navigator,
+        hasGeolocation: 'geolocation' in navigator,
+        hasCamera: 'mediaDevices' in navigator,
+        hasMicrophone: 'mediaDevices' in navigator
+      };
       
       // Enable TV-specific features
       if (window.isSmartTV) {
         document.documentElement.classList.add('smart-tv');
+        
+        // Add TV-specific meta tags
+        const metaViewport = document.querySelector('meta[name="viewport"]');
+        if (metaViewport) {
+          metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+        }
       }
+      
+      // Handle remote control navigation
+      if (window.isSmartTV) {
+        document.addEventListener('keydown', function(e) {
+          switch(e.key) {
+            case 'ArrowUp':
+            case 'ArrowDown':
+            case 'ArrowLeft':
+            case 'ArrowRight':
+            case 'Enter':
+            case 'Back':
+            case 'Escape':
+              // Allow default TV navigation
+              break;
+            default:
+              // Prevent other keys from scrolling
+              if (e.key.length === 1) {
+                e.preventDefault();
+              }
+          }
+        });
+      }
+      
+      // Performance monitoring
+      if ('performance' in window) {
+        window.addEventListener('load', function() {
+          setTimeout(function() {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            if (perfData) {
+              console.log('Performance metrics:', {
+                loadTime: perfData.loadEventEnd - perfData.loadEventStart,
+                domContentLoaded: perfData.domContentLoadedEventEnd - perfData.loadEventStart,
+                firstPaint: performance.getEntriesByType('paint')[0]?.startTime,
+                firstContentfulPaint: performance.getEntriesByType('paint')[1]?.startTime
+              });
+            }
+          }, 0);
+        });
+      }
+    </script>
+    
+    <!-- PWA Theme and Display Mode Detection -->
+    <script>
+      // Detect display mode
+      window.displayMode = 'browser';
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        window.displayMode = 'standalone';
+      } else if (window.matchMedia('(display-mode: minimal-ui)').matches) {
+        window.displayMode = 'minimal-ui';
+      } else if (window.navigator.standalone === true) {
+        window.displayMode = 'standalone';
+      }
+      
+      // Detect theme preference
+      window.preferredTheme = 'light';
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        window.preferredTheme = 'dark';
+      }
+      
+      // Detect reduced motion
+      window.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      
+      // Apply theme classes
+      document.documentElement.classList.add(`theme-${window.preferredTheme}`);
+      if (window.prefersReducedMotion) {
+        document.documentElement.classList.add('reduce-motion');
+      }
+      
+      // Handle theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        document.documentElement.classList.remove('theme-light', 'theme-dark');
+        document.documentElement.classList.add(`theme-${e.matches ? 'dark' : 'light'}`);
+        window.preferredTheme = e.matches ? 'dark' : 'light';
+      });
     </script>
   </head>
 
