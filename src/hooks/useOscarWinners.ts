@@ -91,7 +91,7 @@ export const useOscarWinners = () => {
         // Busca em séries também - SEM limite
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, poster, ano, rating, genero, description, category')
+          .select('id_n, tmdb_id, titulo, ano, rating, genero, description, category')
           .gte('ano', '2000')
           .gte('rating', '8.5')
           .or(keywordConditions)

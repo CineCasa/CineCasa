@@ -65,7 +65,7 @@ export function useNotifications() {
     }
   };
 
-  // Solicitar permissão de notificação
+  // Solicitar permissão de notificação (apenas quando chamado explicitamente)
   const requestPermission = async (): Promise<boolean> => {
     if (!isSupported) return false;
 
@@ -79,10 +79,13 @@ export function useNotifications() {
     }
   };
 
-  // Inscrever em notificações push
+  // Inscrever em notificações push (apenas quando chamado explicitamente)
   const subscribe = async (): Promise<boolean> => {
-    const granted = await requestPermission();
-    if (!granted) return false;
+    // Primeiro verificar se já temos permissão
+    if (Notification.permission !== 'granted') {
+      const granted = await requestPermission();
+      if (!granted) return false;
+    }
 
     try {
       const registration = await navigator.serviceWorker.ready;

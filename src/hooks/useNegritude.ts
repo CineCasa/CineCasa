@@ -33,7 +33,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           .or('genero.ilike.%negritude%,category.ilike.%negritude%'),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, poster, ano, rating, genero, category')
+          .select('id_n, tmdb_id, titulo, ano, rating, genero, category')
           .or('genero.ilike.%negritude%,category.ilike.%negritude%')
       ]);
 
@@ -51,9 +51,9 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
           type: 'series' as const,
-          year: item.year || item.ano,
+          year: item.ano,
           rating: item.rating,
         })),
       ];

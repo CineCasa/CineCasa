@@ -34,7 +34,7 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           .ilike('category', '%infantil%'),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, poster, year, rating')
+          .select('id_n, tmdb_id, titulo, ano, rating')
           .ilike('category', '%infantil%')
       ]);
 
@@ -52,9 +52,9 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
           type: 'series' as const,
-          year: item.year,
+          year: item.ano, // Usar ano para séries
           rating: item.rating,
         })),
       ];

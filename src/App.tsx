@@ -39,6 +39,7 @@ import NotificationProvider from "./components/NotificationProvider";
 import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
+import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
 
 const queryClient = new QueryClient();
 
@@ -105,8 +106,9 @@ const PlayerContainer = () => {
 };
 
 const App = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
 
   const handleLoadingComplete = () => {
     setLoading(false);
@@ -135,6 +137,9 @@ const App = () => {
                     <NotificationProvider>
                       <NotificationContainer />
                       <NewContentNotificationToast />
+                      {showNotificationPrompt && (
+                        <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
+                      )}
                       <PlayerProvider>
                         <KeyboardNavigation>
                           <PremiumNavbar />

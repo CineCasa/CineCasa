@@ -35,7 +35,7 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
           .or('genero.ilike.%romance%,category.ilike.%romance%'),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, poster, ano, rating, genero, category')
+          .select('id_n, tmdb_id, titulo, ano, rating, genero, category')
           .or('genero.ilike.%romance%,category.ilike.%romance%')
       ]);
 
@@ -57,7 +57,7 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
           type: 'series' as const,
           year: item.ano,
           rating: item.rating,

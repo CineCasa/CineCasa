@@ -4,6 +4,7 @@ import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart, Bell } fr
 import { useNavigate, useLocation } from 'react-router-dom';
 import GlobalSearch from './GlobalSearch';
 import { NotificationBell } from './NotificationBell';
+import { useNotifications } from "@/hooks/useNotifications";
 
 interface PremiumNavbarProps {
   onSearch?: (query: string) => void;
@@ -16,6 +17,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { permission } = useNotifications();
 
   useEffect(() => {
     const handleScroll = () => {
