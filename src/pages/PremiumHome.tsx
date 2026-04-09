@@ -390,7 +390,7 @@ const PremiumHome: React.FC = () => {
   const { infantil, isLoading: isLoadingInfantil } = useInfantil(user?.email);
   const { oscarWinners, isLoading: isLoadingOscar } = useOscarWinners();
   const { content: travesseiroContent, isLoading: isLoadingTravesseiro } = useTravesseiroEdredon(user?.email);
-  const { content: worstRatedContent, isLoading: isLoadingWorstRated } = useWorstRated(user?.email);
+  const { content: worstRatedContent, isLoading: isLoadingWorstRated, isUsingFallback } = useWorstRated(user?.email);
 
   // Sistema para evitar duplicatas entre seções
   const usedIds = new Set<string>();
@@ -601,7 +601,7 @@ const PremiumHome: React.FC = () => {
 
         {/* Poderia ser melhor! - 5 capas com piores notas do TMDB */}
         <ContentCarousel
-          title="Poderia ser melhor! 😬"
+          title={isUsingFallback ? "Para explorar! 🎬" : "Poderia ser melhor! 😬"}
           items={!isLoadingWorstRated ? filterUniqueItems((worstRatedContent || []).map(item => ({
             id: item.id,
             tmdbId: item.tmdb_id,

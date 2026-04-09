@@ -17,6 +17,7 @@ interface UseWorstRatedReturn {
   isLoading: boolean;
   lastUpdated: string | null;
   refresh: () => Promise<void>;
+  isUsingFallback: boolean;
 }
 
 // Chave para armazenar o cache no localStorage
@@ -27,6 +28,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
   const [content, setContent] = useState<WorstRatedContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async (forceRefresh = false) => {
@@ -52,23 +54,41 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
       }
       
       // Buscar conteúdos de pior avaliação do banco local
-      // Filtrar por rating TMDB < 4.0 (piores notas)
+      // Primeiro tentar com rating < 4.0, se não encontrar, usar os menores disponíveis
+      console.log('[WorstRated] Buscando conteúdos com piores avaliações...');
+      
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, rating, year, tmdb_rating')
-          .lt('tmdb_rating', '4.0')  // Avaliação TMDB menor que 4.0
-          .not('tmdb_rating', 'is', null)  // Excluir nulos
+          .not('tmdb_rating', 'is', null)  // Apenas com rating TMDB
           .order('tmdb_rating', { ascending: true })
-          .limit(15),  // Buscar mais itens para depois filtrar
+          .limit(15),
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, poster, rating, ano, tmdb_rating')
-          .lt('tmdb_rating', '4.0')
           .not('tmdb_rating', 'is', null)
           .order('tmdb_rating', { ascending: true })
           .limit(15)
       ]);
+      
+      console.log('[WorstRated] Filmes encontrados:', cinemaData.data?.length || 0);
+      console.log('[WorstRated] Séries encontradas:', seriesData.data?.length || 0);
+      
+      // Logar alguns valores para debug
+      if (cinemaData.data && cinemaData.data.length > 0) {
+        console.log('[WorstRated] Primeiros filmes:', cinemaData.data.slice(0, 3).map(f => ({
+          title: f.titulo,
+          tmdb_rating: f.tmdb_rating
+        })));
+      }
+      
+      if (seriesData.data && seriesData.data.length > 0) {
+        console.log('[WorstRated] Primeiras séries:', seriesData.data.slice(0, 3).map(s => ({
+          title: s.titulo,
+          tmdb_rating: s.tmdb_rating
+        })));
+      }
 
       const combinedContent: WorstRatedContent[] = [
         ...(cinemaData.data || []).map((item: any) => ({
@@ -93,22 +113,30 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
         }))
       ];
 
-      // Ordenar pelo rating TMDB (piores primeiro) e pegar apenas 5
-      const sortedContent = combinedContent
+      // Filtrar conteúdos com rating TMDB válido e ordenar pelos piores
+      const validContent = combinedContent.filter(item => item.tmdb_rating !== null && item.tmdb_rating !== undefined);
+      
+      // Ordenar pelo rating TMDB (piores primeiro)
+      const sortedContent = validContent
         .sort((a, b) => (a.tmdb_rating || 10) - (b.tmdb_rating || 10))
-        .slice(0, 5);
+        .slice(0, 5); // Pegar os 5 piores
 
       // Embaralhar para variar a cada carregamento
       const shuffled = sortedContent.sort(() => Math.random() - 0.5);
       
       setContent(shuffled);
       setLastUpdated(new Date().toISOString());
+      setIsUsingFallback(false); // Não está usando fallback
       
       // Salvar no cache
       localStorage.setItem(WORST_RATED_CACHE_KEY, JSON.stringify(shuffled));
       localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
       
       console.log('[WorstRated] Carregados', sortedContent.length, 'conteúdos com piores notas');
+      console.log('[WorstRated] Conteúdos selecionados:', shuffled.map(c => ({
+        title: c.title,
+        tmdb_rating: c.tmdb_rating
+      })));
       
     } catch (err) {
       console.error('[WorstRated] Erro ao buscar conteúdo:', err);
@@ -121,7 +149,59 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
         const cachedTimestamp = localStorage.getItem(WORST_RATED_TIMESTAMP_KEY);
         setLastUpdated(cachedTimestamp);
       } else {
-        setContent([]);
+        // Se não há conteúdo com piores ratings, buscar conteúdos aleatórios como fallback
+        console.log('[WorstRated] Nenhum conteúdo com piores ratings, buscando fallback...');
+        
+        const [fallbackMovies, fallbackSeries] = await Promise.all([
+          supabase
+            .from('cinema')
+            .select('id, tmdb_id, titulo, poster, rating, year, tmdb_rating')
+            .not('poster', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(10),
+          supabase
+            .from('series')
+            .select('id_n, tmdb_id, titulo, poster, rating, ano, tmdb_rating')
+            .not('poster', 'is', null)
+            .order('created_at', { ascending: false })
+            .limit(10)
+        ]);
+        
+        const fallbackContent: WorstRatedContent[] = [
+          ...(fallbackMovies.data || []).map((item: any) => ({
+            id: item.id.toString(),
+            title: item.titulo,
+            poster: item.poster,
+            type: 'movie' as const,
+            year: item.year || item.ano,
+            rating: item.rating || `${item.tmdb_rating || 'N/A'}/10`,
+            tmdb_rating: item.tmdb_rating || undefined,
+            tmdb_id: item.tmdb_id || undefined,
+          })),
+          ...(fallbackSeries.data || []).map((item: any) => ({
+            id: item.id_n?.toString() || item.id?.toString(),
+            title: item.titulo,
+            poster: (item as any).poster,
+            type: 'series' as const,
+            year: item.ano,
+            rating: (item as any).rating || `${item.tmdb_rating || 'N/A'}/10`,
+            tmdb_rating: (item as any).tmdb_rating || undefined,
+            tmdb_id: item.tmdb_id || undefined,
+          }))
+        ];
+        
+        // Embaralhar e pegar 5 aleatórios
+        const shuffledFallback = fallbackContent.sort(() => Math.random() - 0.5).slice(0, 5);
+        
+        setContent(shuffledFallback);
+        setLastUpdated(new Date().toISOString());
+        setIsUsingFallback(true); // Indicar que está usando fallback
+        
+        // Salvar no cache
+        localStorage.setItem(WORST_RATED_CACHE_KEY, JSON.stringify(shuffledFallback));
+        localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
+        
+        console.log('[WorstRated] Fallback: carregados', shuffledFallback.length, 'conteúdos aleatórios');
       }
     } finally {
       setIsLoading(false);
@@ -155,6 +235,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
     isLoading,
     lastUpdated,
     refresh,
+    isUsingFallback,
   };
 };
 
