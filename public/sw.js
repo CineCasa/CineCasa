@@ -89,7 +89,7 @@ const CACHE_STRATEGIES = {
     
     // Atualizar cache em background
     const networkPromise = fetch(request)
-      .then(response => {
+      .then(async (response) => {
         if (response.ok) {
           cache.put(request, response.clone());
           await limitCacheSize(cache, CACHE_CONFIG.api.maxEntries);
