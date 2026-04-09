@@ -61,8 +61,7 @@ const Series = () => {
                 key={cat.id} 
                 category={cat} 
                 maxItems={20}
-                layout="scroll"
-                infiniteScroll={true}
+                layout="grid"
               />
             ))
           )}
