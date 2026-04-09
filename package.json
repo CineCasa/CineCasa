@@ -64,7 +64,11 @@
     "postinstall": "node scripts/postinstall.js",
     "precommit": "npm run lint && npm run type-check && npm run test:unit",
     "prepush": "npm run test:integration",
-    "start": "vite --port 3000 --host 0.0.0.0"
+    "start": "vite --port 3000 --host 0.0.0.0",
+    "commit": "./scripts/auto-commit.sh",
+    "commit:all": "./scripts/auto-commit.sh \"feat: atualização automática\"",
+    "push": "git push origin main",
+    "sync": "git pull origin main && git add . && git commit -m \"sync: atualização automática\" && git push origin main"
   },
   "dependencies": {
     "@clappr/core": "^0.13.2",
