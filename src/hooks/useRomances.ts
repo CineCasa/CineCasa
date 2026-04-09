@@ -28,23 +28,25 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
       console.log('[useRomances] Buscando filmes/séries de romance...');
       
       // Busca TODOS os itens de romance (sem limite)
-      const [cinemaResult, seriesResult] = await Promise.all([
+      const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%romance%,category.ilike.%romance%'),
+          .or(`(genero.ilike.%romance%,category.ilike.%romance%)`)
+          .limit(50),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, rating, genero, category')
-          .or('genero.ilike.%romance%,category.ilike.%romance%')
+          .select('id_n, tmdb_id, titulo, ano, genero')
+          .or(`(genero.ilike.%romance%)`)
+          .limit(50)
       ]);
 
-      console.log('[useRomances] Cinema result:', cinemaResult.data?.length || 0, 'itens');
-      console.log('[useRomances] Series result:', seriesResult.data?.length || 0, 'itens');
-      console.log('[useRomances] Erros:', cinemaResult.error, seriesResult.error);
+      console.log('[useRomances] Cinema result:', cinemaData.data?.length || 0, 'itens');
+      console.log('[useRomances] Series result:', seriesData.data?.length || 0, 'itens');
+      console.log('[useRomances] Erros:', cinemaData.error, seriesData.error);
 
       const allRomances: Romance[] = [
-        ...(cinemaResult.data || []).map((item: any) => ({
+        ...(cinemaData.data || []).map((item: any) => ({
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
@@ -53,14 +55,14 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
           year: item.year,
           rating: item.rating,
         })),
-        ...(seriesResult.data || []).map((item: any) => ({
+        ...(seriesData.data || []).map((item: any) => ({
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
+          poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
           type: 'series' as const,
           year: item.ano,
-          rating: item.rating,
+          rating: 'N/A', // Séries não têm rating na tabela
         })),
       ];
 

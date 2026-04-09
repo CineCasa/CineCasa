@@ -1,22 +1,31 @@
 // Tipos completos para as tabelas do Supabase - Alinhados com estrutura real
 
-export interface Series {
-  // Colunas principais (conforme tabela real)
-  id_n: number;
-  tmdb_id?: string;
+export interface Cinema {
+  id: number;
   titulo: string;
-  descricao?: string;
-  ano?: string;
-  capa?: string;
-  banner?: string;
-  trailer?: string;
-  genero?: string;
-  
-  // Campos opcionais para compatibilidade
-  id?: string;
-  poster?: string;
-  rating?: string;
-  classificacao?: string;
+  poster: string | null;
+  banner: string | null;
+  year: string | null;
+  rating: string | null;
+  category: string | null;
+  tmdb_id: string | null;
+  trailer: string | null;
+  url: string | null;
+  type: string | null;
+  description: string | null;
+  created_at: string | null;
+}
+
+export interface Series {
+  id_n: number;
+  tmdb_id: string | null;
+  titulo: string;
+  descricao: string | null;
+  ano: string | null;
+  capa: string | null;
+  banner: string | null;
+  trailer: string | null;
+  genero: string | null;
 }
 
 export interface Temporada {

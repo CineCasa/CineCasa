@@ -27,26 +27,26 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
       
       // Buscar TODOS os filmes e séries (sem limite)
       const [cinemaData, seriesData] = await Promise.all([
-        supabase.from('cinema').select('id, tmdb_id, titulo, capa, poster, year, rating, genero, description, category'),
-        supabase.from('series').select('id_n, tmdb_id, titulo, capa, ano, rating, genero, description, category')
+        supabase.from('cinema').select('id, tmdb_id, titulo, poster, year, rating, genero, description, category'),
+        supabase.from('series').select('id_n, tmdb_id, titulo, capa, ano, genero, descricao')
       ]);
 
       const allContent: TravesseiroContent[] = [
         ...(cinemaData.data || []).map((item: any) => ({
-          id: item.id_n?.toString() || item.id?.toString() || `cinema-${Math.random()}`,
+          id: item.id?.toString() || `cinema-${Math.random()}`,
           title: item.titulo || 'Sem título',
-          poster: item.capa || item.poster || `https://picsum.photos/seed/${item.id_n || item.id || 'cinema'}/300/450.jpg`,
+          poster: item.poster || `https://picsum.photos/seed/${item.id || 'cinema'}/300/450.jpg`,
           type: 'movie' as const,
-          year: item.ano,
+          year: item.year,
           rating: item.rating,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id_n?.toString() || item.id?.toString() || `series-${Math.random()}`,
+          id: item.id_n?.toString() || `series-${Math.random()}`,
           title: item.titulo || 'Sem título',
-          poster: item.capa || item.poster || `https://picsum.photos/seed/${item.id_n || item.id || 'series'}/300/450.jpg`,
+          poster: item.capa || `https://picsum.photos/seed/${item.id_n || 'series'}/300/450.jpg`,
           type: 'series' as const,
           year: item.ano,
-          rating: item.rating,
+          rating: 'N/A', // Séries não têm rating na tabela
         })),
       ];
 

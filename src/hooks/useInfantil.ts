@@ -27,19 +27,21 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
       setIsLoading(true);
       
       // Buscar filmes e séries da categoria infantil
-      const [cinemaResult, seriesResult] = await Promise.all([
+      const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating')
-          .ilike('category', '%infantil%'),
+          .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
+          .or(`(genero.ilike.%infantil%,category.ilike.%infantil%)`)
+          .limit(50),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, rating')
-          .ilike('category', '%infantil%')
+          .select('id_n, tmdb_id, titulo, ano, genero')
+          .or(`(genero.ilike.%infantil%)`)
+          .limit(50)
       ]);
 
       const allInfantil: Infantil[] = [
-        ...(cinemaResult.data || []).map((item: any) => ({
+        ...(cinemaData.data || []).map((item: any) => ({
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
@@ -48,14 +50,14 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           year: item.year,
           rating: item.rating,
         })),
-        ...(seriesResult.data || []).map((item: any) => ({
+        ...(seriesData.data || []).map((item: any) => ({
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
+          poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
           type: 'series' as const,
-          year: item.ano, // Usar ano para séries
-          rating: item.rating,
+          year: item.ano,
+          rating: 'N/A', // Séries não têm rating na tabela
         })),
       ];
 

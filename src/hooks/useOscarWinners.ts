@@ -74,7 +74,7 @@ export const useOscarWinners = () => {
       }
 
       // Estratégia 2: Buscar filmes com rating >= 8.0 e palavras-chave de prêmios
-      const keywordConditions = AWARD_KEYWORDS.map(kw => 
+      const oscarKeywords = AWARD_KEYWORDS.map(kw => 
         `genero.ilike.%${kw}%,titulo.ilike.%${kw}%,description.ilike.%${kw}%,category.ilike.%${kw}%`
       ).join(',');
 
@@ -85,16 +85,16 @@ export const useOscarWinners = () => {
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, description, category')
           .gte('year', '2000')
-          .gte('rating', '8.0')
-          .or(keywordConditions)
-          .limit(20),
+          .gte('rating', '8.5')
+          .or(`(${oscarKeywords})`)
+          .limit(30),
         // Busca em séries também - SEM limite
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, rating, genero, description, category')
+          .select('id_n, tmdb_id, titulo, ano, genero, description')
           .gte('ano', '2000')
-          .gte('rating', '8.5')
-          .or(keywordConditions)
+          .or(`(${oscarKeywords})`)
+          .limit(30)
       ]);
 
       // Combinar todos os resultados
@@ -120,14 +120,14 @@ export const useOscarWinners = () => {
           id: item.id?.toString() || item.id_n?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
           type: (item.ano ? 'series' : 'movie') as 'movie' | 'series',
           year: item.year || item.ano,
-          rating: item.rating,
+          rating: item.rating || 'N/A', // Fallback para rating
           oscarYear: item.year || item.ano,
           award: 'Oscar Winner',
         }))
-        .filter(item => item.id && item.tmdbId && item.poster); // Remover inválidos
+        .filter(item => item.id && item.tmdbId); // Remover inválidos
 
       // Remover duplicados baseado no tmdbId
       const uniqueWinners = processedWinners.filter((item, index, self) =>

@@ -26,19 +26,21 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
       setIsLoading(true);
       
       // Busca TODOS os itens de negritude (sem limite)
-      const [cinemaResult, seriesResult] = await Promise.all([
+      const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%negritude%,category.ilike.%negritude%'),
+          .or(`(genero.ilike.%negritude%,category.ilike.%negritude%)`)
+          .limit(50),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, rating, genero, category')
-          .or('genero.ilike.%negritude%,category.ilike.%negritude%')
+          .select('id_n, tmdb_id, titulo, ano, genero')
+          .or(`(genero.ilike.%negritude%)`)
+          .limit(50)
       ]);
 
       const allNegritude: Negritude[] = [
-        ...(cinemaResult.data || []).map((item: any) => ({
+        ...(cinemaData.data || []).map((item: any) => ({
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
@@ -47,14 +49,14 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           year: item.year || item.ano,
           rating: item.rating,
         })),
-        ...(seriesResult.data || []).map((item: any) => ({
+        ...(seriesData.data || []).map((item: any) => ({
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
+          poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
           type: 'series' as const,
           year: item.ano,
-          rating: item.rating,
+          rating: 'N/A', // Séries não têm rating na tabela
         })),
       ];
 
