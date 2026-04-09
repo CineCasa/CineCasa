@@ -5,6 +5,9 @@ import { ContentItem } from "@/data/content";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchTmdbDetails, getTmdbTrailerUrl } from "@/services/tmdb";
 import NetflixPlayer from "./NetflixPlayer";
+import { useFavorites } from "@/hooks/useFavorites";
+import { FavoriteButtonSimple } from "./FavoriteButton";
+import { useAuth } from "@/components/AuthProvider";
 
 interface ContentCardProps {
   item: ContentItem & { progress?: number, isComingSoon?: boolean };
@@ -15,7 +18,6 @@ interface ContentCardProps {
 
 const ContentCard = ({ item, index, isLast = false, showProgress = false }: ContentCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(item.trailer || null);
   const [metadata, setMetadata] = useState<{ duration: string; rating: string } | null>(null);
   const [showTrailer, setShowTrailer] = useState(false);
@@ -23,6 +25,14 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
   const trailerLoadTimeout = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
+  
+  // Hooks do Supabase
+  const { user } = useAuth();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  
+  // Determinar tipo de conteúdo e ID
+  const contentType = item.id.includes("series") ? "series" : "movie";
+  const contentId = parseInt(item.id) || item.tmdbId || 0;
 
   const handleNavigateToDetails = () => {
     if (item.isComingSoon) return;
@@ -33,14 +43,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   };
 
   useEffect(() => {
-    // Carregar estado inicial de favorito do localStorage
-    try {
-      const favs = JSON.parse(localStorage.getItem("paixaofavs") || "[]");
-      setIsFavorite(favs.some((f: any) => f.id === item.id));
-    } catch (e) {
-      console.error(e);
-    }
-
     // Carregar trailer e metadados imediatamente quando disponível
     if (item.tmdbId && !metadata) {
       const type = item.id.includes("series") ? "tv" : "movie";
@@ -68,21 +70,23 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
     }
   }, [item.tmdbId, item.id, item.trailer]);
 
-  const toggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      const favs = JSON.parse(localStorage.getItem("paixaofavs") || "[]");
-      let newFavs;
-      if (isFavorite) {
-        newFavs = favs.filter((f: any) => f.id !== item.id);
-      } else {
-        newFavs = [...favs, item];
-      }
-      localStorage.setItem("paixaofavs", JSON.stringify(newFavs));
-      setIsFavorite(!isFavorite);
-    } catch (e) {
-      console.error(e);
-    }
+    
+    // Preparar dados para o hook
+    const favoriteData = {
+      content_id: contentId,
+      content_type: contentType as 'movie' | 'series',
+      titulo: item.title || item.titulo,
+      poster: item.poster,
+      banner: item.banner,
+      rating: item.rating,
+      year: item.year,
+      genero: item.genre || item.genero,
+    };
+    
+    // Usar hook do Supabase
+    await toggleFavorite(favoriteData);
   };
 
   const handleMouseEnter = () => {
@@ -273,6 +277,13 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
            <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-black uppercase px-2 py-1 rounded shadow-lg z-30">
              Em Breve
            </div>
+        )}
+        {!item.isComingSoon && (
+          <FavoriteButtonSimple 
+            movieId={item.id} 
+            userId={user?.id}
+            className="top-2 right-2"
+          />
         )}
         {showProgress && item.progress && item.progress > 0 && item.progress < 100 && (
            <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 z-20">

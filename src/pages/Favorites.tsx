@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import PremiumNavbar from "@/components/PremiumNavbar";
 import CategoryFilms from "@/components/CategoryFilms";
 import { motion } from 'framer-motion';
-import getSupabaseClient from '@/lib/supabase';
+import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/components/AuthProvider";
 
 const Favorites = () => {
-  const [favorites, setFavorites] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [randomImages, setRandomImages] = useState<any[]>([]);
-
-  const supabase = getSupabaseClient();
+  const { user } = useAuth();
+  
+  // Hook de favoritos do Supabase
+  const { favorites, loading, fetchFavorites } = useFavorites();
 
   // Buscar imagens aleatórias de filmes e séries
   const fetchRandomImages = async () => {
@@ -41,85 +42,15 @@ const Favorites = () => {
     }
   };
 
-  // Buscar favoritos do banco de dados
-  const fetchFavorites = async () => {
-    try {
-      setLoading(true);
-      console.log('🔍 Buscando favoritos...');
-
-      // Buscar filmes favoritos
-      const { data: favMovies, error: moviesError } = await supabase
-        .from('cinema')
-        .select('*')
-        .eq('is_favorite', true);
-
-      // Buscar séries favoritas
-      const { data: favSeries, error: seriesError } = await supabase
-        .from('series')
-        .select('*')
-        .eq('is_favorite', true);
-
-      if (moviesError) {
-        console.error('❌ Erro ao buscar filmes favoritos:', moviesError);
-      }
-
-      if (seriesError) {
-        console.error('❌ Erro ao buscar séries favoritas:', seriesError);
-      }
-
-      const allFavorites = [
-        ...(favMovies || []).map(item => ({ ...item, type: 'movie' })),
-        ...(favSeries || []).map(item => ({ ...item, type: 'series' }))
-      ];
-
-      console.log(`✅ Encontrados ${allFavorites.length} favoritos:`, allFavorites);
-      setFavorites(allFavorites);
-      setLoading(false);
-
-    } catch (error) {
-      console.error('❌ Erro ao buscar favoritos:', error);
-      setLoading(false);
-    }
-  };
-
-  // Configurar subscription para atualizações em tempo real
+  // Carregar dados ao montar o componente
   useEffect(() => {
-    fetchFavorites();
     fetchRandomImages();
-
-    // Subscription para mudanças nas tabelas cinema e series
-    const moviesSubscription = supabase
-      .channel('favorites-movies-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'cinema',
-        filter: 'is_favorite=eq.true'
-      }, (payload) => {
-        console.log('🔄 Mudança em filmes favoritos:', payload);
-        fetchFavorites();
-      })
-      .subscribe();
-
-    const seriesSubscription = supabase
-      .channel('favorites-series-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'series',
-        filter: 'is_favorite=eq.true'
-      }, (payload) => {
-        console.log('🔄 Mudança em séries favoritas:', payload);
-        fetchFavorites();
-      })
-      .subscribe();
-
-    // Cleanup
-    return () => {
-      moviesSubscription.unsubscribe();
-      seriesSubscription.unsubscribe();
-    };
-  }, []);
+    
+    // O hook useFavorites já cuida do fetch dos favoritos
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user, fetchFavorites]);
 
   return (
     <div className="min-h-screen bg-black pt-[94px]">
