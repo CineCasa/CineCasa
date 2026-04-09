@@ -37,6 +37,8 @@ import Profiles from "./pages/Profiles";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationProvider from "./components/NotificationProvider";
 import { NotificationContainer } from "./components/MovieNotifications";
+import { NotificationsPage } from "./components/NotificationsPage";
+import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +81,7 @@ const AppRoutes = () => {
       <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
       <Route path="/image-cleanup" element={<ProtectedRoute><ImageCleanup /></ProtectedRoute>} />
       <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/search" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
       <Route path="/profiles" element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
       <Route path="/" element={<ProtectedRoute><PremiumHome /></ProtectedRoute>} />
@@ -131,6 +134,7 @@ const App = () => {
                   <div className="pb-14 md:pb-0">
                     <NotificationProvider>
                       <NotificationContainer />
+                      <NewContentNotificationToast />
                       <PlayerProvider>
                         <KeyboardNavigation>
                           <PremiumNavbar />

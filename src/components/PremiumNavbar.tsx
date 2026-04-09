@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart } from 'lucide-react';
+import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart, Bell } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GlobalSearch from './GlobalSearch';
 import { NotificationBell } from './NotificationBell';
@@ -115,6 +115,13 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                     >
                       <User size={16} />
                       <span>Perfil</span>
+                    </button>
+                    <button 
+                      onClick={() => navigate('/notifications')}
+                      className="w-full flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-all duration-300 text-secondary"
+                    >
+                      <Bell size={16} />
+                      <span>Notificações</span>
                     </button>
                     <button className="w-full flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-all duration-300 text-secondary">
                       <LogOut size={16} />
