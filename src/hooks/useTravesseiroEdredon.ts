@@ -27,8 +27,8 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
       
       // Buscar TODOS os filmes e séries (sem limite)
       const [cinemaData, seriesData] = await Promise.all([
-        supabase.from('cinema').select('*'),
-        supabase.from('series').select('*')
+        supabase.from('cinema').select('id, tmdb_id, titulo, capa, poster, year, rating, genero, description, category'),
+        supabase.from('series').select('id_n, tmdb_id, titulo, capa, ano, rating, genero, description, category')
       ]);
 
       const allContent: TravesseiroContent[] = [

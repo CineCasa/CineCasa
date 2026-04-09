@@ -49,7 +49,7 @@ export function useNewContentNotifications() {
       // Buscar novas séries
       const { data: newSeries, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, poster, ano, created_at, tmdb_id')
+        .select('id_n, titulo, ano, created_at, tmdb_id')
         .gte('created_at', twelveHoursAgo)
         .order('created_at', { ascending: false });
 
@@ -71,7 +71,7 @@ export function useNewContentNotifications() {
           id: series.id_n?.toString() || series.id?.toString(),
           title: series.titulo,
           type: 'series' as const,
-          poster: series.poster,
+          poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
           year: series.ano,
           created_at: series.created_at,
           tmdb_id: series.tmdb_id,

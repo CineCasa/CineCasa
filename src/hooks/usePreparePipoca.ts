@@ -30,7 +30,7 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
       // Buscar séries do banco - sem limite para pegar todas
       const { data, error } = await supabase
         .from('series')
-        .select('*');
+        .select('id_n, tmdb_id, titulo, capa, ano, rating, genero, description, category');
 
       if (error) {
         console.error('❌ [PreparePipoca] Erro:', error);
@@ -79,7 +79,7 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
           id: String(serie.id_n || serie.id || `series-${Math.random()}`),
           tmdbId: serie.tmdb_id,
           title: serie.titulo,
-          poster: serie.capa || serie.poster,
+          poster: serie.capa || '/api/placeholder/300/450', // Fallback para poster
           type: 'series',
           year: serie.ano || serie.year || '2024',
           rating: serie.rating || 'N/A',
