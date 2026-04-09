@@ -66,7 +66,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
           .limit(15),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, poster, rating, ano, tmdb_rating')
+          .select('id_n, tmdb_id, titulo, ano, tmdb_rating')
           .not('tmdb_rating', 'is', null)
           .order('tmdb_rating', { ascending: true })
           .limit(15)
@@ -104,11 +104,11 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
         ...(seriesData.data || []).map((item: any) => ({
           id: item.id_n?.toString() || item.id?.toString(),
           title: item.titulo,
-          poster: (item as any).poster,
+          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
           type: 'series' as const,
           year: item.ano,
-          rating: (item as any).rating || `${item.tmdb_rating}/10`,
-          tmdb_rating: (item as any).tmdb_rating || undefined,
+          rating: `${item.tmdb_rating || 'N/A'}/10`,
+          tmdb_rating: item.tmdb_rating || undefined,
           tmdb_id: item.tmdb_id || undefined,
         }))
       ];
@@ -161,8 +161,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
             .limit(10),
           supabase
             .from('series')
-            .select('id_n, tmdb_id, titulo, poster, rating, ano, tmdb_rating')
-            .not('poster', 'is', null)
+            .select('id_n, tmdb_id, titulo, ano, tmdb_rating')
             .order('created_at', { ascending: false })
             .limit(10)
         ]);
@@ -181,11 +180,11 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
           ...(fallbackSeries.data || []).map((item: any) => ({
             id: item.id_n?.toString() || item.id?.toString(),
             title: item.titulo,
-            poster: (item as any).poster,
+            poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
             type: 'series' as const,
             year: item.ano,
-            rating: (item as any).rating || `${item.tmdb_rating || 'N/A'}/10`,
-            tmdb_rating: (item as any).tmdb_rating || undefined,
+            rating: `${item.tmdb_rating || 'N/A'}/10`,
+            tmdb_rating: item.tmdb_rating || undefined,
             tmdb_id: item.tmdb_id || undefined,
           }))
         ];
