@@ -30,12 +30,12 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%negritude%,category.ilike.%negritude%')
+          .or('(genero.ilike.%negritude%,category.ilike.%negritude%)')
           .limit(50),
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, ano, genero')
-          .or('genero.ilike.%negritude%')
+          .or('(genero.ilike.%negritude%)')
           .limit(50)
       ]);
 

@@ -32,12 +32,12 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%romance%,category.ilike.%romance%')
-          .limit(50),
+          .or('(genero.ilike.%romance%,category.ilike.%romance%)')
+          .limit(100),
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, ano, genero')
-          .or('genero.ilike.%romance%')
+          .or('(genero.ilike.%romance%)')
           .limit(50)
       ]);
 
