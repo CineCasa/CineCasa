@@ -455,7 +455,7 @@ const PremiumHome: React.FC = () => {
       />
 
       {/* Content Sections */}
-      <div className="pb-20 mt-[70px] relative z-30">
+      <div className="mt-[70px] relative z-30">
         {/* Lançamentos & Novidades - Inteligente: 3 de 2026 + 2 de 2025 */}
         <ContentCarousel
           title="Lançamentos & Novidades"
