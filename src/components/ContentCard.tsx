@@ -242,20 +242,33 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   return (
     <div
       ref={containerRef}
+      data-focusable="true"
+      data-row={rowIndex}
+      data-col={colIndex}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onFocus={() => setIsHovered(true)}
+      onFocus={(e) => {
+        setIsHovered(true);
+        // Scroll into view when focused (for keyboard navigation)
+        e.currentTarget.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center', 
+          inline: 'center' 
+        });
+      }}
       onBlur={() => setIsHovered(false)}
       onKeyDown={handleKeyDown}
       onClick={handleNavigateToDetails}
       tabIndex={0}
-      className={`relative flex-shrink-0 
+      role="button"
+      aria-label={`${item.title} - ${item.type === 'movie' ? 'Filme' : 'Série'}`}
+      className={`content-card relative flex-shrink-0 
         w-[calc(50vw-12px)] 
         sm:w-[calc((100vw-32px-16px)/3)] 
         md:w-[calc((100vw-64px-48px)/4)] 
         lg:w-[calc((100vw-96px-96px)/5)] 
         xl:w-[calc((100vw-128px-128px)/6)] 
-        aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black rounded-lg cursor-pointer ${
+        aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black rounded-lg cursor-pointer scroll-m-4 ${
         isHovered ? "z-[99999]" : "z-0"
       }`}
     >

@@ -1,0 +1,187 @@
+/* Smart TV Focus Navigation Styles */
+
+/* Base focus styles for all focusable elements */
+.smart-tv-mode *:focus {
+  outline: none !important;
+}
+
+/* High visibility focus ring for Smart TV */
+.smart-tv-mode [tabindex="0"]:focus,
+.smart-tv-mode [tabindex="0"].focus-visible,
+.smart-tv-mode button:focus,
+.smart-tv-mode a:focus {
+  outline: 4px solid #E50914 !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.6), 0 0 40px rgba(229, 9, 20, 0.3) !important;
+  border-radius: 8px !important;
+  transform: scale(1.05) !important;
+  z-index: 9999 !important;
+  transition: all 0.2s ease-out !important;
+}
+
+/* Content card specific focus styles */
+.smart-tv-mode .content-card:focus,
+.smart-tv-mode [data-focusable="true"]:focus {
+  outline: 5px solid #E50914 !important;
+  outline-offset: 6px !important;
+  box-shadow: 
+    0 0 0 5px #E50914,
+    0 0 30px rgba(229, 9, 20, 0.8),
+    0 0 60px rgba(229, 9, 20, 0.4) !important;
+  transform: scale(1.08) !important;
+  z-index: 10000 !important;
+}
+
+/* Carousel item focus */
+.smart-tv-mode .carousel-item:focus {
+  outline: 4px solid #E50914 !important;
+  outline-offset: 4px !important;
+  transform: scale(1.05) !important;
+}
+
+/* Navigation bar items */
+.smart-tv-mode .nav-item:focus {
+  outline: 3px solid #E50914 !important;
+  outline-offset: 2px !important;
+  background-color: rgba(229, 9, 20, 0.2) !important;
+}
+
+/* Button focus styles */
+.smart-tv-mode button:focus {
+  outline: 3px solid #E50914 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 15px rgba(229, 9, 20, 0.5) !important;
+}
+
+/* Scroll behavior - smooth scrolling for focus changes */
+.smart-tv-mode {
+  scroll-behavior: smooth !important;
+}
+
+/* Ensure focused elements are always visible */
+.smart-tv-mode *:focus {
+  scroll-margin-top: 100px !important;
+  scroll-margin-bottom: 100px !important;
+  scroll-margin-left: 50px !important;
+  scroll-margin-right: 50px !important;
+}
+
+/* Prevent focus from going off-screen */
+.smart-tv-mode html,
+.smart-tv-mode body {
+  overflow-x: hidden !important;
+}
+
+/* Focus trap for modals and overlays */
+.smart-tv-mode .modal-open [tabindex]:not([tabindex="-1"]):focus {
+  outline: 4px solid #E50914 !important;
+}
+
+/* High contrast mode for better visibility */
+@media (prefers-contrast: high) {
+  .smart-tv-mode [tabindex="0"]:focus {
+    outline: 6px solid #fff !important;
+    outline-offset: 4px !important;
+    box-shadow: 0 0 0 6px #E50914 !important;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .smart-tv-mode *:focus {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* Animation for focus change */
+@keyframes focusPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(229, 9, 20, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(229, 9, 20, 0);
+  }
+}
+
+.smart-tv-mode [tabindex="0"]:focus {
+  animation: focusPulse 0.6s ease-out;
+}
+
+/* Grid navigation helpers */
+.smart-tv-mode .focus-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.smart-tv-mode .focus-grid > * {
+  scroll-margin: 20px;
+}
+
+/* Row navigation */
+.smart-tv-mode .focus-row {
+  display: flex;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.smart-tv-mode .focus-row > * {
+  scroll-margin: 10px;
+}
+
+/* Ensure proper stacking for focused elements */
+.smart-tv-mode [tabindex="0"] {
+  position: relative;
+}
+
+.smart-tv-mode [tabindex="0"]:focus {
+  z-index: 9999;
+}
+
+/* Hide default focus outline but keep accessibility */
+.smart-tv-mode *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.smart-tv-mode *:focus-visible {
+  outline: 4px solid #E50914;
+  outline-offset: 4px;
+}
+
+/* Loading state for focused elements */
+.smart-tv-mode [tabindex="0"][aria-busy="true"]:focus {
+  outline-color: #FFA500 !important;
+}
+
+/* Disabled state */
+.smart-tv-mode [tabindex="0"][aria-disabled="true"]:focus {
+  outline-color: #666 !important;
+  cursor: not-allowed;
+}
+
+/* Active/pressed state */
+.smart-tv-mode [tabindex="0"]:active:focus {
+  transform: scale(0.98) !important;
+  outline-width: 6px !important;
+}
+
+/* WebOS TV specific */
+.webos-tv [tabindex="0"]:focus {
+  outline: 4px solid #E50914 !important;
+  outline-offset: 4px !important;
+}
+
+/* Tizen TV specific */
+.tizen-tv [tabindex="0"]:focus {
+  outline: 4px solid #E50914 !important;
+  outline-offset: 4px !important;
+}
+
+/* Android TV specific */
+.android-tv [tabindex="0"]:focus {
+  outline: 4px solid #E50914 !important;
+  outline-offset: 4px !important;
+}
