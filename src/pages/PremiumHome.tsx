@@ -16,6 +16,7 @@ import { useTravesseiroEdredon } from '../hooks/useTravesseiroEdredon';
 import { useWorstRated } from '../hooks/useWorstRated';
 import { useCineRiso } from '../hooks/useCineRiso';
 import { useAdrenalinaPura } from '../hooks/useAdrenalinaPura';
+import { useClassicosEternos } from '../hooks/useClassicosEternos';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -391,6 +392,7 @@ const PremiumHome: React.FC = () => {
   const { negritude, isLoading: isLoadingNegritude } = useNegritude(user?.email);
   const { series: pipocaSeries, isLoading: isLoadingPipoca } = usePreparePipoca(user?.email);
   const { infantil, isLoading: isLoadingInfantil } = useInfantil(user?.email);
+  const { content: classicosContent, isLoading: isLoadingClassicos } = useClassicosEternos();
   const { oscarWinners, isLoading: isLoadingOscar } = useOscarWinners();
   const { content: travesseiroContent, isLoading: isLoadingTravesseiro } = useTravesseiroEdredon(user?.email);
   const { content: cineRisoContent, isLoading: isLoadingCineRiso } = useCineRiso();
@@ -587,7 +589,21 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        
+        {/* Clássicos Eternos - 5 capas aleatórias da categoria clássicos */}
+        <ContentCarousel
+          title="Clássicos Eternos 🎬"
+          items={!isLoadingClassicos ? filterUniqueItems((classicosContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
         {/* Vencedores de Oscar - Inteligente: 5 capas de conteúdos premiados desde 2000 */}
         <ContentCarousel
           title="Vencedores de Oscar 🏆"
