@@ -21,6 +21,7 @@ import { useClassicosEternos } from '../hooks/useClassicosEternos';
 import { useRitmoEmocao } from '../hooks/useRitmoEmocao';
 import { useHistoriasEsperanca } from '../hooks/useHistoriasEsperanca';
 import { useOrgulhoNacional } from '../hooks/useOrgulhoNacional';
+import { useBaseadoEmFatosReais } from '../hooks/useBaseadoEmFatosReais';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -405,6 +406,7 @@ const PremiumHome: React.FC = () => {
   const { content: ritmoContent, isLoading: isLoadingRitmo } = useRitmoEmocao();
   const { content: historiasContent, isLoading: isLoadingHistorias } = useHistoriasEsperanca();
   const { content: orgulhoContent, isLoading: isLoadingOrgulho } = useOrgulhoNacional();
+  const { content: baseadoEmFatosContent, isLoading: isLoadingBaseadoEmFatos } = useBaseadoEmFatosReais();
 
   // Sistema para evitar duplicatas entre seções
   const usedIds = new Set<string>();
@@ -730,6 +732,22 @@ const PremiumHome: React.FC = () => {
             type: item.type,
             year: item.year,
             rating: item.rating
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Baseado em Fatos Reais - 4 filmes e 1 série da categoria documentário */}
+        <ContentCarousel
+          title="Baseado em Fatos Reais 📜"
+          items={!isLoadingBaseadoEmFatos ? filterUniqueItems((baseadoEmFatosContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating,
+            isNew: true
           })), 5) : []}
           onCardClick={handleCardClick}
         />
