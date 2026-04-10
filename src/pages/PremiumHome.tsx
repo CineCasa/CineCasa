@@ -15,6 +15,7 @@ import { useOscarWinners } from '../hooks/useOscarWinners';
 import { useTravesseiroEdredon } from '../hooks/useTravesseiroEdredon';
 import { useWorstRated } from '../hooks/useWorstRated';
 import { useCineRiso } from '../hooks/useCineRiso';
+import { useMentesCriminosas } from '../hooks/useMentesCriminosas';
 import { useAdrenalinaPura } from '../hooks/useAdrenalinaPura';
 import { useClassicosEternos } from '../hooks/useClassicosEternos';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
@@ -396,6 +397,7 @@ const PremiumHome: React.FC = () => {
   const { oscarWinners, isLoading: isLoadingOscar } = useOscarWinners();
   const { content: travesseiroContent, isLoading: isLoadingTravesseiro } = useTravesseiroEdredon(user?.email);
   const { content: cineRisoContent, isLoading: isLoadingCineRiso } = useCineRiso();
+  const { content: mentesContent, isLoading: isLoadingMentes } = useMentesCriminosas();
   const { content: worstRatedContent, isLoading: isLoadingWorstRated, isUsingFallback } = useWorstRated(user?.email);
 
   // Sistema para evitar duplicatas entre seções
@@ -634,7 +636,7 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        {/* CineRiso - 5 capas de comédia: 4 filmes e 1 série (imediatamente acima de Poderia ser Melhor) */}
+        {/* CineRiso - 5 capas de comédia: 4 filmes e 1 série */}
         <ContentCarousel
           title="CineRiso 😂"
           items={!isLoadingCineRiso ? (cineRisoContent || []).slice(0, 5).map(item => ({
@@ -647,6 +649,21 @@ const PremiumHome: React.FC = () => {
             rating: item.rating,
             isNew: true
           })) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Mentes Criminosas - 5 capas aleatórias das categorias crime e policial */}
+        <ContentCarousel
+          title="Mentes Criminosas 🔪"
+          items={!isLoadingMentes ? filterUniqueItems((mentesContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5) : []}
           onCardClick={handleCardClick}
         />
 
