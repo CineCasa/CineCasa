@@ -31,12 +31,12 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or(`(genero.ilike.%infantil%,category.ilike.%infantil%)`)
+          .or('genero.ilike.%infantil%,category.ilike.%infantil%')
           .limit(50),
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, ano, genero')
-          .or(`(genero.ilike.%infantil%)`)
+          .or('genero.ilike.%infantil%')
           .limit(50)
       ]);
 
