@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistir Juntos - CineCasa</title>
+  
+  <!-- Socket.IO Client -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  
+  <!-- Scripts do Watch Party -->
+  <script src="/js/criar-sala.js"></script>
+  <script src="/js/watch-party.js"></script>
+  
+  <style>
+    /* ============================================
+       RESET E CONFIGURAÇÕES GLOBAIS
+       ============================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000000;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* ============================================
+       HEADER
+       ============================================ */
+    .watch-header {
+      background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+      padding: 20px 30px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .watch-logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #e50914;
+      text-decoration: none;
+    }
+    
+    .watch-status {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 20px;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .user-count {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    /* ============================================
+       ÁREA PRINCIPAL DO PLAYER
+       ============================================ */
+    .watch-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 20px 20px;
+      background: #000000;
+      min-height: 100vh;
+    }
+    
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1200px;
+      background: #000000;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    
+    /* Aspect ratio 16:9 */
+    .video-wrapper::before {
+      content: '';
+      display: block;
+      padding-top: 56.25%;
+    }
+    
+    #watch-party-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000000;
+    }
+    
+    /* ============================================
+       CONTROLES CUSTOMIZADOS
+       ============================================ */
+    .video-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.9));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .video-wrapper:hover .video-controls {
+      opacity: 1;
+    }
+    
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .control-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .control-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .control-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+    }
+    
+    .time-display {
+      font-size: 14px;
+      color: rgba(255,255,255,0.9);
+      font-variant-numeric: tabular-nums;
+    }
+    
+    /* ============================================
+       BARRA DE PROGRESSO
+       ============================================ */
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: #e50914;
+      border-radius: 2px;
+      transition: width 0.1s;
+    }
+    
+    .progress-handle {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      background: #e50914;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    
+    .progress-bar:hover .progress-handle {
+      opacity: 1;
+    }
+    
+    /* ============================================
+       PAINEL DE INFORMAÇÕES
+       ============================================ */
+    .info-panel {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      width: 300px;
+      background: rgba(20, 20, 20, 0.95);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      z-index: 50;
+    }
+    
+    .info-panel h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .info-panel h3 svg {
+      width: 20px;
+      height: 20px;
+      fill: #e50914;
+    }
+    
+    .room-id {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      word-break: break-all;
+      margin-bottom: 15px;
+      color: #22c55e;
+    }
+    
+    .share-section {
+      margin-top: 15px;
+    }
+    
+    .share-link {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      word-break: break-all;
+      margin-bottom: 10px;
+    }
+    
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary:hover {
+      background: #f40612;
+    }
+    
+    .btn-secondary {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    /* ============================================
+       MENSAGENS E ESTADOS
+       ============================================ */
+    .message-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    
+    .message-overlay.hidden {
+      display: none;
+    }
+    
+    .message-icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 20px;
+    }
+    
+    .message-icon svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .message-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    
+    .message-text {
+      font-size: 16px;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      max-width: 400px;
+      line-height: 1.5;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255,255,255,0.1);
+      border-top-color: #e50914;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* =========================================
+       TOAST NOTIFICATIONS
+       ========================================= */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 20, 20, 0.95);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s, transform 0.3s;
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    /* =========================================
+       RESPONSIVIDADE
+       ========================================= */
+    @media (max-width: 768px) {
+      .watch-header {
+        padding: 15px 20px;
+      }
+      
+      .watch-logo {
+        font-size: 20px;
+      }
+      
+      .info-panel {
+        position: static;
+        width: 100%;
+        max-width: 100%;
+        margin: 20px;
+        border-radius: 12px;
+      }
+      
+      .watch-container {
+        flex-direction: column;
+        padding: 70px 0 0;
+      }
+      
+      .video-wrapper {
+        border-radius: 0;
+      }
+    }
+    
+    /* =========================================
+       UTILITÁRIOS
+       ========================================= */
+    .hidden {
+      display: none !important;
+    }
+    
+    .text-success { color: #22c55e; }
+    .text-error { color: #ef4444; }
+    .text-warning { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  
+  <!-- ============================================
+       HEADER
+       ============================================ -->
+  <header class="watch-header">
+    <a href="/" class="watch-logo">🎬 CineCasa</a>
+    
+    <div class="watch-status">
+      <div class="status-indicator" id="connection-status">
+        <span class="status-dot"></span>
+        <span id="watch-party-status">Conectando...</span>
+      </div>
+      
+      <div class="user-count">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+        <span id="user-count">1</span>
+      </div>
+    </div>
+  </header>
+  
+  <!-- ============================================
+       ÁREA PRINCIPAL
+       ============================================ -->
+  <main class="watch-container">
+    
+    <!-- Wrapper do Vídeo -->
+    <div class="video-wrapper">
+      <video id="watch-party-video" controls preload="metadata">
+        <p>Seu navegador não suporta vídeo HTML5.</p>
+      </video>
+    </div>
+    
+    <!-- Painel de Informações -->
+    <aside class="info-panel" id="info-panel">
+      <h3>
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        Sala de Assistir Juntos
+      </h3>
+      
+      <div class="room-id" id="room-id-display">Carregando...</div>
+      
+      <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 15px;">
+        Compartilhe este link com amigos para assistirem juntos sincronizados.
+      </p>
+      
+      <div class="share-section">
+        <div class="share-link" id="share-link">Gerando link...</div>
+        
+        <button class="btn-primary" onclick="copiarLink()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+          </svg>
+          Copiar Link
+        </button>
+        
+        <button class="btn-secondary" onclick="criarNovaSala()">
+          Criar Nova Sala
+        </button>
+      </div>
+    </aside>
+    
+  </main>
+  
+  <!-- ============================================
+       OVERLAYS DE ESTADO
+       ============================================ -->
+  
+  <!-- Loading -->
+  <div class="message-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <h2 class="message-title">Conectando à sala...</h2>
+    <p class="message-text">Aguarde enquanto nos conectamos aos outros participantes.</p>
+  </div>
+  
+  <!-- Sem Room ID -->
+  <div class="message-overlay hidden" id="no-room-overlay">
+    <div class="message-icon">
+      <svg viewBox="0 0 24 24" fill="#f59e0b">
+        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+      </svg>
+    </div>
+    <h2 class="message-title">Nenhuma Sala Encontrada</h2>
+    <p class="message-text">Você precisa de um ID de sala para participar. Crie uma nova sala ou use um link de convite.</p>
+    <br>
+    <button class="btn-primary" onclick="criarNovaSala()" style="max-width: 300px;">
+      Criar Nova Sala
+    </button>
+  </div>
+  
+  <!-- Erro -->
+  <div class="message-overlay hidden" id="error-overlay">
+    <div class="message-icon">
+      <svg viewBox="0 0 24 24" fill="#ef4444">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+    </div>
+    <h2 class="message-title">Erro de Conexão</h2>
+    <p class="message-text" id="error-message">Não foi possível conectar à sala. Verifique sua conexão e tente novamente.</p>
+    <br>
+    <button class="btn-primary" onclick="location.reload()" style="max-width: 300px;">
+      Tentar Novamente
+    </button>
+  </div>
+  
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+  
+  <!-- ============================================
+       SCRIPTS DA PÁGINA
+       ============================================ -->
+  <script>
+    // ============================================
+    // VARIÁVEIS GLOBAIS
+    // ============================================
+    let roomId = null;
+    let videoUrl = null;
+    
+    // ============================================
+    // INICIALIZAÇÃO
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Watch] Página carregada');
+      
+      // Obtém parâmetros da URL
+      const urlParams = new URLSearchParams(window.location.search);
+      roomId = urlParams.get('room');
+      videoUrl = urlParams.get('video');
+      
+      // Se não tiver roomId, mostra tela de erro
+      if (!roomId) {
+        document.getElementById('loading-overlay').classList.add('hidden');
+        document.getElementById('no-room-overlay').classList.remove('hidden');
+        return;
+      }
+      
+      // Atualiza UI com roomId
+      document.getElementById('room-id-display').textContent = roomId;
+      
+      // Gera link de compartilhamento
+      updateShareLink();
+      
+      // Configura o player de vídeo
+      setupVideoPlayer();
+      
+      // O cliente WatchParty se conecta automaticamente via watch-party.js
+      // Aguarda conexão bem-sucedida
+      setupWatchPartyCallbacks();
+    });
+    
+    // ============================================
+    // CONFIGURAÇÃO DO PLAYER
+    // ============================================
+    function setupVideoPlayer() {
+      const video = document.getElementById('watch-party-video');
+      
+      if (videoUrl) {
+        video.src = decodeURIComponent(videoUrl);
+        console.log('[Watch] URL do vídeo:', video.src);
+      }
+      
+      // Eventos do player para UI
+      video.addEventListener('loadedmetadata', () => {
+        console.log('[Watch] Vídeo carregado');
+        document.getElementById('loading-overlay').classList.add('hidden');
+      });
+      
+      video.addEventListener('error', (e) => {
+        console.error('[Watch] Erro no vídeo:', e);
+        showError('Erro ao carregar o vídeo. Verifique a URL.');
+      });
+    }
+    
+    // ============================================
+    // CALLBACKS DO WATCH PARTY
+    // ============================================
+    function setupWatchPartyCallbacks() {
+      // Aguarda o objeto watchParty estar disponível
+      const checkInterval = setInterval(() => {
+        if (window.watchParty) {
+          clearInterval(checkInterval);
+          console.log('[Watch] WatchParty client pronto');
+          
+          // Callback quando entrar na sala
+          window.watchParty.onUserJoined = (data) => {
+            console.log('[Watch] Usuário entrou:', data);
+            updateUserCount(data.userCount || 1);
+            showToast(`Novo participante entrou! (${data.userCount} total)`);
+          };
+          
+          // Callback quando sair
+          window.watchParty.onUserLeft = (data) => {
+            console.log('[Watch] Usuário saiu:', data);
+            updateUserCount(data.userCount || 1);
+          };
+          
+          // Callback de sincronização
+          window.watchParty.onSyncUpdate = (data) => {
+            console.log('[Watch] Sincronização:', data);
+          };
+        }
+      }, 100);
+      
+      // Timeout de segurança
+      setTimeout(() => {
+        clearInterval(checkInterval);
+      }, 10000);
+    }
+    
+    // ============================================
+    // FUNÇÕES DE UI
+    // ============================================
+    function updateUserCount(count) {
+      document.getElementById('user-count').textContent = count;
+    }
+    
+    function updateShareLink() {
+      const link = window.location.href;
+      document.getElementById('share-link').textContent = link;
+    }
+    
+    function copiarLink() {
+      if (window.watchParty && window.watchParty.copyShareLink) {
+        window.watchParty.copyShareLink().then(success => {
+          if (success) {
+            showToast('Link copiado para a área de transferência!');
+          } else {
+            showToast('Erro ao copiar link');
+          }
+        });
+      } else {
+        // Fallback
+        const link = window.location.href;
+        navigator.clipboard.writeText(link).then(() => {
+          showToast('Link copiado!');
+        }).catch(() => {
+          showToast('Erro ao copiar');
+        });
+      }
+    }
+    
+    async function criarNovaSala() {
+      showToast('Criando nova sala...');
+      
+      try {
+        const currentVideo = document.getElementById('watch-party-video').src;
+        const sala = await criarSala({
+          videoUrl: currentVideo || videoUrl || '',
+          redirect: true
+        });
+        
+        if (!sala.success) {
+          showToast('Erro ao criar sala');
+        }
+      } catch (error) {
+        console.error('[Watch] Erro ao criar sala:', error);
+        showToast('Erro ao criar sala');
+      }
+    }
+    
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+    
+    function showError(message) {
+      document.getElementById('error-message').textContent = message;
+      document.getElementById('loading-overlay').classList.add('hidden');
+      document.getElementById('no-room-overlay').classList.add('hidden');
+      document.getElementById('error-overlay').classList.remove('hidden');
+    }
+    
+    // ============================================
+    // ATALHOS DE TECLADO
+    // ============================================
+    document.addEventListener('keydown', (e) => {
+      const video = document.getElementById('watch-party-video');
+      
+      switch(e.code) {
+        case 'Space':
+          e.preventDefault();
+          if (video.paused) video.play();
+          else video.pause();
+          break;
+          
+        case 'ArrowLeft':
+          e.preventDefault();
+          video.currentTime = Math.max(0, video.currentTime - 10);
+          break;
+          
+        case 'ArrowRight':
+          e.preventDefault();
+          video.currentTime = Math.min(video.duration, video.currentTime + 10);
+          break;
+          
+        case 'KeyF':
+          e.preventDefault();
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            video.requestFullscreen();
+          }
+          break;
+      }
+    });
+  </script>
+  
+</body>
+</html>
