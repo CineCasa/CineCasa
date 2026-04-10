@@ -18,6 +18,7 @@ import { useCineRiso } from '../hooks/useCineRiso';
 import { useMentesCriminosas } from '../hooks/useMentesCriminosas';
 import { useAdrenalinaPura } from '../hooks/useAdrenalinaPura';
 import { useClassicosEternos } from '../hooks/useClassicosEternos';
+import { useRitmoEmocao } from '../hooks/useRitmoEmocao';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -399,6 +400,7 @@ const PremiumHome: React.FC = () => {
   const { content: cineRisoContent, isLoading: isLoadingCineRiso } = useCineRiso();
   const { content: mentesContent, isLoading: isLoadingMentes } = useMentesCriminosas();
   const { content: worstRatedContent, isLoading: isLoadingWorstRated, isUsingFallback } = useWorstRated(user?.email);
+  const { content: ritmoContent, isLoading: isLoadingRitmo } = useRitmoEmocao();
 
   // Sistema para evitar duplicatas entre seções
   const usedIds = new Set<string>();
@@ -679,6 +681,21 @@ const PremiumHome: React.FC = () => {
             year: item.year,
             rating: item.tmdb_rating ? `${item.tmdb_rating.toFixed(1)}/10` : item.rating,
             isNew: true
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Ritmo & Emoção - 5 capas da categoria musical */}
+        <ContentCarousel
+          title="Ritmo & Emoção 🎵"
+          items={!isLoadingRitmo ? filterUniqueItems((ritmoContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
           })), 5) : []}
           onCardClick={handleCardClick}
         />
