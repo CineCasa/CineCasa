@@ -20,6 +20,7 @@ import { useAdrenalinaPura } from '../hooks/useAdrenalinaPura';
 import { useClassicosEternos } from '../hooks/useClassicosEternos';
 import { useRitmoEmocao } from '../hooks/useRitmoEmocao';
 import { useHistoriasEsperanca } from '../hooks/useHistoriasEsperanca';
+import { useOrgulhoNacional } from '../hooks/useOrgulhoNacional';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -403,6 +404,7 @@ const PremiumHome: React.FC = () => {
   const { content: worstRatedContent, isLoading: isLoadingWorstRated, isUsingFallback } = useWorstRated(user?.email);
   const { content: ritmoContent, isLoading: isLoadingRitmo } = useRitmoEmocao();
   const { content: historiasContent, isLoading: isLoadingHistorias } = useHistoriasEsperanca();
+  const { content: orgulhoContent, isLoading: isLoadingOrgulho } = useOrgulhoNacional();
 
   // Sistema para evitar duplicatas entre seções
   const usedIds = new Set<string>();
@@ -546,6 +548,21 @@ const PremiumHome: React.FC = () => {
             year: item.year,
             rating: item.rating
           })), 5)}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Orgulho Nacional - 5 capas da categoria nacional */}
+        <ContentCarousel
+          title="Orgulho Nacional 🇧🇷"
+          items={!isLoadingOrgulho ? filterUniqueItems((orgulhoContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5) : []}
           onCardClick={handleCardClick}
         />
 
