@@ -12,6 +12,22 @@
   --font-titles: 'Cinzel', 'Trajan Pro', 'Playfair Display', serif;
   --font-buttons: 'Open Sans', 'Montserrat', 'Futura', sans-serif;
   --font-body: 'Inter', 'Helvetica Neue', 'Arial', sans-serif;
+  --background: 0 0% 0%;
+}
+
+/* Forçar fundo preto puro em todos os elementos */
+html {
+  background-color: #000000 !important;
+}
+
+html, body {
+  background-color: #000000 !important;
+  color: #ffffff;
+}
+
+#root {
+  background-color: #000000 !important;
+  min-height: 100vh;
 }
 
 /* Reset e Base Styles Netflix-style */
@@ -26,12 +42,9 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #000000 !important;
   }
 
   html, body {
-    background-color: #000000 !important;
-    color: #ffffff;
     line-height: 1.6;
     font-weight: 400;
     margin: 0;
@@ -48,7 +61,6 @@
     margin: 0;
     padding: 0;
     position: relative;
-    background-color: #000000;
   }
 
   /* GPU Acceleration for smooth animations on TVs */
