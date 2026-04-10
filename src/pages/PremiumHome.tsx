@@ -526,21 +526,6 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        {/* Adrenalina Pura - 5 capas aleatórias das categorias Ação e Aventura */}
-        <ContentCarousel
-          title="Adrenalina Pura 💥"
-          items={!isLoadingAdrenalina ? filterUniqueItems((adrenalinaContent || []).map(item => ({
-            id: item.id,
-            tmdbId: item.tmdbId || item.id,
-            title: item.title,
-            poster: item.poster,
-            type: item.type,
-            year: item.year,
-            rating: item.rating
-          })), 5) : []}
-          onCardClick={handleCardClick}
-        />
-
         {/* Negritude em Alta - Fixa: 5 capas da categoria Negritude */}
         <ContentCarousel
           title="Negritude em Alta ✊🏾"
@@ -568,6 +553,21 @@ const PremiumHome: React.FC = () => {
             year: item.year,
             rating: item.rating
           })), 5)}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Adrenalina Pura - 5 capas aleatórias das categorias Ação e Aventura */}
+        <ContentCarousel
+          title="Adrenalina Pura 💥"
+          items={!isLoadingAdrenalina ? filterUniqueItems((adrenalinaContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5) : []}
           onCardClick={handleCardClick}
         />
 
