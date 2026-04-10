@@ -34,23 +34,8 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
     try {
       setIsLoading(true);
       
-      // Verificar se temos cache válido (não forçado)
-      if (!forceRefresh) {
-        const cachedData = localStorage.getItem(WORST_RATED_CACHE_KEY);
-        const cachedTimestamp = localStorage.getItem(WORST_RATED_TIMESTAMP_KEY);
-        
-        if (cachedData && cachedTimestamp) {
-          const cacheAge = Date.now() - parseInt(cachedTimestamp);
-          // Cache válido por 24 horas ou até reiniciar o sistema
-          if (cacheAge < 24 * 60 * 60 * 1000) {
-            const parsedContent = JSON.parse(cachedData);
-            setContent(parsedContent);
-            setLastUpdated(cachedTimestamp);
-            setIsLoading(false);
-            return;
-          }
-        }
-      }
+      // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
+      // Removido cache para garantir atualização a cada reinício como solicitado
       
       // Buscar conteúdos de pior avaliação do banco local
       // Primeiro tentar com rating < 4.0, se não encontrar, usar os menores disponíveis
@@ -64,7 +49,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
         .select('id, tmdb_id, titulo, poster, rating, year')
         .not('poster', 'is', null)
         .not('rating', 'is', null)
-        .lt('rating', '5.0')  // Apenas filmes com rating menor que 5.0
+        .lt('rating', '6.0')  // Apenas filmes com rating menor que 5.99
         .limit(20);
         
       console.log('[WorstRated] Filmes com baixa avaliação:', lowRatedMovies?.length || 0);
@@ -73,41 +58,38 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
         console.error('[WorstRated] Erro:', error);
       }
       
-      // Se não encontrou filmes com baixa avaliação, buscar filmes aleatórios
-      if (!lowRatedMovies || lowRatedMovies.length === 0) {
-        console.log('[WorstRated] Nenhum filme com baixa avaliação, buscando filmes aleatórios...');
+      // Buscar filmes adicionais se necessário para completar 5
+      let allLowRatedMovies = lowRatedMovies || [];
+      
+      if (allLowRatedMovies.length < 5) {
+        console.log(`[WorstRated] Apenas ${allLowRatedMovies.length} filmes com nota < 5.99, buscando mais...`);
         
-        const { data: randomMovies } = await supabase
+        const { data: additionalMovies } = await supabase
+          .from('cinema')
+          .select('id, tmdb_id, titulo, poster, rating, year')
+          .not('poster', 'is', null)
+          .not('rating', 'is', null)
+          .gte('rating', '6.0')  // Filmes com nota >= 6.0 para completar
+          .limit(10);
+          
+        allLowRatedMovies = [...allLowRatedMovies, ...(additionalMovies || [])];
+      }
+      
+      // Se ainda não temos 5, buscar qualquer filme
+      if (allLowRatedMovies.length < 5) {
+        console.log('[WorstRated] Buscando filmes adicionais para completar 5...');
+        
+        const { data: anyMovies } = await supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, rating, year')
           .not('poster', 'is', null)
           .limit(10);
           
-        const fallbackContent: WorstRatedContent[] = (randomMovies || []).map((item: any) => ({
-          id: item.id.toString(),
-          title: item.titulo,
-          poster: item.poster,
-          type: 'movie' as const,
-          year: item.year || 'N/A',
-          rating: item.rating || 'N/A',
-          tmdb_id: item.tmdb_id || undefined,
-        }));
-        
-        const shuffledFallback = fallbackContent.sort(() => Math.random() - 0.5).slice(0, 5);
-        
-        setContent(shuffledFallback);
-        setLastUpdated(new Date().toISOString());
-        setIsUsingFallback(true);
-        
-        localStorage.setItem(WORST_RATED_CACHE_KEY, JSON.stringify(shuffledFallback));
-        localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
-        
-        console.log('[WorstRated] Fallback: carregados', shuffledFallback.length, 'filmes aleatórios');
-        return;
+        allLowRatedMovies = [...allLowRatedMovies, ...(anyMovies || [])];
       }
       
-      // Apenas filmes com baixa avaliação
-      const movieContent: WorstRatedContent[] = lowRatedMovies.map((item: any) => ({
+      // Formatar filmes
+      const movieContent: WorstRatedContent[] = allLowRatedMovies.map((item: any) => ({
         id: item.id.toString(),
         title: item.titulo,
         poster: item.poster,
@@ -117,7 +99,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
         tmdb_id: item.tmdb_id || undefined,
       }));
       
-      // Embaralhar e pegar 5 filmes
+      // Embaralhar e pegar exatamente 5 filmes
       const shuffledMovies = movieContent.sort(() => Math.random() - 0.5).slice(0, 5);
       
       setContent(shuffledMovies);
