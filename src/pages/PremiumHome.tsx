@@ -19,6 +19,7 @@ import { useMentesCriminosas } from '../hooks/useMentesCriminosas';
 import { useAdrenalinaPura } from '../hooks/useAdrenalinaPura';
 import { useClassicosEternos } from '../hooks/useClassicosEternos';
 import { useRitmoEmocao } from '../hooks/useRitmoEmocao';
+import { useHistoriasEsperanca } from '../hooks/useHistoriasEsperanca';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -401,6 +402,7 @@ const PremiumHome: React.FC = () => {
   const { content: mentesContent, isLoading: isLoadingMentes } = useMentesCriminosas();
   const { content: worstRatedContent, isLoading: isLoadingWorstRated, isUsingFallback } = useWorstRated(user?.email);
   const { content: ritmoContent, isLoading: isLoadingRitmo } = useRitmoEmocao();
+  const { content: historiasContent, isLoading: isLoadingHistorias } = useHistoriasEsperanca();
 
   // Sistema para evitar duplicatas entre seções
   const usedIds = new Set<string>();
@@ -658,6 +660,21 @@ const PremiumHome: React.FC = () => {
         <ContentCarousel
           title="Mentes Criminosas 🔪"
           items={!isLoadingMentes ? filterUniqueItems((mentesContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Histórias de Esperança - 5 capas da categoria religioso */}
+        <ContentCarousel
+          title="Histórias de Esperança ✨"
+          items={!isLoadingHistorias ? filterUniqueItems((historiasContent || []).map(item => ({
             id: item.id,
             tmdbId: item.tmdbId || item.id,
             title: item.title,
