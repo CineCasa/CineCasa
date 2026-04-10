@@ -140,11 +140,11 @@ export const useOscarWinners = () => {
       // Se não tivermos 5 vencedores, buscar filmes de alta qualidade (rating >= 8.5) como fallback
       if (uniqueWinners.length < 5) {
         console.log('[useOscarWinners] Buscando filmes adicionais de alta qualidade...');
-        const { data: highRatedMovies } = await supabase
+        const { data: highRatedMovies, error: highRatedError } = await supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, genero, description, category')
+          .select('id, tmdb_id, titulo, poster, year, rating')
           .gte('year', '2000')
-          .gte('rating', '8.5')
+          .gte('rating', '8.0')
           .not('tmdb_id', 'in', `(${uniqueWinners.map(w => w.tmdbId).join(',')})`)
           .limit(10);
 
