@@ -22,6 +22,7 @@ import { useRitmoEmocao } from '../hooks/useRitmoEmocao';
 import { useHistoriasEsperanca } from '../hooks/useHistoriasEsperanca';
 import { useOrgulhoNacional } from '../hooks/useOrgulhoNacional';
 import { useBaseadoEmFatosReais } from '../hooks/useBaseadoEmFatosReais';
+import { usePrepareParaMedo } from '../hooks/usePrepareParaMedo';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -407,6 +408,7 @@ const PremiumHome: React.FC = () => {
   const { content: historiasContent, isLoading: isLoadingHistorias } = useHistoriasEsperanca();
   const { content: orgulhoContent, isLoading: isLoadingOrgulho } = useOrgulhoNacional();
   const { content: baseadoEmFatosContent, isLoading: isLoadingBaseadoEmFatos } = useBaseadoEmFatosReais();
+  const { content: prepareParaMedoContent, isLoading: isLoadingPrepareParaMedo } = usePrepareParaMedo();
 
   // Sistema para evitar duplicatas entre seções
   const usedIds = new Set<string>();
@@ -740,6 +742,22 @@ const PremiumHome: React.FC = () => {
         <ContentCarousel
           title="Baseado em Fatos Reais 📜"
           items={!isLoadingBaseadoEmFatos ? filterUniqueItems((baseadoEmFatosContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating,
+            isNew: true
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Prepare-se para o Medo - 5 capas da categoria terror */}
+        <ContentCarousel
+          title="Prepare-se para o Medo 👻"
+          items={!isLoadingPrepareParaMedo ? filterUniqueItems((prepareParaMedoContent || []).map(item => ({
             id: item.id,
             tmdbId: item.tmdbId || item.id,
             title: item.title,
