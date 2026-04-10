@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart, Bell } from 'lucide-react';
+import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart, Bell, Users } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GlobalSearch from './GlobalSearch';
 import { NotificationBell } from './NotificationBell';
@@ -18,6 +18,12 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { permission } = useNotifications();
+
+  const criarSalaWatchParty = () => {
+    const roomId = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+    const url = `/watch.html?room=${roomId}`;
+    window.open(url, '_blank');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -91,6 +97,15 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
 
             {/* Perfil */}
             <div className="relative">
+              {/* Botão Assistir Juntos */}
+              <button
+                onClick={criarSalaWatchParty}
+                className="flex items-center space-x-2 p-2 rounded-full hover:bg-white/10 transition-all duration-300"
+                title="Assistir Juntos"
+              >
+                <Users size={20} />
+              </button>
+
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="flex items-center space-x-2 p-2 rounded-full hover:bg-white/10 transition-all duration-300"
