@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, MonitorPlay } from 'lucide-react';
 import RemoteControl from './RemoteControl';
 import VideoControls from './VideoControls';
 
@@ -17,6 +18,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, poster, title }) => {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { toast } = useToast();
+  const { isCinemaMode, toggleCinemaMode } = useCinemaMode();
 
   useEffect(() => {
     if (!containerRef.current || !src) return;

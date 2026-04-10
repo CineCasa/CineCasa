@@ -14,6 +14,8 @@ interface VideoControlsProps {
   onFullscreen?: () => void;
   onRewind?: () => void;
   onForward?: () => void;
+  onCinemaMode?: () => void;
+  isCinemaMode?: boolean;
 }
 
 const VideoControls: React.FC<VideoControlsProps> = ({
@@ -29,6 +31,8 @@ const VideoControls: React.FC<VideoControlsProps> = ({
   onFullscreen,
   onRewind,
   onForward,
+  onCinemaMode,
+  isCinemaMode,
 }) => {
   const [showControls, setShowControls] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -289,6 +293,19 @@ const VideoControls: React.FC<VideoControlsProps> = ({
               {playbackSpeed !== 1 && `${playbackSpeed}x`}
               {quality !== 'auto' && quality}
             </div>
+
+            {/* Modo Cinema */}
+            {onCinemaMode && (
+              <button
+                onClick={onCinemaMode}
+                className={`text-white/80 hover:text-white transition-colors p-2 ${
+                  isCinemaMode ? 'text-accent' : ''
+                }`}
+                title="Modo Cinema (Tecla C)"
+              >
+                <MonitorPlay className="w-5 h-5" />
+              </button>
+            )}
 
             {/* Fullscreen */}
             <button

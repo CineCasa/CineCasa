@@ -4,6 +4,7 @@ import "./index.css";
 import "./styles/responsive-buttons.css";
 import "./styles/responsive-typography.css";
 import "./styles/smart-tv.css";
+import "./styles/cinema-mode.css";
 import { initializeNavigation } from "./lib/navigation";
 import { FocusProvider } from "./contexts/FocusContext";
 
