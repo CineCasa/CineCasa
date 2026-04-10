@@ -32,7 +32,7 @@ export const useAdrenalinaPura = (): UseAdrenalinaPuraReturn => {
       const { data: cinemaData, error } = await supabase
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('(genero.ilike.%ação%,genero.ilike.%acao%,genero.ilike.%aventura%,category.ilike.%ação%,category.ilike.%acao%,category.ilike.%aventura%)')
+        .or('genero.ilike.%ação%,genero.ilike.%acao%,genero.ilike.%aventura%,category.ilike.%ação%,category.ilike.%acao%,category.ilike.%aventura%')
         .not('poster', 'is', null)
         .limit(100);
 
