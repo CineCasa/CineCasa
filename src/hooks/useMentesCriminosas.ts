@@ -32,7 +32,7 @@ export const useMentesCriminosas = (): UseMentesCriminosasReturn => {
       const { data: cinemaData, error } = await supabase
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('(genero.ilike.%crime%,genero.ilike.%policial%,category.ilike.%crime%,category.ilike.%policial%)')
+        .or('genero.ilike.%crime%,genero.ilike.%policial%,category.ilike.%crime%,category.ilike.%policial%')
         .not('poster', 'is', null)
         .limit(100);
 
