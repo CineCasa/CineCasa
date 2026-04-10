@@ -133,7 +133,7 @@ const App = () => {
               </AnimatePresence>
               {!loading && (
                 <BrowserRouter>
-                  <div className="pb-14 md:pb-0">
+                  <div className="min-h-screen bg-black pb-14 md:pb-0">
                     <NotificationProvider>
                       <NotificationContainer />
                       <NewContentNotificationToast />

@@ -436,7 +436,7 @@ const PremiumHome: React.FC = () => {
   };
 
   return (
-    <div className="streaming-container min-h-screen pt-[94px]">
+    <div className="streaming-container min-h-screen bg-black pt-[94px]">
       {/* Navbar */}
       <PremiumNavbar onSearch={handleSearch} />
 

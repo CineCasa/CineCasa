@@ -46,8 +46,8 @@ const Series = () => {
         onPlay={handleHeroPlay}
       />
       
-      <main className="pb-20 mt-[70px] relative z-10">
-        <div className="relative z-10 pt-16 -mt-10">
+      <main className="pb-20 mt-[70px] relative z-10 bg-black">
+        <div className="relative z-10 pt-16 -mt-10 bg-black">
           {/* Continue Watching Row */}
           <ContinueWatchingRow />
           

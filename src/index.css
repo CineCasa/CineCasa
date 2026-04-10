@@ -12,7 +12,9 @@
   --font-titles: 'Cinzel', 'Trajan Pro', 'Playfair Display', serif;
   --font-buttons: 'Open Sans', 'Montserrat', 'Futura', sans-serif;
   --font-body: 'Inter', 'Helvetica Neue', 'Arial', sans-serif;
+  /* Cores - fundo preto puro */
   --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
 }
 
 /* Forçar fundo preto puro em todos os elementos */
