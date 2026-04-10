@@ -410,10 +410,9 @@ const PremiumHome: React.FC = () => {
   const { content: baseadoEmFatosContent, isLoading: isLoadingBaseadoEmFatos } = useBaseadoEmFatosReais();
   const { content: prepareParaMedoContent, isLoading: isLoadingPrepareParaMedo } = usePrepareParaMedo();
 
-  // Sistema para evitar duplicatas entre seções
-  const usedIds = new Set<string>();
-  
+  // Sistema para evitar duplicatas apenas DENTRO de cada seção (não entre seções)
   const filterUniqueItems = (items: any[], limit: number = 5) => {
+    const usedIds = new Set<string>();
     const unique = items.filter(item => {
       const id = item.tmdbId || item.id;
       if (usedIds.has(id)) return false;
