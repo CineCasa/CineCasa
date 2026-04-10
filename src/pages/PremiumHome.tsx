@@ -15,6 +15,7 @@ import { useOscarWinners } from '../hooks/useOscarWinners';
 import { useTravesseiroEdredon } from '../hooks/useTravesseiroEdredon';
 import { useWorstRated } from '../hooks/useWorstRated';
 import { useCineRiso } from '../hooks/useCineRiso';
+import { useAdrenalinaPura } from '../hooks/useAdrenalinaPura';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -386,6 +387,7 @@ const PremiumHome: React.FC = () => {
   const { recomendacoes, isLoading: isLoadingRecomendacoes, topGenres } = useRecomendacoes(user?.email);
   const { romances, isLoading: isLoadingRomances } = useRomances(user?.email);
   const { financas, isLoading: isLoadingFinancas } = useFinancas(user?.email);
+  const { content: adrenalinaContent, isLoading: isLoadingAdrenalina } = useAdrenalinaPura();
   const { negritude, isLoading: isLoadingNegritude } = useNegritude(user?.email);
   const { series: pipocaSeries, isLoading: isLoadingPipoca } = usePreparePipoca(user?.email);
   const { infantil, isLoading: isLoadingInfantil } = useInfantil(user?.email);
@@ -521,6 +523,21 @@ const PremiumHome: React.FC = () => {
             year: item.year,
             rating: item.rating
           })), 5)}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Adrenalina Pura - 5 capas aleatórias das categorias Ação e Aventura */}
+        <ContentCarousel
+          title="Adrenalina Pura 💥"
+          items={!isLoadingAdrenalina ? filterUniqueItems((adrenalinaContent || []).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating
+          })), 5) : []}
           onCardClick={handleCardClick}
         />
 
