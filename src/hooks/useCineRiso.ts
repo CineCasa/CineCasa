@@ -1,0 +1,129 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface CineRisoContent {
+  id: string;
+  tmdbId?: string;
+  title: string;
+  poster: string;
+  type: 'movie' | 'series';
+  year: string;
+  rating: string;
+}
+
+interface UseCineRisoReturn {
+  content: CineRisoContent[];
+  isLoading: boolean;
+  refresh: () => Promise<void>;
+}
+
+export const useCineRiso = (): UseCineRisoReturn => {
+  const [content, setContent] = useState<CineRisoContent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
+
+  const fetchContent = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      console.log('[CineRiso] Buscando conteúdo de comédia...');
+      
+      // Buscar filmes e séries de comédia
+      const [cinemaData, seriesData] = await Promise.all([
+        supabase
+          .from('cinema')
+          .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
+          .or('genero.ilike.%comédia%,genero.ilike.%comedia%,category.ilike.%comédia%,category.ilike.%comedia%')
+          .not('poster', 'is', null)
+          .limit(20),
+        supabase
+          .from('series')
+          .select('id_n, tmdb_id, titulo, ano, genero')
+          .or('genero.ilike.%comédia%,genero.ilike.%comedia%')
+          .limit(10)
+      ]);
+
+      console.log('[CineRiso] Filmes encontrados:', cinemaData.data?.length || 0);
+      console.log('[CineRiso] Séries encontradas:', seriesData.data?.length || 0);
+
+      // Mapear filmes
+      const movies: CineRisoContent[] = (cinemaData.data || []).map((item: any) => ({
+        id: item.id.toString(),
+        tmdbId: item.tmdb_id,
+        title: item.titulo,
+        poster: item.poster,
+        type: 'movie' as const,
+        year: item.year || 'N/A',
+        rating: item.rating || 'N/A',
+      }));
+
+      // Mapear séries
+      const series: CineRisoContent[] = (seriesData.data || []).map((item: any) => ({
+        id: item.id_n?.toString() || item.id?.toString(),
+        tmdbId: item.tmdb_id,
+        title: item.titulo,
+        poster: '/api/placeholder/300/450', // Fallback para séries
+        type: 'series' as const,
+        year: item.ano || 'N/A',
+        rating: 'N/A',
+      }));
+
+      // Embaralhar ambos
+      const shuffledMovies = movies.sort(() => Math.random() - 0.5);
+      const shuffledSeries = series.sort(() => Math.random() - 0.5);
+
+      // Selecionar: 4 filmes e 1 série (ou completar com filmes se não houver séries)
+      let selected: CineRisoContent[] = [];
+      
+      // Pegar 4 filmes
+      selected = [...shuffledMovies.slice(0, 4)];
+      
+      // Pegar 1 série (se houver)
+      if (shuffledSeries.length > 0) {
+        selected.push(shuffledSeries[0]);
+      } else {
+        // Se não houver série, completar com mais 1 filme
+        selected.push(shuffledMovies[4]);
+      }
+      
+      // Garantir que sempre tenha 5 itens
+      if (selected.length < 5) {
+        const remaining = shuffledMovies.slice(selected.length, 5);
+        selected = [...selected, ...remaining];
+      }
+      
+      // Embaralhar resultado final
+      const finalSelection = selected.slice(0, 5).sort(() => Math.random() - 0.5);
+
+      console.log('[CineRiso] Selecionados:', finalSelection.length, 'itens');
+      console.log('[CineRiso] Filmes:', finalSelection.filter(i => i.type === 'movie').length);
+      console.log('[CineRiso] Séries:', finalSelection.filter(i => i.type === 'series').length);
+
+      setContent(finalSelection);
+    } catch (err) {
+      console.error('[CineRiso] Erro ao buscar conteúdo:', err);
+      setContent([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const refresh = useCallback(async () => {
+    await fetchContent();
+  }, [fetchContent]);
+
+  useEffect(() => {
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      fetchContent();
+    }
+  }, [fetchContent]);
+
+  return {
+    content,
+    isLoading,
+    refresh,
+  };
+};
+
+export default useCineRiso;

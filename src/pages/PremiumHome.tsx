@@ -14,6 +14,7 @@ import { useInfantil } from '../hooks/useInfantil';
 import { useOscarWinners } from '../hooks/useOscarWinners';
 import { useTravesseiroEdredon } from '../hooks/useTravesseiroEdredon';
 import { useWorstRated } from '../hooks/useWorstRated';
+import { useCineRiso } from '../hooks/useCineRiso';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
@@ -390,6 +391,7 @@ const PremiumHome: React.FC = () => {
   const { infantil, isLoading: isLoadingInfantil } = useInfantil(user?.email);
   const { oscarWinners, isLoading: isLoadingOscar } = useOscarWinners();
   const { content: travesseiroContent, isLoading: isLoadingTravesseiro } = useTravesseiroEdredon(user?.email);
+  const { content: cineRisoContent, isLoading: isLoadingCineRiso } = useCineRiso();
   const { content: worstRatedContent, isLoading: isLoadingWorstRated, isUsingFallback } = useWorstRated(user?.email);
 
   // Sistema para evitar duplicatas entre seções
@@ -596,6 +598,22 @@ const PremiumHome: React.FC = () => {
             rating: item.rating,
             isNew: true
           })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* CineRiso - 5 capas de comédia: 4 filmes e 1 série */}
+        <ContentCarousel
+          title="CineRiso 😂"
+          items={!isLoadingCineRiso ? (cineRisoContent || []).slice(0, 5).map(item => ({
+            id: item.id,
+            tmdbId: item.tmdbId,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating,
+            isNew: true
+          })) : []}
           onCardClick={handleCardClick}
         />
 
