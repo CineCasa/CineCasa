@@ -32,7 +32,7 @@ export const useClassicosEternos = (): UseClassicosEternosReturn => {
       const { data: cinemaData, error } = await supabase
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('(genero.ilike.%clássico%,genero.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%)')
+        .or('genero.ilike.%clássico%,genero.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%')
         .not('poster', 'is', null)
         .limit(100);
 
