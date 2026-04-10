@@ -601,12 +601,12 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        {/* CineRiso - 5 capas de comédia: 4 filmes e 1 série */}
+        {/* CineRiso - 5 capas de comédia: 4 filmes e 1 série (imediatamente acima de Poderia ser Melhor) */}
         <ContentCarousel
           title="CineRiso 😂"
           items={!isLoadingCineRiso ? (cineRisoContent || []).slice(0, 5).map(item => ({
             id: item.id,
-            tmdbId: item.tmdbId,
+            tmdbId: item.tmdbId || item.id,
             title: item.title,
             poster: item.poster,
             type: item.type,

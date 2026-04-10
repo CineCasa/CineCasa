@@ -75,21 +75,25 @@ export const useCineRiso = (): UseCineRisoReturn => {
       // Selecionar: 4 filmes e 1 série (ou completar com filmes se não houver séries)
       let selected: CineRisoContent[] = [];
       
-      // Pegar 4 filmes
+      // Pegar 4 filmes (ou menos se não houver suficientes)
       selected = [...shuffledMovies.slice(0, 4)];
       
       // Pegar 1 série (se houver)
-      if (shuffledSeries.length > 0) {
+      if (shuffledSeries.length > 0 && shuffledSeries[0]) {
         selected.push(shuffledSeries[0]);
-      } else {
-        // Se não houver série, completar com mais 1 filme
+      } else if (shuffledMovies.length > 4 && shuffledMovies[4]) {
+        // Se não houver série, completar com mais 1 filme (se houver)
         selected.push(shuffledMovies[4]);
       }
       
-      // Garantir que sempre tenha 5 itens
-      if (selected.length < 5) {
-        const remaining = shuffledMovies.slice(selected.length, 5);
-        selected = [...selected, ...remaining];
+      // Garantir que sempre tenha 5 itens, completando com mais filmes se necessário
+      let index = selected.length;
+      while (selected.length < 5 && index < shuffledMovies.length) {
+        const movie = shuffledMovies[index];
+        if (movie) {
+          selected.push(movie);
+        }
+        index++;
       }
       
       // Embaralhar resultado final
