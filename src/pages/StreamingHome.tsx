@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import PremiumNavbar from '../components/PremiumNavbar';
-import StreamingHero from '../components/StreamingHero';
+import StreamingCard from '@/components/StreamingCard';
 import StreamingModal from '../components/StreamingModal';
 import HomeSection from '../components/HomeSection';
+import { ContinueWatchingSection } from '../components/ContinueWatchingSection';
 import { useDynamicHomeSections } from '../hooks/useDynamicHomeSections';
 import { useFavorites } from '../hooks/useFavorites';
 import { ContentItem } from '../data/content';
@@ -57,9 +57,6 @@ const StreamingHome: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black pt-[94px]">
-      {/* Navbar */}
-      <PremiumNavbar onSearch={handleSearch} />
-
       {/* Hero Section */}
       <StreamingHero
         title={heroContent.title}
@@ -71,6 +68,9 @@ const StreamingHome: React.FC = () => {
 
       {/* Content Sections */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        {/* Continue Watching Section - First */}
+        <ContinueWatchingSection />
+        
         {isLoading ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">

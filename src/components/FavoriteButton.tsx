@@ -2,9 +2,21 @@ import React from 'react';
 import { Heart, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useOptimisticFavorites } from '@/hooks/useOptimisticFavorites';
+import { toast } from 'sonner';
+
+interface FavoriteItemData {
+  contentId: number;
+  contentType: 'movie' | 'series';
+  titulo: string;
+  poster?: string;
+  banner?: string;
+  rating?: string;
+  year?: string;
+  genero?: string;
+}
 
 interface FavoriteButtonProps {
-  movieId: string;
+  item: FavoriteItemData;
   userId?: string;
   size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
@@ -13,13 +25,15 @@ interface FavoriteButtonProps {
 }
 
 export function FavoriteButton({
-  movieId,
+  item,
   userId,
   size = 'md',
   showText = false,
   className,
   disabled = false,
 }: FavoriteButtonProps) {
+  console.log('🔍 FavoriteButton - userId:', userId, 'item:', item);
+  
   const {
     isFavorite,
     toggleFavorite,
@@ -28,11 +42,30 @@ export function FavoriteButton({
   } = useOptimisticFavorites({ userId });
 
   const isLoading = isAddingFavorite || isRemovingFavorite;
-  const isFavorited = isFavorite(movieId);
+  const isFavorited = isFavorite(item.contentId, item.contentType);
+  console.log('🔍 FavoriteButton - isFavorited:', isFavorited, 'isLoading:', isLoading);
 
   const handleToggle = () => {
-    if (disabled || isLoading) return;
-    toggleFavorite(movieId);
+    console.log('🔍 FavoriteButton - handleToggle called', { userId, item, disabled, isLoading });
+    if (disabled || isLoading) {
+      console.log('🔍 FavoriteButton - blocked: disabled or loading');
+      return;
+    }
+    if (!userId) {
+      console.error('❌ FavoriteButton - userId is required');
+      toast.error('Faça login para adicionar aos favoritos');
+      return;
+    }
+    toggleFavorite({
+      content_id: item.contentId,
+      content_type: item.contentType,
+      titulo: item.titulo,
+      poster: item.poster || null,
+      banner: item.banner || null,
+      rating: item.rating || null,
+      year: item.year || null,
+      genero: item.genero || null,
+    });
   };
 
   // Tamanhos do botão
@@ -93,21 +126,30 @@ export function FavoriteButton({
 
 // Botão de favorito simplificado para cards
 export function FavoriteButtonSimple({
-  movieId,
+  item,
   userId,
   className,
 }: {
-  movieId: string;
+  item: FavoriteItemData;
   userId?: string;
   className?: string;
 }) {
   const { isFavorite, toggleFavorite, isAddingFavorite, isRemovingFavorite } = useOptimisticFavorites({ userId });
   const isLoading = isAddingFavorite || isRemovingFavorite;
-  const isFavorited = isFavorite(movieId);
+  const isFavorited = isFavorite(item.contentId, item.contentType);
 
   return (
     <button
-      onClick={() => toggleFavorite(movieId)}
+      onClick={() => toggleFavorite({
+        content_id: item.contentId,
+        content_type: item.contentType,
+        titulo: item.titulo,
+        poster: item.poster || null,
+        banner: item.banner || null,
+        rating: item.rating || null,
+        year: item.year || null,
+        genero: item.genero || null,
+      })}
       disabled={isLoading}
       className={cn(
         'absolute top-2 right-2 z-10 w-8 h-8 rounded-full',
@@ -136,16 +178,17 @@ export function FavoriteButtonSimple({
 
 // Indicador de status de favorito
 export function FavoriteStatus({
-  movieId,
+  item,
   userId,
   showCount = false,
 }: {
-  movieId: string;
+  item: FavoriteItemData;
   userId?: string;
   showCount?: boolean;
 }) {
   const { favorites, isFavorite } = useOptimisticFavorites({ userId });
-  const isFavorited = isFavorite(movieId);
+  const isFavorited = isFavorite(item.contentId, item.contentType);
+  const favoritesCount = Array.isArray(favorites) ? favorites.length : 0;
 
   if (!showCount) {
     return (
@@ -180,7 +223,7 @@ export function FavoriteStatus({
       </div>
       
       <div className="text-gray-400">
-        Total de favoritos: {favorites.length}
+        Total de favoritos: {favoritesCount}
       </div>
     </div>
   );

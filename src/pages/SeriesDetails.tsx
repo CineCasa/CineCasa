@@ -6,7 +6,6 @@ import { getSupabaseClient } from '../lib/supabase';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useFavorites } from '../hooks/useFavorites';
 import PremiumCard from '../components/PremiumCard';
-import PremiumNavbar from '../components/PremiumNavbar';
 
 import { Series, Temporada, Episodio } from '../types/database';
 
@@ -175,7 +174,7 @@ const SeriesDetails: React.FC = () => {
         title: series.titulo,
         type: 'series',
         videoUrl: series.trailer,
-        poster: series.poster,
+        poster: series.banner || series.capa,
         year: series.ano
       });
     }
@@ -188,7 +187,7 @@ const SeriesDetails: React.FC = () => {
       content_id: parseInt(series.id_n || series.id),
       content_type: 'series',
       titulo: series.titulo,
-      poster: series.poster,
+      poster: series.banner || series.capa,
       banner: series.banner,
       rating: series.rating,
       year: series.ano,
@@ -200,8 +199,7 @@ const SeriesDetails: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white">
-        <PremiumNavbar />
-        
+          
         {/* Hero Skeleton */}
         <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] overflow-hidden">
           <div className="absolute inset-0 bg-gray-800 animate-pulse" />
@@ -277,8 +275,7 @@ const SeriesDetails: React.FC = () => {
   if (!series) {
     return (
       <div className="min-h-screen bg-black">
-        <PremiumNavbar />
-        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-white text-xl">Série não encontrada</div>
         </div>
       </div>
@@ -298,7 +295,6 @@ const SeriesDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white pb-16 md:pb-0 pt-[94px]">
-      <PremiumNavbar />
       
       {/* Hero Banner - ajustado para mostrar imagem completa */}
       <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] overflow-hidden">
@@ -393,9 +389,9 @@ const SeriesDetails: React.FC = () => {
                 {hasEpisodes && (
                   <button
                     onClick={handlePlayFirstEpisode}
-                    className="flex items-center gap-2 bg-white text-black px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-sm sm:text-base"
+                    className="flex items-center gap-2 bg-black text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-900 transition-colors text-sm sm:text-base"
                   >
-                    <Play size={18} fill="currentColor" />
+                    <Play size={18} fill="white" />
                     Assistir Agora
                   </button>
                 )}
@@ -404,9 +400,9 @@ const SeriesDetails: React.FC = () => {
                   <button
                     onClick={handlePlayTrailer}
                     title="Trailer"
-                    className="flex items-center justify-center bg-white/20 backdrop-blur-sm w-10 h-10 sm:w-12 sm:h-12 rounded-lg font-semibold hover:bg-white/30 transition-colors"
+                    className="flex items-center justify-center bg-[#FF0000] hover:bg-[#CC0000] text-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg font-semibold transition-colors shadow-lg"
                   >
-                    <Play size={20} />
+                    <Play size={20} fill="white" />
                   </button>
                 )}
                 

@@ -4,8 +4,15 @@ import { toast } from 'sonner';
 
 interface FavoriteItem {
   id: string;
-  movie_id: string;
+  content_id: number;
+  content_type: string;
   user_id: string;
+  titulo: string | null;
+  poster: string | null;
+  banner: string | null;
+  rating: string | null;
+  year: string | null;
+  genero: string | null;
   created_at: string;
 }
 
@@ -43,32 +50,51 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
 
   // Mutation para adicionar favorito (optimistic)
   const addToFavorites = useMutation({
-    mutationFn: async (movieId: string) => {
+    mutationFn: async (item: Omit<FavoriteItem, 'id' | 'created_at'>) => {
+      console.log('🔍 addToFavorites mutationFn called:', { userId, item });
       if (!userId) throw new Error('Usuário não autenticado');
 
       // Verificar se já não é favorito
-      const isAlreadyFavorite = favorites.some(fav => fav.movie_id === movieId);
+      const isAlreadyFavorite = favorites.some(fav => 
+        fav.content_id === item.content_id && fav.content_type === item.content_type
+      );
       if (isAlreadyFavorite) {
+        console.log('🔍 addToFavorites - item already favorite');
         throw new Error('Item já está nos favoritos');
       }
+
+      console.log('🔍 addToFavorites - inserting to Supabase:', {
+        user_id: userId,
+        content_id: item.content_id,
+        content_type: item.content_type,
+        titulo: item.titulo,
+      });
 
       const { data, error } = await supabase
         .from('favorites')
         .insert({
-          movie_id: movieId,
           user_id: userId,
+          content_id: item.content_id,
+          content_type: item.content_type,
+          titulo: item.titulo,
+          poster: item.poster,
+          banner: item.banner,
+          rating: item.rating,
+          year: item.year,
+          genero: item.genero,
         })
         .select()
         .single();
 
       if (error) {
-        console.error('❌ Erro ao adicionar favorito:', error);
+        console.error('❌ Erro ao adicionar favorito no Supabase:', error);
         throw error;
       }
 
+      console.log('✅ addToFavorites - success:', data);
       return data;
     },
-    onMutate: async (movieId) => {
+    onMutate: async (item) => {
       // 1. Cancelar queries em andamento
       await queryClient.cancelQueries({ queryKey: ['favorites', userId] });
 
@@ -78,8 +104,15 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
       // 3. Atualizar otimistamente (IMEDIATAMENTE)
       const optimisticFavorite: FavoriteItem = {
         id: `temp-${Date.now()}`,
-        movie_id: movieId,
+        content_id: item.content_id,
+        content_type: item.content_type,
         user_id: userId || '',
+        titulo: item.titulo,
+        poster: item.poster,
+        banner: item.banner,
+        rating: item.rating,
+        year: item.year,
+        genero: item.genero,
         created_at: new Date().toISOString(),
       };
 
@@ -89,7 +122,7 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
       ]);
 
       // 4. Retornar contexto para rollback
-      return { previousFavorites, movieId };
+      return { previousFavorites, item };
     },
     onSuccess: (newFavorite, variables, context) => {
       // 1. Mostrar toast de sucesso
@@ -97,7 +130,7 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
 
       // 2. Atualizar com dados reais do servidor
       queryClient.setQueryData(['favorites', userId], (old: FavoriteItem[] = []) => {
-        const filtered = old.filter(fav => fav.id !== `temp-${context.movieId}`);
+        const filtered = old.filter(fav => fav.id !== `temp-${context.item.content_id}`);
         return [newFavorite, ...filtered];
       });
 
@@ -127,13 +160,14 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
 
   // Mutation para remover favorito (optimistic)
   const removeFromFavorites = useMutation({
-    mutationFn: async (movieId: string) => {
+    mutationFn: async ({ contentId, contentType }: { contentId: number; contentType: string }) => {
       if (!userId) throw new Error('Usuário não autenticado');
 
       const { error } = await supabase
         .from('favorites')
         .delete()
-        .eq('movie_id', movieId)
+        .eq('content_id', contentId)
+        .eq('content_type', contentType)
         .eq('user_id', userId);
 
       if (error) {
@@ -141,9 +175,9 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
         throw error;
       }
 
-      return movieId;
+      return { contentId, contentType };
     },
-    onMutate: async (movieId) => {
+    onMutate: async ({ contentId, contentType }) => {
       // 1. Cancelar queries em andamento
       await queryClient.cancelQueries({ queryKey: ['favorites', userId] });
 
@@ -151,12 +185,12 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
       const previousFavorites = queryClient.getQueryData(['favorites', userId]);
 
       // 3. Remover otimistamente (IMEDIATAMENTE)
-      queryClient.setQueryData(['favorites', userId'], (old: FavoriteItem[] = []) =>
-        old.filter(fav => fav.movie_id !== movieId)
+      queryClient.setQueryData(['favorites', userId], (old: FavoriteItem[] = []) =>
+        old.filter(fav => !(fav.content_id === contentId && fav.content_type === contentType))
       );
 
       // 4. Retornar contexto para rollback
-      return { previousFavorites, movieId };
+      return { previousFavorites, contentId, contentType };
     },
     onSuccess: (removedMovieId, variables, context) => {
       // 1. Mostrar toast de sucesso
@@ -183,16 +217,24 @@ export function useOptimisticFavorites({ userId, enabled = true }: OptimisticFav
   });
 
   // Função para verificar se é favorito
-  const isFavorite = (movieId: string) => {
-    return favorites.some(fav => fav.movie_id === movieId);
+  const isFavorite = (contentId: number, contentType: string) => {
+    return favorites.some(fav => fav.content_id === contentId && fav.content_type === contentType);
   };
 
   // Toggle de favorito (adiciona/remove)
-  const toggleFavorite = (movieId: string) => {
-    if (isFavorite(movieId)) {
-      removeFromFavorites.mutate(movieId);
+  const toggleFavorite = (item: Omit<FavoriteItem, 'id' | 'created_at' | 'user_id'>) => {
+    console.log('🔍 toggleFavorite called:', { userId, item, isFavorite: isFavorite(item.content_id, item.content_type) });
+    if (!userId) {
+      console.error('❌ toggleFavorite - userId is required');
+      toast.error('Faça login para gerenciar favoritos');
+      return;
+    }
+    if (isFavorite(item.content_id, item.content_type)) {
+      console.log('🔍 toggleFavorite - removing from favorites');
+      removeFromFavorites.mutate({ contentId: item.content_id, contentType: item.content_type });
     } else {
-      addToFavorites.mutate(movieId);
+      console.log('🔍 toggleFavorite - adding to favorites');
+      addToFavorites.mutate(item as Omit<FavoriteItem, 'id' | 'created_at'>);
     }
   };
 

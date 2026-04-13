@@ -1,8 +1,7 @@
 import React from 'react';
-import { Play, Heart, Star, Clock } from 'lucide-react';
+import { Star, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui';
 import { Badge } from '@/components/ui';
-import { FavoriteButton } from '@/components/FavoriteButton';
 import { cn } from '@/lib/utils';
 
 interface MovieCardProps {
@@ -20,8 +19,6 @@ interface MovieCardProps {
   variant?: 'default' | 'compact' | 'detailed';
   onClick?: () => void;
   className?: string;
-  userId?: string;
-  showFavorite?: boolean;
 }
 
 export function MovieCard({
@@ -29,8 +26,6 @@ export function MovieCard({
   variant = 'default',
   onClick,
   className,
-  userId,
-  showFavorite = true,
 }: MovieCardProps) {
   const formatDuration = (minutes?: number) => {
     if (!minutes) return '';
@@ -61,14 +56,6 @@ export function MovieCard({
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          {showFavorite && (
-            <FavoriteButton
-              movieId={movie.id}
-              userId={userId}
-              className="absolute top-2 right-2"
-            />
-          )}
           
           <div className="absolute bottom-2 left-2 right-2">
             <h3 className="text-white text-sm font-semibold line-clamp-2 mb-1">
@@ -110,20 +97,6 @@ export function MovieCard({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             
-            {showFavorite && (
-              <FavoriteButton
-                movieId={movie.id}
-                userId={userId}
-                className="absolute top-2 right-2"
-              />
-            )}
-            
-            <div className="absolute bottom-2 left-2">
-              <Badge variant="primary" size="sm">
-                <Play className="w-3 h-3 mr-1" />
-                Assistir
-              </Badge>
-            </div>
           </div>
           
           <CardContent className="flex-1">
@@ -186,14 +159,6 @@ export function MovieCard({
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {showFavorite && (
-          <FavoriteButton
-            movieId={movie.id}
-            userId={userId}
-            className="absolute top-2 right-2"
-          />
-        )}
         
         <div className="absolute bottom-2 left-2 right-2">
           <h3 className="text-white text-base font-semibold line-clamp-2 mb-2">

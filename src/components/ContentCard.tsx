@@ -5,7 +5,6 @@ import { ContentItem } from "@/data/content";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchTmdbDetails, getTmdbTrailerUrl } from "@/services/tmdb";
 import NetflixPlayer from "./NetflixPlayer";
-import { useFavorites } from "@/hooks/useFavorites";
 import { FavoriteButtonSimple } from "./FavoriteButton";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -14,9 +13,11 @@ interface ContentCardProps {
   index: number;
   isLast?: boolean;
   showProgress?: boolean;
+  rowIndex?: number;
+  colIndex?: number;
 }
 
-const ContentCard = ({ item, index, isLast = false, showProgress = false }: ContentCardProps) => {
+const ContentCard = ({ item, index, isLast = false, showProgress = false, rowIndex, colIndex }: ContentCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(item.trailer || null);
   const [metadata, setMetadata] = useState<{ duration: string; rating: string } | null>(null);
@@ -28,7 +29,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
   
   // Hooks do Supabase
   const { user } = useAuth();
-  const { isFavorite, toggleFavorite } = useFavorites();
   
   // Determinar tipo de conteúdo e ID
   const contentType = item.id.includes("series") ? "series" : "movie";
@@ -70,24 +70,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
     }
   }, [item.tmdbId, item.id, item.trailer]);
 
-  const handleToggleFavorite = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    // Preparar dados para o hook
-    const favoriteData = {
-      content_id: contentId,
-      content_type: contentType as 'movie' | 'series',
-      titulo: item.title || item.titulo,
-      poster: item.poster,
-      banner: item.banner,
-      rating: item.rating,
-      year: item.year,
-      genero: item.genre || item.genero,
-    };
-    
-    // Usar hook do Supabase
-    await toggleFavorite(favoriteData);
-  };
 
   const handleMouseEnter = () => {
     hoverTimeout.current = setTimeout(() => {
@@ -293,7 +275,16 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
         )}
         {!item.isComingSoon && (
           <FavoriteButtonSimple 
-            movieId={item.id} 
+            item={{
+              contentId: (item.tmdbId ? parseInt(String(item.tmdbId)) : null) || parseInt(item.id) || 0,
+              contentType: item.id.includes("series") ? 'series' : 'movie',
+              titulo: item.title,
+              poster: item.poster,
+              banner: item.banner,
+              rating: item.rating,
+              year: item.year?.toString(),
+              genero: item.genre?.[0],
+            }}
             userId={user?.id}
             className="top-2 right-2"
           />
@@ -391,18 +382,23 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false }: Cont
         )}
       </AnimatePresence>
 
-      {isPlayerOpen && (
+      {isPlayerOpen && item && (
         <NetflixPlayer 
-          url={
-            item.type === "series" 
-              ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : `https://archive.org/embed/${item.identificadorArchive}`)
-              : (item.url || trailerUrl || "")
-          } 
-          title={item.title} 
+          url={(() => {
+            const videoUrl = item.type === "series" 
+              ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : item.identificadorArchive ? `https://archive.org/embed/${item.identificadorArchive}` : null)
+              : (item.url || trailerUrl || null);
+            console.log('[ContentCard] NetflixPlayer URL:', videoUrl);
+            return videoUrl || "";
+          })()} 
+          title={item.title || "Sem título"} 
           historyItem={item}
-          contentType={item.type as 'movie' | 'series'}
-          contentId={item.id}
-          onClose={() => setIsPlayerOpen(false)} 
+          contentType={(item.type as 'movie' | 'series') || 'movie'}
+          contentId={item.id || ""}
+          onClose={() => {
+            console.log('[ContentCard] Fechando player');
+            setIsPlayerOpen(false);
+          }} 
         />
       )}
     </div>

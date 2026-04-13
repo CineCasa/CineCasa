@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import type { SearchResult } from '@/hooks/useAdvancedSearch';
 import { Search, Filter, Clock, X, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui';
 import { Badge } from '@/components/ui';
@@ -28,7 +29,7 @@ export function AdvancedSearch({
 }: AdvancedSearchProps) {
   const {
     searchQuery,
-    searchResults,
+    searchResults = [],
     suggestions,
     searchHistory,
     filters,
@@ -578,19 +579,19 @@ export function AdvancedSearch({
             <div>
               <span className="text-gray-400">Resultados exatos:</span>
               <div className="text-white font-medium">
-                {searchResults.filter(r => r.matchType === 'exact').length}
+                {(searchResults as SearchResult[] | undefined)?.filter((r: SearchResult) => r.matchType === 'exact').length || 0}
               </div>
             </div>
             <div>
               <span className="text-gray-400">Resultados parciais:</span>
               <div className="text-white font-medium">
-                {searchResults.filter(r => r.matchType === 'partial').length}
+                {(searchResults as SearchResult[] | undefined)?.filter((r: SearchResult) => r.matchType === 'partial').length || 0}
               </div>
             </div>
             <div>
               <span className="text-gray-400">Score médio:</span>
               <div className="text-white font-medium">
-                {searchResults.reduce((sum, r) => sum + r.matchScore, 0) / searchResults.length || 0}%
+                {(searchResults as SearchResult[] | undefined)?.reduce((sum: number, r: SearchResult) => sum + r.matchScore, 0) / ((searchResults as SearchResult[] | undefined)?.length || 1) || 0}%
               </div>
             </div>
             <div>

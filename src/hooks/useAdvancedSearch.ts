@@ -10,7 +10,7 @@ interface SearchSuggestion {
   count?: number;
 }
 
-interface SearchResult {
+export interface SearchResult {
   id: string;
   title: string;
   description?: string;
@@ -112,7 +112,7 @@ export function useAdvancedSearch({
           suggestions.push(...titleSuggestions.map(item => ({
             id: `title_${item.id}`,
             text: item.title,
-            type: 'title',
+            type: 'title' as const,
             category: 'movie',
           })));
         }
@@ -129,7 +129,7 @@ export function useAdvancedSearch({
           suggestions.push(...uniqueGenres.map(genre => ({
             id: `genre_${genre}`,
             text: genre,
-            type: 'genre',
+            type: 'genre' as const,
             category: 'genre',
           })));
         }
@@ -152,7 +152,7 @@ export function useAdvancedSearch({
   });
 
   // Query principal de busca
-  const { data: searchResults, isLoading, error, refetch } = useQuery({
+  const { data: searchResults, isLoading, error, refetch } = useQuery<SearchResult[]>({
     queryKey: ['search', filters.query, filters, maxResults],
     queryFn: async (): Promise<SearchResult[]> => {
       if (!filters.query.trim()) return [];
@@ -177,12 +177,13 @@ export function useAdvancedSearch({
           query = query.in('genre', filters.genres);
         }
 
+        // Aplicar filtros de ano usando 'ano' (nome correto da coluna na tabela cinema)
         if (filters.yearRange[0] > 1900) {
-          query = query.gte('year', filters.yearRange[0]);
+          query = query.gte('ano', filters.yearRange[0]);
         }
 
         if (filters.yearRange[1] < new Date().getFullYear()) {
-          query = query.lte('year', filters.yearRange[1]);
+          query = query.lte('ano', filters.yearRange[1]);
         }
 
         if (filters.ratingRange[0] > 0) {
@@ -196,7 +197,7 @@ export function useAdvancedSearch({
         // Ordenação
         const orderColumn = filters.sortBy === 'relevance' ? 'view_count' :
                           filters.sortBy === 'rating' ? 'rating' :
-                          filters.sortBy === 'year' ? 'year' :
+                          filters.sortBy === 'year' ? 'ano' :
                           'view_count';
 
         query = query.order(orderColumn, { ascending: filters.sortOrder === 'asc' });
@@ -222,7 +223,7 @@ export function useAdvancedSearch({
             coverImage: item.cover_image,
             backdropPath: item.backdrop_path,
             genre: item.genre,
-            year: item.year,
+            year: item.ano,
             rating: item.rating,
             duration: item.duration,
             contentType: 'movie',
@@ -236,7 +237,7 @@ export function useAdvancedSearch({
     },
     enabled: filters.query.trim().length > 0,
     staleTime: 30 * 1000, // 30 segundos
-    cacheTime: 5 * 60 * 1000, // 5 minutos
+    gcTime: 5 * 60 * 1000, // 5 minutos
   });
 
   // Função para analisar correspondência
@@ -326,7 +327,7 @@ export function useAdvancedSearch({
         suggestions.push(...keywords.map(keyword => ({
           id: `keyword_${keyword}`,
           text: keyword,
-          type: 'keyword',
+          type: 'keyword' as const,
           category: 'keyword',
         })));
       }
@@ -437,10 +438,11 @@ export function useAdvancedSearch({
       avgScore: 0,
     };
 
-    const total = searchResults.length;
-    const exactMatches = searchResults.filter(r => r.matchType === 'exact').length;
-    const partialMatches = searchResults.filter(r => r.matchType === 'partial').length;
-    const avgScore = searchResults.reduce((sum, r) => sum + r.matchScore, 0) / total;
+    const results = (searchResults || []) as SearchResult[];
+    const total = results.length;
+    const exactMatches = results.filter(r => r.matchType === 'exact').length;
+    const partialMatches = results.filter(r => r.matchType === 'partial').length;
+    const avgScore = total > 0 ? results.reduce((sum, r) => sum + r.matchScore, 0) / total : 0;
 
     return {
       total,
@@ -464,8 +466,8 @@ export function useAdvancedSearch({
     suggestionsLoading,
     error,
     showSuggestions,
-    hasResults: searchResults.length > 0,
-    isEmpty: searchResults.length === 0 && searchQuery.trim().length > 0,
+    hasResults: ((searchResults || []) as SearchResult[]).length > 0,
+    isEmpty: ((searchResults || []) as SearchResult[]).length === 0 && searchQuery.trim().length > 0,
     hasQuery: searchQuery.trim().length > 0,
     
     // Ações

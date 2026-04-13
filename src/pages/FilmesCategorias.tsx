@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import PremiumNavbar from '@/components/PremiumNavbar';
+import { Input } from "@/components/ui/input";
 import { MOVIE_CATEGORIES } from '@/data/movieCategories';
 import { Film, Search, Sparkles, Clapperboard, Sword, Rocket, Baby, TrendingUp, Smile, Theater, Heart, Ghost, Skull, Music, FileText, Crosshair, Globe, Church, Users, Briefcase, Star, Tv } from 'lucide-react';
 
@@ -162,8 +162,6 @@ const FilmesCategorias = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      <PremiumNavbar onSearch={handleSearch} />
-      
       {/* Header */}
       <div className="pt-24 pb-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
@@ -174,7 +172,7 @@ const FilmesCategorias = () => {
             </h1>
           </div>
           <p className="text-gray-400 text-lg mb-8">
-            Explore nossa coleção completa de filmes organizados por gênero
+            Explore nossos filmes organizados por gênero
           </p>
 
           {/* Search Bar */}

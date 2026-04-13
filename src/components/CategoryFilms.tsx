@@ -125,11 +125,11 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
             >
               <PremiumCard
                 id={film.id.toString()}
-                title={film.title}
-                poster={film.poster}
+                title={film.title ?? ''}
+                poster={film.poster ?? ''}
                 type={contentType === 'movies' ? 'movie' : 'series'}
-                year={film.year}
-                rating={film.rating}
+                year={film.year ?? ''}
+                rating={film.rating ?? ''}
                 onClick={() => handleClick(film)}
               />
             </motion.div>
@@ -154,11 +154,11 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
             >
               <PremiumCard
                 id={film.id.toString()}
-                title={film.title}
-                poster={film.poster}
+                title={film.title ?? ''}
+                poster={film.poster ?? ''}
                 type={contentType === 'movies' ? 'movie' : 'series'}
-                year={film.year}
-                rating={film.rating}
+                year={film.year ?? ''}
+                rating={film.rating ?? ''}
                 onClick={() => handleClick(film)}
               />
             </motion.div>

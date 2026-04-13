@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { Episodio } from "@/types/database";
 import NetflixPlayer from "@/components/NetflixPlayer";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { useAuth } from "@/components/AuthProvider";
 
 interface Season {
   season_number: number;
@@ -30,6 +32,7 @@ const SeriesEpisodes = ({ seriesId, tmdbId, seriesTitle, seriesPoster, seriesBac
   const [loading, setLoading] = useState(true);
   const [expandedEpisodes, setExpandedEpisodes] = useState<Set<string>>(new Set());
   const { setIsPlayerOpen } = usePlayer();
+  const { user } = useAuth();
   
   // Estados para o player e episódio atual
   const [isPlayerOpen, setIsPlayerOpenLocal] = useState(false);
@@ -295,7 +298,25 @@ const SeriesEpisodes = ({ seriesId, tmdbId, seriesTitle, seriesPoster, seriesBac
     <div className="bg-black/20 backdrop-blur-md rounded-2xl p-6 border border-white/10">
       {/* Seletor de Temporadas */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">Episódios</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">Episódios</h2>
+          
+          {/* Botão Favoritar Série */}
+          <FavoriteButton
+            item={{
+              contentId: tmdbId || parseInt(seriesId) || 0,
+              contentType: 'series',
+              titulo: seriesTitle || 'Série',
+              poster: seriesPoster,
+              banner: seriesBackdrop,
+              rating: currentSeason ? currentSeason.episode_count.toString() : undefined,
+              year: currentSeason?.air_date ? new Date(currentSeason.air_date).getFullYear().toString() : undefined,
+              genero: undefined,
+            }}
+            userId={user?.id}
+            size="sm"
+          />
+        </div>
         
         {seasons.length > 1 && (
           <div className="flex gap-2">

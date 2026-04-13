@@ -1,4 +1,3 @@
-import PremiumNavbar from "@/components/PremiumNavbar";
 import HeroBanner from "@/components/HeroBanner";
 import ContentCard from "@/components/ContentCard";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
@@ -9,9 +8,7 @@ const FilmesKids = () => {
   const kidsMovies = categories?.filter(cat => cat.id === "kids-movies") || [];
 
   return (
-    <div className="min-h-screen bg-background">
-      <PremiumNavbar />
-      <main className="pb-20">
+    <main className="min-h-screen bg-background pb-20">
         <HeroBanner filterCategory="Filmes Infantis" />
         <div className="relative z-10 pt-16 -mt-10 px-4 md:px-8 lg:px-12">
           <h2 className="text-3xl font-black text-white mb-10 tracking-tight uppercase">Filmes Infantis</h2>
@@ -31,7 +28,6 @@ const FilmesKids = () => {
           )}
         </div>
       </main>
-    </div>
   );
 };
 

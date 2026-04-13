@@ -73,16 +73,17 @@ function NotificationCard({ movie, onDismiss }: { movie: MovieNotification; onDi
           <div className="flex gap-2 mt-2">
             <button
               onClick={handleAssistir}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1.5 px-2 rounded flex items-center justify-center gap-1 transition-colors"
+              className="flex-1 bg-black hover:bg-gray-900 text-white text-xs font-bold py-1.5 px-2 rounded flex items-center justify-center gap-1 transition-colors"
             >
-              <Play className="w-3 h-3" />
+              <Play className="w-3 h-3" fill="white" />
               Assistir
             </button>
             {movie.trailer_url && (
               <button
                 onClick={handleTrailer}
-                className="flex-1 bg-white/10 hover:bg-white/20 text-white text-xs font-medium py-1.5 px-2 rounded transition-colors"
+                className="flex-1 bg-[#FF0000] hover:bg-[#CC0000] text-white text-xs font-bold py-1.5 px-2 rounded flex items-center justify-center gap-1 transition-colors"
               >
+                <Play className="w-3 h-3" fill="white" />
                 Trailer
               </button>
             )}

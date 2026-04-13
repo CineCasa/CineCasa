@@ -34,7 +34,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           .limit(50),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, genero')
+          .select('id_n, tmdb_id, titulo, ano, genero, banner')
           .or('genero.ilike.%negritude%')
           .limit(50)
       ]);
@@ -53,7 +53,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
+          poster: item.banner || '/api/placeholder/300/450', // Usar banner se disponível
           type: 'series' as const,
           year: item.ano,
           rating: 'N/A', // Séries não têm rating na tabela

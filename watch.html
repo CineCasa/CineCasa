@@ -503,6 +503,13 @@
           Copiar Link
         </button>
         
+        <button class="btn-primary" onclick="enviarConvite()" style="background: #22c55e; margin-top: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+          Enviar Convite
+        </button>
+        
         <button class="btn-secondary" onclick="criarNovaSala()">
           Criar Nova Sala
         </button>
@@ -684,6 +691,37 @@
           showToast('Link copiado!');
         }).catch(() => {
           showToast('Erro ao copiar');
+        });
+      }
+    }
+    
+    async function enviarConvite() {
+      const link = window.location.href;
+      const text = `🎬 Assistir Juntos no CineCasa!\n\nJunte-se a mim para assistir este vídeo sincronizado:\n${link}`;
+      
+      // Tenta usar a API nativa de compartilhamento (mobile/desktop modernos)
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Assistir Juntos - CineCasa',
+            text: 'Junte-se a mim para assistir este vídeo sincronizado!',
+            url: link
+          });
+          showToast('Convite enviado!');
+        } catch (err) {
+          // Usuário cancelou ou erro
+          if (err.name !== 'AbortError') {
+            console.error('[Watch] Erro ao compartilhar:', err);
+            // Fallback para clipboard
+            copiarLink();
+          }
+        }
+      } else {
+        // Fallback: copiar para área de transferência
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Link copiado! Cole onde desejar enviar.');
+        }).catch(() => {
+          showToast('Erro ao copiar link');
         });
       }
     }

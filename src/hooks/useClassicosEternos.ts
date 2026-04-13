@@ -26,13 +26,14 @@ export const useClassicosEternos = (): UseClassicosEternosReturn => {
     try {
       setIsLoading(true);
       
-      console.log('[ClassicosEternos] Buscando conteúdo da categoria clássicos...');
+      console.log('[ClassicosEternos] Buscando conteúdo das categorias Clássicos e Faroeste...');
       
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
+      // Buscar de Clássicos e Faroeste
       const { data: cinemaData, error } = await supabase
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%clássico%,genero.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%')
+        .or('genero.ilike.%clássico%,genero.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%,genero.ilike.%faroeste%,category.ilike.%faroeste%')
         .not('poster', 'is', null)
         .limit(100);
 

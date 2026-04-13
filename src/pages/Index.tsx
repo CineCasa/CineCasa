@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import PremiumNavbar from "@/components/PremiumNavbar";
 import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
@@ -78,10 +77,8 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <PremiumNavbar />
-      <main className="pb-20">
-        <HeroBanner />
+    <main className="min-h-screen bg-black pt-[94px]">
+      <HeroBanner />
         <div className="relative z-10 pt-12 -mt-10 flex flex-col gap-4">
           <ContinueWatchingRow />
 
@@ -149,8 +146,7 @@ const Index = () => {
             <div className="flex justify-center p-10 text-white/50">Carregando catálogo completo...</div>
           )}
         </div>
-      </main>
-    </div>
+    </main>
   );
 };
 

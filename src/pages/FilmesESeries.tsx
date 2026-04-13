@@ -139,8 +139,6 @@ const FilmesESeries = () => {
 
   return (
     <div className="min-h-screen bg-black pt-[94px]">
-      <PremiumNavbar onSearch={handleSearch} />
-      
       <PremiumHeroBanner
         contentType="movies"
         onPlay={handleHeroPlay}

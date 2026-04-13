@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play } from 'lucide-react';
+import { Play, Info, Heart, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase';
 import { usePlayer } from '../contexts/PlayerContext';
+import { useNavigate } from 'react-router-dom';
+import { useFavorites } from '../hooks/useFavorites';
+import { useRatings } from '../hooks/useRatings';
+import { toast } from 'sonner';
 
 interface BannerContent {
   id: string;
@@ -11,27 +15,28 @@ interface BannerContent {
   year: string;
   description?: string;
   trailer?: string;
+  rating?: string;
+  genre?: string;
+  duration?: string;
 }
 
 interface PremiumHeroBannerProps {
   contentType?: 'movies' | 'series';
-  onPlay?: (item: any) => void;
-  onTrailer?: (item: any) => void;
-  onMyList?: (item: any) => void;
 }
 
 const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({ 
-  contentType = 'series',
-  onPlay,
-  onTrailer,
-  onMyList
+  contentType = 'series'
 }) => {
   const [allPosters, setAllPosters] = useState<BannerContent[]>([]);
   const [displayQueue, setDisplayQueue] = useState<BannerContent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [userRating, setUserRating] = useState<'like' | 'dislike' | null>(null);
   const supabase = getSupabaseClient();
   const { openPlayer } = usePlayer();
+  const navigate = useNavigate();
+  const { isFavorite, toggleFavorite, loading: favLoading } = useFavorites();
+  const { isLiked, isDisliked, toggleRating } = useRatings();
 
   // Buscar posters da tabela correta baseado no contentType
   const fetchPosters = useCallback(async () => {
@@ -42,7 +47,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         // Buscar posters da tabela cinema
         const { data, error } = await supabase
           .from('cinema')
-          .select('id, titulo, poster, year, description, trailer')
+          .select('id, titulo, poster, year, description, trailer, rating, genero, duration')
           .not('poster', 'is', null)
           .not('poster', 'eq', '');
 
@@ -62,17 +67,23 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
             poster: item.poster,
             year: item.year?.toString() || '',
             description: item.description || '',
-            trailer: item.trailer || ''
+            trailer: item.trailer || '',
+            rating: item.rating || '',
+            genre: item.genero || '',
+            duration: item.duration || ''
           }));
 
         setAllPosters(uniquePosters);
-        // Shuffle initial queue
-        setDisplayQueue([...uniquePosters].sort(() => Math.random() - 0.5));
+        // Shuffle initial queue e seleciona índice aleatório inicial
+        const shuffled = [...uniquePosters].sort(() => Math.random() - 0.5);
+        setDisplayQueue(shuffled);
+        // Começa de um índice aleatório ao invés de sempre do 0
+        setCurrentIndex(Math.floor(Math.random() * shuffled.length));
       } else {
         // Buscar banners da tabela series (mantém banner para séries)
         const { data, error } = await supabase
           .from('series')
-          .select('id_n, titulo, banner, ano, descricao')
+          .select('id_n, titulo, banner, ano, descricao, genero')
           .not('banner', 'is', null)
           .not('banner', 'eq', '');
 
@@ -91,7 +102,9 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
             title: item.titulo || 'Sem título',
             poster: item.banner,
             year: item.ano?.toString() || '',
-            description: item.descricao || ''
+            description: item.descricao || '',
+            rating: '',
+            genre: item.genero || ''
           }));
 
         setAllPosters(uniqueBanners);
@@ -128,62 +141,6 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
     return () => clearInterval(interval);
   }, [displayQueue.length, allPosters]);
 
-  const handlePlay = () => {
-    const current = displayQueue[currentIndex];
-    if (!current) {
-      console.error('[PremiumHeroBanner] Nenhum item selecionado');
-      return;
-    }
-    
-    console.log('[PremiumHeroBanner] handlePlay:', current);
-    
-    if (onPlay) {
-      onPlay(current);
-    } else {
-      // Navegar para página de detalhes com base no tipo
-      const route = contentType === 'movies' ? '/filmes' : '/series';
-      window.location.href = `${route}/${current.id}`;
-    }
-  };
-
-  const handleTrailer = () => {
-    const current = displayQueue[currentIndex];
-    if (!current) {
-      console.error('[PremiumHeroBanner] Nenhum item selecionado para trailer');
-      return;
-    }
-    
-    console.log('[PremiumHeroBanner] handleTrailer:', current);
-    
-    if (onTrailer && current) {
-      onTrailer(current);
-    } else if (current?.trailer) {
-      window.open(current.trailer, '_blank', 'noopener,noreferrer');
-    } else {
-      // Se não tem trailer, navega para detalhes
-      const route = contentType === 'movies' ? '/filmes' : '/series';
-      window.location.href = `${route}/${current.id}`;
-    }
-  };
-
-  const handleMyList = () => {
-    const current = displayQueue[currentIndex];
-    if (!current) {
-      console.error('[PremiumHeroBanner] Nenhum item selecionado para Minha Lista');
-      return;
-    }
-    
-    console.log('[PremiumHeroBanner] handleMyList:', current);
-    
-    if (onMyList && current) {
-      onMyList(current);
-    } else {
-      // Fallback: navegar para página de detalhes
-      const route = contentType === 'movies' ? '/filmes' : '/series';
-      window.location.href = `${route}/${current.id}`;
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="relative w-full h-[70vh] bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
@@ -218,7 +175,12 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           <img
             src={currentBanner.poster}
             alt={currentBanner.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain sm:object-cover object-center"
+            style={{ 
+              objectPosition: 'center center',
+              maxWidth: '100%',
+              maxHeight: '100%'
+            }}
           />
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-transparent" />
@@ -228,7 +190,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
       </AnimatePresence>
 
       {/* Conteúdo do Banner */}
-      <div className="relative z-10 h-full flex items-end sm:items-center pb-8 sm:pb-0">
+      <div className="relative z-10 h-full flex items-end sm:items-center pb-20 sm:pb-0">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
           <AnimatePresence mode="wait">
             <motion.div
@@ -243,11 +205,45 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                 {currentBanner.title}
               </h1>
               
-              {currentBanner.year && (
-                <p className="text-sm sm:text-base md:text-lg text-gray-200 mb-2 sm:mb-4">
-                  {currentBanner.year}
-                </p>
-              )}
+              {/* Metadados */}
+              <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
+                {/* País */}
+                {currentBanner.country && (
+                  <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200 flex items-center gap-1">
+                    🌍 {currentBanner.country}
+                  </span>
+                )}
+                {/* Avaliação */}
+                {currentBanner.rating && currentBanner.rating !== "N/A" && (
+                  <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-xs sm:text-sm">
+                    ★ {currentBanner.rating}
+                  </span>
+                )}
+                {/* Ano */}
+                {currentBanner.year && currentBanner.year > 0 && (
+                  <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">
+                    📅 {currentBanner.year}
+                  </span>
+                )}
+                {/* Categoria principal */}
+                {currentBanner.category && (
+                  <span className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded text-xs sm:text-sm">
+                    🏷️ {currentBanner.category}
+                  </span>
+                )}
+                {/* Primeiro gênero */}
+                {currentBanner.genre && (
+                  <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">
+                    {Array.isArray(currentBanner.genre) ? currentBanner.genre[0] : currentBanner.genre}
+                  </span>
+                )}
+                {/* Duração */}
+                {currentBanner.duration && (
+                  <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">
+                    ⏱️ {currentBanner.duration}
+                  </span>
+                )}
+              </div>
 
               {currentBanner.description && (
                 <p className="text-sm sm:text-base text-gray-300 mb-4 sm:mb-6 line-clamp-2">
@@ -255,30 +251,105 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                 </p>
               )}
 
-              <div className="flex gap-2 sm:gap-4 flex-wrap">
+              {/* Botões de Ação */}
+              <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
                 <button
-                  onClick={handlePlay}
-                  className="bg-white text-black px-6 py-3 rounded-lg text-sm sm:text-base font-semibold hover:bg-gray-200 transition-colors"
+                  onClick={() => {
+                    console.log('[PremiumHeroBanner] Botão Assistir clicado:', { currentBanner, trailer: currentBanner?.trailer });
+                    openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer || '');
+                  }}
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-white hover:bg-gray-100 text-black rounded-lg font-semibold transition-all duration-300 hover:scale-105"
                 >
-                  Assistir
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+                  <span>Assistir</span>
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('[PremiumHeroBanner] Botão Trailer clicado:', { currentBanner, trailer: currentBanner?.trailer });
+                    if (currentBanner?.trailer) {
+                      openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer);
+                    } else {
+                      navigate(`/details/${currentBanner.id}`);
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#FF0000] hover:bg-[#cc0000] text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"
+                >
+                  <Info className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>Trailer</span>
                 </button>
                 
+                {/* Ícones de interação - mesma linha */}
+                <div className="w-px h-8 bg-white/20 mx-1 sm:mx-2 flex-shrink-0" />
                 <button
-                  onClick={handleTrailer}
-                  title="Trailer"
-                  className="bg-white/20 backdrop-blur-sm text-white px-3 py-2 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center font-semibold hover:bg-white/30 transition-colors"
+                  onClick={async () => {
+                    if (!currentBanner) return;
+                    
+                    const contentId = parseInt(currentBanner.id);
+                    const contentType = contentType === 'movies' ? 'movie' : 'series';
+                    
+                    await toggleFavorite({
+                      content_id: contentId,
+                      content_type: contentType,
+                      titulo: currentBanner.title,
+                      poster: currentBanner.poster,
+                      banner: currentBanner.poster,
+                      rating: currentBanner.rating,
+                      year: parseInt(currentBanner.year),
+                      genero: currentBanner.genre
+                    });
+                  }}
+                  disabled={favLoading}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 flex-shrink-0 disabled:opacity-50"
+                  title={isFavorite(parseInt(currentBanner?.id || '0'), contentType === 'movies' ? 'movie' : 'series') ? "Remover dos favoritos" : "Adicionar aos favoritos"}
                 >
-                  <Play size={20} />
-                  <span className="hidden sm:inline ml-2">Trailer</span>
+                  <Heart 
+                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isFavorite(parseInt(currentBanner?.id || '0'), contentType === 'movies' ? 'movie' : 'series') ? 'fill-red-600 text-red-600' : 'text-white'}`} 
+                  />
                 </button>
-
                 <button
-                  onClick={handleMyList}
-                  className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-lg text-sm sm:text-base font-semibold hover:bg-white/30 transition-colors"
+                  onClick={async () => {
+                  const current = displayQueue[currentIndex];
+                  const contentId = current.id;
+                  const type = contentType === 'movies' ? 'movie' : 'series';
+                  await toggleRating({
+                    content_id: contentId,
+                    content_type: type,
+                    titulo: current.title,
+                    poster: current.poster,
+                    banner: current.poster,
+                    rating: current.rating
+                  }, 'like');
+                }}
+                  className={`p-2 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0 ${isLiked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'bg-green-500/30' : 'bg-white/10 hover:bg-white/20'}`}
+                  title="Gostei"
                 >
-                  Minha Lista
+                  <ThumbsUp 
+                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isLiked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'fill-green-500 text-green-500' : 'text-white'}`} 
+                  />
+                </button>
+                <button
+                  onClick={async () => {
+                    const current = displayQueue[currentIndex];
+                    const contentId = current.id;
+                    const type = contentType === 'movies' ? 'movie' : 'series';
+                    await toggleRating({
+                      content_id: contentId,
+                      content_type: type,
+                      titulo: current.title,
+                      poster: current.poster,
+                      banner: current.poster,
+                      rating: current.rating
+                    }, 'dislike');
+                  }}
+                  className={`p-2 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0 ${isDisliked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'bg-red-500/30' : 'bg-white/10 hover:bg-white/20'}`}
+                  title="Não gostei"
+                >
+                  <ThumbsDown 
+                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isDisliked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'fill-red-500 text-red-500' : 'text-white'}`} 
+                  />
                 </button>
               </div>
+
             </motion.div>
           </AnimatePresence>
         </div>

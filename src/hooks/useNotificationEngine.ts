@@ -43,7 +43,7 @@ export function useNewEpisodeDetector() {
             serie:serie_id (
               id,
               titulo,
-              poster
+              banner
             )
           )
         `)
@@ -63,7 +63,7 @@ export function useNewEpisodeDetector() {
               `T${episode.temporadas?.numero}E${episode.numero}: ${episode.titulo}`,
               series.id.toString(),
               episode.id.toString(),
-              series.poster
+              series.banner
             );
 
             // Salvar notificação no banco
@@ -72,7 +72,7 @@ export function useNewEpisodeDetector() {
               type: 'new_episode',
               title: `Novo episódio de ${series.titulo}`,
               body: `Temporada ${episode.temporadas?.numero} - Episódio ${episode.numero}: ${episode.titulo}`,
-              image: series.poster,
+              image: series.banner,
               data: {
                 seriesId: series.id,
                 episodeId: episode.id,

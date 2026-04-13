@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart, Bell, Users, MonitorPlay } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -16,6 +16,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { permission } = useNotifications();
@@ -36,12 +37,40 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Fechar dropdown ao clicar fora ou pressionar ESC
+  useEffect(() => {
+    if (!isProfileOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsProfileOpen(false);
+      }
+    };
+
+    // Usar setTimeout para evitar que o clique que abriu o dropdown também o feche
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+    }, 0);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isProfileOpen]);
+
   const navItems = [
     { icon: Home, label: 'Início', href: '/' },
     { icon: Film, label: 'Filmes', href: '/filmes' },
     { icon: PlaySquare, label: 'Séries', href: '/series-categorias' },
     { icon: Heart, label: 'Favoritos', href: '/favorites' },
-    { icon: Monitor, label: 'TV', href: '/tv-live' },
   ];
 
   return (
@@ -57,11 +86,11 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
         <div className="max-w-7xl mx-auto flex items-center justify-between px-6">
           {/* Logo e Slogan */}
           <div className="flex items-center space-x-6">
-            <div className="flex flex-col gap-0 leading-none">
-              <h1 className="text-2xl font-bold text-primary tracking-wider font-titles leading-none m-0 p-0">
+            <div className="flex flex-col leading-none">
+              <h1 className="text-xl font-bold text-primary tracking-wider font-titles leading-none m-0 p-0">
                 CINECASA
               </h1>
-              <p className="text-xs text-secondary tracking-wide font-body leading-none m-0 p-0">
+              <p className="text-[10px] md:text-[14px] text-secondary tracking-normal font-body leading-none m-0 p-0 -mt-0.5 whitespace-nowrap">
                 Entretenimento e Lazer
               </p>
             </div>
@@ -94,8 +123,10 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
               <Search size={20} />
             </button>
 
-            {/* Botão de Notificações */}
-            <NotificationBell />
+            {/* Botão de Notificações - Oculto em mobile */}
+            <div className="hidden sm:block">
+              <NotificationBell />
+            </div>
 
             {/* Botão Modo Cinema */}
             <button
@@ -109,7 +140,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
             </button>
 
             {/* Perfil */}
-            <div className="relative">
+            <div ref={profileDropdownRef} className="relative flex flex-row items-center space-x-2 profile-dropdown">
               {/* Botão Assistir Juntos */}
               <button
                 onClick={criarSalaWatchParty}
@@ -120,7 +151,10 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
               </button>
 
               <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsProfileOpen(!isProfileOpen);
+                }}
                 className="flex items-center space-x-2 p-2 rounded-full hover:bg-white/10 transition-all duration-300"
               >
                 <User size={20} />
@@ -132,7 +166,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 glass-navbar rounded-lg border border-white/10 overflow-hidden"
+                  className="absolute right-0 mt-2 w-48 glass-navbar rounded-lg border border-white/10 overflow-hidden z-50"
                 >
                   <div className="p-4 border-b border-white/10">
                     <p className="text-primary font-medium">Minha Conta</p>
@@ -140,7 +174,10 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                   </div>
                   <div className="p-2">
                     <button 
-                      onClick={() => navigate('/profile')}
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        navigate('/profile');
+                      }}
                       className="w-full flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-all duration-300 text-secondary"
                     >
                       <User size={16} />

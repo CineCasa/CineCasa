@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import PremiumNavbar from '@/components/PremiumNavbar';
 import CategoryFilms from '@/components/CategoryFilms';
 import useCinemaCategories from '@/hooks/useCinemaCategories';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
@@ -85,8 +84,7 @@ const FilmesPorCategoria: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex flex-col">
-        <PremiumNavbar />
-        <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Film className="animate-spin mx-auto mb-4 text-red-500" size={48} />
             <span className="text-white text-xl">Carregando categorias...</span>
@@ -99,8 +97,7 @@ const FilmesPorCategoria: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-black flex flex-col">
-        <PremiumNavbar />
-        <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
             <h2 className="text-white text-2xl mb-2">Erro ao carregar categorias</h2>
@@ -120,8 +117,7 @@ const FilmesPorCategoria: React.FC = () => {
   if (selectedCategory) {
     return (
       <div className="min-h-screen bg-black">
-        <PremiumNavbar />
-        
+          
         {/* Header com voltar */}
         <div className="bg-gray-900 border-b border-gray-800 px-4 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -159,7 +155,6 @@ const FilmesPorCategoria: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      <PremiumNavbar />
       
       {/* Banner Principal com trailers aleatórios */}
       <PremiumHeroBanner
@@ -174,7 +169,7 @@ const FilmesPorCategoria: React.FC = () => {
             🎬 Categorias de Filmes
           </h1>
           <p className="body-md lg:body-lg text-gray-300 text-center mb-6 max-w-2xl">
-            Explore nossa coleção completa de filmes organizados por gênero
+            Explore nossos filmes organizados por gênero
           </p>
           
           {/* Search Bar */}

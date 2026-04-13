@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import PremiumNavbar from "@/components/PremiumNavbar";
 import ContentCard from "@/components/ContentCard";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { ContentItem } from "@/data/content";
@@ -40,10 +39,8 @@ const Search = () => {
   }, [allItems, query]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <PremiumNavbar />
-      <main className="pt-24 px-4 md:px-8 lg:px-12 pb-20">
-        <div className="mb-10">
+    <main className="min-h-screen bg-background text-foreground pt-[70px] px-4 md:px-8 lg:px-12 pb-20">
+        <div className="mt-[10px] mb-10">
           <h1 className="text-2xl md:text-3xl font-bold text-white/60 mb-2">
             Resultados para: <span className="text-white">"{query}"</span>
           </h1>
@@ -92,8 +89,7 @@ const Search = () => {
               <p className="text-white/40">Digite algo para começar sua busca.</p>
            </div>
         )}
-      </main>
-    </div>
+    </main>
   );
 };
 

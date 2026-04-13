@@ -420,6 +420,153 @@ export type Database = {
           }
         ]
       }
+      favorites: {
+        Row: {
+          id: string
+          user_id: string
+          content_id: number
+          content_type: string
+          titulo: string
+          poster: string | null
+          banner: string | null
+          rating: string | null
+          year: number | null
+          genero: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content_id: number
+          content_type: string
+          titulo: string
+          poster?: string | null
+          banner?: string | null
+          rating?: string | null
+          year?: number | null
+          genero?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content_id?: number
+          content_type?: string
+          titulo?: string
+          poster?: string | null
+          banner?: string | null
+          rating?: string | null
+          year?: number | null
+          genero?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      watch_history: {
+        Row: {
+          id: string
+          profile_id: string
+          content_id: string
+          content_type: string
+          titulo: string
+          poster: string | null
+          progress: number
+          duration: number
+          last_watched: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          content_id: string
+          content_type?: string
+          titulo?: string
+          poster?: string | null
+          progress?: number
+          duration?: number
+          last_watched?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          content_id?: string
+          content_type?: string
+          titulo?: string
+          poster?: string | null
+          progress?: number
+          duration?: number
+          last_watched?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_history_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      ratings: {
+        Row: {
+          id: string
+          user_id: string
+          content_id: string
+          content_type: string
+          titulo: string
+          poster: string | null
+          banner: string | null
+          rating: string
+          rating_type: 'like' | 'dislike'
+          rating_value: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content_id: string
+          content_type: string
+          titulo: string
+          poster?: string | null
+          banner?: string | null
+          rating: string
+          rating_type: 'like' | 'dislike'
+          rating_value?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content_id?: string
+          content_type?: string
+          titulo?: string
+          poster?: string | null
+          banner?: string | null
+          rating?: string
+          rating_type?: 'like' | 'dislike'
+          rating_value?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

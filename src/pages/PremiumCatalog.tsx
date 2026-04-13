@@ -1,5 +1,4 @@
 import React from 'react';
-import PremiumNavbar from '@/components/PremiumNavbar';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
 import { useNavigate } from 'react-router-dom';
 
@@ -30,9 +29,6 @@ const PremiumCatalog: React.FC<PremiumCatalogProps> = ({ contentType }) => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* Navbar */}
-      <PremiumNavbar onSearch={handleSearch} />
-
       {/* Hero Banner com trailers aleatórios */}
       <PremiumHeroBanner
         contentType={contentType}

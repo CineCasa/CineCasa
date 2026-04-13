@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import VideoPlayer from "@/components/VideoPlayer";
-import PremiumNavbar from "@/components/PremiumNavbar";
-import SeriesEpisodes from "@/components/SeriesEpisodes";
 import PremiumHeroBanner from "@/components/PremiumHeroBanner";
 
 const Content = () => {
@@ -52,8 +50,6 @@ const Content = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PremiumNavbar />
-      
       {/* Hero Banner - Igual da Home */}
       <PremiumHeroBanner
         title={content.title}

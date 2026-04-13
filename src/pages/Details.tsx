@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, Play, Plus, ThumbsUp, Share2, ChevronRight } from "lucide-react";
+import { ChevronLeft, Play, ThumbsUp, Share2, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import NetflixPlayer from "@/components/NetflixPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { FavoriteButton } from "@/components/FavoriteButton";
 
 interface MovieData {
   id: string;
@@ -56,7 +57,6 @@ const Details = () => {
   const [isTrailerMode, setIsTrailerMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
@@ -423,25 +423,38 @@ const Details = () => {
                 <button
                   onClick={() => { if (videoUrl) { setIsTrailerMode(false); setIsPlayerOpen(true); } }}
                   disabled={!videoUrl}
-                  className={`flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base transition-all duration-200 ${videoUrl ? "bg-white text-black hover:bg-gray-200 hover:scale-105" : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
+                  className={`flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base transition-all duration-200 ${videoUrl ? "bg-black text-white hover:bg-gray-900 hover:scale-105" : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
                 >
-                  <Play size={20} className="md:w-6 md:h-6" fill="currentColor" />
+                  <Play size={20} className="md:w-6 md:h-6" fill="white" />
                   {videoUrl ? "Assistir" : "Indisponível"}
                 </button>
 
                 {trailerUrl && (
                   <button
                     onClick={() => { setIsTrailerMode(true); setIsPlayerOpen(true); }}
-                    className="flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base bg-gray-600/80 hover:bg-gray-500 text-white hover:scale-105 transition-all duration-200"
+                    className="flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base bg-[#FF0000] hover:bg-[#CC0000] text-white hover:scale-105 transition-all duration-200 shadow-lg"
                   >
-                    <Play size={20} className="md:w-6 md:h-6" />
+                    <Play size={20} className="md:w-6 md:h-6" fill="white" />
                     Trailer
                   </button>
                 )}
 
-                <button onClick={() => setIsFavorite(!isFavorite)} className={`p-2.5 md:p-3.5 rounded-full border-2 transition-all duration-200 hover:scale-110 ${isFavorite ? "bg-white border-white text-black" : "border-gray-400 text-white hover:border-white"}`}>
-                  <Plus size={20} className={`md:w-6 md:h-6 transition-transform duration-200 ${isFavorite ? "rotate-45" : ""}`} />
-                </button>
+                {data && (
+                  <FavoriteButton
+                    item={{
+                      contentId: parseInt(id || '0') || 0,
+                      contentType: type === 'series' ? 'series' : 'movie',
+                      titulo: data.title || data.name || 'Sem título',
+                      poster: data.poster_path,
+                      banner: data.backdrop_path || data.banner,
+                      rating: data.vote_average?.toString(),
+                      year: (data.release_date || data.first_air_date)?.split('-')[0],
+                      genero: data.genres?.[0]?.name,
+                    }}
+                    userId={user?.id}
+                    size="lg"
+                  />
+                )}
 
                 <button className="p-2.5 md:p-3.5 rounded-full border-2 border-gray-400 text-white hover:border-white transition-all duration-200 hover:scale-110">
                   <ThumbsUp size={20} className="md:w-6 md:h-6" />
@@ -616,19 +629,26 @@ const Details = () => {
 
       {/* Video Player Modal */}
       <AnimatePresence>
-        {isPlayerOpen && (
+        {isPlayerOpen && data && (
           <NetflixPlayer
-            url={isTrailerMode ? trailerUrl || "" : videoUrl || ""}
-            title={data.title}
-            onClose={() => setIsPlayerOpen(false)}
-            contentType={type as 'movie' | 'series'}
-            contentId={id}
+            url={(() => {
+              const url = isTrailerMode ? trailerUrl || "" : videoUrl || "";
+              console.log('[Details] NetflixPlayer URL:', url);
+              return url;
+            })()}
+            title={data.title || "Sem título"}
+            onClose={() => {
+              console.log('[Details] Fechando player');
+              setIsPlayerOpen(false);
+            }}
+            contentType={(type as 'movie' | 'series') || 'movie'}
+            contentId={id || ""}
             historyItem={{
               id: id || "",
-              title: data.title,
+              title: data.title || "Sem título",
               poster: data.poster_path || "",
               backdrop: data.backdrop_path || "",
-              type: type as 'movie' | 'series',
+              type: (type as 'movie' | 'series') || 'movie',
               year: releaseYear?.toString() || "",
               rating: data.vote_average?.toString() || "0",
             }}

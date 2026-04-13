@@ -76,23 +76,64 @@ class WatchPartyClient {
    * Conecta ao servidor Socket.IO
    */
   connect() {
-    // URL do servidor (ajustar conforme necessário)
-    const serverUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3001' 
-      : window.location.origin;
+    // Detecta a URL do servidor automaticamente
+    // Prioridade: 1) Variável global, 2) Mesma origem, 3) localhost:3001
+    const serverUrl = window.WATCH_PARTY_SERVER_URL || 
+      (window.location.port === '3001' ? window.location.origin : null) ||
+      (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
     
     console.log(`[WatchParty] Conectando ao servidor: ${serverUrl}`);
     
-    // Inicializa Socket.IO
+    // Inicializa Socket.IO com configuração robusta
     this.socket = io(serverUrl, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 10000,
+      withCredentials: false
     });
     
     // Configura eventos do Socket.IO
     this.setupSocketEvents();
+    
+    // Timeout para ativar modo solo se não conectar
+    setTimeout(() => {
+      if (!this.socket.connected && !this.soloMode) {
+        console.log('[WatchParty] Ativando modo solo para desenvolvimento local...');
+        this.activateSoloMode();
+      }
+    }, 5000);
+  }
+  
+  /**
+   * Ativa modo solo para desenvolvimento sem servidor
+   */
+  activateSoloMode() {
+    this.soloMode = true;
+    this.userCount = 1;
+    this.userId = 'solo-user-' + Math.random().toString(36).substring(2, 9);
+    
+    console.log('[WatchParty] Modo solo ativado. ID:', this.userId);
+    
+    // Configura vídeo se houver URL na query
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoUrl = urlParams.get('video');
+    if (videoUrl && this.videoElement) {
+      this.videoElement.src = videoUrl;
+    }
+    
+    // Configura eventos do player
+    this.setupVideoEvents();
+    
+    // Atualiza UI
+    this.updateUI(`Sala: ${this.roomId} | Modo Solo (Desenvolvimento)`);
+    this.showToast('Modo solo ativado. Compartilhamento em tempo real desabilitado.');
+    
+    // Esconde erro de conexão se visível
+    const errorEl = document.getElementById('wp-error');
+    if (errorEl) errorEl.style.display = 'none';
   }
   
   /**
@@ -348,6 +389,9 @@ class WatchPartyClient {
       
       console.log('[WatchParty] Evento PLAY local - enviando para sala');
       
+      // Em modo solo, não tenta enviar para o servidor
+      if (this.soloMode) return;
+      
       this.socket.emit('video-play', {
         currentTime: this.videoElement.currentTime
       });
@@ -362,6 +406,9 @@ class WatchPartyClient {
       
       console.log('[WatchParty] Evento PAUSE local - enviando para sala');
       
+      // Em modo solo, não tenta enviar para o servidor
+      if (this.soloMode) return;
+      
       this.socket.emit('video-pause', {
         currentTime: this.videoElement.currentTime
       });
@@ -375,6 +422,9 @@ class WatchPartyClient {
       if (this.isRemoteUpdate || this.ignoreNextSeek) return;
       
       console.log('[WatchParty] Evento SEEK local - enviando para sala');
+      
+      // Em modo solo, não tenta enviar para o servidor
+      if (this.soloMode) return;
       
       this.socket.emit('video-seek', {
         currentTime: this.videoElement.currentTime
@@ -396,9 +446,15 @@ class WatchPartyClient {
     // Limpa interval anterior se existir
     this.stopPeriodicSync();
     
+    // Em modo solo, não inicia sincronização periódica
+    if (this.soloMode) {
+      console.log('[WatchParty] Modo solo - sincronização periódica desabilitada');
+      return;
+    }
+    
     // Envia estado atual a cada 5 segundos
     this.syncInterval = setInterval(() => {
-      if (!this.socket || !this.roomId) return;
+      if (!this.socket || !this.roomId || this.soloMode) return;
       
       this.socket.emit('sync-broadcast', {
         currentTime: this.videoElement.currentTime,
@@ -446,6 +502,30 @@ class WatchPartyClient {
     if (!errorElement) {
       alert(message);
     }
+  }
+  
+  /**
+   * Mostra toast/notification temporário
+   */
+  showToast(message) {
+    console.log('[WatchParty] Toast:', message);
+    
+    // Cria elemento toast se não existir
+    let toastEl = document.getElementById('wp-toast');
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.id = 'wp-toast';
+      toastEl.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #22c55e; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000; font-family: sans-serif; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: opacity 0.3s;';
+      document.body.appendChild(toastEl);
+    }
+    
+    toastEl.textContent = message;
+    toastEl.style.opacity = '1';
+    
+    // Esconde após 3 segundos
+    setTimeout(() => {
+      toastEl.style.opacity = '0';
+    }, 3000);
   }
   
   /**

@@ -1,4 +1,3 @@
-import PremiumNavbar from "@/components/PremiumNavbar";
 import PremiumHeroBanner from "@/components/PremiumHeroBanner";
 import ContentRow from "@/components/ContentRow";
 import ContinueWatchingRow from '../components/ContinueWatchingRow';
@@ -38,8 +37,6 @@ const Series = () => {
 
   return (
     <div className="min-h-screen bg-black pt-[94px]">
-      <PremiumNavbar />
-      
       {/* Hero Banner - Igual da Home */}
       <PremiumHeroBanner
         {...seriesHeroContent}

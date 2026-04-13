@@ -8,7 +8,6 @@ const navItems = [
   { label: "Início", path: "/" },
   { label: "Cinema", path: "/cinema" },
   { label: "Séries", path: "/series-categorias" },
-  { label: "TV", path: "/tv-live" },
   { label: "Filmes Kids", path: "/kids-movies" },
   { label: "Séries Kids", path: "/kids-series" },
   { label: "Meus Favoritos", path: "/favorites" },
@@ -113,23 +112,24 @@ const Navbar = () => {
         scrolled ? "bg-[#0f171e] shadow-xl border-b border-white/5" : "bg-gradient-to-b from-[#0f171e]/90 to-transparent"
       }`}
     >
-      <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-12 h-16 sm:h-20">
+      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 lg:px-8 xl:px-12 h-14 sm:h-16 md:h-20">
         {/* Logo and Main Nav Desktop */}
         <div className="flex items-center gap-6 md:gap-10">
-          {/* Mobile menu toggle - Hidden on small devices, shown on tablets */}
+          {/* Mobile menu toggle - Shown only on mobile */}
           <button
-            className="p-1 -ml-1 text-white/80 hover:text-white transition-colors md:lg:hidden lg:hidden focus-visible rounded-sm"
+            className="p-2 -ml-1 text-white/80 hover:text-white transition-colors lg:hidden focus-visible rounded-md active:scale-95"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
           >
-            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            {mobileMenuOpen ? <X size={24} className="sm:size-28" /> : <Menu size={24} className="sm:size-28" />}
           </button>
 
-          <Link to="/" className="flex flex-col items-start leading-none group">
-            <div className="flex items-center gap-2">
+          <Link to="/" className="flex flex-col items-start leading-none group min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <img 
                 src="/cinecasa-logo.png" 
                 alt="CineCasa" 
-                className="w-8 h-8 object-contain"
+                className="w-7 h-7 sm:w-8 sm:h-8 object-contain flex-shrink-0"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
@@ -137,18 +137,18 @@ const Navbar = () => {
                   if (textElement) textElement.style.display = 'block';
                 }}
               />
-              <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-black tracking-tighter text-[#00A8E1] group-hover:text-white transition-colors" style={{display: 'none'}}>
+              <span className="text-base sm:text-lg md:text-xl lg:text-2xl font-black tracking-tighter text-[#00A8E1] group-hover:text-white transition-colors hidden sm:block" style={{display: 'none'}}>
                 CINECASA
               </span>
             </div>
-            <span className="text-[10px] sm:text-[11px] font-bold text-white/50 tracking-widest uppercase">
-              Entretenimento e lazer
+            <span className="text-[9px] sm:text-[10px] md:text-[14px] font-bold text-white/50 tracking-normal uppercase -mt-0.5 truncate max-w-[100px] sm:max-w-none">
+              Entretenimento
             </span>
           </Link>
 
-          {/* Centralized Content Counter */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-1 sm:top-2 hidden sm:flex flex-col items-center pointer-events-none">
-            <span className="text-[10px] font-black text-[#00A8E1] uppercase tracking-[0.2em] opacity-80">
+          {/* Centralized Content Counter - Hidden on very small screens */}
+          <div className="absolute left-1/2 -translate-x-1/2 top-1 hidden md:flex flex-col items-center pointer-events-none">
+            <span className="text-[10px] font-black text-[#00A8E1] uppercase tracking-[0.2em] opacity-80 whitespace-nowrap">
               Temos {totalContentCount} conteúdos
             </span>
             <div className="h-[2px] w-12 bg-gradient-to-r from-transparent via-[#00A8E1]/50 to-transparent mt-1" />
@@ -179,22 +179,21 @@ const Navbar = () => {
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-4 text-[#aaaaaa]">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 text-[#aaaaaa]">
           {/* Search */}
           <div className="relative" ref={searchRef}>
-            <div className="flex items-center border border-transparent hover:border-white/20 hover:bg-white/5 rounded-full transition-all px-1 sm:px-2 py-1 focus-within:border-white/40 focus-within:bg-white/5">
+            <div className="flex items-center border border-transparent hover:border-white/20 hover:bg-white/5 rounded-full transition-all px-2 sm:px-3 py-1.5 sm:py-2 focus-within:border-white/40 focus-within:bg-white/5">
               <Search 
-                size={18} 
-                className="text-white/60 hover:text-white cursor-pointer transition-colors"
+                size={16} 
+                className="sm:size-18 text-white/60 hover:text-white cursor-pointer transition-colors flex-shrink-0"
                 onClick={handleSearchFocus}
               />
               <input
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onFocus={handleSearchFocus}
-                placeholder="Buscar filmes, séries..."
-                className="bg-transparent text-sm sm:text-base text-white placeholder:text-[#aaaaaa] px-2 py-1 w-32 sm:w-48 lg:w-64 outline-none"
-                // NUNCA fechar automaticamente
+                placeholder="Buscar..."
+                className="bg-transparent text-sm text-white placeholder:text-[#aaaaaa] px-2 py-0 w-20 sm:w-32 md:w-48 lg:w-64 outline-none"
               />
             </div>
 
@@ -244,10 +243,11 @@ const Navbar = () => {
           <div className="relative" ref={menuRef}>
             <button 
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="user-menu-btn p-2 text-white/80 hover:text-white transition-colors rounded-full focus-visible flex items-center gap-2"
+              className="user-menu-btn p-2 text-white/80 hover:text-white transition-colors rounded-full focus-visible flex items-center gap-1.5 sm:gap-2 active:scale-95"
+              aria-label="Menu do usuário"
             >
-              <User size={26} />
-              <span className="hidden sm:inline text-xs truncate max-w-[100px] text-white/60">
+              <User size={22} className="sm:size-26" />
+              <span className="hidden sm:inline text-xs truncate max-w-[80px] md:max-w-[100px] text-white/60">
                 {user?.email?.split('@')[0]}
               </span>
             </button>

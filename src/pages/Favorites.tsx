@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import PremiumNavbar from "@/components/PremiumNavbar";
 import CategoryFilms from "@/components/CategoryFilms";
 import { motion } from 'framer-motion';
 import { useFavorites } from "@/hooks/useFavorites";
@@ -25,13 +24,13 @@ const Favorites = () => {
       // Buscar séries aleatórias
       const { data: series } = await supabase
         .from('series')
-        .select('id, titulo, poster, banner')
-        .not('poster', 'is', null)
+        .select('id, titulo, banner')
+        .not('banner', 'is', null)
         .limit(20);
 
       const allImages = [
-        ...(movies || []).map(item => ({ ...item, type: 'movie' })),
-        ...(series || []).map(item => ({ ...item, type: 'series' }))
+        ...(movies || []).map(item => ({ ...item, type: 'movie', poster: item.poster })),
+        ...(series || []).map(item => ({ ...item, type: 'series', poster: item.banner }))
       ];
 
       // Embaralhar as imagens
@@ -54,8 +53,6 @@ const Favorites = () => {
 
   return (
     <div className="min-h-screen bg-black pt-[94px]">
-      <PremiumNavbar />
-      
       {/* Banner com imagens aleatórias - sem ícones de navegação */}
       {randomImages.length > 0 && (
         <div className="w-full overflow-x-auto scrollbar-hide py-4">

@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Play, Plus, ThumbsUp, Info } from "lucide-react";
 
 interface DetailsHeroBannerProps {
   id: string;
@@ -16,13 +15,6 @@ interface DetailsHeroBannerProps {
   duration?: string;
   genres?: { name: string }[] | string;
   adult?: boolean;
-  videoUrl?: string | null;
-  trailerUrl?: string | null;
-  isFavorite?: boolean;
-  onPlay?: () => void;
-  onTrailer?: () => void;
-  onFavorite?: () => void;
-  onLike?: () => void;
 }
 
 const DetailsHeroBanner = ({
@@ -39,13 +31,6 @@ const DetailsHeroBanner = ({
   duration,
   genres,
   adult,
-  videoUrl,
-  trailerUrl,
-  isFavorite = false,
-  onPlay,
-  onTrailer,
-  onFavorite,
-  onLike,
 }: DetailsHeroBannerProps) => {
   const releaseYear = release_date || year
     ? new Date(release_date || year || "").getFullYear()
@@ -68,11 +53,11 @@ const DetailsHeroBanner = ({
         <img
           src={backdrop_path || banner || "/placeholder-backdrop.jpg"}
           alt={title}
-          className="w-full h-full object-cover object-center scale-105"
+          className="w-full h-full object-contain sm:object-cover object-center"
           style={{ 
             objectPosition: 'center center',
-            minWidth: '100%',
-            minHeight: '100%'
+            maxWidth: '100%',
+            maxHeight: '100%'
           }}
         />
         {/* Gradient Overlays for readability */}
@@ -120,15 +105,30 @@ const DetailsHeroBanner = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm md:text-base text-gray-300"
+              className="flex flex-wrap items-center gap-2 sm:gap-3"
             >
-              <span className="text-green-400 font-bold">
-                {displayRating} Avaliação
-              </span>
-              {releaseYear && <span>• {releaseYear}</span>}
-              {displayDuration && <span>• {displayDuration}</span>}
-              <span className="px-2 py-0.5 border border-white/30 rounded text-xs">HD</span>
-              {adult && <span className="px-2 py-0.5 border border-white/30 rounded text-xs">18+</span>}
+              {displayRating && (
+                <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-xs sm:text-sm">
+                  ★ {displayRating}
+                </span>
+              )}
+              {releaseYear && (
+                <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">
+                  {releaseYear}
+                </span>
+              )}
+              {displayDuration && (
+                <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">
+                  {displayDuration}
+                </span>
+              )}
+              {displayGenres && (
+                <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">
+                  {typeof displayGenres === 'string' ? displayGenres.split(',')[0] : displayGenres}
+                </span>
+              )}
+              <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">HD</span>
+              {adult && <span className="bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs sm:text-sm">18+</span>}
             </motion.div>
 
             {/* Description */}
@@ -153,54 +153,6 @@ const DetailsHeroBanner = ({
               </motion.div>
             )}
 
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="flex flex-wrap items-center gap-2 sm:gap-4 pt-2 sm:pt-4"
-            >
-              {/* Play Button */}
-              <button
-                onClick={onPlay}
-                disabled={!videoUrl}
-                className={`flex items-center gap-2 px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded font-bold text-sm sm:text-base md:text-lg transition-all ${
-                  videoUrl
-                    ? "bg-white text-black hover:bg-gray-200"
-                    : "bg-gray-700 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                <Play size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" fill="currentColor" />
-                {videoUrl ? "Assistir" : "Indisponível"}
-              </button>
-
-              {/* Trailer Button */}
-              {trailerUrl && (
-                <button
-                  onClick={onTrailer}
-                  className="flex items-center gap-2 px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded font-bold text-sm sm:text-base md:text-lg bg-gray-600/80 hover:bg-gray-500/80 text-white transition-all"
-                >
-                  <Play size={20} className="sm:w-6 sm:h-6 md:w-7 md:h-7" />
-                  Trailer
-                </button>
-              )}
-
-              {/* Favorite Button */}
-              <button
-                onClick={onFavorite}
-                className="p-2 sm:p-3 md:p-4 rounded-full border-2 border-white/50 text-white hover:border-white hover:bg-white/10 transition-all"
-              >
-                <Plus size={20} className={`sm:w-6 sm:h-6 transition-transform ${isFavorite ? "rotate-45" : ""}`} />
-              </button>
-
-              {/* Like Button */}
-              <button
-                onClick={onLike}
-                className="p-2 sm:p-3 md:p-4 rounded-full border-2 border-white/50 text-white hover:border-white hover:bg-white/10 transition-all"
-              >
-                <ThumbsUp size={20} className="sm:w-6 sm:h-6" />
-              </button>
-            </motion.div>
           </div>
         </div>
       </div>

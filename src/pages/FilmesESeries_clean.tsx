@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import PremiumNavbar from '@/components/PremiumNavbar';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
 
 const FilmesESeries = () => {
@@ -19,7 +18,6 @@ const FilmesESeries = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      <PremiumNavbar onSearch={handleSearch} />
       <PremiumHeroBanner
         contentType="movies"
         onPlay={handleHeroPlay}

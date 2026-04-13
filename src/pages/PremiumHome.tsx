@@ -446,9 +446,6 @@ const PremiumHome: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black pt-[94px]">
-      {/* Navbar */}
-      <PremiumNavbar onSearch={handleSearch} />
-
       {/* Continue Watching - First Section */}
       {!isLoadingContinue && continueWatchingItems.length > 0 && (
         <div className="relative z-30 mt-[70px] mb-4">
@@ -645,21 +642,6 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        {/* Travesseiro e Edredon - Inteligente: 5 capas de conteúdos relaxantes/calmos */}
-        <ContentCarousel
-          title="Travesseiro e Edredon 🌙"
-          items={!isLoadingTravesseiro ? filterUniqueItems((travesseiroContent || []).map(item => ({
-            id: item.id,
-            title: item.title,
-            poster: item.poster,
-            type: item.type,
-            year: item.year,
-            rating: item.rating,
-            isNew: true
-          })), 5) : []}
-          onCardClick={handleCardClick}
-        />
-
         {/* CineRiso - 5 capas de comédia: 4 filmes e 1 série */}
         <ContentCarousel
           title="CineRiso 😂"
@@ -759,6 +741,21 @@ const PremiumHome: React.FC = () => {
           items={!isLoadingPrepareParaMedo ? filterUniqueItems((prepareParaMedoContent || []).map(item => ({
             id: item.id,
             tmdbId: item.tmdbId || item.id,
+            title: item.title,
+            poster: item.poster,
+            type: item.type,
+            year: item.year,
+            rating: item.rating,
+            isNew: true
+          })), 5) : []}
+          onCardClick={handleCardClick}
+        />
+
+        {/* Travesseiro e Edredon - Inteligente: 5 capas de conteúdos relaxantes/calmos - ÚLTIMA SEÇÃO */}
+        <ContentCarousel
+          title="Travesseiro e Edredon 🌙"
+          items={!isLoadingTravesseiro ? filterUniqueItems((travesseiroContent || []).map(item => ({
+            id: item.id,
             title: item.title,
             poster: item.poster,
             type: item.type,

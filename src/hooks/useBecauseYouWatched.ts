@@ -57,7 +57,7 @@ export function useBecauseYouWatched() {
           progress,
           updated_at,
           cinema:content_id (id, titulo, poster, banner, genero, rating, ano, descricao),
-          series:content_id (id_n, titulo, poster, banner, genero, rating, ano, descricao)
+          series:content_id (id_n, titulo, banner, genero, rating, ano, descricao)
         `)
         .eq('user_id', user.id)
         .gte('updated_at', thirtyDaysAgo.toISOString())
@@ -138,7 +138,7 @@ export function useBecauseYouWatched() {
 
       const { data: similarItems, error } = await supabase
         .from(table)
-        .select(`${idColumn}, titulo, poster, banner, genero, rating, ano, descricao`)
+        .select(contentType === 'movie' ? `${idColumn}, titulo, poster, banner, genero, rating, ano, descricao` : `${idColumn}, titulo, banner, genero, rating, ano, descricao`)
         .not(idColumn, 'in', `(${[sourceItem.content_id, ...watchedIds].join(',')})`);
 
       if (error || !similarItems) return [];
@@ -169,7 +169,7 @@ export function useBecauseYouWatched() {
           recommendations.push({
             id: item[idColumn]?.toString() || '',
             title: item.titulo,
-            poster: item.poster,
+            poster: contentType === 'movie' ? item.poster : item.banner,
             backdrop: item.banner,
             rating: parseFloat(item.rating) || 0,
             year: item.ano,

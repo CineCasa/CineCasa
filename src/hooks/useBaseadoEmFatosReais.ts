@@ -43,9 +43,9 @@ export const useBaseadoEmFatosReais = (): UseBaseadoEmFatosReaisReturn => {
       // Buscar séries documentárias
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%documentario%,genero.ilike.%documentário%,genero.ilike.%documentary%,category.ilike.%documentario%,category.ilike.%documentário%,category.ilike.%documentary%')
-        .not('poster', 'is', null)
+        .select('id_n, tmdb_id, titulo, banner, ano, genero')
+        .ilike('genero', '%documentario%')
+        .not('banner', 'is', null)
         .limit(50);
 
       if (seriesError) {
@@ -71,10 +71,10 @@ export const useBaseadoEmFatosReais = (): UseBaseadoEmFatosReaisReturn => {
         id: item.id_n?.toString() || '',
         tmdbId: item.tmdb_id,
         title: item.titulo,
-        poster: item.poster,
+        poster: item.banner,
         type: 'series' as const,
-        year: item.year || 'N/A',
-        rating: item.rating || 'N/A',
+        year: item.ano?.toString() || 'N/A',
+        rating: 'N/A',
       }));
 
       // Remover duplicados de filmes

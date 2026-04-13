@@ -45,16 +45,7 @@ interface User {
 
 type AdminSection = 'dashboard' | 'movies' | 'series' | 'users' | 'analytics' | 'settings' | 'missing';
 
-// Interfaces para o menu "Está Faltando"
-interface MissingMovie {
-  id: string;
-  titulo: string;
-  poster: string;
-  colecao: string;
-  ordem: number;
-  totalNaColecao: number;
-}
-
+// Interface para o menu "Está Faltando"
 interface MissingSeason {
   id: string;
   serieId: string;
@@ -106,8 +97,7 @@ export default function Admin() {
   const [seriesForm, setSeriesForm] = useState({ titulo: '', descricao: '', ano: new Date().getFullYear(), genero: '', rating: '0', poster: '', banner: '', trailer_url: '', categoria: '', temporadas: 1 });
   const [userForm, setUserForm] = useState({ email: '', password: '', name: '', role: 'user' as const });
 
-  // Missing items states
-  const [missingMovies, setMissingMovies] = useState<MissingMovie[]>([]);
+  // Missing items states - coleção desabilitada
   const [missingSeasons, setMissingSeasons] = useState<MissingSeason[]>([]);
 
   useEffect(() => { fetchAllData(); }, []);
@@ -119,55 +109,12 @@ export default function Admin() {
   };
 
   const fetchMissingItems = async () => {
-    // Fetch all movies to detect collection gaps
-    const { data: allMovies } = await supabase.from('cinema').select('*');
-    if (allMovies) {
-      detectMissingCollectionMovies(allMovies);
-    }
-
+    // Coleção completamente desabilitada - nenhum filme aparece como coleção
     // Fetch all series to detect missing seasons
     const { data: allSeries } = await supabase.from('series').select('*');
     if (allSeries) {
       detectMissingSeasons(allSeries);
     }
-  };
-
-  const detectMissingCollectionMovies = (movies: any[]) => {
-    // Group movies by collection
-    const collections: { [key: string]: any[] } = {};
-    movies.forEach(movie => {
-      if (movie.colecao) {
-        if (!collections[movie.colecao]) {
-          collections[movie.colecao] = [];
-        }
-        collections[movie.colecao].push(movie);
-      }
-    });
-
-    const missing: MissingMovie[] = [];
-    // For each collection, find gaps
-    Object.entries(collections).forEach(([colecaoName, colecaoMovies]) => {
-      const sorted = colecaoMovies.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-      const maxOrdem = Math.max(...sorted.map(m => m.ordem || 0));
-      const totalNaColecao = sorted[0]?.total_na_colecao || maxOrdem;
-
-      // Find missing ordens
-      const existingOrdens = new Set(sorted.map(m => m.ordem || 0));
-      for (let i = 1; i <= totalNaColecao; i++) {
-        if (!existingOrdens.has(i)) {
-          missing.push({
-            id: `${colecaoName}-${i}`,
-            titulo: `${colecaoName} - Parte ${i}`,
-            poster: sorted[0]?.poster || '',
-            colecao: colecaoName,
-            ordem: i,
-            totalNaColecao: totalNaColecao
-          });
-        }
-      }
-    });
-
-    setMissingMovies(missing);
   };
 
   const detectMissingSeasons = (seriesList: any[]) => {
@@ -192,15 +139,6 @@ export default function Admin() {
     });
 
     setMissingSeasons(missing);
-  };
-
-  const handleMarkMovieAsAdded = async (movie: MissingMovie) => {
-    // Remove from missing list
-    setMissingMovies(prev => prev.filter(m => m.id !== movie.id));
-    toast({
-      title: 'Filme marcado como adicionado',
-      description: `${movie.titulo} foi removido da lista de pendentes.`,
-    });
   };
 
   const handleMarkSeasonAsAdded = async (season: MissingSeason) => {
@@ -464,9 +402,7 @@ export default function Admin() {
           {activeSection === 'analytics' && <AnalyticsView />}
           {activeSection === 'missing' && (
             <EstaFaltandoView 
-              missingMovies={missingMovies}
               missingSeasons={missingSeasons}
-              onMarkMovieAdded={handleMarkMovieAsAdded}
               onMarkSeasonAdded={handleMarkSeasonAsAdded}
             />
           )}
@@ -983,62 +919,14 @@ function AnalyticsView() {
 
 // Está Faltando View
 function EstaFaltandoView({ 
-  missingMovies, 
   missingSeasons, 
-  onMarkMovieAdded, 
   onMarkSeasonAdded 
 }: { 
-  missingMovies: MissingMovie[];
   missingSeasons: MissingSeason[];
-  onMarkMovieAdded: (movie: MissingMovie) => void;
   onMarkSeasonAdded: (season: MissingSeason) => void;
 }) {
   return (
     <div className="space-y-8">
-      {/* Missing Movies Section */}
-      <div>
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Film className="w-5 h-5 text-red-500" />
-          Filmes de Coleções Incompletas ({missingMovies.length})
-        </h2>
-        {missingMovies.length === 0 ? (
-          <p className="text-gray-500">Nenhum filme faltando em coleções.</p>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {missingMovies.map((movie) => (
-              <div key={movie.id} className="relative group">
-                <div className="aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
-                  {movie.poster ? (
-                    <img 
-                      src={movie.poster} 
-                      alt={movie.titulo}
-                      className="w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-opacity"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-700">
-                      <Film className="w-8 h-8 text-gray-500" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-xs text-red-400 font-medium">{movie.colecao}</p>
-                    <p className="text-sm font-bold truncate">{movie.titulo}</p>
-                    <p className="text-xs text-gray-400">{movie.ordem} de {movie.totalNaColecao}</p>
-                  </div>
-                  <button
-                    onClick={() => onMarkMovieAdded(movie)}
-                    className="absolute top-2 right-2 p-2 bg-green-600/80 hover:bg-green-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Marcar como adicionado"
-                  >
-                    <Check className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Missing Seasons Section */}
       <div>
         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">

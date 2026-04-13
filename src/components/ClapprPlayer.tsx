@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Player } from '@clappr/core';
-import HlsPlayback from '@clappr/hlsjs-playback';
 import './ClapprPlayer.css';
 
 interface ClapprPlayerProps {
@@ -48,60 +47,41 @@ const ClapprPlayer: React.FC<ClapprPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(muted);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const [currentQuality, setCurrentQuality] = useState('auto');
-  const [qualities, setQualities] = useState<any[]>([]);
   const [showSubtitles, setShowSubtitles] = useState(true);
-  const [currentAudio, setCurrentAudio] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!playerRef.current) return;
 
-    // Configurar plugins
-    const plugins = [HlsPlayback];
-    if (ClapprPlugins.GoogleAnalyticsPlugin) {
-      plugins.push(ClapprPlugins.GoogleAnalyticsPlugin);
-    }
-
     // Criar instância do player
     const player = new Player({
       source,
-      plugins,
-      plugins: [HlsPlayback],
       parentId: `#${playerRef.current.id}`,
-      width: '100%',
-      height: '100%',
+      width: '100%' as unknown as number,
+      height: '100%' as unknown as number,
       autoPlay,
-      muted,
-      poster,
-      controls: controls,
-      chromeless: false,
-      playbackRateConfig: {
-        defaultValue: 1,
-        options: [0.5, 0.75, 1, 1.25, 1.5, 2],
-      },
-    });
+    } as any);
 
     playerInstanceRef.current = player;
 
-    player.on('playing', () => setIsPlaying(true));
-    player.on('pause', () => setIsPlaying(false));
-    player.on('timeupdate', (e: Event) => {
-      setCurrentTime((e as any).current);
-    });
-    player.on('loadedmetadata', (e: Event) => {
-      setDuration((e as any).target?.duration || 0);
-    });
-    player.on('volumechange', (e: Event) => {
-      setVolume((e as any).volume * 100);
-      setIsMuted((e as any).muted);
-    });
-    player.on('fullscreen', () => setIsFullscreen(true));
-    player.on('exitfullscreen', () => setIsFullscreen(false));
-    player.on('error', (e: Event) => {
+    player.on('playing', (() => setIsPlaying(true)) as any);
+    player.on('pause', (() => setIsPlaying(false)) as any);
+    player.on('timeupdate', ((e: any) => {
+      setCurrentTime(e.current || 0);
+    }) as any);
+    player.on('loadedmetadata', ((e: any) => {
+      setDuration(e.target?.duration || 0);
+    }) as any);
+    player.on('volumechange', ((e: any) => {
+      setVolume((e.volume || 0) * 100);
+      setIsMuted(e.muted || false);
+    }) as any);
+    player.on('fullscreen', (() => setIsFullscreen(true)) as any);
+    player.on('exitfullscreen', (() => setIsFullscreen(false)) as any);
+    player.on('error', ((e: any) => {
       console.error('Playback error:', e);
-    });
+    }) as any);
 
     // Cleanup
     return () => {

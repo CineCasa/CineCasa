@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Maximize2, Settings, Subtitles, Languages, X, ChevronLeft, SkipBack, SkipForward, Square, PictureInPicture2, Gauge } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NetflixPlayerProps {
   url: string;
@@ -36,6 +37,7 @@ const NetflixPlayer = ({
   episodeNumber
 }: NetflixPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { user, profile } = useAuth();
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -67,6 +69,32 @@ const NetflixPlayer = ({
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
+  // Save progress to watch_history
+  const saveWatchHistory = async (currentTime: number, videoDuration: number) => {
+    if (!user || !profile || !contentId) return;
+    
+    try {
+      const progress = videoDuration > 0 ? (currentTime / videoDuration) * 100 : 0;
+      
+      const { error } = await supabase.from('watch_history').upsert({
+        profile_id: profile.id,
+        content_id: contentId,
+        content_type: contentType,
+        titulo: title,
+        poster: historyItem?.poster || '',
+        progress: progress,
+        duration: videoDuration,
+        last_watched: new Date().toISOString()
+      }, { onConflict: 'profile_id,content_id' });
+      
+      if (error) {
+        console.error('[NetflixPlayer] Error saving watch history:', error);
+      }
+    } catch (err) {
+      console.error('[NetflixPlayer] Failed to save watch history:', err);
+    }
+  };
+
   // Get user on mount
   useEffect(() => {
     const getUser = async () => {
@@ -75,6 +103,23 @@ const NetflixPlayer = ({
     };
     getUser();
   }, []);
+
+  // Save watch history periodically
+  useEffect(() => {
+    if (!user || !profile || !contentId) return;
+    
+    progressSaveInterval.current = setInterval(() => {
+      if (videoRef.current && duration > 0) {
+        saveWatchHistory(videoRef.current.currentTime, duration);
+      }
+    }, 30000); // Save every 30 seconds
+
+    return () => {
+      if (progressSaveInterval.current) {
+        clearInterval(progressSaveInterval.current);
+      }
+    };
+  }, [user, profile, contentId, duration]);
 
   useEffect(() => {
     // Force landscape orientation on mobile when player opens
@@ -449,7 +494,9 @@ const NetflixPlayer = ({
     video.addEventListener('seeked', handleSeeked);
     
     return () => {
-      video.removeEventListener('seeked', handleSeeked);
+      if (video) {
+        video.removeEventListener('seeked', handleSeeked);
+      }
     };
   }, [showThumbnailPreview, thumbnailPreviewTime]);
 

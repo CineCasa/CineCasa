@@ -1,10 +1,9 @@
 import React from 'react';
-import { cva } from '@/lib/cva';
 import { cn } from '@/lib/utils';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   variant?: 'default' | 'outlined' | 'filled';
-  size?: 'sm' | 'md' | 'lg';
+  inputSize?: 'sm' | 'md' | 'lg';
   error?: boolean;
   label?: string;
   helperText?: string;
@@ -13,29 +12,24 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   fullWidth?: boolean;
 }
 
-const inputVariants = cva(
-  'bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed',
-  {
-    variant: {
-      default: 'border-gray-700 focus:border-primary focus:ring-primary',
-      outlined: 'border-2 border-gray-600 focus:border-primary focus:ring-primary',
-      filled: 'border-transparent bg-gray-800 focus:border-primary focus:ring-primary',
-    },
-    size: {
-      sm: 'px-3 py-1.5 text-sm h-9',
-      md: 'px-4 py-2 text-base h-10',
-      lg: 'px-5 py-3 text-lg h-12',
-    },
-    error: {
-      true: 'border-red-500 focus:border-red-500 focus:ring-red-500',
-    },
-  },
-);
+const baseClasses = 'bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
-export function Input({
+const variantClasses = {
+  default: 'border-gray-700 focus:border-primary focus:ring-primary',
+  outlined: 'border-2 border-gray-600 focus:border-primary focus:ring-primary',
+  filled: 'border-transparent bg-gray-800 focus:border-primary focus:ring-primary',
+};
+
+const sizeClasses = {
+  sm: 'px-3 py-1.5 text-sm h-9',
+  md: 'px-4 py-2 text-base h-10',
+  lg: 'px-5 py-3 text-lg h-12',
+};
+
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input({
   className,
   variant = 'default',
-  size = 'md',
+  inputSize = 'md',
   error = false,
   label,
   helperText,
@@ -43,14 +37,14 @@ export function Input({
   rightIcon,
   fullWidth = false,
   ...props
-}: InputProps) {
+}, ref) {
   const inputId = React.useId();
   const helperId = helperText ? `${inputId}-helper` : undefined;
 
   return (
     <div className={cn('space-y-2', fullWidth && 'w-full')}>
       {label && (
-        <label 
+        <label
           htmlFor={inputId}
           className={cn(
             'block text-sm font-medium',
@@ -60,18 +54,22 @@ export function Input({
           {label}
         </label>
       )}
-      
+
       <div className="relative">
         {leftIcon && (
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
             {leftIcon}
           </div>
         )}
-        
+
         <input
+          ref={ref}
           id={inputId}
           className={cn(
-            inputVariants({ variant, size, error }),
+            baseClasses,
+            variantClasses[variant],
+            sizeClasses[inputSize],
+            error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
             leftIcon && 'pl-10',
             rightIcon && 'pr-10',
             fullWidth && 'w-full',
@@ -81,16 +79,16 @@ export function Input({
           aria-invalid={error}
           {...props}
         />
-        
+
         {rightIcon && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
             {rightIcon}
           </div>
         )}
       </div>
-      
+
       {helperText && (
-        <p 
+        <p
           id={helperId}
           className={cn(
             'text-xs',
@@ -102,12 +100,12 @@ export function Input({
       )}
     </div>
   );
-}
+});
 
 // Select component
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   variant?: 'default' | 'outlined' | 'filled';
-  size?: 'sm' | 'md' | 'lg';
+  selectSize?: 'sm' | 'md' | 'lg';
   error?: boolean;
   label?: string;
   helperText?: string;
@@ -118,7 +116,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({
   className,
   variant = 'default',
-  size = 'md',
+  selectSize = 'md',
   error = false,
   label,
   helperText,
@@ -146,7 +144,10 @@ export function Select({
       <select
         id={selectId}
         className={cn(
-          inputVariants({ variant, size, error }),
+          baseClasses,
+          variantClasses[variant],
+          sizeClasses[selectSize],
+          error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
           'cursor-pointer',
           fullWidth && 'w-full',
           className
@@ -224,7 +225,10 @@ export function Textarea({
         id={textareaId}
         rows={rows}
         className={cn(
-          inputVariants({ variant, size, error }),
+          baseClasses,
+          variantClasses[variant],
+          sizeClasses[size as 'sm' | 'md' | 'lg'],
+          error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
           'resize-vertical',
           fullWidth && 'w-full',
           className

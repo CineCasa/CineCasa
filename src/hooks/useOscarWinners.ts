@@ -88,12 +88,12 @@ export const useOscarWinners = () => {
           .gte('rating', '8.5')
           .or(`(${oscarKeywords})`)
           .limit(30),
-        // Busca em séries também - SEM limite
+        // Busca em séries também - usar apenas genero (category nao existe)
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, genero, description')
-          .gte('ano', '2000')
-          .or(`(${oscarKeywords})`)
+          .select('id_n, tmdb_id, titulo, banner, ano, genero, descricao')
+          .ilike('genero', '%documentario%')
+          .not('banner', 'is', null)
           .limit(30)
       ]);
 
@@ -143,7 +143,6 @@ export const useOscarWinners = () => {
         const { data: highRatedMovies, error: highRatedError } = await supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating')
-          .gte('year', '2000')
           .gte('rating', '8.0')
           .not('tmdb_id', 'in', `(${uniqueWinners.map(w => w.tmdbId).join(',')})`)
           .limit(10);
@@ -152,13 +151,13 @@ export const useOscarWinners = () => {
           const additionalMovies: OscarWinner[] = highRatedMovies
             .map((item: any) => ({
               id: item.id?.toString(),
-              tmdbId: item.tmdb_id,
+              tmdbId: item.tmdb_id?.toString() || '',
               title: item.titulo,
               poster: item.poster,
               type: 'movie' as const,
-              year: item.year,
-              rating: item.rating,
-              oscarYear: item.year,
+              year: item.year?.toString() || 'N/A',
+              rating: item.rating || 'N/A',
+              oscarYear: item.year?.toString(),
               award: 'Acclaimed Film',
             }))
             .filter(item => item.id && item.tmdbId && item.poster);

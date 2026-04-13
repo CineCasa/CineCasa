@@ -240,19 +240,18 @@ const MovieDetails: React.FC = () => {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={handlePlayMovie}
-                  className="flex items-center gap-1.5 bg-white text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-sm"
+                  className="flex items-center gap-1.5 bg-black text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-900 transition-colors text-sm"
                 >
-                  <Play size={16} />
+                  <Play size={16} fill="white" />
                   Assistir
                 </button>
                 
                 <button
                   onClick={handlePlayTrailer}
                   title="Trailer"
-                  className="flex items-center justify-center bg-white/20 backdrop-blur-sm w-10 h-10 sm:w-12 sm:h-12 rounded-lg font-semibold hover:bg-white/30 transition-colors"
+                  className="flex items-center justify-center bg-[#FF0000] hover:bg-[#CC0000] text-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg font-semibold transition-colors shadow-lg"
                 >
-                  <Play size={20} />
-                  <Play size={18} />
+                  <Play size={20} fill="white" />
                 </button>
                 
                 <button

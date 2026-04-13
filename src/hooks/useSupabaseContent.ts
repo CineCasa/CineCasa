@@ -106,21 +106,21 @@ export const useSupabaseContent = () => {
       };
 
       const mapSeries = (item: any): ContentItem => {
-        const genres = splitGenres(item.genero || item.category);
-        const category = item.category || item.genero || "Drama"; // Categoria principal
+        const genres = splitGenres(item.genero);
+        const category = item.genero || "Drama"; // Usar genero como categoria
         
         return {
           id: `series-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: item.poster ? tmdbImageUrl(item.poster, "w500") : "",
-          backdrop: item.poster ? tmdbImageUrl(item.poster, "original") : "",
-          year: parseInt(item.year || "0"),
-          rating: item.rating || "N/A",
+          image: item.banner ? tmdbImageUrl(item.banner, "w500") : "",
+          backdrop: item.banner ? tmdbImageUrl(item.banner, "original") : "",
+          year: parseInt(item.ano || "0"),
+          rating: "N/A",
           duration: "",
           genre: genres.length > 0 ? genres : ["Série"],
-          category: category, // Usar categoria do Supabase
-          description: item.description || "",
+          category: category,
+          description: item.descricao || "",
           type: "series",
           trailer: item.trailer,
           identificadorArchive: item.identificador_archive
@@ -135,8 +135,8 @@ export const useSupabaseContent = () => {
           id: `kids-series-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: item.poster ? tmdbImageUrl(item.poster, "w500") : "",
-          backdrop: item.poster ? tmdbImageUrl(item.poster, "original") : "",
+          image: item.banner ? tmdbImageUrl(item.banner, "w500") : "",
+          backdrop: item.banner ? tmdbImageUrl(item.banner, "original") : "",
           year: parseInt(item.year || "0"),
           rating: item.rating || "L",
           duration: "",
@@ -178,7 +178,8 @@ export const useSupabaseContent = () => {
               backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : base.backdrop,
               year: parseInt(data.release_date?.split("-")[0] || item.year || "0"),
               rating: data.vote_average?.toFixed(1) || item.rating || "N/A",
-              genre: data.genres?.map((g: any) => g.name) || base.genre
+              genre: data.genres?.map((g: any) => g.name) || base.genre,
+              country: data.production_countries?.[0]?.name || data.origin_country?.[0] || ""
             };
           }));
           cinemaWithData.push(...chunkResults);
@@ -194,11 +195,12 @@ export const useSupabaseContent = () => {
             if (!data) return mapSeries(s);
             return {
               ...mapSeries(s),
-              image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : tmdbImageUrl(s.poster, "w500"),
-              backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : tmdbImageUrl(s.poster, "original"),
+              image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : tmdbImageUrl(s.banner, "w500"),
+              backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : tmdbImageUrl(s.banner, "original"),
               year: parseInt(data.first_air_date?.split("-")[0] || "0"),
               rating: data.vote_average?.toFixed(1) || "N/A",
-              genre: data.genres?.map((g: any) => g.name) || splitGenres(s.genero || s.category)
+              genre: data.genres?.map((g: any) => g.name) || splitGenres(s.genero || s.category),
+              country: data.origin_country?.[0] || data.production_countries?.[0]?.name || ""
             };
           }));
           seriesWithData.push(...chunkResults);

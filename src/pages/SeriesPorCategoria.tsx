@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import PremiumNavbar from '@/components/PremiumNavbar';
-import PremiumHeroBanner from '@/components/PremiumHeroBanner';
+import PremiumHeroBanner from "@/components/PremiumHeroBanner";
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import getSupabaseClient from '@/lib/supabase';
@@ -221,9 +220,6 @@ const SeriesPorCategoria: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* Navbar */}
-      <PremiumNavbar />
-
       {/* Hero Banner */}
       <PremiumHeroBanner
         contentType="series"

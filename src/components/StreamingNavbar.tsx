@@ -31,7 +31,6 @@ const StreamingNavbar: React.FC<StreamingNavbarProps> = ({ onSearch, user }) => 
     { icon: Home, label: 'Início', active: true },
     { icon: PlaySquare, label: 'Séries', active: false },
     { icon: Film, label: 'Filmes', active: false },
-    { icon: Monitor, label: 'Ao Vivo', active: false },
   ];
 
   return (

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import useImageCleanup from '../hooks/useImageCleanup';
-import PremiumNavbar from '../components/PremiumNavbar';
 import { 
   Database, 
   Trash2, 
@@ -12,7 +11,8 @@ import {
   Clock, 
   Image as ImageIcon,
   RefreshCw,
-  Play
+  Play,
+  Info
 } from 'lucide-react';
 
 const ImageCleanup: React.FC = () => {
@@ -49,10 +49,7 @@ const ImageCleanup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <PremiumNavbar />
-      
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-black text-white pt-[94px] px-4 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -332,7 +329,6 @@ const ImageCleanup: React.FC = () => {
             Voltar para Início
           </button>
         </div>
-      </div>
     </div>
   );
 };

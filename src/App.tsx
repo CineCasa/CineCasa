@@ -34,6 +34,7 @@ import ImageCleanup from "./pages/ImageCleanup";
 import NotificationSettings from "./pages/NotificationSettings";
 import AdvancedSearch from "./pages/AdvancedSearch";
 import Profiles from "./pages/Profiles";
+import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationProvider from "./components/NotificationProvider";
 import { NotificationContainer } from "./components/MovieNotifications";
@@ -85,6 +86,7 @@ const AppRoutes = () => {
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       <Route path="/search" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
       <Route path="/profiles" element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/" element={<ProtectedRoute><PremiumHome /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

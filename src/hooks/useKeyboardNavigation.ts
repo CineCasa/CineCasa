@@ -303,7 +303,7 @@ export function useKeyboardNavigation({
 
     container.addEventListener('keydown', handleKeyDown);
     container.setAttribute('tabindex', '0');
-    container.setAttribute('role', 'grid' if orientation === 'grid' else 'list');
+    container.setAttribute('role', orientation === 'grid' ? 'grid' : 'list');
 
     return () => {
       container.removeEventListener('keydown', handleKeyDown);

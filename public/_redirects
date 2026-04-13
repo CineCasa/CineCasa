@@ -1,0 +1,15 @@
+# Cloudflare Pages Redirects Configuration
+# Static assets - serve directly
+/assets/* /assets/:splat 200
+/icons/* /icons/:splat 200
+/js/* /js/:splat 200
+/*.js /:splat.js 200
+/*.css /:splat.css 200
+/*.png /:splat.png 200
+/*.ico /:splat.ico 200
+/*.json /:splat.json 200
+/*.svg /:splat.svg 200
+/*.xml /:splat.xml 200
+
+# SPA fallback - all other routes to index.html
+/* /index.html 200

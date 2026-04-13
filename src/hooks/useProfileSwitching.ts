@@ -231,13 +231,26 @@ export function useProfileSwitching({
     if (!userId || isSwitching) return;
 
     setIsSwitching(true);
+    
+    // Safety timeout - garante que isSwitching seja resetado
+    const safetyTimeout = setTimeout(() => {
+      console.warn('[useProfileSwitching] Safety timeout ativado - resetando isSwitching');
+      setIsSwitching(false);
+    }, 10000); // 10 segundos máximo
 
     try {
+      console.log(`[useProfileSwitching] Iniciando troca para perfil: ${profileId}`);
+      
       // Desativar todos os perfis
-      await supabase
+      const { error: deactivateError } = await supabase
         .from('user_profiles')
         .update({ is_active: false })
         .eq('user_id', userId);
+
+      if (deactivateError) {
+        console.error('❌ Erro ao desativar perfis:', deactivateError);
+        throw deactivateError;
+      }
 
       // Ativar o perfil selecionado
       const { data, error } = await supabase
@@ -252,8 +265,12 @@ export function useProfileSwitching({
         .single();
 
       if (error) {
-        console.error('❌ Erro ao alternar perfil:', error);
+        console.error('❌ Erro ao ativar perfil:', error);
         throw error;
+      }
+
+      if (!data) {
+        throw new Error('Perfil não encontrado após atualização');
       }
 
       // Atualizar cache
@@ -265,15 +282,16 @@ export function useProfileSwitching({
       queryClient.invalidateQueries({ queryKey: ['recommendations'] });
       queryClient.invalidateQueries({ queryKey: ['watch-progress'] });
 
-      console.log(`🔄 Perfil alternado para: ${data?.name}`);
+      console.log(`✅ Perfil alternado com sucesso para: ${data?.name}`);
 
       // Aguardar um pouco antes de finalizar
-      setTimeout(() => {
-        setIsSwitching(false);
-      }, switchDelay);
+      await new Promise(resolve => setTimeout(resolve, switchDelay));
 
     } catch (error) {
       console.error('❌ Erro ao alternar perfil:', error);
+      // Notificar usuário do erro (pode ser implementado via toast)
+    } finally {
+      clearTimeout(safetyTimeout);
       setIsSwitching(false);
     }
   }, [userId, isSwitching, queryClient, switchDelay]);

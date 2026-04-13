@@ -19,8 +19,13 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*", // Permite conexões de qualquer origem (ajustar para produção)
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+    credentials: false
+  },
+  transports: ['websocket', 'polling'], // Aceita ambos os protocolos
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  allowEIO3: true // Compatibilidade com clientes antigos
 });
 
 // Porta do servidor
@@ -191,7 +196,13 @@ app.get('/api/room/:roomId', (req, res) => {
 // ============================================
 
 io.on('connection', (socket) => {
-  console.log(`[WatchParty] Novo usuário conectado: ${socket.id}`);
+  console.log(`[WatchParty] ✅ Novo usuário conectado: ${socket.id}`);
+  console.log(`[WatchParty] Transporte usado: ${socket.conn.transport.name}`);
+  
+  // Log de debug para transporte
+  socket.conn.on('upgrade', (transport) => {
+    console.log(`[WatchParty] Transporte atualizado para: ${transport.name}`);
+  });
   
   let currentRoom = null;
   

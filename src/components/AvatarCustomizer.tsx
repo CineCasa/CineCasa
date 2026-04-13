@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Palette, RotateCcw, Save, Download, Upload, Sparkles, Crown, Star, Lock, Unlock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui';
 import { Badge } from '@/components/ui';
@@ -72,11 +72,11 @@ export function AvatarCustomizer({
     }
   };
 
-  const renderCustomizationOption = (
+  const renderCustomizationOption = <T extends string>(
     category: string,
-    options: string[],
-    currentValue: string,
-    onChange: (value: string) => void
+    options: readonly T[],
+    currentValue: T,
+    onChange: (value: T) => void
   ) => (
     <div className="space-y-2">
       <div className="text-sm font-medium text-gray-300 capitalize">{category}</div>
@@ -301,7 +301,7 @@ export function AvatarCustomizer({
           <div className="space-y-6">
             {renderCustomizationOption(
               'Tipo de corpo',
-              ['slim', 'average', 'athletic', 'plus'],
+              ['slim', 'average', 'athletic', 'plus'] as const,
               customization.bodyType,
               (value) => updateCustomization({ bodyType: value })
             )}
@@ -314,14 +314,14 @@ export function AvatarCustomizer({
             
             {renderCustomizationOption(
               'Formato do rosto',
-              ['round', 'square', 'heart', 'oval', 'diamond'],
+              ['round', 'square', 'heart', 'oval', 'diamond'] as const,
               customization.faceShape,
               (value) => updateCustomization({ faceShape: value })
             )}
             
             {renderCustomizationOption(
               'Cabelo',
-              ['short', 'medium', 'long', 'bald', 'ponytail', 'mohawk', 'buzzcut'],
+              ['short', 'medium', 'long', 'bald', 'ponytail', 'mohawk', 'buzzcut'] as const,
               customization.hairStyle,
               (value) => updateCustomization({ hairStyle: value })
             )}
@@ -334,14 +334,14 @@ export function AvatarCustomizer({
             
             {renderCustomizationOption(
               'Barba',
-              ['none', 'beard', 'mustache', 'goatee', 'full'],
+              ['none', 'beard', 'mustache', 'goatee', 'full'] as const,
               customization.facialHair,
               (value) => updateCustomization({ facialHair: value })
             )}
             
             {renderCustomizationOption(
               'Olhos',
-              ['round', 'almond', 'monolid', 'hooded', 'upturned', 'downturned'],
+              ['round', 'almond', 'monolid', 'hooded', 'upturned', 'downturned'] as const,
               customization.eyeShape,
               (value) => updateCustomization({ eyeShape: value })
             )}
@@ -354,7 +354,7 @@ export function AvatarCustomizer({
             
             {renderCustomizationOption(
               'Óculos',
-              ['none', 'regular', 'sunglasses', 'reading', 'monocle'],
+              ['none', 'regular', 'sunglasses', 'reading', 'monocle'] as const,
               customization.glasses,
               (value) => updateCustomization({ glasses: value })
             )}
@@ -397,21 +397,21 @@ export function AvatarCustomizer({
           <div className="space-y-6">
             {renderCustomizationOption(
               'Chapéu',
-              ['none', 'cap', 'beanie', 'headband', 'crown', 'helmet', 'hat'],
+              ['none', 'cap', 'beanie', 'headband', 'crown', 'helmet', 'hat'] as const,
               customization.headwear,
               (value) => updateCustomization({ headwear: value })
             )}
             
             {renderCustomizationOption(
               'Acessório',
-              ['none', 'earrings', 'necklace', 'tie', 'scarf', 'glasses'],
+              ['none', 'earrings', 'necklace', 'tie', 'scarf', 'glasses'] as const,
               customization.accessory,
               (value) => updateCustomization({ accessory: value })
             )}
             
             {renderCustomizationOption(
               'Fundo',
-              ['none', 'gradient', 'pattern', 'solid', 'image'],
+              ['none', 'gradient', 'pattern', 'solid', 'image'] as const,
               customization.background,
               (value) => updateCustomization({ background: value })
             )}
@@ -424,14 +424,14 @@ export function AvatarCustomizer({
             
             {renderCustomizationOption(
               'Expressão',
-              ['happy', 'neutral', 'sad', 'excited', 'cool', 'sleeping', 'wink', 'surprised'],
+              ['happy', 'neutral', 'sad', 'excited', 'cool', 'sleeping', 'wink', 'surprised'] as const,
               customization.expression,
               (value) => updateCustomization({ expression: value })
             )}
             
             {renderCustomizationOption(
               'Animação',
-              ['none', 'bounce', 'wave', 'blink', 'float', 'spin', 'pulse'],
+              ['none', 'bounce', 'wave', 'blink', 'float', 'spin', 'pulse'] as const,
               customization.animation,
               (value) => updateCustomization({ animation: value })
             )}

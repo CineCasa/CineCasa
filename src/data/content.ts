@@ -4,16 +4,22 @@ export interface ContentItem {
   title: string;
   image: string;
   backdrop?: string;
+  poster?: string; // Alias para image (compatibilidade com banco)
+  banner?: string; // Alias para backdrop (compatibilidade com banco)
   year: number;
   rating: string;
   duration: string;
   genre: string[];
+  genero?: string; // Alias para genre (compatibilidade com banco)
   category: string; // Categoria principal do Supabase
+  country?: string; // País de origem
   description: string;
   type: "movie" | "series";
   trailer?: string;
   url?: string;
   identificadorArchive?: string;
+  titulo?: string; // Alias para title (compatibilidade com banco)
+  episodeNumber?: number; // Para episódios de séries
 }
 
 export interface HeroItem {

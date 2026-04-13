@@ -1,4 +1,4 @@
-import { Home, Film, Tv, Heart, Monitor } from "lucide-react";
+import { Home, Film, Tv, Heart, Bell } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 
@@ -7,6 +7,7 @@ const navItems = [
   { label: "Filmes", path: "/filmes", icon: Film },
   { label: "Séries", path: "/series-categorias", icon: Tv },
   { label: "Favoritos", path: "/favorites", icon: Heart },
+  { label: "Notificações", path: "/notifications", icon: Bell },
 ];
 
 const MobileBottomNav = () => {

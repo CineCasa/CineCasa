@@ -136,7 +136,7 @@ export const useContinueWatching = () => {
               contentId: progress.serie_id,
               contentType: 'series',
               title: progress.series.titulo,
-              poster: progress.series.poster,
+              poster: progress.series.banner || progress.series.poster,
               banner: progress.series.banner,
               episodeId: progress.episodio_id,
               episodeTitle: progress.episodio?.titulo,

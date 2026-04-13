@@ -71,7 +71,6 @@ const HomeContentCard: React.FC<HomeContentCardProps> = ({
         
         {/* Botões de ação no hover */}
         <div className={`absolute bottom-0 left-0 right-0 p-4 transition-transform duration-300 ${isHovered ? 'translate-y-0' : 'translate-y-full'}`}>
-          <div className="flex items-center gap-2">
           <div className="flex flex-wrap gap-1 mb-3">
             {content.genre.slice(0, 2).map((g, i) => (
               <span key={i} className="bg-white/20 text-white text-xs px-2 py-1 rounded">
@@ -81,7 +80,7 @@ const HomeContentCard: React.FC<HomeContentCardProps> = ({
           </div>
           
           {/* Botões de ação */}
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <button
               onClick={(e) => {
                 e.stopPropagation();

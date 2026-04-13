@@ -81,9 +81,9 @@ export function AdvancedSearch() {
       if (filters.type === 'all' || filters.type === 'movie') {
         let movieQuery = supabase
           .from('cinema')
-          .select('id, titulo, poster, banner, ano, rating, genero, descricao')
-          .gte('ano', filters.yearFrom)
-          .lte('ano', filters.yearTo);
+          .select('id, titulo, poster, banner, year, rating, genero, descricao')
+          .gte('year', filters.yearFrom)
+          .lte('year', filters.yearTo);
         
         if (query.trim()) {
           movieQuery = movieQuery.ilike('titulo', `%${query}%`);
@@ -105,7 +105,7 @@ export function AdvancedSearch() {
           poster: m.poster,
           backdrop: m.banner,
           type: 'movie' as const,
-          year: m.ano,
+          year: m.year,
           rating: parseFloat(m.rating) || 0,
           genre: m.genero,
           description: m.descricao
@@ -116,7 +116,7 @@ export function AdvancedSearch() {
       if (filters.type === 'all' || filters.type === 'series') {
         let seriesQuery = supabase
           .from('series')
-          .select('id_n, titulo, poster, banner, ano, rating, genero, descricao')
+          .select('id_n, titulo, banner, ano, rating, genero, descricao')
           .gte('ano', filters.yearFrom)
           .lte('ano', filters.yearTo);
         
@@ -137,7 +137,7 @@ export function AdvancedSearch() {
         seriesResults = (series || []).map(s => ({
           id: s.id_n.toString(),
           title: s.titulo,
-          poster: s.poster,
+          poster: s.banner,
           backdrop: s.banner,
           type: 'series' as const,
           year: s.ano,
@@ -195,9 +195,9 @@ export function AdvancedSearch() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000401] text-white pt-14 md:pt-16">
-      {/* Header */}
-      <div className="fixed top-14 md:top-16 left-0 right-0 z-40 bg-[#000401]/95 backdrop-blur-md border-b border-white/10">
+    <div className="min-h-screen bg-[#000401] text-white pt-14 md:pt-[74px]">
+      {/* Header - 10px lower on non-mobile devices */}
+      <div className="fixed top-14 md:top-[74px] left-0 right-0 z-40 bg-[#000401]/95 backdrop-blur-md border-b border-white/10">
         <div className="px-4 md:px-8 py-4">
           <div className="flex items-center gap-4">
             {/* Search Input */}

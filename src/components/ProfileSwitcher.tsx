@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, Plus, Edit, Trash2, Crown, User, Settings } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ChevronDown, Plus, Edit, Trash2, Crown, User, Settings, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
@@ -27,6 +27,8 @@ export function ProfileSwitcher({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
   const [isKidProfile, setIsKidProfile] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   const {
     profiles,
@@ -67,10 +69,54 @@ export function ProfileSwitcher({
     return `${mins}min`;
   };
 
+  // Fecha dropdown ao clicar fora ou pressionar ESC
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node) &&
+      buttonRef.current &&
+      !buttonRef.current.contains(event.target as Node)
+    ) {
+      setIsOpen(false);
+    }
+  }, []);
+
+  const handleEscapeKey = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setIsOpen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, handleClickOutside, handleEscapeKey]);
+
+  // Força fechamento se isSwitching ficar preso por mais de 5 segundos
+  useEffect(() => {
+    if (isSwitching) {
+      const timeout = setTimeout(() => {
+        console.warn('[ProfileSwitcher] Forçando fechamento do loading após timeout');
+        setIsOpen(false);
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isSwitching]);
+
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative', className)} ref={dropdownRef}>
       {/* Profile ativo atual */}
-      <div className="flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors">
+      <div 
+        ref={buttonRef}
+        className="flex items-center gap-3 p-3 bg-gray-900 border border-gray-800 rounded-lg cursor-pointer hover:bg-gray-800 transition-colors"
+        onClick={() => !isSwitching && setIsOpen(!isOpen)}
+      >
         <div className="relative">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
             {activeProfile?.avatar_url ? (
@@ -103,13 +149,24 @@ export function ProfileSwitcher({
           </div>
         </div>
         
-        <ChevronDown 
-          className={cn(
-            'w-4 h-4 text-gray-400 transition-transform',
-            isOpen && 'rotate-180'
+        <button
+          className="p-1 hover:bg-gray-700 rounded transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isSwitching) setIsOpen(!isOpen);
+          }}
+        >
+          {isOpen ? (
+            <X className="w-4 h-4 text-gray-400" />
+          ) : (
+            <ChevronDown 
+              className={cn(
+                'w-4 h-4 text-gray-400 transition-transform',
+                isOpen && 'rotate-180'
+              )}
+            />
           )}
-          onClick={() => setIsOpen(!isOpen)}
-        />
+        </button>
       </div>
 
       {/* Dropdown de perfis */}
@@ -335,10 +392,14 @@ export function ProfileSwitcher({
       )}
 
       {/* Overlay para fechar dropdown */}
-      {isOpen && (
+      {isOpen && !isSwitching && (
         <div
-          className="fixed inset-0 bg-black/50 z-40"
+          className="fixed inset-0 bg-black/50 z-40 cursor-pointer"
           onClick={() => setIsOpen(false)}
+          onKeyDown={(e) => e.key === 'Escape' && setIsOpen(false)}
+          tabIndex={0}
+          role="button"
+          aria-label="Fechar menu"
         />
       )}
 
