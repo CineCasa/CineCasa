@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Maximize2, Settings, Subtitles, Languages, X, ChevronLeft, SkipBack, SkipForward, Square, PictureInPicture2, Gauge } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from '@/components/AuthProvider';
 
 interface NetflixPlayerProps {
   url: string;

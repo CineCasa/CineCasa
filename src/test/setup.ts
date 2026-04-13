@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { beforeAll, afterEach, afterAll } from 'vitest';
+import { beforeAll, afterEach, afterAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { server } from './mocks/server';
 
@@ -16,12 +16,18 @@ afterEach(() => {
 afterAll(() => server.close());
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+const mockIntersectionObserver = class implements IntersectionObserver {
+  readonly root: Element | null = null;
+  readonly rootMargin: string = '0px';
+  readonly thresholds: ReadonlyArray<number> = [0];
+  
   constructor() {}
   disconnect() {}
   observe() {}
   unobserve() {}
+  takeRecords(): IntersectionObserverEntry[] { return []; }
 };
+global.IntersectionObserver = mockIntersectionObserver as unknown as typeof IntersectionObserver;
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {

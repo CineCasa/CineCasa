@@ -1,19 +1,31 @@
 import React from 'react';
 import { useWatchHistory } from '@/hooks/useWatchHistory';
 import { ContinueWatching } from './ContinueWatching';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/components/AuthProvider';
+
+interface WatchHistoryItem {
+  id: string;
+  content_id: string;
+  content_type: 'movie' | 'series';
+  title: string;
+  coverImage?: string;
+  backdropPath?: string;
+  progress: number;
+  episode_number?: number;
+  season_number?: number;
+}
 
 export const ContinueWatchingSection: React.FC = () => {
   const { user } = useAuth();
-  const { history, isLoading, removeFromHistory } = useWatchHistory({
+  const { history, isLoading } = useWatchHistory({
     limit: 3,
     userId: user?.id
   });
 
-  if (!user || isLoading || history.length === 0) return null;
+  if (!user || isLoading || !history || (history as WatchHistoryItem[]).length === 0) return null;
 
   // Mapear para o formato do ContinueWatching
-  const items = history.map(item => ({
+  const items = (history as WatchHistoryItem[]).map(item => ({
     id: item.content_id,
     title: item.title,
     poster: item.coverImage || '',
@@ -27,10 +39,7 @@ export const ContinueWatchingSection: React.FC = () => {
   }));
 
   return (
-    <ContinueWatching 
-      items={items} 
-      onRemove={(id, type) => removeFromHistory(id)}
-    />
+    <ContinueWatching items={items} />
   );
 };
 

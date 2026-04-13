@@ -420,56 +420,6 @@ export type Database = {
           }
         ]
       }
-      favorites: {
-        Row: {
-          id: string
-          user_id: string
-          content_id: number
-          content_type: string
-          titulo: string
-          poster: string | null
-          banner: string | null
-          rating: string | null
-          year: number | null
-          genero: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          content_id: number
-          content_type: string
-          titulo: string
-          poster?: string | null
-          banner?: string | null
-          rating?: string | null
-          year?: number | null
-          genero?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          content_id?: number
-          content_type?: string
-          titulo?: string
-          poster?: string | null
-          banner?: string | null
-          rating?: string | null
-          year?: number | null
-          genero?: string | null
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "favorites_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       watch_history: {
         Row: {
           id: string

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Info, Heart, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from '@/components/AuthProvider';
 import { useRatings } from "@/hooks/useRatings";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
 import { useNavigate } from "react-router-dom";

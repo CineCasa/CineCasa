@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { cn } from '@/lib/utils';
 
 interface AdaptiveLayoutProps {
