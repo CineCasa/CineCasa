@@ -54,7 +54,7 @@ export function AvatarCustomizer({
   } = useAvatarPreview(customization);
 
   const handleSave = () => {
-    saveCustomization.mutate(customization);
+    saveCustomization(customization);
     onSave?.(customization);
   };
 
@@ -309,7 +309,7 @@ export function AvatarCustomizer({
             {renderColorPicker(
               'Tom de pele',
               customization.skinTone,
-              (value) => updateCustomization({ skinTone: value })
+              (value) => updateCustomization({ skinTone: value as 'light' | 'medium' | 'tan' | 'dark' | 'deep' })
             )}
             
             {renderCustomizationOption(
@@ -329,7 +329,7 @@ export function AvatarCustomizer({
             {renderColorPicker(
               'Cor do cabelo',
               customization.hairColor,
-              (value) => updateCustomization({ hairColor: value })
+              (value) => updateCustomization({ hairColor: value as 'black' | 'brown' | 'blonde' | 'red' | 'gray' | 'blue' | 'pink' | 'purple' | 'green' })
             )}
             
             {renderCustomizationOption(
@@ -349,7 +349,7 @@ export function AvatarCustomizer({
             {renderColorPicker(
               'Cor dos olhos',
               customization.eyeColor,
-              (value) => updateCustomization({ eyeColor: value })
+              (value) => updateCustomization({ eyeColor: value as 'brown' | 'gray' | 'blue' | 'green' | 'hazel' | 'amber' | 'violet' })
             )}
             
             {renderCustomizationOption(

@@ -13,7 +13,8 @@ import {
   TrendingDown,
   RefreshCw,
   AlertTriangle,
-  Info
+  Info,
+  X
 } from 'lucide-react';
 
 interface HealthCheck {

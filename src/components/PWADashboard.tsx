@@ -36,10 +36,12 @@ export function PWADashboard() {
     swInfo, 
     applyUpdate, 
     getCacheInfo, 
-    clearAllCaches: clearSWCaches,
+    clearCache,
+    clearAllCaches,
     getOfflineCapabilities,
     totalCacheSize,
-    cacheCount
+    cacheCount,
+    cacheInfo
   } = useServiceWorker();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'cache' | 'capabilities' | 'device'>('overview');
@@ -311,7 +313,7 @@ export function PWADashboard() {
                           </td>
                           <td className="p-3">
                             <button
-                              onClick={() => clearSWCaches(cache.name)}
+                              onClick={() => clearCache(cache.name)}
                               className="text-red-500 hover:text-red-700 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
