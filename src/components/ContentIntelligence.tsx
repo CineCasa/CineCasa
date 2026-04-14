@@ -34,7 +34,7 @@ export function ContentIntelligence({
   },
 }: ContentIntelligenceProps) {
   const { progress, updateProgress, markAsCompleted } = useWatchProgress({ userId });
-  const { stats: continueStats } = useContinueWatching({ userId });
+  const { items: continueItems, isLoading: continueLoading } = useContinueWatching();
   const { stats: recommendationStats } = useRecommendations({ userId });
 
   return (
@@ -51,25 +51,25 @@ export function ContentIntelligence({
           />
           
           {/* Estatísticas do continue watching */}
-          {continueStats.total > 0 && (
+          {continueItems.length > 0 && (
             <div className="mt-4 bg-gray-900 border border-gray-800 rounded-lg p-4">
               <h4 className="text-white font-medium mb-3">Suas Atividades</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-gray-400">Em andamento:</span>
-                  <div className="text-white font-medium">{continueStats.total}</div>
+                  <div className="text-white font-medium">{continueItems.length}</div>
                 </div>
                 <div>
                   <span className="text-gray-400">Filmes:</span>
-                  <div className="text-white font-medium">{continueStats.movies}</div>
+                  <div className="text-white font-medium">{continueItems.filter(i => i.type === 'movie').length}</div>
                 </div>
                 <div>
                   <span className="text-gray-400">Séries:</span>
-                  <div className="text-white font-medium">{continueStats.series}</div>
+                  <div className="text-white font-medium">{continueItems.filter(i => i.type === 'series').length}</div>
                 </div>
                 <div>
                   <span className="text-gray-400">Progresso médio:</span>
-                  <div className="text-white font-medium">{Math.round(continueStats.averageProgress)}%</div>
+                  <div className="text-white font-medium">{Math.round(continueItems.reduce((acc, i) => acc + (i.progress || 0), 0) / continueItems.length)}%</div>
                 </div>
               </div>
             </div>
