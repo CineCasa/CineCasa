@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PremiumNavbar from '../components/PremiumNavbar';
@@ -388,6 +388,12 @@ const mockPoderiaSerMelhor = [
 const PremiumHome: React.FC = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Sempre inicia no topo da página (banner) quando a home é carregada
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const { items: continueWatchingItems, isLoading: isLoadingContinue } = useContinueWatching();
   const { user } = useAuth();
   const { lancamentos, isLoading: isLoadingLancamentos } = useLancamentos(user?.email);
