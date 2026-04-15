@@ -74,11 +74,11 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           }));
 
         setAllPosters(uniquePosters);
-        // Shuffle initial queue e seleciona índice aleatório inicial
+        // Shuffle inicial - todas as capas em ordem aleatória
         const shuffled = [...uniquePosters].sort(() => Math.random() - 0.5);
         setDisplayQueue(shuffled);
-        // Começa de um índice aleatório ao invés de sempre do 0
-        setCurrentIndex(Math.floor(Math.random() * shuffled.length));
+        // Sempre começa do primeiro item (já em ordem aleatória)
+        setCurrentIndex(0);
       } else {
         // Buscar banners da tabela series (mantém banner para séries)
         const { data, error } = await supabase
@@ -160,7 +160,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
   const currentBanner = displayQueue[currentIndex];
 
   return (
-    <div className="relative w-full h-[70vh] sm:h-[75vh] md:h-[80vh] lg:h-[85vh] xl:h-[90vh] 2xl:h-[95vh] min-h-[450px] max-h-[1000px] overflow-hidden bg-black">
+    <div className="relative w-full aspect-video max-h-[80vh] overflow-hidden bg-black">
       {/* Posters com transição automática */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -171,15 +171,15 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           transition={{ duration: 1 }}
           className="absolute inset-0"
         >
-          {/* Imagem do Poster */}
+          {/* Imagem do Poster - sempre 16:9 cover */}
           <img
             src={currentBanner.poster}
             alt={currentBanner.title}
-            className="w-full h-full object-contain sm:object-cover object-center"
-            style={{ 
-              objectPosition: 'center center',
-              maxWidth: '100%',
-              maxHeight: '100%'
+            className="w-full h-full object-cover object-center"
+            style={{ objectPosition: 'center 20%' }}
+            onError={(e) => {
+              console.error('[PremiumHeroBanner] Erro ao carregar poster:', currentBanner.poster);
+              (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
           {/* Gradient Overlay */}
