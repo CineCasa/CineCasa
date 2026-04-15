@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isNotCollection } from '@/lib/utils';
 
 export interface Lancamento {
   id: string;
@@ -122,9 +123,13 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       const releases2026: any[] = [];
       const releases2025: any[] = [];
 
+      // REMOVER COLEÇÕES - mostrar apenas filmes individuais
+      const filteredMovies = (allMovies || []).filter(isNotCollection);
+      
       console.log('📊 Total de filmes carregados:', allMovies?.length || 0);
+      console.log('📊 Filmes após remover coleções:', filteredMovies.length);
 
-      (allMovies || []).forEach((item: any) => {
+      filteredMovies.forEach((item: any) => {
         const isImageValid = isValidImageUrl(item.capa) || isValidImageUrl(item.poster);
         
         // Verificar se é lançamento 2026 ou 2025 (aceita year como string ou número)
