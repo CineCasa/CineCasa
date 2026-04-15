@@ -26,3 +26,12 @@ export function isNotCollection(movie: any): boolean {
   }
   return !isColecao;
 }
+
+/**
+ * Remove ano do início do título (ex: "2021 Harry Potter" -> "Harry Potter")
+ */
+export function cleanTitle(title: string): string {
+  if (!title) return '';
+  // Remove ano do início (4 dígitos seguidos de espaço ou hífen)
+  return title.replace(/^\d{4}[\s\-:.]+/, '').trim();
+}

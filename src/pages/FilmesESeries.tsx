@@ -5,6 +5,7 @@ import PremiumNavbar from '@/components/PremiumNavbar';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
 import { MOVIE_CATEGORIES, CATEGORY_MAPPING } from '@/data/movieCategories';
 import { ChevronLeft, ChevronRight, Play, Info } from 'lucide-react';
+import { cleanTitle } from '@/lib/utils';
 
 interface Movie {
   id: number;
@@ -74,7 +75,7 @@ const FilmesESeries = () => {
       allMovies.forEach((movie: any) => {
         const movieData: Movie = {
           id: movie.id,
-          titulo: movie.titulo,
+          titulo: cleanTitle(movie.titulo),
           poster: movie.poster,
           year: movie.year,
           rating: movie.rating,
