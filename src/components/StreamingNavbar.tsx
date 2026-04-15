@@ -60,7 +60,7 @@ const StreamingNavbar: React.FC<StreamingNavbarProps> = ({ onSearch, user }) => 
                 key={item.label}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   item.active 
-                    ? 'bg-netflix-red text-white' 
+                    ? 'bg-[#00A8E1] text-white' 
                     : 'text-gray-300 hover:text-white hover:bg-gray-800'
                 }`}
                 whileHover={{ scale: 1.05 }}

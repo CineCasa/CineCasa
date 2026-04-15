@@ -164,12 +164,12 @@ const Navbar = () => {
                     to={item.path}
                     onKeyDown={(e) => handleNavKeyDown(e, idx)}
                     className={`nav-link-item text-[17px] font-semibold transition-colors px-2 py-1 rounded-md focus-visible ${
-                      isActive ? "text-white" : "text-[#aaaaaa] hover:text-white hover:bg-white/5"
+                      isActive ? "text-[#00A8E1]" : "text-[#aaaaaa] hover:text-white hover:bg-white/5"
                     }`}
                   >
                     {item.label}
                     {isActive && (
-                      <span className="absolute -bottom-[22px] left-0 right-0 h-1 bg-white rounded-t-md" />
+                      <span className="absolute -bottom-[22px] left-0 right-0 h-1 bg-[#00A8E1] rounded-t-md" />
                     )}
                   </Link>
                 </li>

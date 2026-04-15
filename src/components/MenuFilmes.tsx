@@ -31,7 +31,7 @@ export const MenuFilmes: React.FC<MenuFilmesProps> = ({ className = '' }) => {
                   px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap
                   transition-all duration-200
                   ${isActive 
-                    ? 'bg-red-600 text-white' 
+                    ? 'bg-[#00A8E1] text-white' 
                     : 'text-gray-300 hover:text-white hover:bg-gray-800'
                   }
                 `}

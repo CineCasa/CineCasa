@@ -103,8 +103,8 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
               <button
                 key={index}
                 onClick={() => navigate(item.href)}
-                className={`flex items-center space-x-2 transition-all duration-300 hover:text-accent ${
-                  location.pathname === item.href ? 'text-accent' : 'text-secondary'
+                className={`flex items-center space-x-2 transition-all duration-300 hover:text-[#00A8E1] ${
+                  location.pathname === item.href ? 'text-[#00A8E1]' : 'text-secondary'
                 }`}
               >
                 <item.icon size={18} />
