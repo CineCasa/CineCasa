@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Maximize2, Settings, Subtitles, Languages, X, ChevronLeft, SkipBack, SkipForward, Square, PictureInPicture2, Gauge, Cast } from "lucide-react";
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Maximize2, Settings, Subtitles, Languages, X, ChevronLeft, SkipBack, SkipForward, Square, PictureInPicture2, Gauge, Cast, Users } from "lucide-react";
 import { CastButton } from "./CastButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -788,6 +788,19 @@ const NetflixPlayer = ({
                  </div>
                )}
              </div>
+             {/* Botão Assistir Juntos */}
+             <button 
+               className="p-2 hover:bg-white/20 rounded-full transition-colors" 
+               onClick={() => {
+                 const roomId = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
+                 const videoUrlParam = encodeURIComponent(url);
+                 const watchUrl = `/watch.html?room=${roomId}&video=${videoUrlParam}`;
+                 window.open(watchUrl, '_blank');
+               }}
+               title="Assistir Juntos"
+             >
+               <Users size={20} />
+             </button>
              <button className="p-2 hover:bg-white/20 rounded-full transition-colors" title="Configurações">
                <Settings size={20} />
              </button>
