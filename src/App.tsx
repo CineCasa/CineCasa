@@ -40,6 +40,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NotificationProvider from "./components/NotificationProvider";
 import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
+import PublicNotifications from "./pages/PublicNotifications";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
 import { PWAInstallButton } from "./components/PWAInstallButton";
@@ -71,6 +72,7 @@ const AppRoutes = () => {
       {/* Rotas públicas - não requerem login */}
       {/* <Route path="/login" element={<Login />} /> */}
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/novidades" element={<PublicNotifications />} />
 
       {/* Rotas protegidas */}
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
