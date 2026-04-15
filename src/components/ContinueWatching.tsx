@@ -97,7 +97,7 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({
               {/* Title and Remove Button */}
               <div className="mt-2 flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm text-white font-medium truncate">
+                  <h3 className="text-sm text-white font-medium break-words whitespace-normal leading-tight line-clamp-2">
                     {item.title}
                   </h3>
                   {item.episodeNumber && (

@@ -351,8 +351,10 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
                     className="w-full h-full object-cover"
                     loading="eager"
                   />
-                  <div className="absolute bottom-4 left-4 z-10">
-                    <h3 className="text-white font-black text-[30px] drop-shadow-lg text-shadow-premium">{item.title}</h3>
+                  <div className="absolute bottom-4 left-4 z-10 right-4">
+                    <h3 className="text-white font-black text-[24px] sm:text-[30px] drop-shadow-lg text-shadow-premium break-words whitespace-normal leading-tight line-clamp-2">
+                      {item.title}
+                    </h3>
                   </div>
                   <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#141414] to-transparent" />
                 </>

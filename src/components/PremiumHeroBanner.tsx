@@ -201,7 +201,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
               transition={{ duration: 0.5 }}
               className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl"
             >
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-2 sm:mb-4 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-2 sm:mb-4 leading-tight break-words whitespace-normal line-clamp-3">
                 {currentBanner.title}
               </h1>
               
