@@ -447,6 +447,10 @@ const PremiumHome: React.FC = () => {
   return (
     <div className="streaming-container min-h-screen bg-black pt-[94px]">
       {/* Continue Watching - First Section */}
+      {(() => {
+        console.log('[PremiumHome] Continue Watching - isLoading:', isLoadingContinue, 'items:', continueWatchingItems.length, 'user:', user?.id);
+        return null;
+      })()}
       {!isLoadingContinue && continueWatchingItems.length > 0 && (
         <div className="relative z-30 mt-[70px] mb-4">
           <ContinueWatching
