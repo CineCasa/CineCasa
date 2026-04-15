@@ -15,7 +15,6 @@ import KeyboardNavigation from "./components/KeyboardNavigation";
 import MobileBottomNav from "./components/MobileBottomNav";
 import PremiumNavbar from "./components/PremiumNavbar";
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
-import NetflixPlayer from "./components/NetflixPlayer";
 import VideoJSPlayer from "./components/VideoJSPlayer";
 import Index from "./pages/Index";
 import PremiumHome from "./pages/PremiumHome";
