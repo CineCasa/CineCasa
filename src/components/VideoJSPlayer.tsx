@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, SkipNext } from 'lucide-react';
+import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { CastButton } from './CastButton';
@@ -80,10 +80,22 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const [subtitlesEnabled, setSubtitlesEnabled] = useState(false);
   const [currentSubtitleTrack, setCurrentSubtitleTrack] = useState(-1);
   const [subtitleTracks, setSubtitleTracks] = useState<TextTrack[]>([]);
+  const [showSubtitleMenu, setShowSubtitleMenu] = useState(false);
+  
+  // Estados de áudio
+  const [audioTracks, setAudioTracks] = useState<Array<{id: number; label: string; language: string}>>([]);
+  const [currentAudioTrack, setCurrentAudioTrack] = useState(0);
+  const [showAudioMenu, setShowAudioMenu] = useState(false);
+  
+  // Gestos mobile
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
   
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const nextEpisodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveProgressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const thumbnailCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Load Video.js from CDN
   useEffect(() => {
@@ -191,14 +203,28 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     // Detectar fim do vídeo para auto-play próximo episódio
     player.on('ended', () => {
       if (hasNextEpisode && onNextEpisode) {
-        startNextEpisodeCountdown();
+        setShowNextEpisodeDialog(true);
+        setNextEpisodeCountdown(10);
+        
+        nextEpisodeTimeoutRef.current = setInterval(() => {
+          setNextEpisodeCountdown((prev) => {
+            if (prev <= 1) {
+              if (nextEpisodeTimeoutRef.current) {
+                clearInterval(nextEpisodeTimeoutRef.current);
+              }
+              onNextEpisode();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
       }
     });
 
     return () => {
       player.dispose();
     };
-  }, [loaded, url, poster, onProgressUpdate, hasNextEpisode, onNextEpisode, startNextEpisodeCountdown]);
+  }, [loaded, url, poster, onProgressUpdate, hasNextEpisode, onNextEpisode]);
 
   // Efeito para mostrar resume dialog quando o vídeo carregar
   useEffect(() => {
@@ -210,6 +236,35 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       }
     }
   }, [isReady, resumeFrom]);
+
+  // Salvar progresso no Supabase
+  const saveWatchHistory = useCallback(async (current: number, dur: number) => {
+    if (!user || !profile || !contentId) return;
+    
+    try {
+      const progress = dur > 0 ? (current / dur) * 100 : 0;
+      
+      const { error } = await supabase.from('watch_history').upsert({
+        profile_id: profile.id,
+        content_id: contentId,
+        content_type: contentType || 'movie',
+        titulo: title,
+        poster: poster || '',
+        progress: progress,
+        duration: dur,
+        last_watched: new Date().toISOString(),
+        episode_id: episodeId,
+        season_number: seasonNumber,
+        episode_number: episodeNumber,
+      }, { onConflict: 'profile_id,content_id' });
+      
+      if (error) {
+        console.error('[VideoJSPlayer] Error saving watch history:', error);
+      }
+    } catch (err) {
+      console.error('[VideoJSPlayer] Failed to save watch history:', err);
+    }
+  }, [user, profile, contentId, contentType, title, poster, episodeId, seasonNumber, episodeNumber]);
 
   // Efeito para salvar progresso periodicamente
   useEffect(() => {
@@ -255,6 +310,90 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, [isPlaying]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key) {
+        case ' ':
+        case 'k':
+          e.preventDefault();
+          togglePlayPause();
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          skip(-5);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          skip(5);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (playerRef.current) {
+            const newVol = Math.min(100, volume + 5);
+            playerRef.current.volume(newVol / 100);
+          }
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          if (playerRef.current) {
+            const newVol = Math.max(0, volume - 5);
+            playerRef.current.volume(newVol / 100);
+          }
+          break;
+        case 'm':
+          e.preventDefault();
+          toggleMute();
+          break;
+        case 'f':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'Escape':
+          if (isFullscreen) {
+            e.preventDefault();
+            toggleFullscreen();
+          }
+          break;
+        case 'n':
+          if (hasNextEpisode && onNextEpisode) {
+            e.preventDefault();
+            onNextEpisode();
+          }
+          break;
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+          e.preventDefault();
+          if (playerRef.current && duration) {
+            const percent = parseInt(e.key) / 10;
+            const time = percent * duration;
+            playerRef.current.currentTime(time);
+            setCurrentTime(time);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPlaying, volume, isFullscreen, duration, hasNextEpisode, onNextEpisode]);
+
+  // Funções declaradas antes dos useEffects que as usam
   const togglePlayPause = useCallback(() => {
     if (playerRef.current) {
       if (isPlaying) {
@@ -337,35 +476,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     window.open(watchUrl, '_blank');
   }, [url]);
 
-  // Salvar progresso no Supabase
-  const saveWatchHistory = useCallback(async (current: number, dur: number) => {
-    if (!user || !profile || !contentId) return;
-    
-    try {
-      const progress = dur > 0 ? (current / dur) * 100 : 0;
-      
-      const { error } = await supabase.from('watch_history').upsert({
-        profile_id: profile.id,
-        content_id: contentId,
-        content_type: contentType || 'movie',
-        titulo: title,
-        poster: poster || '',
-        progress: progress,
-        duration: dur,
-        last_watched: new Date().toISOString(),
-        episode_id: episodeId,
-        season_number: seasonNumber,
-        episode_number: episodeNumber,
-      }, { onConflict: 'profile_id,content_id' });
-      
-      if (error) {
-        console.error('[VideoJSPlayer] Error saving watch history:', error);
-      }
-    } catch (err) {
-      console.error('[VideoJSPlayer] Failed to save watch history:', err);
-    }
-  }, [user, profile, contentId, contentType, title, poster, episodeId, seasonNumber, episodeNumber]);
-
   // Resume - continuar assistindo
   const handleResume = useCallback(() => {
     if (playerRef.current && resumeTime > 0) {
@@ -444,6 +554,68 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     setIsMiniPlayer(!isMiniPlayer);
   }, [isMiniPlayer]);
 
+  // Audio track selector
+  const changeAudioTrack = useCallback((trackId: number) => {
+    if (playerRef.current && playerRef.current.audioTracks) {
+      const tracks = playerRef.current.audioTracks();
+      for (let i = 0; i < tracks.length; i++) {
+        tracks[i].enabled = (i === trackId);
+      }
+      setCurrentAudioTrack(trackId);
+    }
+    setShowAudioMenu(false);
+  }, []);
+
+  // Subtitle selector
+  const changeSubtitleTrack = useCallback((trackIndex: number) => {
+    if (playerRef.current && playerRef.current.textTracks) {
+      const tracks = playerRef.current.textTracks();
+      
+      // Disable all tracks first
+      for (let i = 0; i < tracks.length; i++) {
+        tracks[i].mode = 'disabled';
+      }
+      
+      // Enable selected track
+      if (trackIndex >= 0 && tracks[trackIndex]) {
+        tracks[trackIndex].mode = 'showing';
+        setSubtitlesEnabled(true);
+      } else {
+        setSubtitlesEnabled(false);
+      }
+      
+      setCurrentSubtitleTrack(trackIndex);
+    }
+    setShowSubtitleMenu(false);
+  }, []);
+
+  // Mobile touch gestures
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+    setTouchStartY(e.touches[0].clientY);
+    setIsSwiping(true);
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isSwiping || !playerRef.current) return;
+    
+    const touchX = e.touches[0].clientX;
+    const touchY = e.touches[0].clientY;
+    const diffX = touchStartX - touchX;
+    const diffY = touchStartY - touchY;
+    
+    // Horizontal swipe for seeking
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+      const seekTime = diffX > 0 ? -10 : 10;
+      skip(seekTime);
+      setIsSwiping(false);
+    }
+  }, [isSwiping, touchStartX, touchStartY, skip]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsSwiping(false);
+  }, []);
+
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds)) return '0:00';
     const hours = Math.floor(seconds / 3600);
@@ -459,7 +631,12 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const bufferedPercent = duration > 0 ? (buffered / duration) * 100 : 0;
 
   const playerContent = (
-    <div className="fixed inset-0 bg-black z-50">
+    <div 
+      className="fixed inset-0 bg-black z-50"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Loading Screen */}
       {!isReady && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-50">
@@ -526,24 +703,33 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         {/* Bottom Controls */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-24 pb-6 px-6">
           {/* Progress Bar Container */}
-          <div className="mb-6 group">
+          <div 
+            className="mb-6 group relative"
+            ref={progressBarRef}
+            onMouseMove={handleProgressBarMouseMove}
+            onMouseLeave={handleProgressBarMouseLeave}
+            onClick={handleProgressBarClick}
+          >
+            {/* Preview Thumbnail */}
+            {showThumbnail && (
+              <div
+                className="absolute bottom-8 bg-black/90 rounded-lg p-2 transform -translate-x-1/2 pointer-events-none z-50"
+                style={{ left: thumbnailPosition }}
+              >
+                <div className="text-white text-xs mb-1 text-center">{formatTime(thumbnailTime)}</div>
+                <div className="w-24 h-16 bg-gray-700 rounded flex items-center justify-center">
+                  <span className="text-gray-400 text-xs">Preview</span>
+                </div>
+              </div>
+            )}
+            
             {/* Buffered bar */}
-            <div className="relative w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+            <div className="relative w-full h-1.5 bg-white/20 rounded-full overflow-hidden cursor-pointer">
               <div 
                 className="absolute h-full bg-white/30 rounded-full"
                 style={{ width: `${bufferedPercent}%` }}
               />
               {/* Progress bar */}
-              <input
-                type="range"
-                min="0"
-                max={duration || 0}
-                value={currentTime}
-                onChange={(e) => { e.stopPropagation(); handleSeek(e); }}
-                onClick={(e) => e.stopPropagation()}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              />
-              {/* Visual progress */}
               <div 
                 className="absolute h-full bg-[#00A8E1] rounded-full"
                 style={{ width: `${progressPercent}%` }}
@@ -551,6 +737,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 {/* Handle */}
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-[#00A8E1] rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg transform scale-0 group-hover:scale-100" />
               </div>
+              {/* Invisible seek input */}
+              <input
+                type="range"
+                min="0"
+                max={duration || 0}
+                value={currentTime}
+                onChange={(e) => { e.stopPropagation(); handleSeek(e); }}
+                onClick={(e) => e.stopPropagation()}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
             </div>
             
             {/* Time Display */}
@@ -686,7 +882,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                   className="p-2 hover:bg-white/20 rounded-full transition-colors"
                   title="Próximo Episódio"
                 >
-                  <SkipNext size={22} className="text-white" />
+                  <ChevronRight size={22} className="text-white" />
                 </button>
               )}
 
@@ -698,6 +894,37 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
               >
                 <PictureInPicture2 size={22} className="text-white" />
               </button>
+
+              {/* Audio Track Selector */}
+              {audioTracks.length > 1 && (
+                <div className="relative">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowAudioMenu(!showAudioMenu); setShowSubtitleMenu(false); }}
+                    className="px-3 py-1.5 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    {audioTracks.find(t => t.id === currentAudioTrack)?.label || 'Audio'}
+                  </button>
+                  
+                  {showAudioMenu && (
+                    <div 
+                      className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur rounded-lg p-2 min-w-[140px] shadow-2xl border border-white/10"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {audioTracks.map((track) => (
+                        <button
+                          key={track.id}
+                          onClick={() => changeAudioTrack(track.id)}
+                          className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                            currentAudioTrack === track.id ? 'bg-[#00A8E1] text-white font-medium' : 'text-white hover:bg-white/10'
+                          }`}
+                        >
+                          {track.label} {track.language !== 'unknown' && `(${track.language})`}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Chromecast */}
               <CastButton
@@ -714,12 +941,41 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
               />
 
               {/* Subtitles */}
-              <button 
-                onClick={(e) => e.stopPropagation()}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <Subtitles size={22} className="text-white" />
-              </button>
+              <div className="relative">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setShowSubtitleMenu(!showSubtitleMenu); setShowAudioMenu(false); }}
+                  className={`p-2 hover:bg-white/20 rounded-full transition-colors ${subtitlesEnabled ? 'text-[#00A8E1]' : ''}`}
+                >
+                  <Subtitles size={22} className="text-white" />
+                </button>
+                
+                {showSubtitleMenu && (
+                  <div 
+                    className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur rounded-lg p-2 min-w-[120px] shadow-2xl border border-white/10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={() => changeSubtitleTrack(-1)}
+                      className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                        currentSubtitleTrack === -1 ? 'bg-[#00A8E1] text-white font-medium' : 'text-white hover:bg-white/10'
+                      }`}
+                    >
+                      Desligado
+                    </button>
+                    {subtitleTracks.map((track, index) => (
+                      <button
+                        key={index}
+                        onClick={() => changeSubtitleTrack(index)}
+                        className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                          currentSubtitleTrack === index ? 'bg-[#00A8E1] text-white font-medium' : 'text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {track.label || `Legenda ${index + 1}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* Fullscreen */}
               <button
@@ -773,7 +1029,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
           <div className="bg-[#141414] border border-white/10 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
             <div className="w-16 h-16 bg-[#00A8E1]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <SkipNext size={32} className="text-[#00A8E1]" />
+              <ChevronRight size={32} className="text-[#00A8E1]" />
             </div>
             <h3 className="text-white text-xl font-bold mb-2">Próximo episódio em...</h3>
             <p className="text-4xl font-bold text-[#00A8E1] mb-6">{nextEpisodeCountdown}s</p>
