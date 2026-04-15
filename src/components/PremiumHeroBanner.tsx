@@ -21,6 +21,16 @@ interface BannerContent {
   country?: string;
 }
 
+// Fisher-Yates shuffle algorithm for better randomization
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 // Helper function to convert country code to flag emoji
 const getCountryFlag = (countryCode: string): string => {
   if (!countryCode) return '🌍';
@@ -112,11 +122,12 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           }));
 
         setAllPosters(uniquePosters);
-        // Shuffle inicial - todas as capas em ordem aleatória
-        const shuffled = [...uniquePosters].sort(() => Math.random() - 0.5);
+        // Shuffle inicial - todas as capas em ordem aleatória usando Fisher-Yates
+        const shuffled = shuffleArray(uniquePosters);
         setDisplayQueue(shuffled);
         // Sempre começa do primeiro item (já em ordem aleatória)
         setCurrentIndex(0);
+        console.log('[PremiumHeroBanner] Filmes embaralhados:', shuffled.length, 'primeiro:', shuffled[0]?.title, 'IDs:', shuffled.slice(0, 3).map(s => s.id));
       } else {
         // Buscar banners da tabela series (mantém banner para séries)
         const { data, error } = await supabase
@@ -146,7 +157,9 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           }));
 
         setAllPosters(uniqueBanners);
-        setDisplayQueue([...uniqueBanners].sort(() => Math.random() - 0.5));
+        const shuffledBanners = shuffleArray(uniqueBanners);
+        setDisplayQueue(shuffledBanners);
+        console.log('[PremiumHeroBanner] Séries embaralhadas:', shuffledBanners.length, 'primeiro:', shuffledBanners[0]?.title);
       }
       
       setIsLoading(false);
@@ -169,7 +182,9 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         const nextIndex = prev + 1;
         // Se chegou ao fim, reembaralha e reinicia
         if (nextIndex >= displayQueue.length) {
-          setDisplayQueue([...allPosters].sort(() => Math.random() - 0.5));
+          const reshuffled = shuffleArray(allPosters);
+          setDisplayQueue(reshuffled);
+          console.log('[PremiumHeroBanner] Reembaralhando no fim da fila, novo primeiro:', reshuffled[0]?.title);
           return 0;
         }
         return nextIndex;
