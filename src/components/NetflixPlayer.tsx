@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Maximize2, Settings, Subtitles, Languages, X, ChevronLeft, SkipBack, SkipForward, Square, PictureInPicture2, Gauge } from "lucide-react";
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Maximize2, Settings, Subtitles, Languages, X, ChevronLeft, SkipBack, SkipForward, Square, PictureInPicture2, Gauge, Cast } from "lucide-react";
+import { CastButton } from "./CastButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/components/AuthProvider';
@@ -829,6 +830,19 @@ const NetflixPlayer = ({
                  <PictureInPicture2 className="w-5 h-5 text-white" />
                </button>
              )}
+             {/* Botão de Screen Cast */}
+             <CastButton 
+               mediaInfo={{
+                 contentId: url,
+                 contentType: 'video/mp4',
+                 title: title,
+                 poster: historyItem?.poster,
+                 currentTime: currentTime,
+                 duration: duration
+               }}
+               size="md"
+               className="p-2 hover:bg-white/20 rounded-full transition-colors"
+             />
              <button className="p-2 hover:bg-white/20 rounded-full transition-colors" onClick={() => setIsMuted(!isMuted)} title="Mudo">
                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
              </button>
