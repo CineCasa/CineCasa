@@ -450,7 +450,18 @@ const PremiumHome: React.FC = () => {
       {!isLoadingContinue && continueWatchingItems.length > 0 && (
         <div className="relative z-30 mt-[70px] mb-4">
           <ContinueWatching
-            items={continueWatchingItems.slice(0, 3)}
+            items={continueWatchingItems.slice(0, 3).map(item => ({
+              id: item.contentId,
+              title: item.title,
+              poster: item.poster,
+              banner: item.banner,
+              backdrop: item.banner,
+              type: item.contentType,
+              progress: item.progress,
+              episodeId: item.episodeId,
+              seasonNumber: item.seasonNumber,
+              episodeNumber: item.episodeNumber
+            }))}
             onRemove={(id, type, episodeId) => {
               // Remover item ao clicar no X
               console.log("Removendo item:", id, type, episodeId);
