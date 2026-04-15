@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isNotCollection } from '@/lib/utils';
 
 export interface Negritude {
   id: string;
@@ -39,8 +40,11 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           .limit(50)
       ]);
 
+      // REMOVER COLEÇÕES dos filmes de negritude
+      const filteredCinemaData = (cinemaData.data || []).filter(isNotCollection);
+      
       const allNegritude: Negritude[] = [
-        ...(cinemaData.data || []).map((item: any) => ({
+        ...(filteredCinemaData).map((item: any) => ({
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,

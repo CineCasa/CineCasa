@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isNotCollection } from '@/lib/utils';
 
 export interface Financa {
   id: string;
@@ -37,8 +38,11 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
       console.log('[useFinancas] Cinema result:', cinemaResult.data?.length || 0, 'itens');
       console.log('[useFinancas] Erro:', cinemaResult.error);
 
+      // REMOVER COLEÇÕES dos filmes de finanças
+      const filteredCinemaData = (cinemaResult.data || []).filter(isNotCollection);
+      
       const allFinancas: Financa[] = [
-        ...(cinemaResult.data || []).map((item: any) => ({
+        ...(filteredCinemaData).map((item: any) => ({
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,

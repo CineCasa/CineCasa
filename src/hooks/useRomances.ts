@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isNotCollection } from '@/lib/utils';
 
 export interface Romance {
   id: string;
@@ -45,8 +46,11 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
       console.log('[useRomances] Series result:', seriesData.data?.length || 0, 'itens');
       console.log('[useRomances] Erros:', cinemaData.error, seriesData.error);
 
+      // REMOVER COLEÇÕES dos filmes de romance
+      const filteredCinemaData = (cinemaData.data || []).filter(isNotCollection);
+      
       const allRomances: Romance[] = [
-        ...(cinemaData.data || []).map((item: any) => ({
+        ...(filteredCinemaData).map((item: any) => ({
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
