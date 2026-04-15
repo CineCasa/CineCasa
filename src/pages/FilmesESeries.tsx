@@ -162,8 +162,6 @@ const FilmesESeries = () => {
       <div className="relative">
         <PremiumHeroBanner
           contentType="movies"
-          onPlay={handleHeroPlay}
-          onDetails={handleHeroDetails}
         />
       </div>
 
