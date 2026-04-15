@@ -679,6 +679,9 @@
           clearInterval(checkInterval);
           console.log('[Watch] WatchParty client pronto');
           
+          // Esconde loading quando conectado (modo solo ou Supabase)
+          document.getElementById('loading-overlay').classList.add('hidden');
+          
           // Callback quando entrar na sala
           window.watchParty.onUserJoined = (data) => {
             console.log('[Watch] Usuário entrou:', data);
@@ -699,10 +702,12 @@
         }
       }, 100);
       
-      // Timeout de segurança
+      // Timeout de segurança - esconde loading após 3 segundos mesmo se não conectar
       setTimeout(() => {
         clearInterval(checkInterval);
-      }, 10000);
+        document.getElementById('loading-overlay').classList.add('hidden');
+        console.log('[Watch] Timeout - escondendo loading');
+      }, 3000);
     }
     
     // ============================================
