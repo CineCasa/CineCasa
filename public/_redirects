@@ -11,5 +11,8 @@
 /*.svg /:splat.svg 200
 /*.xml /:splat.xml 200
 
+# Watch Party page - serve directly
+/watch.html /watch.html 200
+
 # SPA fallback - all other routes to index.html
 /* /index.html 200
