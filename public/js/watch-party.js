@@ -70,32 +70,46 @@ class WatchPartyClient {
       return;
     }
     
-    // Detecta ambiente
-    const isProduction = window.location.hostname.includes('vercel.app') || 
-                         window.location.hostname.includes('pages.dev') ||
-                         window.location.hostname.includes('netlify.app');
+    // Detecta ambiente - LOGS DETALHADOS PARA DEBUG
+    const hostname = window.location.hostname;
+    const isProduction = hostname.includes('vercel.app') || 
+                         hostname.includes('pages.dev') ||
+                         hostname.includes('netlify.app') ||
+                         hostname.includes('cine-casa') ||
+                         !hostname.includes('localhost');
+    
+    console.log(`[WatchParty] Hostname detectado: ${hostname}`);
+    console.log(`[WatchParty] É produção? ${isProduction}`);
     
     if (isProduction) {
       console.log('[WatchParty] Ambiente de produção detectado. Usando Supabase Realtime...');
       this.connectSupabase();
     } else {
       // Desenvolvimento: tenta Socket.IO primeiro, fallback para Supabase
-      console.log('[WatchParty] Desenvolvimento. Tentando Socket.IO...');
+      console.log('[WatchParty] Desenvolvimento local. Tentando Socket.IO...');
       this.connect();
     }
   }
   
   /**
-   * Conecta ao servidor Socket.IO
+   * Conecta ao servidor Socket.IO (apenas desenvolvimento)
    */
   connect() {
+    // BLOQUEIO DE SEGURANÇA: Não usar Socket.IO em produção
+    const hostname = window.location.hostname;
+    if (!hostname.includes('localhost') && !hostname.includes('127.0.0.1')) {
+      console.warn('[WatchParty] ⚠️ Tentativa de usar Socket.IO em ambiente não-local detectada. Redirecionando para Supabase...');
+      this.connectSupabase();
+      return;
+    }
+    
     // Detecta a URL do servidor automaticamente
     // Prioridade: 1) Variável global, 2) Mesma origem, 3) localhost:3001
     const serverUrl = window.WATCH_PARTY_SERVER_URL || 
       (window.location.port === '3001' ? window.location.origin : null) ||
       (window.location.hostname === 'localhost' ? 'http://localhost:3001' : window.location.origin);
     
-    console.log(`[WatchParty] Conectando ao servidor: ${serverUrl}`);
+    console.log(`[WatchParty] Conectando ao servidor Socket.IO: ${serverUrl}`);
     
     // Inicializa Socket.IO com configuração robusta
     this.socket = io(serverUrl, {
