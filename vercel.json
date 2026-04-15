@@ -1,15 +1,9 @@
 {
   "version": 2,
   "name": "cinecasa",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "routes": [
     {
       "src": "/api/(.*)",
@@ -22,15 +16,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "@vite_supabase_publishable_key"
-  },
-  "build": {
-    "env": {
-      "VITE_SUPABASE_URL": "@vite_supabase_url",
-      "VITE_SUPABASE_PUBLISHABLE_KEY": "@vite_supabase_publishable_key"
-    }
-  }
+  ]
 }
