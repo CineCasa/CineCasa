@@ -321,7 +321,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                     console.log('[PremiumHeroBanner] Botão Assistir clicado:', { currentBanner, trailer: currentBanner?.trailer });
                     openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer || '');
                   }}
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-white hover:bg-gray-100 text-black rounded-lg font-semibold transition-all duration-300 hover:scale-105"
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"
                 >
                   <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                   <span>Assistir</span>

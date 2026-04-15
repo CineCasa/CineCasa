@@ -423,7 +423,7 @@ const Details = () => {
                 <button
                   onClick={() => { if (videoUrl) { setIsTrailerMode(false); setIsPlayerOpen(true); } }}
                   disabled={!videoUrl}
-                  className={`flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base transition-all duration-200 ${videoUrl ? "bg-black text-white hover:bg-gray-900 hover:scale-105" : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
+                  className={`flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-md font-semibold text-sm md:text-base transition-all duration-200 ${videoUrl ? "bg-[#00A8E1] text-white hover:bg-[#00A8E1]/80 hover:scale-105" : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
                 >
                   <Play size={20} className="md:w-6 md:h-6" fill="white" />
                   {videoUrl ? "Assistir" : "Indisponível"}
