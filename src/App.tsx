@@ -42,6 +42,7 @@ import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
+import { PWAInstallButton } from "./components/PWAInstallButton";
 
 const queryClient = new QueryClient();
 
@@ -150,6 +151,7 @@ const App = () => {
                           <AppRoutes />
                         </KeyboardNavigation>
                         <PlayerContainer />
+                        <PWAInstallButton />
                       </PlayerProvider>
                     </NotificationProvider>
                     <MobileBottomNav />
