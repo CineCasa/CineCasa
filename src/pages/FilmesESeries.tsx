@@ -43,7 +43,24 @@ const FilmesESeries = () => {
         return;
       }
 
-      const allMovies = data || [];
+      let allMovies = data || [];
+      
+      // REMOVER FILMES QUE SÃO COLEÇÕES - mostrar apenas filmes individuais
+      allMovies = allMovies.filter((movie: any) => {
+        const titulo = (movie.titulo || '').toLowerCase();
+        const isColecao = titulo.includes('coleção') || 
+                          titulo.includes('colecao') || 
+                          titulo.includes('collection') ||
+                          titulo.includes('box set') ||
+                          titulo.includes('pack') ||
+                          titulo.includes('trilogia') ||
+                          titulo.includes('saga');
+        
+        if (isColecao) {
+          console.log('[FilmesESeries] Removendo coleção:', movie.titulo);
+        }
+        return !isColecao;
+      });
       
       // Organizar filmes por categoria (suporta múltiplas categorias)
       const categorized: CategorizedMovies = {};
