@@ -2,8 +2,6 @@ import PremiumHeroBanner from "@/components/PremiumHeroBanner";
 import ContentRow from "@/components/ContentRow";
 import ContinueWatchingRow from '../components/ContinueWatchingRow';
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
-import { useEffect, useState } from "react";
-
 const seriesHeroContent = {
   title: "SÉRIES",
   description: "Descubra séries incríveis para maratonar. Desde dramas intensos até comédias divertidas, encontre sua próxima obsessão.",
@@ -14,33 +12,17 @@ const seriesHeroContent = {
 
 const Series = () => {
   const { data: categories, isLoading } = useSupabaseContent();
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detectar dispositivo móvel
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Filtrar apenas categorias de séries e ordenar alfabeticamente
   const seriesCategories = categories
     ?.filter(cat => cat.id.startsWith("series-"))
     .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR')) || [];
 
-  const handleHeroPlay = () => {
-    console.log('Play series hero');
-  };
-
   return (
     <div className="min-h-screen bg-black pt-[94px]">
-      {/* Hero Banner - Igual da Home */}
+      {/* Hero Banner */}
       <PremiumHeroBanner
-        {...seriesHeroContent}
-        onPlay={handleHeroPlay}
+        contentType="series"
       />
       
       <main className="pb-20 mt-[70px] relative z-10 bg-black">
@@ -58,8 +40,8 @@ const Series = () => {
                 key={cat.id} 
                 category={cat} 
                 maxItems={20}
-                layout={isMobile ? "scroll" : "grid"}
-                infiniteScroll={isMobile}
+                layout="scroll"
+                infiniteScroll={true}
               />
             ))
           )}

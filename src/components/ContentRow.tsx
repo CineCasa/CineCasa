@@ -126,6 +126,19 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
   // Detectar se é mobile para controle de setas
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
 
+  // Suporte a mouse wheel para rolagem horizontal
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!scrollRef.current) return;
+    
+    // Prevenir scroll vertical padrão
+    e.preventDefault();
+    
+    const el = scrollRef.current;
+    const scrollAmount = e.deltaY > 0 ? 300 : -300;
+    
+    el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  };
+
   return (
     <section className="row-wrapper">
       <h2 className="row-title">
@@ -165,6 +178,7 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
           <div
             ref={scrollRef}
             onScroll={checkScroll}
+            onWheel={handleWheel}
             className="row-scroll-container snap-x snap-mandatory overflow-x-auto scrollbar-hide"
             style={{
               display: 'flex',
