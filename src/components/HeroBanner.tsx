@@ -14,6 +14,36 @@ interface HeroBannerProps {
   filterCategory?: string;
 }
 
+// Helper function to convert country code to flag emoji
+const getCountryFlag = (countryCode: string): string => {
+  if (!countryCode) return '🌍';
+  const code = countryCode.toUpperCase();
+  if (code.length > 2) {
+    const countryMap: Record<string, string> = {
+      'USA': 'US', 'UNITED STATES': 'US', 'ESTADOS UNIDOS': 'US',
+      'UK': 'GB', 'UNITED KINGDOM': 'GB', 'REINO UNIDO': 'GB',
+      'BRAZIL': 'BR', 'BRASIL': 'BR',
+      'FRANCE': 'FR', 'FRANÇA': 'FR',
+      'GERMANY': 'DE', 'ALEMANHA': 'DE',
+      'ITALY': 'IT', 'ITÁLIA': 'IT',
+      'SPAIN': 'ES', 'ESPANHA': 'ES',
+      'JAPAN': 'JP', 'JAPÃO': 'JP',
+      'CHINA': 'CN',
+      'KOREA': 'KR', 'SOUTH KOREA': 'KR',
+      'INDIA': 'IN',
+      'MEXICO': 'MX', 'MÉXICO': 'MX',
+      'ARGENTINA': 'AR',
+      'CANADA': 'CA',
+      'AUSTRALIA': 'AU',
+      'RUSSIA': 'RU', 'RÚSSIA': 'RU',
+    };
+    const mappedCode = countryMap[code];
+    if (!mappedCode) return '🌍';
+    return String.fromCodePoint(...[...mappedCode].map(c => 127397 + c.charCodeAt(0)));
+  }
+  return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+};
+
 const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
   console.log('[HeroBanner] Component mounted, filterCategory:', filterCategory);
   const [current, setCurrent] = useState(0);
@@ -198,28 +228,25 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
             
             {/* Metadados */}
             <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-300 mb-4 flex-wrap">
-              {/* País */}
-              {hero.country && (
-                <span className="bg-white/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap flex items-center gap-1">
-                  🌍 {hero.country}
+              {/* Nota TMDB */}
+              {hero.rating && hero.rating !== "N/A" && (
+                <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap font-semibold">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+                  </svg>
+                  {hero.rating}
                 </span>
               )}
-              {/* Avaliação */}
-              {hero.rating && hero.rating !== "N/A" && (
-                <span className="flex items-center gap-0.5 sm:gap-1 bg-yellow-500/20 text-yellow-400 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap">
-                  <span className="text-xs">★</span> {hero.rating}
+              {/* País com Bandeira */}
+              {hero.country && (
+                <span className="bg-white/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap flex items-center gap-1">
+                  {getCountryFlag(hero.country)} {hero.country}
                 </span>
               )}
               {/* Ano */}
-              {hero.year && hero.year > 0 && (
+              {hero.year && parseInt(hero.year) > 0 && (
                 <span className="bg-white/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap">
-                  📅 {hero.year}
-                </span>
-              )}
-              {/* Categoria principal */}
-              {hero.category && (
-                <span className="bg-blue-500/20 text-blue-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap">
-                  🏷️ {hero.category}
+                  {hero.year}
                 </span>
               )}
               {/* Primeiro gênero */}

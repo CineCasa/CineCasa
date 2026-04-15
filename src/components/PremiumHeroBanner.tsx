@@ -18,7 +18,41 @@ interface BannerContent {
   rating?: string;
   genre?: string;
   duration?: string;
+  country?: string;
 }
+
+// Helper function to convert country code to flag emoji
+const getCountryFlag = (countryCode: string): string => {
+  if (!countryCode) return '🌍';
+  const code = countryCode.toUpperCase();
+  // If it's already a flag emoji or longer than 2 chars, return as is
+  if (code.length > 2) {
+    // Try to match common country names to codes
+    const countryMap: Record<string, string> = {
+      'USA': 'US', 'UNITED STATES': 'US', 'ESTADOS UNIDOS': 'US',
+      'UK': 'GB', 'UNITED KINGDOM': 'GB', 'REINO UNIDO': 'GB',
+      'BRAZIL': 'BR', 'BRASIL': 'BR',
+      'FRANCE': 'FR', 'FRANÇA': 'FR',
+      'GERMANY': 'DE', 'ALEMANHA': 'DE',
+      'ITALY': 'IT', 'ITÁLIA': 'IT',
+      'SPAIN': 'ES', 'ESPANHA': 'ES',
+      'JAPAN': 'JP', 'JAPÃO': 'JP',
+      'CHINA': 'CN',
+      'KOREA': 'KR', 'SOUTH KOREA': 'KR',
+      'INDIA': 'IN',
+      'MEXICO': 'MX', 'MÉXICO': 'MX',
+      'ARGENTINA': 'AR',
+      'CANADA': 'CA',
+      'AUSTRALIA': 'AU',
+      'RUSSIA': 'RU', 'RÚSSIA': 'RU',
+    };
+    const mappedCode = countryMap[code];
+    if (!mappedCode) return '🌍';
+    return String.fromCodePoint(...[...mappedCode].map(c => 127397 + c.charCodeAt(0)));
+  }
+  // Convert 2-letter code to flag emoji
+  return String.fromCodePoint(...[...code].map(c => 127397 + c.charCodeAt(0)));
+};
 
 interface PremiumHeroBannerProps {
   contentType?: 'movies' | 'series';
@@ -212,28 +246,25 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
               
               {/* Metadados */}
               <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
-                {/* País */}
-                {currentBanner.country && (
-                  <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200 flex items-center gap-1">
-                    🌍 {currentBanner.country}
+                {/* Nota TMDB */}
+                {currentBanner.rating && currentBanner.rating !== "N/A" && (
+                  <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-xs sm:text-sm font-semibold">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/>
+                    </svg>
+                    {currentBanner.rating}
                   </span>
                 )}
-                {/* Avaliação */}
-                {currentBanner.rating && currentBanner.rating !== "N/A" && (
-                  <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded text-xs sm:text-sm">
-                    ★ {currentBanner.rating}
+                {/* País com Bandeira */}
+                {currentBanner.country && (
+                  <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200 flex items-center gap-1">
+                    {getCountryFlag(currentBanner.country)} {currentBanner.country}
                   </span>
                 )}
                 {/* Ano */}
-                {currentBanner.year && currentBanner.year > 0 && (
+                {currentBanner.year && parseInt(currentBanner.year) > 0 && (
                   <span className="bg-white/10 px-2 py-1 rounded text-xs sm:text-sm text-gray-200">
-                    📅 {currentBanner.year}
-                  </span>
-                )}
-                {/* Categoria principal */}
-                {currentBanner.category && (
-                  <span className="bg-blue-500/20 text-blue-300 px-2 py-1 rounded text-xs sm:text-sm">
-                    🏷️ {currentBanner.category}
+                    {currentBanner.year}
                   </span>
                 )}
                 {/* Primeiro gênero */}
@@ -290,11 +321,11 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                     if (!currentBanner) return;
                     
                     const contentId = parseInt(currentBanner.id);
-                    const contentType = contentType === 'movies' ? 'movie' : 'series';
+                    const contentTypeValue = contentType === 'movies' ? 'movie' : 'series';
                     
                     await toggleFavorite({
                       content_id: contentId,
-                      content_type: contentType,
+                      content_type: contentTypeValue,
                       titulo: currentBanner.title,
                       poster: currentBanner.poster,
                       banner: currentBanner.poster,
@@ -315,10 +346,10 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                   onClick={async () => {
                   const current = displayQueue[currentIndex];
                   const contentId = current.id;
-                  const type = contentType === 'movies' ? 'movie' : 'series';
+                  const typeValue = contentType === 'movies' ? 'movie' : 'series';
                   await toggleRating({
                     content_id: contentId,
-                    content_type: type,
+                    content_type: typeValue,
                     titulo: current.title,
                     poster: current.poster,
                     banner: current.poster,
