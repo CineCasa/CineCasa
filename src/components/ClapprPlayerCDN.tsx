@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users } from 'lucide-react';
-import { CastButton } from './CastButton';
 
 interface ClapprPlayerCDNProps {
   url: string;
@@ -428,18 +427,9 @@ const ClapprPlayerCDN: React.FC<ClapprPlayerCDNProps> = ({
               </button>
 
               {/* Chromecast */}
-              <CastButton
-                mediaInfo={{
-                  contentId: url,
-                  contentType: 'video/mp4',
-                  title: title,
-                  poster: poster,
-                  currentTime: currentTime,
-                  duration: duration,
-                }}
-                size="md"
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-              />
+              <button className="p-2 hover:bg-white/20 rounded-full transition-colors">
+                <Cast size={20} className="text-white" />
+              </button>
 
               {/* Picture in Picture */}
               <button className="p-2 hover:bg-white/20 rounded-full transition-colors">
