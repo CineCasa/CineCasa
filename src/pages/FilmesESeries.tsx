@@ -238,7 +238,7 @@ const FilmesESeries = () => {
                         </div>
 
                         {/* Título */}
-                        <h3 className="mt-2 text-white text-sm font-medium truncate group-hover/card:text-[#00A8E1] transition-colors">
+                        <h3 className="mt-2 text-white text-sm font-medium break-words whitespace-normal leading-tight line-clamp-2 group-hover/card:text-[#00A8E1] transition-colors">
                           {movie.titulo}
                         </h3>
                         {movie.year && (
