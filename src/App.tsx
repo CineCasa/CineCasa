@@ -24,6 +24,7 @@ import FilmesPorCategoria from "./pages/FilmesPorCategoria";
 import FilmesCategorias from "./pages/FilmesCategorias";
 import Favorites from "./pages/Favorites";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
 import Content from "./pages/Content";
 import Details from "./pages/Details";
@@ -68,6 +69,7 @@ const AppRoutes = () => {
     <Routes location={location}>
       {/* Rotas públicas - não requerem login */}
       {/* <Route path="/login" element={<Login />} /> */}
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Rotas protegidas */}
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />

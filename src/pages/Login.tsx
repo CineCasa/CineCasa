@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 import PWADownloadPopup from "@/components/PWADownloadPopup";
+import ForgotPasswordModal from "@/components/ForgotPasswordModal";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [showPWAPopup, setShowPWAPopup] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<'mobile' | 'tv' | null>(null);
   const navigate = useNavigate();
 
@@ -271,7 +273,13 @@ const Login = () => {
                 <input type="checkbox" className="w-4 h-4 rounded accent-[#00A8E1]" id="remember" />
                 <label htmlFor="remember" className="text-xs text-[#b3b3b3] cursor-pointer">Lembre-se de mim</label>
               </div>
-              <Link to="#" className="text-xs text-[#b3b3b3] hover:underline">Esqueceu a senha?</Link>
+              <button 
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-xs text-[#b3b3b3] hover:underline"
+              >
+                Esqueceu a senha?
+              </button>
             </div>
           )}
         </form>
@@ -300,6 +308,12 @@ const Login = () => {
         isOpen={showPWAPopup}
         onClose={() => setShowPWAPopup(false)}
         deviceType={selectedDevice || 'mobile'}
+      />
+
+      {/* Modal de Esqueci a Senha */}
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
       />
     </div>
   );
