@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, Play, ThumbsUp, Share2, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import NetflixPlayer from "@/components/NetflixPlayer";
+import VideoJSPlayer from "@/components/VideoJSPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { FavoriteButton } from "@/components/FavoriteButton";
@@ -630,10 +630,10 @@ const Details = () => {
       {/* Video Player Modal */}
       <AnimatePresence>
         {isPlayerOpen && data && (
-          <NetflixPlayer
+          <VideoJSPlayer
             url={(() => {
               const url = isTrailerMode ? trailerUrl || "" : videoUrl || "";
-              console.log('[Details] NetflixPlayer URL:', url);
+              console.log('[Details] VideoJSPlayer URL:', url);
               return url;
             })()}
             title={data.title || "Sem título"}
@@ -643,15 +643,7 @@ const Details = () => {
             }}
             contentType={(type as 'movie' | 'series') || 'movie'}
             contentId={id || ""}
-            historyItem={{
-              id: id || "",
-              title: data.title || "Sem título",
-              poster: data.poster_path || "",
-              backdrop: data.backdrop_path || "",
-              type: (type as 'movie' | 'series') || 'movie',
-              year: releaseYear?.toString() || "",
-              rating: data.vote_average?.toString() || "0",
-            }}
+            poster={data.poster_path || ""}
           />
         )}
       </AnimatePresence>

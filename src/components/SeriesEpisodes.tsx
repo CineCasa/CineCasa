@@ -4,7 +4,7 @@ import { Play, ChevronDown, ChevronUp, Clock, Calendar, Star } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { Episodio } from "@/types/database";
-import NetflixPlayer from "@/components/NetflixPlayer";
+import VideoJSPlayer from "@/components/VideoJSPlayer";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -463,7 +463,7 @@ const SeriesEpisodes = ({ seriesId, tmdbId, seriesTitle, seriesPoster, seriesBac
 
       {/* Netflix Player com autoplay do próximo episódio */}
       {isPlayerOpen && currentEpisode && (
-        <NetflixPlayer
+        <VideoJSPlayer
           url={currentEpisode.arquivo}
           title={`${seriesTitle || 'Série'} - S${currentEpisode.seasonNumber}:E${currentEpisode.episodeNumber} ${currentEpisode.title}`}
           onClose={() => {
@@ -477,19 +477,7 @@ const SeriesEpisodes = ({ seriesId, tmdbId, seriesTitle, seriesPoster, seriesBac
           contentId={seriesId}
           seasonNumber={currentEpisode.seasonNumber}
           episodeNumber={currentEpisode.episodeNumber}
-          historyItem={{
-            id: currentEpisode.id,
-            title: `${seriesTitle || 'Série'} - ${currentEpisode.title}`,
-            poster: seriesPoster || currentEpisode.capa || '',
-            banner: seriesBackdrop || currentEpisode.capa || '',
-            type: 'series',
-            progress: 0,
-            year: new Date().getFullYear().toString(),
-            rating: '',
-            episodeId: currentEpisode.id,
-            seasonNumber: currentEpisode.seasonNumber,
-            episodeNumber: currentEpisode.episodeNumber
-          }}
+          poster={seriesPoster || currentEpisode.capa || ''}
         />
       )}
     </div>

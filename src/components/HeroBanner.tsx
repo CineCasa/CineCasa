@@ -7,7 +7,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { useRatings } from "@/hooks/useRatings";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
 import { useNavigate } from "react-router-dom";
-import NetflixPlayer from "./NetflixPlayer";
+import VideoJSPlayer from "./VideoJSPlayer";
 import { toast } from "sonner";
 
 interface HeroBannerProps {
@@ -365,16 +365,16 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
       </div>
 
       {isPlayerOpen && hero && (
-        <NetflixPlayer 
+        <VideoJSPlayer 
           url={(() => {
             const videoUrl = hero.type === "series" 
               ? (hero.identificadorArchive?.startsWith("http") ? hero.identificadorArchive : hero.identificadorArchive ? `https://archive.org/embed/${hero.identificadorArchive}` : null)
               : (hero.url || trailerUrl || null);
-            console.log('[HeroBanner] NetflixPlayer URL:', videoUrl);
+            console.log('[HeroBanner] VideoJSPlayer URL:', videoUrl);
             return videoUrl || "";
           })()} 
-          title={hero.title || "Sem título"} 
-          historyItem={hero}
+          title={hero.title || "Sem título"}
+          poster={hero.poster || ""}
           onClose={() => {
             console.log('[HeroBanner] Fechando player');
             setIsPlayerOpen(false);

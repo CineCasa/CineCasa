@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ContentItem } from "@/data/content";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchTmdbDetails, getTmdbTrailerUrl } from "@/services/tmdb";
-import NetflixPlayer from "./NetflixPlayer";
+import VideoJSPlayer from "./VideoJSPlayer";
 import { FavoriteButtonSimple } from "./FavoriteButton";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -385,16 +385,16 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
       </AnimatePresence>
 
       {isPlayerOpen && item && (
-        <NetflixPlayer 
+        <VideoJSPlayer 
           url={(() => {
             const videoUrl = item.type === "series" 
               ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : item.identificadorArchive ? `https://archive.org/embed/${item.identificadorArchive}` : null)
               : (item.url || trailerUrl || null);
-            console.log('[ContentCard] NetflixPlayer URL:', videoUrl);
+            console.log('[ContentCard] VideoJSPlayer URL:', videoUrl);
             return videoUrl || "";
           })()} 
-          title={item.title || "Sem título"} 
-          historyItem={item}
+          title={item.title || "Sem título"}
+          poster={item.poster || ""}
           contentType={(item.type as 'movie' | 'series') || 'movie'}
           contentId={item.id || ""}
           onClose={() => {
