@@ -93,7 +93,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         console.log('[PremiumHeroBanner] Buscando filmes da tabela cinema...');
         const { data, error } = await supabase
           .from('cinema')
-          .select('id, titulo, poster, year, description, trailer, rating, genero, duration')
+          .select('id, titulo, poster, year, description, trailer, rating, genero')
           .not('poster', 'is', null)
           .not('poster', 'eq', '');
 
@@ -122,8 +122,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
             description: item.description || '',
             trailer: item.trailer || '',
             rating: item.rating || '',
-            genre: item.genero || '',
-            duration: item.duration || ''
+            genre: item.genero || ''
           }));
 
         console.log('[PremiumHeroBanner] Posters únicos processados:', uniquePosters.length);
