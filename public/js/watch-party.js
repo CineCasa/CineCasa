@@ -68,16 +68,17 @@ class WatchPartyClient {
       return;
     }
     
-    // Verifica se está em ambiente de produção (Vercel/Cloudflare)
+    // Detecta ambiente
     const isProduction = window.location.hostname.includes('vercel.app') || 
                          window.location.hostname.includes('pages.dev') ||
                          window.location.hostname.includes('netlify.app');
     
     if (isProduction) {
-      console.log('[WatchParty] Ambiente de produção detectado. Ativando modo solo...');
-      this.activateSoloMode();
+      console.log('[WatchParty] Ambiente de produção detectado. Usando Supabase Realtime...');
+      this.connectSupabase();
     } else {
-      // Conecta ao servidor Socket.IO (apenas em desenvolvimento)
+      // Desenvolvimento: tenta Socket.IO primeiro, fallback para Supabase
+      console.log('[WatchParty] Desenvolvimento. Tentando Socket.IO...');
       this.connect();
     }
   }
@@ -144,6 +145,147 @@ class WatchPartyClient {
     // Esconde erro de conexão se visível
     const errorEl = document.getElementById('wp-error');
     if (errorEl) errorEl.style.display = 'none';
+  }
+  
+  /**
+   * Conecta via Supabase Realtime (gratuito, funciona 24h)
+   */
+  async connectSupabase() {
+    console.log('[WatchParty] Conectando via Supabase Realtime...');
+    
+    try {
+      // Carrega o cliente Supabase (já deve estar no window do index.html)
+      if (typeof window.supabase === 'undefined') {
+        console.error('[WatchParty] Supabase não encontrado. Carregando script...');
+        await this.loadSupabaseScript();
+      }
+      
+      this.userId = 'user_' + Math.random().toString(36).substring(2, 9);
+      
+      // Criar canal para a sala
+      const channel = window.supabase
+        .channel('watch_party:' + this.roomId, {
+          config: {
+            broadcast: { self: false },
+          },
+        })
+        .on('broadcast', { event: 'party_message' }, (payload) => {
+          this.handleSupabaseMessage(payload.payload);
+        })
+        .on('presence', { event: 'sync' }, () => {
+          const state = channel.presenceState();
+          const count = Object.keys(state).length;
+          this.userCount = count;
+          this.updateUI(`Sala: ${this.roomId} | ${count} usuário(s)`);
+        })
+        .on('presence', { event: 'join' }, () => {
+          this.showToast('Novo participante entrou!');
+        })
+        .on('presence', { event: 'leave' }, () => {
+          this.showToast('Um participante saiu');
+        });
+      
+      // Inscrever no canal
+      const status = await channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[WatchParty] Conectado ao Supabase!');
+          this.supabaseChannel = channel;
+          
+          // Entrar com presence
+          await channel.track({
+            userId: this.userId,
+            joinedAt: new Date().toISOString(),
+          });
+          
+          // Enviar mensagem de entrada
+          await channel.send({
+            type: 'broadcast',
+            event: 'party_message',
+            payload: {
+              type: 'join',
+              userId: this.userId,
+              roomId: this.roomId,
+              timestamp: Date.now(),
+            },
+          });
+          
+          this.updateUI(`Sala: ${this.roomId} | Conectado`);
+          this.showToast('Assistir Juntos ativo! Compartilhe o link.');
+          
+          // Esconde erro
+          const errorEl = document.getElementById('wp-error');
+          if (errorEl) errorEl.style.display = 'none';
+          
+          // Configura eventos do player
+          this.setupVideoEvents();
+        }
+      });
+      
+    } catch (error) {
+      console.error('[WatchParty] Erro Supabase:', error);
+      // Fallback para modo solo
+      this.activateSoloMode();
+    }
+  }
+  
+  /**
+   * Carrega script do Supabase se necessário
+   */
+  loadSupabaseScript() {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+      script.onload = () => {
+        // Inicializa com as credenciais do projeto
+        window.supabase = window.supabase.createClient(
+          'https://eqhstnlsmfrwxhvcwoid.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxaHN0bmxzbWZyd3hodmN3b2lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MTg1NTcsImV4cCI6MjA4ODI5NDU1N30.6AmJi7zs-1QDnStIIN5bJGoFFhv4WveC1NUAHKI0Qlo'
+        );
+        resolve();
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+  
+  /**
+   * Manipula mensagens do Supabase
+   */
+  handleSupabaseMessage(message) {
+    if (message.userId === this.userId) return; // Ignorar próprias mensagens
+    
+    console.log('[WatchParty] Mensagem recebida:', message.type);
+    
+    switch (message.type) {
+      case 'play':
+        this.isRemoteUpdate = true;
+        this.videoElement.play();
+        break;
+        
+      case 'pause':
+        this.isRemoteUpdate = true;
+        this.videoElement.pause();
+        break;
+        
+      case 'seek':
+        this.isRemoteUpdate = true;
+        this.ignoreNextSeek = true;
+        this.videoElement.currentTime = message.data.currentTime;
+        break;
+        
+      case 'sync':
+        const timeDiff = Math.abs(this.videoElement.currentTime - message.data.currentTime);
+        if (timeDiff > 2) { // Sincroniza se diferença > 2 segundos
+          this.isRemoteUpdate = true;
+          this.videoElement.currentTime = message.data.currentTime;
+        }
+        if (message.data.isPlaying && this.videoElement.paused) {
+          this.videoElement.play();
+        } else if (!message.data.isPlaying && !this.videoElement.paused) {
+          this.videoElement.pause();
+        }
+        break;
+    }
   }
   
   /**
@@ -389,6 +531,32 @@ class WatchPartyClient {
   /**
    * Configura eventos do player de vídeo
    */
+  /**
+   * Envia mensagem para a sala (Socket.IO ou Supabase)
+   */
+  sendMessage(event, data) {
+    // Se tem canal Supabase, usa ele
+    if (this.supabaseChannel) {
+      this.supabaseChannel.send({
+        type: 'broadcast',
+        event: 'party_message',
+        payload: {
+          type: event,
+          userId: this.userId,
+          roomId: this.roomId,
+          timestamp: Date.now(),
+          data,
+        },
+      });
+      return;
+    }
+    
+    // Se tem socket, usa Socket.IO
+    if (this.socket) {
+      this.socket.emit(event, data);
+    }
+  }
+  
   setupVideoEvents() {
     // ----------------------------------------
     // EVENTO: Play local
@@ -402,7 +570,7 @@ class WatchPartyClient {
       // Em modo solo, não tenta enviar para o servidor
       if (this.soloMode) return;
       
-      this.socket.emit('video-play', {
+      this.sendMessage('play', {
         currentTime: this.videoElement.currentTime
       });
     });
@@ -419,7 +587,7 @@ class WatchPartyClient {
       // Em modo solo, não tenta enviar para o servidor
       if (this.soloMode) return;
       
-      this.socket.emit('video-pause', {
+      this.sendMessage('pause', {
         currentTime: this.videoElement.currentTime
       });
     });
@@ -436,7 +604,7 @@ class WatchPartyClient {
       // Em modo solo, não tenta enviar para o servidor
       if (this.soloMode) return;
       
-      this.socket.emit('video-seek', {
+      this.sendMessage('seek', {
         currentTime: this.videoElement.currentTime
       });
     });
@@ -464,9 +632,11 @@ class WatchPartyClient {
     
     // Envia estado atual a cada 5 segundos
     this.syncInterval = setInterval(() => {
-      if (!this.socket || !this.roomId || this.soloMode) return;
+      if (this.soloMode) return;
+      if (!this.socket && !this.supabaseChannel) return;
+      if (!this.roomId) return;
       
-      this.socket.emit('sync-broadcast', {
+      this.sendMessage('sync', {
         currentTime: this.videoElement.currentTime,
         isPlaying: !this.videoElement.paused
       });
