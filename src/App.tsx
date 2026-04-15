@@ -44,6 +44,7 @@ import PublicNotifications from "./pages/PublicNotifications";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
 import { PWAInstallButton } from "./components/PWAInstallButton";
+import { PWAImmediateInstall } from "./components/PWAImmediateInstall";
 
 const queryClient = new QueryClient();
 
@@ -154,6 +155,7 @@ const App = () => {
                         </KeyboardNavigation>
                         <PlayerContainer />
                         <PWAInstallButton />
+                        <PWAImmediateInstall />
                       </PlayerProvider>
                     </NotificationProvider>
                     <MobileBottomNav />
