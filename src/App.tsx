@@ -16,6 +16,7 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import PremiumNavbar from "./components/PremiumNavbar";
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
 import NetflixPlayer from "./components/NetflixPlayer";
+import VideoJSPlayer from "./components/VideoJSPlayer";
 import Index from "./pages/Index";
 import PremiumHome from "./pages/PremiumHome";
 import PremiumCatalog from "./pages/PremiumCatalog";
@@ -105,9 +106,10 @@ const PlayerContainer = () => {
   if (!isPlayerOpen || !currentItem) return null;
   
   return (
-    <NetflixPlayer
-      url={currentItem.videoUrl}
+    <VideoJSPlayer
+      url={currentItem.videoUrl || ''}
       title={currentItem.title}
+      poster={currentItem.poster}
       onClose={closePlayer}
     />
   );
