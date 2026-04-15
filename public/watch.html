@@ -46,9 +46,13 @@
     }
   </script>
   
-  <!-- Scripts do Watch Party -->
-  <script src="/js/criar-sala.js?v=3"></script>
-  <script src="/js/watch-party.js?v=3"></script>
+  <!-- Scripts do Watch Party - com timestamp para evitar cache -->
+  <script>
+    // Adiciona timestamp para forçar download sem cache
+    const scriptTimestamp = Date.now();
+    document.write('<script src="/js/criar-sala.js?t=' + scriptTimestamp + '"></script>');
+    document.write('<script src="/js/watch-party.js?t=' + scriptTimestamp + '"></script>');
+  </script>
   
   <style>
     /* ============================================
