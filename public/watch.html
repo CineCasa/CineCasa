@@ -8,6 +8,17 @@
   <!-- Socket.IO Client -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    // Inicializa Supabase com as credenciais do projeto
+    window.supabase = supabase.createClient(
+      'https://eqhstnlsmfrwxhvcwoid.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxaHN0bmxzbWZyd3hodmN3b2lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MTg1NTcsImV4cCI6MjA4ODI5NDU1N30.6AmJi7zs-1QDnStIIN5bJGoFFhv4WveC1NUAHKI0Qlo'
+    );
+    console.log('[Watch] Supabase inicializado');
+  </script>
+  
   <!-- Cache Busting e Service Worker cleanup -->
   <script>
     // Força recarregamento sem cache
@@ -36,8 +47,8 @@
   </script>
   
   <!-- Scripts do Watch Party -->
-  <script src="/js/criar-sala.js?v=2"></script>
-  <script src="/js/watch-party.js?v=2"></script>
+  <script src="/js/criar-sala.js?v=3"></script>
+  <script src="/js/watch-party.js?v=3"></script>
   
   <style>
     /* ============================================
