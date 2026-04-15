@@ -64,17 +64,17 @@ export function useContentManager({
           .from('cinema')
           .select('*')
           .eq('featured', true)
-          .limit(10),
+          .limit(10) as any,
         supabase
           .from('series')
           .select('*')
           .eq('featured', true)
-          .limit(10),
+          .limit(10) as any,
       ]);
 
       return {
-        movies: moviesData.data || [],
-        series: seriesData.data || [],
+        movies: (moviesData.data || []) as any[],
+        series: (seriesData.data || []) as any[],
       };
     },
     cacheTime: 10 * 60 * 1000, // 10 minutos para conteúdo destacado
@@ -119,7 +119,7 @@ export function useContentManager({
       // Buscar baseado nos gêneros mais assistidos
       const { data: watchHistory } = await supabase
         .from('watch_progress')
-        .select('genre')
+        .select('genero')
         .eq('user_id', userId)
         .limit(50);
 
@@ -136,21 +136,23 @@ export function useContentManager({
 
       // Extrair gêneros mais assistidos
       const genreCounts = watchHistory.reduce((acc, item) => {
-        const genre = item.genre;
-        acc[genre] = (acc[genre] || 0) + 1;
+        const genero = item.genero;
+        if (genero) {
+          acc[genero] = (acc[genero] || 0) + 1;
+        }
         return acc;
       }, {} as Record<string, number>);
 
       const topGenres = Object.entries(genreCounts)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 3)
-        .map(([genre]) => genre);
+        .map(([genero]) => genero);
 
       // Buscar conteúdo dos top gêneros
       const { data: recommended } = await supabase
         .from('cinema')
         .select('*')
-        .in('genre', topGenres)
+        .in('genero', topGenres)
         .order('rating', { ascending: false })
         .limit(20);
 
@@ -199,6 +201,8 @@ export function useContentManager({
 
   // Prefetch de conteúdo relacionado
   const prefetchRelatedContent = useCallback((movieId: string) => {
+    const numericId = parseInt(movieId, 10);
+    
     // Prefetch detalhes do filme
     queryClient.prefetchQuery({
       queryKey: ['movie-details', movieId],
@@ -206,7 +210,7 @@ export function useContentManager({
         const { data } = await supabase
           .from('cinema')
           .select('*')
-          .eq('id', movieId)
+          .eq('id', numericId)
           .single();
 
         return data;
@@ -220,16 +224,17 @@ export function useContentManager({
       queryFn: async () => {
         const { data: movie } = await supabase
           .from('cinema')
-          .select('genre')
-          .eq('id', movieId)
+          .select('genero')
+          .eq('id', numericId)
           .single();
 
-        if (movie?.genre) {
+        const movieData = movie as any;
+        if (movieData?.genero) {
           const { data: similar } = await supabase
             .from('cinema')
             .select('*')
-            .eq('genre', movie.genre)
-            .neq('id', movieId)
+            .eq('genero', movieData.genero)
+            .neq('id', numericId)
             .limit(12);
 
           return similar || [];
@@ -256,7 +261,10 @@ export function useContentManager({
     return {
       totalQueries: contentQueries.length,
       cachedQueries: contentQueries.filter(q => q.state.data !== undefined).length,
-      staleQueries: contentQueries.filter(q => q.state.isStale).length,
+      staleQueries: contentQueries.filter(q => {
+        const state = (q as any).state;
+        return state && state.data !== undefined && state.fetchStatus !== 'fetching';
+      }).length,
       fetchingQueries: contentQueries.filter(q => q.state.fetchStatus === 'fetching').length,
       memoryUsage: JSON.stringify(contentQueries).length, // Estimativa grosseira
     };

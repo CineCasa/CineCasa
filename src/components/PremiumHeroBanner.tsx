@@ -97,7 +97,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           .not('poster', 'is', null)
           .not('poster', 'eq', '');
 
-        console.log('[PremiumHeroBanner] Resultado cinema:', { dataLength: data?.length, error });
+        console.log('[PremiumHeroBanner] Resultado cinema - dados brutos:', { dataLength: data?.length, error, primeiroItem: data?.[0], samplePosters: data?.slice(0, 3).map((d: any) => ({ id: d.id, titulo: d.titulo, poster: d.poster ? 'tem poster' : 'sem poster' })) });
 
         if (error) {
           console.error('Erro ao buscar posters de filmes:', error);
@@ -105,7 +105,12 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           return;
         }
 
+        // Log antes do filtro
+        console.log('[PremiumHeroBanner] Total de filmes recebidos:', data?.length);
+        console.log('[PremiumHeroBanner] Filmes com poster válido:', data?.filter((d: any) => d.poster && d.poster.trim() !== '').length);
+
         const uniquePosters = (data || [])
+          .filter((item: any) => item.poster && item.poster.trim() !== '') // Garantir que tem poster
           .filter((item: any, index: number, self: any[]) => 
             index === self.findIndex((t) => t.poster === item.poster)
           )
@@ -121,13 +126,16 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
             duration: item.duration || ''
           }));
 
+        console.log('[PremiumHeroBanner] Posters únicos processados:', uniquePosters.length);
+
         setAllPosters(uniquePosters);
         // Shuffle inicial - todas as capas em ordem aleatória usando Fisher-Yates
         const shuffled = shuffleArray(uniquePosters);
         setDisplayQueue(shuffled);
-        // Sempre começa do primeiro item (já em ordem aleatória)
-        setCurrentIndex(0);
-        console.log('[PremiumHeroBanner] Filmes embaralhados:', shuffled.length, 'primeiro:', shuffled[0]?.title, 'IDs:', shuffled.slice(0, 3).map(s => s.id));
+        // Inicia em um índice aleatório para mostrar imagens diferentes a cada carregamento
+        const randomStartIndex = shuffled.length > 0 ? Math.floor(Math.random() * shuffled.length) : 0;
+        setCurrentIndex(randomStartIndex);
+        console.log('[PremiumHeroBanner] Filmes embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
       } else {
         // Buscar banners da tabela series (mantém banner para séries)
         const { data, error } = await supabase
@@ -159,7 +167,10 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         setAllPosters(uniqueBanners);
         const shuffledBanners = shuffleArray(uniqueBanners);
         setDisplayQueue(shuffledBanners);
-        console.log('[PremiumHeroBanner] Séries embaralhadas:', shuffledBanners.length, 'primeiro:', shuffledBanners[0]?.title);
+        // Inicia em um índice aleatório para séries também
+        const randomStartIndex = shuffledBanners.length > 0 ? Math.floor(Math.random() * shuffledBanners.length) : 0;
+        setCurrentIndex(randomStartIndex);
+        console.log('[PremiumHeroBanner] Séries embaralhadas:', shuffledBanners.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffledBanners[randomStartIndex]?.title);
       }
       
       setIsLoading(false);
@@ -180,12 +191,13 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
     const interval = setInterval(() => {
       setCurrentIndex((prev) => {
         const nextIndex = prev + 1;
-        // Se chegou ao fim, reembaralha e reinicia
+        // Se chegou ao fim, reembaralha e inicia em posição aleatória
         if (nextIndex >= displayQueue.length) {
           const reshuffled = shuffleArray(allPosters);
           setDisplayQueue(reshuffled);
-          console.log('[PremiumHeroBanner] Reembaralhando no fim da fila, novo primeiro:', reshuffled[0]?.title);
-          return 0;
+          const randomIndex = reshuffled.length > 0 ? Math.floor(Math.random() * reshuffled.length) : 0;
+          console.log('[PremiumHeroBanner] Reembaralhando no fim da fila, iniciando em índice:', randomIndex, 'título:', reshuffled[randomIndex]?.title);
+          return randomIndex;
         }
         return nextIndex;
       });

@@ -26,13 +26,13 @@ interface EnhancedQueryOptions<T> extends Omit<UseQueryOptions<T>, 'queryFn'> {
 export function useEnhancedQuery<T>({
   queryKey,
   queryFn,
-  cacheTime = 5 * 60 * 1000, // 5 minutos default
+  cacheTime,
   staleTime = 2 * 60 * 1000, // 2 minutos default
   prefetchOnMount = false,
   prefetchDelay = 1000,
   retryDelay = 1000,
   maxRetries = 3,
-  refetchInterval = false,
+  refetchInterval,
   refetchOnWindowFocus = true,
   refetchOnReconnect = true,
   invalidateOn = [],
@@ -42,15 +42,15 @@ export function useEnhancedQuery<T>({
   const [isPrefetching, setIsPrefetching] = useState(false);
   const queryClient = useQueryClient();
 
-  // Query principal
+  // Query principal - gcTime substitui cacheTime no React Query v5
   const query = useQuery({
     queryKey,
     queryFn,
-    cacheTime,
+    gcTime: cacheTime,
     staleTime,
     retry: maxRetries,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    refetchInterval: refetchInterval,
+    refetchInterval,
     refetchOnWindowFocus,
     refetchOnReconnect,
     ...options,
@@ -143,7 +143,7 @@ export function useEnhancedQuery<T>({
     return {
       totalQueries: relatedQueries.length,
       cachedQueries: relatedQueries.filter(q => q.state.data !== undefined).length,
-      staleQueries: relatedQueries.filter(q => q.state.isStale).length,
+      staleQueries: relatedQueries.filter(q => (q as any).state.isStale).length,
       fetchingQueries: relatedQueries.filter(q => q.state.fetchStatus === 'fetching').length,
     };
   }, [queryKey, queryClient]);
@@ -209,9 +209,10 @@ export function useBatchQueries<T>(queries: EnhancedQueryOptions<T>[]) {
 export function usePersistentQuery<T>(
   key: string,
   queryFn: () => Promise<T>,
-  options: Omit<EnhancedQueryOptions<T>, 'queryKey'> = {}
+  options: Omit<EnhancedQueryOptions<T>, 'queryKey' | 'queryFn'> = {}
 ) {
   const queryKey = ['persistent', key];
+  const queryClient = useQueryClient();
 
   // Salvar no localStorage quando dados mudam
   useEffect(() => {
