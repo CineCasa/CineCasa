@@ -47,7 +47,7 @@ const DetailsHeroBanner = ({
   const displayRating = vote_average?.toFixed(1) || rating || "0.0";
 
   return (
-    <section className="relative w-full h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[70vh] xl:h-[75vh] min-h-[300px] max-h-[900px] overflow-hidden bg-[#141414]">
+    <section className="relative w-full aspect-video max-h-[80vh] overflow-hidden bg-[#141414]">
       {/* Background Image Container - Full Coverage */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <img

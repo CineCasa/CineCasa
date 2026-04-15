@@ -40,16 +40,20 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
 
   // Buscar posters da tabela correta baseado no contentType
   const fetchPosters = useCallback(async () => {
+    console.log('[PremiumHeroBanner] Iniciando fetchPosters, contentType:', contentType);
     try {
       setIsLoading(true);
       
       if (contentType === 'movies') {
         // Buscar posters da tabela cinema
+        console.log('[PremiumHeroBanner] Buscando filmes da tabela cinema...');
         const { data, error } = await supabase
           .from('cinema')
           .select('id, titulo, poster, year, description, trailer, rating, genero, duration')
           .not('poster', 'is', null)
           .not('poster', 'eq', '');
+
+        console.log('[PremiumHeroBanner] Resultado cinema:', { dataLength: data?.length, error });
 
         if (error) {
           console.error('Erro ao buscar posters de filmes:', error);
@@ -143,15 +147,16 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative w-full h-[70vh] bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+      <div className="relative w-full aspect-video max-h-[80vh] bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
         <div className="text-white text-xl">Carregando...</div>
       </div>
     );
   }
 
   if (displayQueue.length === 0) {
+    console.log('[PremiumHeroBanner] displayQueue vazio, mostrando estado vazio');
     return (
-      <div className="relative w-full h-[70vh] bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+      <div className="relative w-full aspect-video max-h-[80vh] bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
         <div className="text-white text-xl">Nenhum poster disponível</div>
       </div>
     );

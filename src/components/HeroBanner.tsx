@@ -122,7 +122,7 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
 
   return (
     <section 
-      className="hero-banner relative w-full h-[70vh] sm:aspect-video sm:max-h-[85vh] overflow-hidden"
+      className="hero-banner relative w-full aspect-video max-h-[80vh] overflow-hidden"
       onClick={(e) => console.log('[HeroBanner] Section clicked at:', e.clientX, e.clientY, 'target:', e.target)}
     >
       <AnimatePresence mode="wait">
