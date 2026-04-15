@@ -137,13 +137,18 @@ const FilmesESeries = () => {
     cat => categorizedMovies[cat.id] && categorizedMovies[cat.id].length > 0
   );
 
+  console.log('[FilmesESeries] Renderizando com', categoriesWithMovies.length, 'categorias');
+  
   return (
     <div className="min-h-screen bg-black pt-[94px]">
-      <PremiumHeroBanner
-        contentType="movies"
-        onPlay={handleHeroPlay}
-        onDetails={handleHeroDetails}
-      />
+      {/* Banner Hero - Filmes */}
+      <div className="relative">
+        <PremiumHeroBanner
+          contentType="movies"
+          onPlay={handleHeroPlay}
+          onDetails={handleHeroDetails}
+        />
+      </div>
 
       {/* Categorias com Filmes */}
       <div className="pt-5 pb-20 px-4 sm:px-6 lg:px-8">
