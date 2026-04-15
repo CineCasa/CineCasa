@@ -1,12 +1,14 @@
 /**
- * Cliente Watch Party - Sincronização de Vídeo via Socket.IO
+ * Cliente Watch Party - Sincronização de Vídeo via Supabase Realtime
  * 
  * Funcionalidades:
- * - Conectar ao servidor Socket.IO
+ * - Conectar via Supabase Realtime (produção) ou Socket.IO (dev)
  * - Entrar em sala com ID único
  * - Sincronizar play/pause/seek com outros usuários
  * - Sincronização periódica a cada 5 segundos
  * - Mecanismo anti-loop de eventos
+ * 
+ * Versão: 2025-04-15 - Supabase Realtime
  */
 
 class WatchPartyClient {
