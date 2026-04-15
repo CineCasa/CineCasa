@@ -61,7 +61,6 @@
     "validate:env": "node scripts/validate-env.js",
     "prepare:release": "npm run test && npm run build && npm run security:audit",
     "release": "semantic-release",
-    "postinstall": "node scripts/postinstall.js",
     "precommit": "npm run lint && npm run type-check && npm run test:unit",
     "prepush": "npm run test:integration",
     "start": "vite --port 3000 --host 0.0.0.0",
