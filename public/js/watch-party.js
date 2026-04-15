@@ -68,8 +68,18 @@ class WatchPartyClient {
       return;
     }
     
-    // Conecta ao servidor Socket.IO
-    this.connect();
+    // Verifica se está em ambiente de produção (Vercel/Cloudflare)
+    const isProduction = window.location.hostname.includes('vercel.app') || 
+                         window.location.hostname.includes('pages.dev') ||
+                         window.location.hostname.includes('netlify.app');
+    
+    if (isProduction) {
+      console.log('[WatchParty] Ambiente de produção detectado. Ativando modo solo...');
+      this.activateSoloMode();
+    } else {
+      // Conecta ao servidor Socket.IO (apenas em desenvolvimento)
+      this.connect();
+    }
   }
   
   /**
@@ -128,8 +138,8 @@ class WatchPartyClient {
     this.setupVideoEvents();
     
     // Atualiza UI
-    this.updateUI(`Sala: ${this.roomId} | Modo Solo (Desenvolvimento)`);
-    this.showToast('Modo solo ativado. Compartilhamento em tempo real desabilitado.');
+    this.updateUI(`Sala: ${this.roomId} | Modo Solo`);
+    this.showToast('Assistir Juntos ativado em modo solo. Compartilhe o link para convidar amigos!');
     
     // Esconde erro de conexão se visível
     const errorEl = document.getElementById('wp-error');
