@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, SkipNext } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { CastButton } from './CastButton';
 
 interface VideoJSPlayerProps {
   url: string;
@@ -697,6 +698,20 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
               >
                 <PictureInPicture2 size={22} className="text-white" />
               </button>
+
+              {/* Chromecast */}
+              <CastButton
+                mediaInfo={{
+                  contentId: url,
+                  contentType: 'video/mp4',
+                  title: title,
+                  poster: poster,
+                  currentTime: currentTime,
+                  duration: duration,
+                }}
+                size="md"
+                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+              />
 
               {/* Subtitles */}
               <button 
