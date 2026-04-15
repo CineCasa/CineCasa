@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isNotCollection } from '@/lib/utils';
 
 export interface OscarWinner {
   id: string;
@@ -114,8 +115,12 @@ export const useOscarWinners = () => {
 
       console.log('[useOscarWinners] Total encontrado:', allMovies.length);
 
+      // REMOVER COLEÇÕES - mostrar apenas filmes individuais
+      const filteredMovies = allMovies.filter(isNotCollection);
+      console.log('[useOscarWinners] Após remover coleções:', filteredMovies.length);
+
       // Processar e formatar filmes
-      const processedWinners: OscarWinner[] = allMovies
+      const processedWinners: OscarWinner[] = filteredMovies
         .map((item: any) => ({
           id: item.id?.toString() || item.id_n?.toString(),
           tmdbId: item.tmdb_id,

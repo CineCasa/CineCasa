@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isNotCollection } from '@/lib/utils';
 
 export interface TravesseiroContent {
   id: string;
@@ -57,8 +58,11 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
 
       console.log('[TravesseiroEdredon] Cinema count:', cinemaData?.length || 0, 'Séries count:', seriesData?.length || 0);
 
+      // REMOVER COLEÇÕES dos filmes
+      const filteredCinemaData = (cinemaData || []).filter(isNotCollection);
+      
       const allContent: TravesseiroContent[] = [
-        ...(cinemaData || []).map((item: any) => ({
+        ...(filteredCinemaData).map((item: any) => ({
           id: item.id?.toString() || `cinema-${Math.random()}`,
           title: item.titulo || 'Sem título',
           poster: item.poster || '',
