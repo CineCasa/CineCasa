@@ -1,8 +1,15 @@
 // Service Worker para CineCasa PWA - Versão Otimizada com Offline Avançado
-const STATIC_CACHE = 'cinecasa-static-v3';
-const DYNAMIC_CACHE = 'cinecasa-dynamic-v3';
-const API_CACHE = 'cinecasa-api-v3';
-const OFFLINE_CACHE = 'cinecasa-offline-v3';
+const STATIC_CACHE = 'cinecasa-static-v4';
+const DYNAMIC_CACHE = 'cinecasa-dynamic-v4';
+const API_CACHE = 'cinecasa-api-v4';
+const OFFLINE_CACHE = 'cinecasa-offline-v4';
+
+// Arquivos que NÃO devem ser cacheados (sempre buscar do servidor)
+const NO_CACHE_URLS = [
+  '/js/watch-party.js',
+  '/js/criar-sala.js',
+  '/watch.html'
+];
 
 // Detectar modo de desenvolvimento (localhost)
 const isDevelopment = self.location.hostname === 'localhost' || 
@@ -229,6 +236,12 @@ self.addEventListener('fetch', event => {
 async function handleGetRequest(request) {
   const url = new URL(request.url);
   const pathname = url.pathname;
+  
+  // Verificar se a URL está na lista de não-cache
+  if (NO_CACHE_URLS.some(noCacheUrl => pathname.includes(noCacheUrl))) {
+    console.log('[SW] Network only (no cache):', pathname);
+    return fetch(request);
+  }
   
   // 1. Cache First para assets estáticos
   if (isStaticAsset(pathname)) {

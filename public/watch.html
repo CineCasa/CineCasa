@@ -8,9 +8,36 @@
   <!-- Socket.IO Client -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   
+  <!-- Cache Busting e Service Worker cleanup -->
+  <script>
+    // Força recarregamento sem cache
+    if (location.search.indexOf('nocache') === -1) {
+      // Não redireciona, apenas loga
+      console.log('[Watch] Versão v2 - Cache control ativo');
+    }
+    
+    // Limpa cache antigo do Service Worker para watch-party.js
+    if ('caches' in window) {
+      caches.keys().then(function(cacheNames) {
+        cacheNames.forEach(function(cacheName) {
+          caches.open(cacheName).then(function(cache) {
+            cache.keys().then(function(requests) {
+              requests.forEach(function(request) {
+                if (request.url.includes('watch-party.js') || request.url.includes('criar-sala.js')) {
+                  cache.delete(request);
+                  console.log('[Watch] Cache limpo:', request.url);
+                }
+              });
+            });
+          });
+        });
+      });
+    }
+  </script>
+  
   <!-- Scripts do Watch Party -->
-  <script src="/js/criar-sala.js"></script>
-  <script src="/js/watch-party.js"></script>
+  <script src="/js/criar-sala.js?v=2"></script>
+  <script src="/js/watch-party.js?v=2"></script>
   
   <style>
     /* ============================================
