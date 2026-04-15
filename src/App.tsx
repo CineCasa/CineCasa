@@ -111,6 +111,12 @@ const PlayerContainer = () => {
       title={currentItem.title}
       poster={currentItem.poster}
       onClose={closePlayer}
+      contentId={currentItem.id}
+      contentType={currentItem.type}
+      episodeId={currentItem.episodeId}
+      seasonNumber={currentItem.seasonNumber}
+      episodeNumber={currentItem.episodeNumber}
+      resumeFrom={currentItem.resumeFrom}
     />
   );
 };

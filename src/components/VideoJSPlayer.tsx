@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay } from 'lucide-react';
+import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, SkipNext } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
 
 interface VideoJSPlayerProps {
   url: string;
@@ -11,11 +13,18 @@ interface VideoJSPlayerProps {
   hasNextEpisode?: boolean;
   historyItem?: any;
   onProgressUpdate?: (currentTime: number, duration: number) => void;
+  contentId?: string;
+  contentType?: 'movie' | 'series';
+  episodeId?: string;
+  seasonNumber?: number;
+  episodeNumber?: number;
+  resumeFrom?: number;
 }
 
 declare global {
   interface Window {
     videojs?: any;
+    VideoPlayerThumbnails?: any;
   }
 }
 
@@ -28,9 +37,20 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   hasNextEpisode,
   historyItem,
   onProgressUpdate,
+  contentId,
+  contentType,
+  episodeId,
+  seasonNumber,
+  episodeNumber,
+  resumeFrom = 0,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<any>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const thumbnailRef = useRef<HTMLDivElement>(null);
+  const { user, profile } = useAuth();
+  
+  // Estados do player
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
@@ -46,7 +66,23 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const [currentQuality, setCurrentQuality] = useState<string>('auto');
   const [loaded, setLoaded] = useState(false);
   const [buffered, setBuffered] = useState(0);
+  
+  // Estados avançados
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [resumeTime, setResumeTime] = useState(0);
+  const [showNextEpisodeDialog, setShowNextEpisodeDialog] = useState(false);
+  const [nextEpisodeCountdown, setNextEpisodeCountdown] = useState(10);
+  const [isMiniPlayer, setIsMiniPlayer] = useState(false);
+  const [showThumbnail, setShowThumbnail] = useState(false);
+  const [thumbnailTime, setThumbnailTime] = useState(0);
+  const [thumbnailPosition, setThumbnailPosition] = useState(0);
+  const [subtitlesEnabled, setSubtitlesEnabled] = useState(false);
+  const [currentSubtitleTrack, setCurrentSubtitleTrack] = useState(-1);
+  const [subtitleTracks, setSubtitleTracks] = useState<TextTrack[]>([]);
+  
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const nextEpisodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveProgressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load Video.js from CDN
   useEffect(() => {
@@ -151,10 +187,49 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       }
     });
 
+    // Detectar fim do vídeo para auto-play próximo episódio
+    player.on('ended', () => {
+      if (hasNextEpisode && onNextEpisode) {
+        startNextEpisodeCountdown();
+      }
+    });
+
     return () => {
       player.dispose();
     };
-  }, [loaded, url, poster, onProgressUpdate]);
+  }, [loaded, url, poster, onProgressUpdate, hasNextEpisode, onNextEpisode, startNextEpisodeCountdown]);
+
+  // Efeito para mostrar resume dialog quando o vídeo carregar
+  useEffect(() => {
+    if (isReady && resumeFrom > 30) { // Só mostrar se já assistiu mais de 30 segundos
+      setResumeTime(resumeFrom);
+      setShowResumeDialog(true);
+      if (playerRef.current) {
+        playerRef.current.pause();
+      }
+    }
+  }, [isReady, resumeFrom]);
+
+  // Efeito para salvar progresso periodicamente
+  useEffect(() => {
+    if (!isReady || !user) return;
+
+    saveProgressIntervalRef.current = setInterval(() => {
+      if (playerRef.current && currentTime > 0 && duration > 0) {
+        saveWatchHistory(currentTime, duration);
+      }
+    }, 30000); // Salvar a cada 30 segundos
+
+    return () => {
+      if (saveProgressIntervalRef.current) {
+        clearInterval(saveProgressIntervalRef.current);
+      }
+      // Salvar uma última vez ao desmontar
+      if (currentTime > 0 && duration > 0) {
+        saveWatchHistory(currentTime, duration);
+      }
+    };
+  }, [isReady, user, currentTime, duration, saveWatchHistory]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -260,6 +335,113 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     const watchUrl = `/watch.html?room=${roomId}&video=${videoUrlParam}`;
     window.open(watchUrl, '_blank');
   }, [url]);
+
+  // Salvar progresso no Supabase
+  const saveWatchHistory = useCallback(async (current: number, dur: number) => {
+    if (!user || !profile || !contentId) return;
+    
+    try {
+      const progress = dur > 0 ? (current / dur) * 100 : 0;
+      
+      const { error } = await supabase.from('watch_history').upsert({
+        profile_id: profile.id,
+        content_id: contentId,
+        content_type: contentType || 'movie',
+        titulo: title,
+        poster: poster || '',
+        progress: progress,
+        duration: dur,
+        last_watched: new Date().toISOString(),
+        episode_id: episodeId,
+        season_number: seasonNumber,
+        episode_number: episodeNumber,
+      }, { onConflict: 'profile_id,content_id' });
+      
+      if (error) {
+        console.error('[VideoJSPlayer] Error saving watch history:', error);
+      }
+    } catch (err) {
+      console.error('[VideoJSPlayer] Failed to save watch history:', err);
+    }
+  }, [user, profile, contentId, contentType, title, poster, episodeId, seasonNumber, episodeNumber]);
+
+  // Resume - continuar assistindo
+  const handleResume = useCallback(() => {
+    if (playerRef.current && resumeTime > 0) {
+      playerRef.current.currentTime(resumeTime);
+      setCurrentTime(resumeTime);
+    }
+    setShowResumeDialog(false);
+  }, [resumeTime]);
+
+  const handleStartFromBeginning = useCallback(() => {
+    if (playerRef.current) {
+      playerRef.current.currentTime(0);
+      setCurrentTime(0);
+    }
+    setShowResumeDialog(false);
+  }, []);
+
+  // Auto-play próximo episódio
+  const startNextEpisodeCountdown = useCallback(() => {
+    if (!hasNextEpisode || !onNextEpisode) return;
+    
+    setShowNextEpisodeDialog(true);
+    setNextEpisodeCountdown(10);
+    
+    nextEpisodeTimeoutRef.current = setInterval(() => {
+      setNextEpisodeCountdown((prev) => {
+        if (prev <= 1) {
+          if (nextEpisodeTimeoutRef.current) {
+            clearInterval(nextEpisodeTimeoutRef.current);
+          }
+          onNextEpisode();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [hasNextEpisode, onNextEpisode]);
+
+  const cancelNextEpisode = useCallback(() => {
+    if (nextEpisodeTimeoutRef.current) {
+      clearInterval(nextEpisodeTimeoutRef.current);
+    }
+    setShowNextEpisodeDialog(false);
+  }, []);
+
+  // Thumbnail preview na barra de progresso
+  const handleProgressBarMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!progressBarRef.current || !duration) return;
+    
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    const time = Math.max(0, Math.min(pos * duration, duration));
+    
+    setThumbnailTime(time);
+    setThumbnailPosition(e.clientX - rect.left);
+    setShowThumbnail(true);
+  }, [duration]);
+
+  const handleProgressBarMouseLeave = useCallback(() => {
+    setShowThumbnail(false);
+  }, []);
+
+  const handleProgressBarClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!progressBarRef.current || !playerRef.current || !duration) return;
+    
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const pos = (e.clientX - rect.left) / rect.width;
+    const time = Math.max(0, Math.min(pos * duration, duration));
+    
+    playerRef.current.currentTime(time);
+    setCurrentTime(time);
+  }, [duration]);
+
+  // Mini player
+  const toggleMiniPlayer = useCallback(() => {
+    setIsMiniPlayer(!isMiniPlayer);
+  }, [isMiniPlayer]);
 
   const formatTime = (seconds: number): string => {
     if (isNaN(seconds)) return '0:00';
@@ -496,20 +678,32 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 )}
               </div>
 
+              {/* Next Episode */}
+              {hasNextEpisode && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); if (onNextEpisode) onNextEpisode(); }}
+                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                  title="Próximo Episódio"
+                >
+                  <SkipNext size={22} className="text-white" />
+                </button>
+              )}
+
+              {/* Mini Player */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); toggleMiniPlayer(); }}
+                className={`p-2 hover:bg-white/20 rounded-full transition-colors ${isMiniPlayer ? 'bg-[#00A8E1]' : ''}`}
+                title="Mini Player"
+              >
+                <PictureInPicture2 size={22} className="text-white" />
+              </button>
+
               {/* Subtitles */}
               <button 
                 onClick={(e) => e.stopPropagation()}
                 className="p-2 hover:bg-white/20 rounded-full transition-colors"
               >
                 <Subtitles size={22} className="text-white" />
-              </button>
-
-              {/* Picture in Picture */}
-              <button 
-                onClick={(e) => e.stopPropagation()}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-              >
-                <PictureInPicture2 size={22} className="text-white" />
               </button>
 
               {/* Fullscreen */}
@@ -525,6 +719,75 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Resume Dialog */}
+      {showResumeDialog && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
+          <div className="bg-[#141414] border border-white/10 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-[#00A8E1]/20 rounded-full flex items-center justify-center">
+                <Play size={24} className="text-[#00A8E1]" />
+              </div>
+              <h3 className="text-white text-xl font-bold">Continuar assistindo?</h3>
+            </div>
+            <p className="text-white/70 mb-6">
+              Você parou em {formatTime(resumeTime)}. Deseja continuar de onde parou ou começar do início?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleResume}
+                className="flex-1 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                Continuar
+              </button>
+              <button
+                onClick={handleStartFromBeginning}
+                className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                Do início
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Next Episode Dialog */}
+      {showNextEpisodeDialog && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
+          <div className="bg-[#141414] border border-white/10 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
+            <div className="w-16 h-16 bg-[#00A8E1]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <SkipNext size={32} className="text-[#00A8E1]" />
+            </div>
+            <h3 className="text-white text-xl font-bold mb-2">Próximo episódio em...</h3>
+            <p className="text-4xl font-bold text-[#00A8E1] mb-6">{nextEpisodeCountdown}s</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  cancelNextEpisode();
+                  if (onNextEpisode) onNextEpisode();
+                }}
+                className="flex-1 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                Assistir agora
+              </button>
+              <button
+                onClick={cancelNextEpisode}
+                className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-4 rounded-lg transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Brand Logo Overlay */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-2 bg-black/50 backdrop-blur px-4 py-2 rounded-full">
+          <MonitorPlay size={20} className="text-[#00A8E1]" />
+          <span className="text-white font-semibold">CineCasa</span>
         </div>
       </div>
     </div>

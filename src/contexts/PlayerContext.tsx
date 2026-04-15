@@ -12,6 +12,8 @@ interface PlayerItem {
   seasonNumber?: number;
   episodeNumber?: number;
   duration?: number;
+  resumeFrom?: number;
+  contentId?: string;
 }
 
 interface PlayerContextType {
