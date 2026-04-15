@@ -6,6 +6,10 @@
   "outputDirectory": "dist",
   "routes": [
     {
+      "src": "/watch.html",
+      "dest": "/watch.html"
+    },
+    {
       "src": "/api/(.*)",
       "dest": "/api/$1"
     },
