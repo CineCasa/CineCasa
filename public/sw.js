@@ -12,6 +12,7 @@ const isDevelopment = self.location.hostname === 'localhost' ||
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/watch.html',
   '/manifest.json',
   '/favicon.ico',
   '/icons/icon-192x192.png',
