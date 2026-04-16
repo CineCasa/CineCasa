@@ -5,7 +5,8 @@ import {
   Plus, Search, Edit2, Trash2, ChevronDown, ChevronRight,
   TrendingUp, Eye, Clock, Star, Download, Upload, Bell,
   Shield, Database, Activity, PieChart, Menu, X, Check,
-  AlertTriangle, Filter, MoreVertical, ChevronLeft, ChevronLeftIcon, LogOut
+  AlertTriangle, Filter, MoreVertical, ChevronLeft, ChevronLeftIcon, LogOut,
+  UserCheck, UserX
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +44,7 @@ interface User {
   status: 'active' | 'inactive' | 'banned';
 }
 
-type AdminSection = 'dashboard' | 'movies' | 'series' | 'users' | 'analytics' | 'settings' | 'missing';
+type AdminSection = 'dashboard' | 'movies' | 'series' | 'users' | 'analytics' | 'settings' | 'missing' | 'approvals';
 
 // Interface para o menu "Está Faltando"
 interface MissingSeason {
@@ -99,6 +100,7 @@ export default function Admin() {
 
   // Missing items states - coleção desabilitada
   const [missingSeasons, setMissingSeasons] = useState<MissingSeason[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
 
   useEffect(() => { fetchAllData(); }, []);
 
@@ -174,7 +176,41 @@ export default function Admin() {
 
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-    if (profiles) setUsers(profiles.map((p: any) => ({ id: p.id, email: p.email || '', name: p.name || 'Sem nome', avatar: p.avatar, role: p.role || 'user', lastLogin: p.updated_at, status: p.status || 'active' })));
+    if (profiles) setUsers(profiles.map((p: any) => ({ id: p.id, email: p.email || '', name: p.name || 'Sem nome', avatar: p.avatar, role: p.role || 'user', lastLogin: p.updated_at, status: p.status || 'active', approved: p.approved, is_admin: p.is_admin })));
+  };
+
+  const fetchPendingUsers = async () => {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('approved', false)
+      .or('approved.is.null')
+      .order('created_at', { ascending: false });
+    if (profiles) setPendingUsers(profiles);
+  };
+
+  const handleApproveUser = async (userId: string, makeAdmin: boolean = false) => {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ approved: true, is_admin: makeAdmin, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Sucesso!', description: makeAdmin ? 'Usuário aprovado e definido como admin.' : 'Usuário aprovado com sucesso.' });
+    fetchPendingUsers();
+    fetchUsers();
+  };
+
+  const handleRejectUser = async (userId: string) => {
+    const { error } = await supabase.from('profiles').delete().eq('id', userId);
+    if (error) {
+      toast({ title: 'Erro', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Sucesso!', description: 'Usuário rejeitado e removido.' });
+    fetchPendingUsers();
   };
 
   const handleAddMovie = async () => {
@@ -248,6 +284,7 @@ export default function Admin() {
     { id: 'movies', label: 'Filmes', icon: Film },
     { id: 'series', label: 'Séries', icon: Tv },
     { id: 'users', label: 'Usuários', icon: Users },
+    { id: 'approvals', label: 'Aprovações', icon: UserCheck },
     { id: 'missing', label: 'Está Faltando', icon: AlertTriangle },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'settings', label: 'Configurações', icon: Settings },
@@ -397,6 +434,14 @@ export default function Admin() {
               onAdd={() => setShowAddUser(true)}
               onEdit={(user) => { setUserForm({ ...userForm, ...user }); setShowAddUser(true); }}
               onDelete={(user) => confirmDelete(user.id, 'user', user.name)}
+            />
+          )}
+          {activeSection === 'approvals' && (
+            <ApprovalsView 
+              pendingUsers={pendingUsers}
+              onApprove={handleApproveUser}
+              onReject={handleRejectUser}
+              onRefresh={fetchPendingUsers}
             />
           )}
           {activeSection === 'analytics' && <AnalyticsView />}
@@ -885,6 +930,112 @@ function UsersView({ users, onAdd, onEdit, onDelete }: {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// Approvals View
+function ApprovalsView({ 
+  pendingUsers, 
+  onApprove, 
+  onReject,
+  onRefresh 
+}: { 
+  pendingUsers: any[];
+  onApprove: (userId: string, makeAdmin?: boolean) => void;
+  onReject: (userId: string) => void;
+  onRefresh: () => void;
+}) {
+  useEffect(() => {
+    onRefresh();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold">Usuários Pendentes de Aprovação</h2>
+        <button 
+          onClick={onRefresh}
+          className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-2"
+        >
+          <Activity className="w-4 h-4" />
+          Atualizar
+        </button>
+      </div>
+
+      {pendingUsers.length === 0 ? (
+        <div className="bg-[#141414] border border-white/5 rounded-xl p-8 text-center">
+          <UserCheck className="w-12 h-12 text-green-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Nenhum usuário pendente</h3>
+          <p className="text-gray-400">Todos os usuários foram aprovados.</p>
+        </div>
+      ) : (
+        <div className="bg-[#141414] border border-white/5 rounded-xl overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-white/5">
+              <tr>
+                <th className="text-left px-6 py-4 text-sm font-medium text-gray-400">Usuário</th>
+                <th className="text-left px-6 py-4 text-sm font-medium text-gray-400">Email</th>
+                <th className="text-left px-6 py-4 text-sm font-medium text-gray-400">Cadastro</th>
+                <th className="text-left px-6 py-4 text-sm font-medium text-gray-400">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {pendingUsers.map((user) => (
+                <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
+                        <span className="font-bold text-sm">{(user.name || user.email)?.[0]?.toUpperCase() || 'U'}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium block">{user.name || 'Sem nome'}</span>
+                        <span className="text-xs text-gray-500">ID: {user.id.slice(0, 8)}...</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-400">{user.email}</td>
+                  <td className="px-6 py-4 text-gray-400">
+                    {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => onApprove(user.id, false)}
+                        className="px-3 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-500 rounded-lg transition-colors flex items-center gap-2"
+                        title="Aprovar como usuário"
+                      >
+                        <UserCheck className="w-4 h-4" />
+                        Aprovar
+                      </button>
+                      <button 
+                        onClick={() => onApprove(user.id, true)}
+                        className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-500 rounded-lg transition-colors flex items-center gap-2"
+                        title="Aprovar como admin"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Admin
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (confirm('Tem certeza que deseja rejeitar este usuário? Ele será removido do sistema.')) {
+                            onReject(user.id);
+                          }
+                        }}
+                        className="px-3 py-2 bg-gray-600/20 hover:bg-gray-600/30 text-gray-400 rounded-lg transition-colors flex items-center gap-2"
+                        title="Rejeitar e remover"
+                      >
+                        <UserX className="w-4 h-4" />
+                        Rejeitar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
