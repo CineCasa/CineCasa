@@ -113,13 +113,12 @@ const Login = () => {
 
       {/* Top Bar / Logo */}
       <div className="absolute top-0 left-0 w-full p-8 z-20 flex justify-between items-center">
-        <Link to="/" className="flex flex-col items-start leading-none group">
-          <span className="text-3xl sm:text-4xl font-[900] tracking-tighter text-[#00A8E1] italic">
-            CINECASA
-          </span>
-          <span className="text-[10px] font-bold text-white/50 tracking-[0.3em] uppercase">
-            Entretenimento e lazer
-          </span>
+        <Link to="/" className="flex items-center group">
+          <img 
+            src="/logo.png" 
+            alt="CineCasa" 
+            className="h-12 sm:h-16 w-auto object-contain"
+          />
         </Link>
       </div>
 
