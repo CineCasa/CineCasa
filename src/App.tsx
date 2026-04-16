@@ -36,7 +36,8 @@ import NotificationSettings from "./pages/NotificationSettings";
 import AdvancedSearch from "./pages/AdvancedSearch";
 import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import NotificationProvider from "./components/NotificationProvider";
 import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
@@ -76,7 +77,7 @@ const AppRoutes = () => {
       <Route path="/novidades" element={<PublicNotifications />} />
 
       {/* Rotas protegidas */}
-      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+      <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
       <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
       <Route path="/filmes" element={<ProtectedRoute><FilmesESeries /></ProtectedRoute>} />
       <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />

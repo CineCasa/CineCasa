@@ -175,18 +175,43 @@ export default function Admin() {
   };
 
   const fetchUsers = async () => {
-    const { data: profiles } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-    if (profiles) setUsers(profiles.map((p: any) => ({ id: p.id, email: p.email || '', name: p.name || 'Sem nome', avatar: p.avatar, role: p.role || 'user', lastLogin: p.updated_at, status: p.status || 'active', approved: p.approved, is_admin: p.is_admin })));
+    const { data: profiles, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
+    console.log('[Admin] fetchUsers - profiles:', profiles, 'error:', error);
+    if (error) {
+      toast({ title: 'Erro ao carregar usuários', description: error.message, variant: 'destructive' });
+      return;
+    }
+    if (profiles) {
+      const mappedUsers = profiles.map((p: any) => ({ 
+        id: p.id, 
+        email: p.email || '', 
+        name: p.name || 'Sem nome', 
+        avatar: p.avatar, 
+        role: p.role || 'user', 
+        lastLogin: p.updated_at, 
+        status: p.status || 'active', 
+        approved: p.approved, 
+        is_admin: p.is_admin 
+      }));
+      console.log('[Admin] fetchUsers - mapped:', mappedUsers.length, 'users');
+      setUsers(mappedUsers);
+    }
   };
 
   const fetchPendingUsers = async () => {
-    const { data: profiles } = await supabase
+    const { data: profiles, error } = await supabase
       .from('profiles')
       .select('*')
-      .eq('approved', false)
-      .or('approved.is.null')
-      .order('created_at', { ascending: false });
-    if (profiles) setPendingUsers(profiles);
+      .or('approved.eq.false,approved.is.null');
+    console.log('[Admin] fetchPendingUsers - profiles:', profiles, 'error:', error);
+    if (error) {
+      toast({ title: 'Erro ao carregar pendentes', description: error.message, variant: 'destructive' });
+      return;
+    }
+    if (profiles) {
+      console.log('[Admin] fetchPendingUsers - found:', profiles.length, 'pending users');
+      setPendingUsers(profiles);
+    }
   };
 
   const handleApproveUser = async (userId: string, makeAdmin: boolean = false) => {
@@ -280,13 +305,13 @@ export default function Admin() {
   };
 
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'dashboard', label: 'Painel', icon: LayoutDashboard },
     { id: 'movies', label: 'Filmes', icon: Film },
     { id: 'series', label: 'Séries', icon: Tv },
     { id: 'users', label: 'Usuários', icon: Users },
     { id: 'approvals', label: 'Aprovações', icon: UserCheck },
     { id: 'missing', label: 'Está Faltando', icon: AlertTriangle },
-    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'analytics', label: 'Estatísticas', icon: BarChart3 },
     { id: 'settings', label: 'Configurações', icon: Settings },
   ];
 
@@ -309,7 +334,7 @@ export default function Admin() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <h1 className="font-bold text-lg">Admin Panel</h1>
+              <h1 className="font-bold text-lg">Painel Admin</h1>
               <p className="text-xs text-gray-500">CineCasa</p>
             </motion.div>
           )}
@@ -366,14 +391,23 @@ export default function Admin() {
 
       {/* Main Content */}
       <main 
-        className="transition-all duration-300"
+        className="transition-all duration-300 min-h-screen overflow-x-hidden"
         style={{ marginLeft: isSidebarOpen ? '280px' : '80px' }}
       >
         {/* Header */}
         <header className="sticky top-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5 px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold capitalize">{activeSection}</h2>
+              <h2 className="text-2xl font-bold">{
+                activeSection === 'dashboard' ? 'Painel' :
+                activeSection === 'movies' ? 'Filmes' :
+                activeSection === 'series' ? 'Séries' :
+                activeSection === 'users' ? 'Usuários' :
+                activeSection === 'approvals' ? 'Aprovações' :
+                activeSection === 'missing' ? 'Está Faltando' :
+                activeSection === 'analytics' ? 'Estatísticas' :
+                activeSection === 'settings' ? 'Configurações' : activeSection
+              }</h2>
               <p className="text-sm text-gray-500">
                 {new Date().toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
@@ -865,8 +899,9 @@ function UsersView({ users, onAdd, onEdit, onDelete }: {
   onDelete: (user: User) => void;
 }) {
   return (
-    <div>
+    <div className="pb-20">
       <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Lista de Usuários</h2>
         <div className="flex items-center gap-4">
           <button 
             onClick={onAdd}
@@ -951,9 +986,9 @@ function ApprovalsView({
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Usuários Pendentes de Aprovação</h2>
+        <h2 className="text-xl font-bold">Aprovações Pendentes</h2>
         <button 
           onClick={onRefresh}
           className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex items-center gap-2"
