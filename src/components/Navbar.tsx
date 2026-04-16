@@ -281,17 +281,26 @@ const Navbar = () => {
                   <p className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Logado como</p>
                   <p className="text-xs text-white/80 truncate font-semibold">{user?.email}</p>
                 </div>
-                <button
+                <div
                   onClick={() => {
-                    console.log('[Navbar] Botão Sair clicado');
+                    console.log('[Navbar] Botão Sair clicado (onClick)');
                     handleLogout();
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-3 text-sm cursor-pointer"
-                  type="button"
+                  onMouseDown={() => console.log('[Navbar] Botão Sair mouseDown')}
+                  onPointerDown={() => console.log('[Navbar] Botão Sair pointerDown')}
+                  className="w-full px-4 py-3 hover:bg-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-3 text-sm cursor-pointer select-none"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleLogout();
+                    }
+                  }}
                 >
                   <LogOut size={16} />
-                  Sair
-                </button>
+                  <span>Sair</span>
+                </div>
               </div>
             )}
           </div>
