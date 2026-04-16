@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cast, CastConnected, MonitorPlay, Airplay, X } from 'lucide-react';
+import { Cast, MonitorPlay, Airplay, X } from 'lucide-react';
 import { useScreenCast } from '@/hooks/useScreenCast';
 import { CastMediaInfo } from '@/services/screenCastService';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -87,7 +87,7 @@ export const CastButton: React.FC<CastButtonProps> = ({
 
   const getIcon = () => {
     if (isConnected || isCasting) {
-      return <CastConnected size={getIconSize()} />;
+      return <Cast size={getIconSize()} className="text-[#00A8E1]" />;
     }
     return <Cast size={getIconSize()} />;
   };

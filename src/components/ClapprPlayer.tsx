@@ -65,23 +65,23 @@ const ClapprPlayer: React.FC<ClapprPlayerProps> = ({
 
     playerInstanceRef.current = player;
 
-    player.on('playing', (() => setIsPlaying(true)) as any);
-    player.on('pause', (() => setIsPlaying(false)) as any);
-    player.on('timeupdate', ((e: any) => {
+    player.on('playing', () => setIsPlaying(true));
+    player.on('pause', () => setIsPlaying(false));
+    player.on('timeupdate', (e: any) => {
       setCurrentTime(e.current || 0);
-    }) as any);
-    player.on('loadedmetadata', ((e: any) => {
+    });
+    player.on('loadedmetadata', (e: any) => {
       setDuration(e.target?.duration || 0);
-    }) as any);
-    player.on('volumechange', ((e: any) => {
+    });
+    player.on('volumechange', (e: any) => {
       setVolume((e.volume || 0) * 100);
       setIsMuted(e.muted || false);
-    }) as any);
-    player.on('fullscreen', (() => setIsFullscreen(true)) as any);
-    player.on('exitfullscreen', (() => setIsFullscreen(false)) as any);
-    player.on('error', ((e: any) => {
+    });
+    player.on('fullscreen', () => setIsFullscreen(true));
+    player.on('exitfullscreen', () => setIsFullscreen(false));
+    player.on('error', (e: any) => {
       console.error('Playback error:', e);
-    }) as any);
+    });
 
     // Cleanup
     return () => {

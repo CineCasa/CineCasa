@@ -69,7 +69,7 @@ export function ContentDiscovery({ userId, onItemSelect, className }: ContentDis
       <div>
         <h4 className="text-sm font-medium text-gray-300 mb-3">Gêneros</h4>
         <div className="flex flex-wrap gap-2">
-          {filterOptions?.genres?.slice(0, 8).map(genre => (
+          {(filterOptions as any)?.genres?.slice(0, 8).map((genre: string) => (
             <Badge
               key={genre}
               variant={activeFilters.genres.includes(genre) ? 'primary' : 'secondary'}
@@ -80,14 +80,14 @@ export function ContentDiscovery({ userId, onItemSelect, className }: ContentDis
               {genre}
             </Badge>
           ))}
-          {filterOptions?.genres && filterOptions.genres.length > 8 && (
+          {(filterOptions as any)?.genres && (filterOptions as any).genres.length > 8 && (
             <Badge
               variant="secondary"
               size="sm"
               className="cursor-pointer"
               onClick={() => console.log('Mostrar mais gêneros')}
             >
-              +{filterOptions.genres.length - 8}
+              +{(filterOptions as any).genres.length - 8}
             </Badge>
           )}
         </div>
@@ -97,7 +97,7 @@ export function ContentDiscovery({ userId, onItemSelect, className }: ContentDis
       <div>
         <h4 className="text-sm font-medium text-gray-300 mb-3">Ano</h4>
         <div className="flex flex-wrap gap-2">
-          {filterOptions?.years?.slice(0, 6).map(year => (
+          {(filterOptions as any)?.years?.slice(0, 6).map((year: number) => (
             <Badge
               key={year}
               variant={activeFilters.years.includes(year) ? 'primary' : 'secondary'}
@@ -108,14 +108,14 @@ export function ContentDiscovery({ userId, onItemSelect, className }: ContentDis
               {year}
             </Badge>
           ))}
-          {filterOptions?.years && filterOptions.years.length > 6 && (
+          {(filterOptions as any)?.years && (filterOptions as any).years.length > 6 && (
             <Badge
               variant="secondary"
               size="sm"
               className="cursor-pointer"
               onClick={() => console.log('Mostrar mais anos')}
             >
-              +{filterOptions.years.length - 6}
+              +{(filterOptions as any).years.length - 6}
             </Badge>
           )}
         </div>
