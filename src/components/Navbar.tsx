@@ -83,17 +83,31 @@ const Navbar = () => {
     setSearchResults([]);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = async (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     console.log('[Navbar] Iniciando logout...');
     setUserMenuOpen(false);
+    
     try {
       await signOut();
-      console.log('[Navbar] Logout bem-sucedido, redirecionando...');
-      navigate("/login", { replace: true });
+      console.log('[Navbar] Logout bem-sucedido');
     } catch (error) {
       console.error('[Navbar] Erro no logout:', error);
       toast.error('Erro ao sair. Tente novamente.');
     }
+    
+    // Redirecionar sempre, mesmo se signOut falhar
+    console.log('[Navbar] Redirecionando para login...');
+    navigate("/login", { replace: true });
+    
+    // Fallback: forçar redirecionamento via window.location se navigate falhar
+    setTimeout(() => {
+      if (window.location.pathname !== '/login') {
+        console.log('[Navbar] Fallback: forçando redirecionamento...');
+        window.location.href = '/login';
+      }
+    }, 500);
   };
 
   const handleNavKeyDown = (e: React.KeyboardEvent, index: number) => {
