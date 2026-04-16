@@ -17,6 +17,7 @@ import FilmesESeries from "./pages/FilmesESeries";
 import FilmesPorCategoria from "./pages/FilmesPorCategoria";
 import FilmesCategorias from "./pages/FilmesCategorias";
 import Favorites from "./pages/Favorites";
+import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Content from "./pages/Content";
 import Details from "./pages/Details";
@@ -43,6 +44,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Todas as rotas são públicas - sem login necessário */}
+      <Route path="/login" element={<Login />} />
       <Route path="/novidades" element={<PublicNotifications />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/filmes-categorias" element={<FilmesCategorias />} />
