@@ -1,14 +1,15 @@
 // Service Worker para CineCasa PWA - Versão Otimizada com Offline Avançado
-const STATIC_CACHE = 'cinecasa-static-v4';
-const DYNAMIC_CACHE = 'cinecasa-dynamic-v4';
-const API_CACHE = 'cinecasa-api-v4';
-const OFFLINE_CACHE = 'cinecasa-offline-v4';
+const STATIC_CACHE = 'cinecasa-static-v5';
+const DYNAMIC_CACHE = 'cinecasa-dynamic-v5';
+const API_CACHE = 'cinecasa-api-v5';
+const OFFLINE_CACHE = 'cinecasa-offline-v5';
 
-// Arquivos que NÃO devem ser cacheados (sempre buscar do servidor)
+// Arquivos/pastas que NÃO devem ser cacheados (sempre buscar do servidor)
 const NO_CACHE_URLS = [
   '/js/watch-party.js',
   '/js/criar-sala.js',
-  '/watch.html'
+  '/watch.html',
+  '/assets/'  // Arquivos de build gerados dinamicamente
 ];
 
 // Detectar modo de desenvolvimento (localhost)
