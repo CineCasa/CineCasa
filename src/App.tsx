@@ -71,7 +71,7 @@ const AppRoutes = () => {
   return (
     <Routes location={location}>
       {/* Rotas públicas - não requerem login */}
-      {/* <Route path="/login" element={<Login />} /> */}
+      <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/novidades" element={<PublicNotifications />} />
 
