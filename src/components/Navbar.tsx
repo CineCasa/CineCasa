@@ -3,6 +3,7 @@ import { Search, Bell, User, Menu, X, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
+import { toast } from "sonner";
 
 const navItems = [
   { label: "Início", path: "/" },
@@ -83,9 +84,16 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
+    console.log('[Navbar] Iniciando logout...');
     setUserMenuOpen(false);
-    await signOut();
-    navigate("/login", { replace: true });
+    try {
+      await signOut();
+      console.log('[Navbar] Logout bem-sucedido, redirecionando...');
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error('[Navbar] Erro no logout:', error);
+      toast.error('Erro ao sair. Tente novamente.');
+    }
   };
 
   const handleNavKeyDown = (e: React.KeyboardEvent, index: number) => {
@@ -261,10 +269,11 @@ const Navbar = () => {
                 </div>
                 <button
                   onClick={() => {
-                    setUserMenuOpen(false);
+                    console.log('[Navbar] Botão Sair clicado');
                     handleLogout();
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-3 text-sm"
+                  className="w-full text-left px-4 py-3 hover:bg-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-3 text-sm cursor-pointer"
+                  type="button"
                 >
                   <LogOut size={16} />
                   Sair
