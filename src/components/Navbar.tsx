@@ -83,8 +83,9 @@ const Navbar = () => {
   };
 
   const handleLogout = async () => {
+    setUserMenuOpen(false);
     await signOut();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   const handleNavKeyDown = (e: React.KeyboardEvent, index: number) => {
@@ -259,11 +260,14 @@ const Navbar = () => {
                   <p className="text-xs text-white/80 truncate font-semibold">{user?.email}</p>
                 </div>
                 <button
-                  onClick={handleLogout}
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    handleLogout();
+                  }}
                   className="w-full text-left px-4 py-3 hover:bg-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-3 text-sm"
                 >
                   <LogOut size={16} />
-                  Sair do Cinecasa
+                  Sair
                 </button>
               </div>
             )}
