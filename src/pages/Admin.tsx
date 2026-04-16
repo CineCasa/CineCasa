@@ -255,11 +255,64 @@ export default function Admin() {
   };
 
   const handleAddUser = async () => {
-    const { error } = await supabase.auth.signUp({ email: userForm.email, password: userForm.password, options: { data: { name: userForm.name, role: userForm.role } } });
-    if (error) { toast({ title: 'Erro', description: error.message, variant: 'destructive' }); return; }
-    toast({ title: 'Sucesso!', description: 'Usuário criado com sucesso.' });
-    setShowAddUser(false); setUserForm({ email: '', password: '', name: '', role: 'user' });
-    fetchUsers(); fetchDashboardData();
+    setLoading(true);
+    try {
+      // 1. Criar usuário na autenticação
+      const { data: authData, error: authError } = await supabase.auth.signUp({ 
+        email: userForm.email, 
+        password: userForm.password, 
+        options: { 
+          data: { name: userForm.name, role: userForm.role },
+          emailRedirectTo: window.location.origin + '/login'
+        } 
+      });
+      
+      if (authError) {
+        toast({ title: 'Erro ao criar usuário', description: authError.message, variant: 'destructive' });
+        return;
+      }
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        toast({ title: 'Erro', description: 'ID do usuário não retornado', variant: 'destructive' });
+        return;
+      }
+
+      // 2. Criar perfil na tabela profiles manualmente (pois o trigger pode não estar funcionando)
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: userId,
+        email: userForm.email,
+        name: userForm.name,
+        role: userForm.role,
+        is_admin: userForm.role === 'admin',
+        approved: true, // Aprovar automaticamente quando criado pelo admin
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+
+      if (profileError) {
+        console.error('[Admin] Erro ao criar perfil:', profileError);
+        // Não retornar erro aqui - o usuário foi criado, apenas o perfil falhou
+        toast({ 
+          title: 'Aviso', 
+          description: 'Usuário criado, mas houve erro ao criar perfil. Verifique o console.', 
+          variant: 'default' 
+        });
+      } else {
+        toast({ title: 'Sucesso!', description: `Usuário ${userForm.name} criado e aprovado com sucesso.` });
+      }
+
+      setShowAddUser(false);
+      setUserForm({ email: '', password: '', name: '', role: 'user' });
+      fetchUsers();
+      fetchDashboardData();
+    } catch (error: any) {
+      console.error('[Admin] Erro inesperado:', error);
+      toast({ title: 'Erro inesperado', description: error.message, variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async () => {
@@ -565,8 +618,21 @@ export default function Admin() {
               </select>
             </div>
             <div className="p-6 border-t border-white/10 flex justify-end gap-4">
-              <button onClick={() => setShowAddUser(false)} className="px-6 py-2 border border-white/20 rounded-lg">Cancelar</button>
-              <button onClick={handleAddUser} className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg">Adicionar</button>
+              <button 
+                onClick={() => setShowAddUser(false)} 
+                disabled={loading}
+                className="px-6 py-2 border border-white/20 rounded-lg hover:bg-white/5 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleAddUser} 
+                disabled={loading}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg disabled:opacity-50 flex items-center gap-2"
+              >
+                {loading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                {loading ? 'Criando...' : 'Adicionar'}
+              </button>
             </div>
           </div>
         </div>
