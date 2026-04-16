@@ -265,7 +265,10 @@ const Navbar = () => {
           {/* User Menu */}
           <div className="relative" ref={menuRef}>
             <button 
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              onClick={() => {
+                console.log('[Navbar] Botão usuário clicado, userMenuOpen:', !userMenuOpen);
+                setUserMenuOpen(!userMenuOpen);
+              }}
               className="user-menu-btn p-2 text-white/80 hover:text-white transition-colors rounded-full focus-visible flex items-center gap-1.5 sm:gap-2 active:scale-95"
               aria-label="Menu do usuário"
             >
@@ -281,26 +284,17 @@ const Navbar = () => {
                   <p className="text-[10px] text-white/40 uppercase tracking-wider font-bold">Logado como</p>
                   <p className="text-xs text-white/80 truncate font-semibold">{user?.email}</p>
                 </div>
-                <div
-                  onClick={() => {
+                <button
+                  onClick={(e) => {
                     console.log('[Navbar] Botão Sair clicado (onClick)');
+                    e.stopPropagation();
                     handleLogout();
                   }}
-                  onMouseDown={() => console.log('[Navbar] Botão Sair mouseDown')}
-                  onPointerDown={() => console.log('[Navbar] Botão Sair pointerDown')}
-                  className="w-full px-4 py-3 hover:bg-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-3 text-sm cursor-pointer select-none"
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleLogout();
-                    }
-                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-white/5 text-white/80 hover:text-white transition-colors flex items-center gap-3 text-sm cursor-pointer"
                 >
                   <LogOut size={16} />
-                  <span>Sair</span>
-                </div>
+                  Sair
+                </button>
               </div>
             )}
           </div>
