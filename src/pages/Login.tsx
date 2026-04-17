@@ -73,6 +73,10 @@ const Login = () => {
     }
   };
 
+  const handleMovieClick = (movieId: number) => {
+    navigate(`/movie-details/${movieId}`);
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -124,6 +128,7 @@ const Login = () => {
               {visibleMovies.map((movie, index) => (
                 <div
                   key={movie.id}
+                  onClick={() => handleMovieClick(movie.id)}
                   className="relative group cursor-pointer flex-shrink-0"
                   style={{ width: '120px' }}
                 >
