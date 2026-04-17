@@ -53,23 +53,12 @@ const Login = () => {
         
         if (moviesError) throw moviesError;
         
-        // Buscar séries dos últimos 7 dias
-        let { data: series, error: seriesError } = await supabase
+        // Buscar séries (a tabela series não tem created_at, usar id_n ordenado desc)
+        const { data: series, error: seriesError } = await supabase
           .from('series')
-          .select('id, titulo, poster, created_at')
-          .gte('created_at', sevenDaysAgo.toISOString())
-          .order('created_at', { ascending: false })
+          .select('id_n, titulo, capa')
+          .order('id_n', { ascending: false })
           .limit(6);
-        
-        // Se não houver séries recentes, buscar as mais recentes do banco
-        if (!series || series.length === 0) {
-          const { data: allSeries } = await supabase
-            .from('series')
-            .select('id, titulo, poster, created_at')
-            .order('created_at', { ascending: false })
-            .limit(6);
-          series = allSeries;
-        }
         
         if (seriesError) throw seriesError;
         
@@ -83,11 +72,11 @@ const Login = () => {
         }));
         
         const seriesFormatted = (series || []).map(s => ({
-          id: s.id,
+          id: s.id_n,
           title: s.titulo,
-          poster: s.poster,
+          poster: s.capa,
           type: 'series' as const,
-          created_at: s.created_at
+          created_at: new Date().toISOString() // series não tem created_at, usar data atual
         }));
         
         // Ordenar por data e pegar os 6 mais recentes
