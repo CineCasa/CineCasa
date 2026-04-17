@@ -127,19 +127,6 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="relative bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-500/30 shadow-2xl shadow-cyan-500/20">
             
-            {/* Logo in Card */}
-            <div className="flex justify-center mb-6">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-lg flex items-center justify-center">
-                  <img src="/logo.png" alt="CineCasa" className="w-7 h-7 object-contain" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-cyan-400 font-bold text-xl tracking-wider">CINECASA</span>
-                  <span className="text-cyan-400/70 text-[10px] tracking-widest">ENTRETENIMENTO E LAZER</span>
-                </div>
-              </div>
-            </div>
-
             <h1 className="text-white text-2xl font-bold text-center mb-1">
               Bem-vindo de Volta
             </h1>
