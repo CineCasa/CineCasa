@@ -127,6 +127,11 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="relative bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-500/30 shadow-2xl shadow-cyan-500/20">
             
+            {/* Logo */}
+            <div className="flex justify-center mb-4">
+              <img src="/logo.png" alt="CineCasa" className="h-12 w-auto object-contain" />
+            </div>
+
             <h1 className="text-white text-2xl font-bold text-center mb-6">
               Bem-vindo de Volta
             </h1>
