@@ -324,7 +324,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 disabled:opacity-50 text-sm flex justify-center items-center"
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 disabled:opacity-50 text-sm flex justify-center items-center text-center"
               >
                 {isLoading ? "Carregando..." : isForgotPassword ? "ENVIAR LINK" : isSignUp ? "CRIAR CONTA" : "ENTRAR"}
               </button>
