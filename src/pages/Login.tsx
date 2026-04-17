@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, EyeOff, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 // TMDB Configuration
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || "b275ce8e1a6b3d5d879bb0907e4f56ad";
@@ -97,21 +97,6 @@ const Login = () => {
           </h2>
           
           <div className="relative">
-            {/* Navigation Arrows */}
-            <button
-              onClick={() => setCurrentSlide((prev) => (prev - 1 + Math.ceil(trendingMovies.length / 4)) % Math.ceil(trendingMovies.length / 4))}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-all border border-cyan-500/30"
-            >
-              <ChevronLeft className="w-5 h-5 text-cyan-400" />
-            </button>
-            
-            <button
-              onClick={() => setCurrentSlide((prev) => (prev + 1) % Math.ceil(trendingMovies.length / 4))}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center transition-all border border-cyan-500/30"
-            >
-              <ChevronRight className="w-5 h-5 text-cyan-400" />
-            </button>
-
             {/* Movies Grid */}
             <div className="flex justify-center gap-3 px-10 overflow-hidden">
               {visibleMovies.map((movie, index) => (
@@ -135,18 +120,6 @@ const Login = () => {
               ))}
             </div>
 
-            {/* Slide Indicators */}
-            <div className="flex justify-center gap-2 mt-3">
-              {Array.from({ length: Math.ceil(trendingMovies.length / 4) }).map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentSlide(idx)}
-                  className={`h-1.5 rounded-full transition-all ${
-                    idx === currentSlide ? "bg-cyan-400 w-6" : "bg-white/30 hover:bg-white/50 w-1.5"
-                  }`}
-                />
-              ))}
-            </div>
           </div>
         </div>
 
