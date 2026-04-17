@@ -118,7 +118,7 @@ const Login = () => {
         
         {/* Left Side - Trending Movies Carousel - Top Left on large screens */}
         <div className="w-full lg:w-1/2 max-w-xl lg:max-w-none lg:self-start">
-          <h2 className="text-white text-center lg:text-left text-lg font-semibold mb-4 tracking-wider uppercase whitespace-nowrap">
+          <h2 className="hidden lg:block text-white text-center lg:text-left text-lg font-semibold mb-4 tracking-wider uppercase whitespace-nowrap">
             Novidades Desta Semana
           </h2>
           
