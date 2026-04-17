@@ -232,8 +232,8 @@ const Login = () => {
             {/* Form */}
             <form onSubmit={isForgotPassword ? handleForgotPassword : isSignUp ? handleSignUp : handleEmailLogin} className="space-y-4">
               {/* Campo de E-mail */}
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <div className="relative flex items-center">
+                <div className="absolute left-3 flex items-center justify-center text-gray-500">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
@@ -250,8 +250,8 @@ const Login = () => {
 
               {/* Password Input - Hidden in forgot password mode */}
               {!isForgotPassword && (
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <div className="relative flex items-center">
+                  <div className="absolute left-3 flex items-center justify-center text-gray-500">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -267,7 +267,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400 hover:text-cyan-300 transition-colors flex items-center justify-center w-5 h-5"
+                    className="absolute right-3 flex items-center justify-center text-cyan-400 hover:text-cyan-300 transition-colors w-5 h-5"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5 flex-shrink-0" /> : <Eye className="w-5 h-5 flex-shrink-0" />}
                   </button>
