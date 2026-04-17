@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff } from "lucide-react";
 
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || "b275ce8e1a6b3d5d879bb0907e4f56ad";
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 
 interface TrendingMovie {
@@ -14,6 +13,8 @@ interface TrendingMovie {
 }
 
 const Login = () => {
+  console.log('[Login] RENDER START');
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -23,16 +24,18 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('[Login] Fetching TMDB...');
     const fetchTrending = async () => {
       try {
         const res = await fetch(
-          `${TMDB_BASE_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`
+          `https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`
         );
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
+        console.log('[Login] TMDB fetched:', data.results?.length || 0, 'movies');
         setTrendingMovies(data.results?.slice(0, 8) || []);
       } catch (error) {
-        console.error("Error fetching trending:", error);
+        console.error("[Login] TMDB error:", error);
       }
     };
     fetchTrending();
@@ -74,164 +77,212 @@ const Login = () => {
 
   const visibleMovies = trendingMovies.slice(currentSlide * 4, currentSlide * 4 + 4);
 
+  console.log('[Login] Rendering with', trendingMovies.length, 'movies, slide', currentSlide);
+
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-black">
-      <div className="absolute inset-0 z-0">
-        <img
+    <div style={{ 
+      minHeight: '100vh', 
+      width: '100%', 
+      position: 'relative',
+      backgroundColor: '#000',
+      color: '#fff'
+    }}>
+      {/* Background */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+        <img 
           src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2000&auto=format&fit=crop"
-          alt="Family watching TV"
-          className="w-full h-full object-cover"
+          alt="Background"
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/50" />
+        <div style={{ 
+          position: 'absolute', 
+          inset: 0, 
+          background: 'linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7), rgba(0,0,0,0.5))' 
+        }} />
       </div>
 
-      <header className="absolute top-0 left-0 w-full z-20 p-6">
-        <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="CineCasa" className="h-12 w-auto object-contain" />
-          <div className="flex flex-col">
-            <span className="text-white font-bold text-xl tracking-wider">CINECASA</span>
-            <span className="text-cyan-400 text-xs tracking-widest">ENTRETENIMENTO E LAZER</span>
+      {/* Content Container */}
+      <div style={{ 
+        position: 'relative', 
+        zIndex: 10, 
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* Header */}
+        <header style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src="/logo.png" alt="CineCasa" style={{ height: '48px' }} />
+          <div>
+            <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '20px', letterSpacing: '2px' }}>CINECASA</span>
+            <span style={{ color: '#00d4ff', fontSize: '10px', letterSpacing: '2px', display: 'block' }}>ENTRETENIMENTO E LAZER</span>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="absolute top-24 left-0 right-0 z-10 px-8">
-        <h2 className="text-white text-center text-lg font-semibold mb-4 tracking-wider">
-          NOVIDADES DESTA SEMANA
-        </h2>
-        <div className="relative max-w-4xl mx-auto">
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev - 1 + Math.ceil(trendingMovies.length / 4)) % Math.ceil(trendingMovies.length / 4))}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all border border-cyan-500/30"
-          >
-            <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev + 1) % Math.ceil(trendingMovies.length / 4))}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-all border border-cyan-500/30"
-          >
-            <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          <div className="flex justify-center gap-4 px-12" key={currentSlide}>
-            {visibleMovies.map((movie, index) => (
-              <div key={movie.id} className="relative group cursor-pointer">
-                <div className="w-32 h-48 rounded-lg overflow-hidden border-2 border-transparent group-hover:border-cyan-400 transition-all shadow-lg">
-                  <img
-                    src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
-                    alt={movie.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-2">
-                    <p className="text-white text-xs text-center truncate">{movie.title}</p>
-                  </div>
-                </div>
-                <div className="absolute top-2 left-2 bg-cyan-500/80 text-black text-[10px] font-bold px-2 py-0.5 rounded">
-                  {index === 0 ? "FILMES" : index === 1 ? "SÉRIES" : index === 2 ? "ALEGORIA" : "NOVO"}
+        {/* Carousel Section */}
+        <div style={{ padding: '0 32px', marginBottom: '20px' }}>
+          <h2 style={{ color: '#fff', textAlign: 'center', fontSize: '16px', marginBottom: '16px' }}>
+            NOVIDADES DESTA SEMANA
+          </h2>
+          
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            {visibleMovies.map((movie, idx) => (
+              <div key={movie.id} style={{ position: 'relative', width: '100px' }}>
+                <img 
+                  src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
+                  alt={movie.title}
+                  style={{ width: '100%', borderRadius: '8px', border: '2px solid transparent' }}
+                />
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '4px', 
+                  left: '4px', 
+                  background: 'rgba(0, 212, 255, 0.8)', 
+                  color: '#000',
+                  fontSize: '10px',
+                  padding: '2px 8px',
+                  borderRadius: '4px'
+                }}>
+                  {idx === 0 ? "FILMES" : idx === 1 ? "SÉRIES" : "NOVO"}
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="flex justify-center gap-2 mt-4">
+          {/* Slide indicators */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
             {Array.from({ length: Math.ceil(trendingMovies.length / 4) }).map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentSlide(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentSlide ? "bg-cyan-400 w-6" : "bg-white/30 hover:bg-white/50"
-                }`}
+                style={{
+                  width: idx === currentSlide ? '24px' : '8px',
+                  height: '8px',
+                  borderRadius: '4px',
+                  border: 'none',
+                  background: idx === currentSlide ? '#00d4ff' : 'rgba(255,255,255,0.3)',
+                  cursor: 'pointer'
+                }}
               />
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="absolute inset-0 flex items-center justify-center z-30 pt-32">
-        <div className="w-full max-w-md mx-4">
-          <div className="relative bg-black/60 backdrop-blur-xl rounded-2xl p-8 border border-cyan-500/30 shadow-2xl">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                <img src="/logo.png" alt="CineCasa" className="w-10 h-10 object-contain" />
+        {/* Login Card */}
+        <div style={{ 
+          flex: 1,
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          padding: '24px'
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '400px',
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '16px',
+            padding: '32px',
+            border: '1px solid rgba(0, 212, 255, 0.3)'
+          }}>
+            {/* Logo in card */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                background: 'linear-gradient(135deg, #00d4ff, #0066cc)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <img src="/logo.png" alt="Logo" style={{ width: '40px' }} />
               </div>
             </div>
 
-            <h1 className="text-white text-2xl font-bold text-center mb-2">BEM-VINDO DE VOLTA</h1>
-            <p className="text-gray-400 text-sm text-center mb-8">Faça login para continuar sua jornada</p>
+            <h1 style={{ color: '#fff', textAlign: 'center', fontSize: '24px', marginBottom: '8px' }}>
+              BEM-VINDO DE VOLTA
+            </h1>
+            <p style={{ color: '#aaa', textAlign: 'center', fontSize: '14px', marginBottom: '32px' }}>
+              Faça login para continuar
+            </p>
 
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="E-mail ou Telefone"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-all"
-                  required
-                />
-              </div>
-
-              <div className="relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                </div>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Senha"
-                  className="w-full bg-white/10 border border-white/20 rounded-xl py-3.5 pl-12 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-all"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-
+            <form onSubmit={handleEmailLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="E-mail"
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.1)',
+                  color: '#fff',
+                  fontSize: '16px'
+                }}
+                required
+              />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Senha"
+                style={{
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.1)',
+                  color: '#fff',
+                  fontSize: '16px'
+                }}
+                required
+              />
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50"
+                style={{
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #00d4ff, #0066cc)',
+                  color: '#fff',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
               >
                 {isLoading ? "Carregando..." : "ENTRAR"}
               </button>
             </form>
 
-            <div className="text-center mt-4">
-              <button className="text-cyan-400 text-sm hover:text-cyan-300 transition-colors">
-                Esqueceu a senha?
-              </button>
-            </div>
+            <p style={{ color: '#00d4ff', textAlign: 'center', marginTop: '16px', fontSize: '14px' }}>
+              Esqueceu a senha?
+            </p>
 
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-black/60 text-gray-400">OU CONTINUE COM</span>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', margin: '24px 0' }}>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
+              <span style={{ color: '#888', fontSize: '12px' }}>OU</span>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.2)' }} />
             </div>
 
             <button
               onClick={handleGoogleLogin}
-              className="w-full bg-white hover:bg-gray-100 text-gray-800 font-medium py-3.5 rounded-xl transition-all flex items-center justify-center gap-3"
+              style={{
+                width: '100%',
+                padding: '14px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: '#fff',
+                color: '#333',
+                fontSize: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                cursor: 'pointer'
+              }}
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <svg width="20" height="20" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -240,14 +291,9 @@ const Login = () => {
               Google
             </button>
 
-            <div className="text-center mt-6">
-              <p className="text-gray-400 text-sm">
-                Não tem uma conta?{" "}
-                <button className="text-cyan-400 hover:text-cyan-300 font-medium underline">
-                  Assine Agora
-                </button>
-              </p>
-            </div>
+            <p style={{ color: '#888', textAlign: 'center', marginTop: '24px', fontSize: '14px' }}>
+              Não tem uma conta? <span style={{ color: '#00d4ff', textDecoration: 'underline' }}>Assine Agora</span>
+            </p>
           </div>
         </div>
       </div>
