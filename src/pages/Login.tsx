@@ -26,7 +26,7 @@ const Login = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
-  // Buscar conteúdos dos últimos 7 dias do Supabase
+  // Buscar conteúdos do Supabase
   useEffect(() => {
     const fetchRecentContent = async () => {
       try {
@@ -34,22 +34,42 @@ const Login = () => {
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
         // Buscar filmes dos últimos 7 dias
-        const { data: movies, error: moviesError } = await supabase
+        let { data: movies, error: moviesError } = await supabase
           .from('cinema')
           .select('id, titulo, poster, created_at')
           .gte('created_at', sevenDaysAgo.toISOString())
           .order('created_at', { ascending: false })
           .limit(6);
         
+        // Se não houver filmes recentes, buscar os mais recentes do banco
+        if (!movies || movies.length === 0) {
+          const { data: allMovies } = await supabase
+            .from('cinema')
+            .select('id, titulo, poster, created_at')
+            .order('created_at', { ascending: false })
+            .limit(6);
+          movies = allMovies;
+        }
+        
         if (moviesError) throw moviesError;
         
         // Buscar séries dos últimos 7 dias
-        const { data: series, error: seriesError } = await supabase
+        let { data: series, error: seriesError } = await supabase
           .from('series')
           .select('id, titulo, poster, created_at')
           .gte('created_at', sevenDaysAgo.toISOString())
           .order('created_at', { ascending: false })
           .limit(6);
+        
+        // Se não houver séries recentes, buscar as mais recentes do banco
+        if (!series || series.length === 0) {
+          const { data: allSeries } = await supabase
+            .from('series')
+            .select('id, titulo, poster, created_at')
+            .order('created_at', { ascending: false })
+            .limit(6);
+          series = allSeries;
+        }
         
         if (seriesError) throw seriesError;
         
@@ -75,6 +95,7 @@ const Login = () => {
           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 6);
         
+        console.log('Conteúdo carregado:', combined.length, 'itens');
         setNewContent(combined);
       } catch (error) {
         console.error("Error fetching recent content:", error);
