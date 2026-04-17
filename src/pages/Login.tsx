@@ -264,7 +264,7 @@ const Login = () => {
 
         {/* Right Side - Login Card - Glassmorphism */}
         <div className="w-full max-w-sm lg:max-w-md">
-          <div className="relative bg-white/5 backdrop-blur-3xl rounded-2xl p-4 lg:p-6 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
+          <div className="relative bg-[rgba(0,0,0,0.6)] backdrop-blur-[15px] rounded-2xl p-4 lg:p-6 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
             
             {/* Logo */}
             <div className="flex justify-center mb-2 lg:mb-4">
