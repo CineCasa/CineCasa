@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Crown, Edit3, Camera, LogOut, Mail, Calendar, Clock, Heart, Star, Settings, ChevronRight, User } from 'lucide-react';
+import { Crown, Edit3, Camera, LogOut, Mail, Calendar, Clock, Heart, Star, Settings, ChevronRight, User, Shield, Users, Film, BarChart3, Bell, Lock, HelpCircle, ShieldAlert } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,9 @@ export default function Profile() {
       toast.error('Erro ao sair');
     }
   };
+
+  // Verificar se é admin (mpaixaodesigner@gmail.com)
+  const isAdmin = user?.email === 'mpaixaodesigner@gmail.com';
 
   if (!user) {
     return (
@@ -236,6 +239,33 @@ export default function Profile() {
               <ChevronRight className="w-5 h-5 text-gray-500" />
             </Card>
           </Link>
+
+          {/* Admin Section - Apenas para mpaixaodesigner@gmail.com */}
+          {isAdmin && (
+            <>
+              <div className="mt-8 mb-4">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-red-500" />
+                  Área Administrativa
+                </h2>
+              </div>
+
+              <Link to="/admin" className="block">
+                <Card className="bg-red-500/10 border-red-500/30 p-4 flex items-center justify-between hover:bg-red-500/20 transition-colors cursor-pointer">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-red-600/30 rounded-lg">
+                      <ShieldAlert className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div>
+                      <div className="font-medium text-white">Painel Admin</div>
+                      <div className="text-sm text-red-300">Gerenciar conteúdo e usuários</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-red-400" />
+                </Card>
+              </Link>
+            </>
+          )}
         </motion.div>
       </div>
     </div>
