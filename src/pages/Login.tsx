@@ -83,8 +83,8 @@ const Login = () => {
           alt="Family watching TV"
           className="w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-black/50" />
-        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/80" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
       {/* Main Content Container - Horizontal Layout */}
@@ -125,7 +125,7 @@ const Login = () => {
 
         {/* Right Side - Login Card - Glassmorphism */}
         <div className="w-full max-w-md">
-          <div className="relative bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-500/30 shadow-2xl shadow-cyan-500/20">
+          <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
             
             {/* Logo */}
             <div className="flex justify-center mb-4">
@@ -150,7 +150,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="E-mail ou Telefone"
-                  className="w-full bg-black/40 border border-gray-600 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm"
+                  className="w-full bg-white/10 border border-gray-500/50 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
                   required
                 />
               </div>
