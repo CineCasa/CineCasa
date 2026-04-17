@@ -218,7 +218,7 @@ const Login = () => {
 
             {/* Forgot Password - Only show in login mode */}
             {!isSignUp && (
-              <div className="text-center mt-3">
+              <div className="text-center mt-2">
                 <button className="text-cyan-400 text-xs hover:text-cyan-300 transition-colors">
                   Esqueceu a senha?
                 </button>
@@ -226,12 +226,12 @@ const Login = () => {
             )}
 
             {/* Divider */}
-            <div className="relative my-4">
+            <div className="relative my-2">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-700" />
+                <div className="w-full border-t border-gray-600" />
               </div>
               <div className="relative flex justify-center text-xs">
-                <span className="px-3 bg-transparent text-gray-500 uppercase text-[10px]">OU CONTINUE COM:</span>
+                <span className="px-2 bg-black/20 backdrop-blur-sm text-gray-400 uppercase text-[10px] rounded">OU CONTINUE COM:</span>
               </div>
             </div>
 
