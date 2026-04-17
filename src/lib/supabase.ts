@@ -1,19 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Configurações do Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-// Singleton para evitar múltiplas instâncias
-let supabaseInstance: ReturnType<typeof createClient> | null = null;
+// Reexportar o cliente Supabase oficial para evitar instâncias duplicadas
+import { supabase } from '@/integrations/supabase/client';
 
 export function getSupabaseClient() {
-  if (!supabaseInstance) {
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
-  }
-  return supabaseInstance;
+  return supabase;
 }
 
-export const supabase = getSupabaseClient();
-
+export { supabase };
 export default getSupabaseClient;
