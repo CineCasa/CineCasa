@@ -176,7 +176,7 @@ const Login = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="E-mail ou Telefone"
+                  placeholder="Seu e-mail"
                   className="w-full bg-white/5 border border-gray-400/50 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
                   required
                 />
