@@ -213,7 +213,7 @@ const Login = () => {
   const visibleContent = newContent;
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-black flex items-center justify-center">
+    <div className="h-screen w-full relative overflow-hidden bg-black flex items-center justify-center">
       {/* Background Image - Family watching TV */}
       <div className="absolute inset-0 z-0">
         <img
@@ -226,23 +226,23 @@ const Login = () => {
       </div>
 
       {/* Main Content Container - Horizontal Layout */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-start lg:items-start justify-start lg:justify-between min-h-screen gap-8 lg:gap-12 py-8 lg:pt-16">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-between h-full gap-4 lg:gap-8 py-4 lg:py-8 overflow-hidden">
         
-        {/* Left Side - Trending Movies Carousel - Top Left on large screens */}
-        <div className="w-full lg:w-1/2 max-w-xl lg:max-w-none lg:self-start">
-          <h2 className="hidden lg:block text-white text-center lg:text-left text-lg font-semibold mb-4 tracking-wider uppercase whitespace-nowrap">
+        {/* Left Side - Trending Movies Carousel - Hidden on mobile, visible on lg */}
+        <div className="hidden lg:block w-full lg:w-1/2 max-w-xl lg:max-w-none">
+          <h2 className="text-white text-center lg:text-left text-lg font-semibold mb-2 tracking-wider uppercase whitespace-nowrap">
             Novidades Desta Semana
           </h2>
           
           <div className="relative">
             {/* Movies Grid */}
-            <div className="flex justify-center lg:justify-start gap-3 overflow-hidden">
-              {visibleContent.map((item, index) => (
+            <div className="flex justify-center lg:justify-start gap-2 overflow-hidden">
+              {visibleContent.slice(0, 4).map((item) => (
                 <div
                   key={`${item.type}-${item.id}`}
                   onClick={() => handleContentClick(item)}
                   className="relative group cursor-pointer flex-shrink-0"
-                  style={{ width: '120px' }}
+                  style={{ width: '100px' }}
                 >
                   <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent group-hover:border-cyan-400 transition-all shadow-lg">
                     <img
@@ -252,7 +252,7 @@ const Login = () => {
                     />
                   </div>
                   {/* Category Tag */}
-                  <div className="absolute top-1 left-1 bg-cyan-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
+                  <div className="absolute top-1 left-1 bg-cyan-500 text-black text-[7px] font-bold px-1 py-0.5 rounded">
                     {item.type === 'movie' ? 'FILME' : 'SÉRIE'}
                   </div>
                 </div>
@@ -263,20 +263,20 @@ const Login = () => {
         </div>
 
         {/* Right Side - Login Card - Glassmorphism */}
-        <div className="w-full max-w-md lg:self-center">
-          <div className="relative bg-white/5 backdrop-blur-3xl rounded-2xl p-8 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
+        <div className="w-full max-w-sm lg:max-w-md">
+          <div className="relative bg-white/5 backdrop-blur-3xl rounded-2xl p-4 lg:p-6 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
             
             {/* Logo */}
-            <div className="flex justify-center mb-4">
-              <img src="/logo.png" alt="CineCasa" className="h-[150px] md:h-[120px] xl:h-[350px] w-auto object-contain" />
+            <div className="flex justify-center mb-2 lg:mb-4">
+              <img src="/logo.png" alt="CineCasa" className="h-[80px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[200px] w-auto object-contain" />
             </div>
 
-            <h1 className="text-white text-2xl font-bold text-center mb-6">
+            <h1 className="text-white text-xl lg:text-2xl font-bold text-center mb-3 lg:mb-4">
               {isForgotPassword ? "Recuperar Senha" : isSignUp ? "Criar Conta" : "Bem-vindo de Volta"}
             </h1>
 
             {/* Form */}
-            <form onSubmit={isForgotPassword ? handleForgotPassword : isSignUp ? handleSignUp : handleEmailLogin} className="space-y-4">
+            <form onSubmit={isForgotPassword ? handleForgotPassword : isSignUp ? handleSignUp : handleEmailLogin} className="space-y-3 lg:space-y-4">
               {/* Campo de E-mail */}
               <div className="relative flex items-center">
                 <div className="absolute left-3 flex items-center justify-center text-gray-500">
@@ -289,7 +289,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Seu e-mail"
-                  className="w-full bg-white/5 border border-gray-400/50 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
+                  className="w-full bg-white/5 border border-gray-400/50 rounded-xl py-2.5 lg:py-3 pl-10 pr-4 text-white placeholder-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
                   required
                 />
               </div>
@@ -307,7 +307,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="senha"
-                    className="w-full bg-white/5 border border-gray-400/50 rounded-xl py-3 pl-10 pr-16 text-white placeholder-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
+                    className="w-full bg-white/5 border border-gray-400/50 rounded-xl py-2.5 lg:py-3 pl-10 pr-16 text-white placeholder-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
                     required={!isForgotPassword}
                   />
                   <button
@@ -324,7 +324,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 disabled:opacity-50 text-sm flex justify-center items-center text-center"
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-2.5 lg:py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 disabled:opacity-50 text-sm flex justify-center items-center text-center"
               >
                 {isLoading ? "Carregando..." : isForgotPassword ? "ENVIAR LINK" : isSignUp ? "CRIAR CONTA" : "ENTRAR"}
               </button>
@@ -332,7 +332,7 @@ const Login = () => {
 
             {/* Forgot Password - Only show in login mode */}
             {!isSignUp && !isForgotPassword && (
-              <div className="text-center mt-2">
+              <div className="text-center mt-1.5 lg:mt-2">
                 <button
                   type="button"
                   onClick={() => setIsForgotPassword(true)}
@@ -345,7 +345,7 @@ const Login = () => {
 
             {/* Back to Login - Only show in forgot password mode */}
             {isForgotPassword && (
-              <div className="text-center mt-2">
+              <div className="text-center mt-1.5 lg:mt-2">
                 <button
                   type="button"
                   onClick={() => setIsForgotPassword(false)}
@@ -357,7 +357,7 @@ const Login = () => {
             )}
 
             {/* Sign Up / Login Toggle Link */}
-            <div className="text-center mt-4">
+            <div className="text-center mt-3 lg:mt-4">
               <p className="text-gray-400 text-xs">
                 {isSignUp ? (
                   <>
