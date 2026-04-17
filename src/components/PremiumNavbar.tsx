@@ -6,8 +6,6 @@ import GlobalSearch from './GlobalSearch';
 import { NotificationBell } from './NotificationBell';
 import { useNotifications } from "@/hooks/useNotifications";
 import { useCinemaMode } from "@/hooks/useCinemaMode";
-import { PWAInstallButton } from './PWAInstallButton';
-
 interface PremiumNavbarProps {
   onSearch?: (query: string) => void;
   user?: any;
@@ -139,11 +137,6 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
             >
               <MonitorPlay size={20} />
             </button>
-
-            {/* Botão Instalar PWA - Desktop only */}
-            <div className="hidden md:block">
-              <PWAInstallButton />
-            </div>
 
             {/* Perfil */}
             <div ref={profileDropdownRef} className="relative flex flex-row items-center space-x-2 profile-dropdown">

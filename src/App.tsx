@@ -35,8 +35,6 @@ import { NotificationsPage } from "./components/NotificationsPage";
 import PublicNotifications from "./pages/PublicNotifications";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
-import { PWAInstallButton } from "./components/PWAInstallButton";
-import { PWAImmediateInstall } from "./components/PWAImmediateInstall";
 
 const queryClient = new QueryClient();
 
@@ -175,8 +173,6 @@ const AppContent = () => {
             <AppRoutes />
           </KeyboardNavigation>
           <PlayerContainer />
-          {isLoggedIn && <PWAInstallButton />}
-          {isLoggedIn && <PWAImmediateInstall />}
         </PlayerProvider>
       </NotificationProvider>
       {!isLoginPage && <MobileBottomNav />}
