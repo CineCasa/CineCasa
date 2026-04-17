@@ -92,7 +92,7 @@ const Login = () => {
         
         {/* Left Side - Trending Movies Carousel */}
         <div className="w-full lg:w-1/2 max-w-xl lg:max-w-none">
-          <h2 className="text-white text-center lg:text-left text-lg font-semibold mb-4 tracking-wider uppercase">
+          <h2 className="text-white text-center lg:text-left text-lg font-semibold mb-4 tracking-wider uppercase whitespace-nowrap">
             Novidades Desta Semana
           </h2>
           
@@ -138,7 +138,7 @@ const Login = () => {
 
             {/* Form */}
             <form onSubmit={handleEmailLogin} className="space-y-4">
-              {/* Email Input */}
+              {/* Campo de E-mail */}
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
