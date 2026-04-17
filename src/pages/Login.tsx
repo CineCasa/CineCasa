@@ -79,9 +79,9 @@ const Login = () => {
       {/* Background Image - Family watching TV */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2500&auto=format&fit=crop"
+          src="/login-bg.png"
           alt="Family watching TV"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/80" />
         <div className="absolute inset-0 bg-black/40" />
