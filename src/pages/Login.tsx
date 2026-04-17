@@ -7,10 +7,12 @@ import { Eye, EyeOff } from "lucide-react";
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || "b275ce8e1a6b3d5d879bb0907e4f56ad";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 
-interface TrendingMovie {
+interface NewContent {
   id: number;
   title: string;
-  poster_path: string;
+  poster: string;
+  type: 'movie' | 'series';
+  created_at: string;
 }
 
 const Login = () => {
@@ -20,33 +22,71 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
-  const [trendingMovies, setTrendingMovies] = useState<TrendingMovie[]>([]);
+  const [newContent, setNewContent] = useState<NewContent[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
+  // Buscar conteúdos dos últimos 7 dias do Supabase
   useEffect(() => {
-    const fetchTrending = async () => {
+    const fetchRecentContent = async () => {
       try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`
-        );
-        if (!res.ok) throw new Error("Failed to fetch");
-        const data = await res.json();
-        setTrendingMovies(data.results?.slice(0, 12) || []);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        // Buscar filmes dos últimos 7 dias
+        const { data: movies, error: moviesError } = await supabase
+          .from('cinema')
+          .select('id, titulo, poster, created_at')
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: false })
+          .limit(6);
+        
+        if (moviesError) throw moviesError;
+        
+        // Buscar séries dos últimos 7 dias
+        const { data: series, error: seriesError } = await supabase
+          .from('series')
+          .select('id, titulo, poster, created_at')
+          .gte('created_at', sevenDaysAgo.toISOString())
+          .order('created_at', { ascending: false })
+          .limit(6);
+        
+        if (seriesError) throw seriesError;
+        
+        // Combinar e formatar conteúdos
+        const moviesFormatted = (movies || []).map(m => ({
+          id: m.id,
+          title: m.titulo,
+          poster: m.poster,
+          type: 'movie' as const,
+          created_at: m.created_at
+        }));
+        
+        const seriesFormatted = (series || []).map(s => ({
+          id: s.id,
+          title: s.titulo,
+          poster: s.poster,
+          type: 'series' as const,
+          created_at: s.created_at
+        }));
+        
+        // Ordenar por data e pegar os 6 mais recentes
+        const combined = [...moviesFormatted, ...seriesFormatted]
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 6);
+        
+        setNewContent(combined);
       } catch (error) {
-        console.error("Error fetching trending:", error);
+        console.error("Error fetching recent content:", error);
       }
     };
-    fetchTrending();
-  }, []);
-
-  useEffect(() => {
-    if (trendingMovies.length === 0) return;
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % Math.ceil(trendingMovies.length / 6));
-    }, 5000);
+    
+    fetchRecentContent();
+    
+    // Atualizar a cada 5 minutos para pegar novos conteúdos
+    const interval = setInterval(fetchRecentContent, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [trendingMovies]);
+  }, []);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,8 +135,12 @@ const Login = () => {
     }
   };
 
-  const handleMovieClick = (movieId: number) => {
-    navigate(`/movie-details/${movieId}`);
+  const handleContentClick = (item: NewContent) => {
+    if (item.type === 'movie') {
+      navigate(`/movie-details/${item.id}`);
+    } else {
+      navigate(`/series-details/${item.id}`);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -120,7 +164,7 @@ const Login = () => {
     }
   };
 
-  const visibleMovies = trendingMovies.slice(currentSlide * 6, currentSlide * 6 + 6);
+  const visibleContent = newContent;
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-black flex items-center justify-center">
@@ -147,23 +191,23 @@ const Login = () => {
           <div className="relative">
             {/* Movies Grid */}
             <div className="flex justify-center lg:justify-start gap-3 overflow-hidden">
-              {visibleMovies.map((movie, index) => (
+              {visibleContent.map((item, index) => (
                 <div
-                  key={movie.id}
-                  onClick={() => handleMovieClick(movie.id)}
+                  key={`${item.type}-${item.id}`}
+                  onClick={() => handleContentClick(item)}
                   className="relative group cursor-pointer flex-shrink-0"
                   style={{ width: '120px' }}
                 >
                   <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent group-hover:border-cyan-400 transition-all shadow-lg">
                     <img
-                      src={`${TMDB_IMAGE_BASE}${movie.poster_path}`}
-                      alt={movie.title}
+                      src={item.poster || '/placeholder-poster.jpg'}
+                      alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
                   {/* Category Tag */}
                   <div className="absolute top-1 left-1 bg-cyan-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
-                    {index === 0 ? "FILMES POPULARES" : index === 1 ? "SÉRIES" : index === 2 ? "ALEGORIA" : index === 3 ? "FICÇÃO" : index === 4 ? "COMÉDIA" : "NOVO"}
+                    {item.type === 'movie' ? 'FILME' : 'SÉRIE'}
                   </div>
                 </div>
               ))}
