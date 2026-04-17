@@ -88,10 +88,10 @@ const Login = () => {
       </div>
 
       {/* Main Content Container - Horizontal Layout */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center justify-center lg:justify-between min-h-screen gap-8 lg:gap-12 py-8">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-start lg:items-start justify-start lg:justify-between min-h-screen gap-8 lg:gap-12 py-8 lg:pt-16">
         
-        {/* Left Side - Trending Movies Carousel */}
-        <div className="w-full lg:w-1/2 max-w-xl lg:max-w-none">
+        {/* Left Side - Trending Movies Carousel - Top Left on large screens */}
+        <div className="w-full lg:w-1/2 max-w-xl lg:max-w-none lg:self-start">
           <h2 className="text-white text-center lg:text-left text-lg font-semibold mb-4 tracking-wider uppercase whitespace-nowrap">
             Novidades Desta Semana
           </h2>
@@ -124,7 +124,7 @@ const Login = () => {
         </div>
 
         {/* Right Side - Login Card - Glassmorphism */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md lg:self-center">
           <div className="relative bg-black/20 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-400/30 shadow-2xl shadow-cyan-500/10">
             
             {/* Logo */}
