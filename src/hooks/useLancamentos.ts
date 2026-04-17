@@ -153,6 +153,16 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
 
       console.log(`📈 Resultado: ${releases2026.length} filmes 2026, ${releases2025.length} filmes 2025`);
 
+      // Fallback: se não houver lançamentos 2025/2026, mostrar todos os filmes recentes
+      if (releases2026.length === 0 && releases2025.length === 0) {
+        console.log('⚠️ Nenhum lançamento 2025/2026 encontrado, usando fallback de todos os filmes');
+        // Pegar até 10 filmes mais recentes como fallback
+        const fallbackMovies = filteredMovies.slice(0, 10);
+        fallbackMovies.forEach((item: any) => {
+          releases2025.push(item);
+        });
+      }
+
       // Mapear para o formato Lancamento
       const mapMovie = (item: any, category: string): Lancamento => ({
         id: item.id_n?.toString() || item.id?.toString() || `cinema-${Math.random()}`,
