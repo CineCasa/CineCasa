@@ -87,23 +87,23 @@ const Login = () => {
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
-      {/* Main Content Container */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 flex flex-col items-center justify-center min-h-screen">
+      {/* Main Content Container - Horizontal Layout */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center justify-center lg:justify-between min-h-screen gap-8 lg:gap-12 py-8">
         
-        {/* Trending Movies Carousel - Above Login Card */}
-        <div className="w-full max-w-4xl mb-6">
-          <h2 className="text-white text-center text-base font-semibold mb-3 tracking-wider uppercase">
+        {/* Left Side - Trending Movies Carousel */}
+        <div className="w-full lg:w-1/2 max-w-xl lg:max-w-none">
+          <h2 className="text-white text-center lg:text-left text-lg font-semibold mb-4 tracking-wider uppercase">
             Novidades Desta Semana
           </h2>
           
           <div className="relative">
             {/* Movies Grid */}
-            <div className="flex justify-center gap-3 px-10 overflow-hidden">
+            <div className="flex justify-center lg:justify-start gap-3 overflow-hidden">
               {visibleMovies.map((movie, index) => (
                 <div
                   key={movie.id}
                   className="relative group cursor-pointer flex-shrink-0"
-                  style={{ width: '100px' }}
+                  style={{ width: '120px' }}
                 >
                   <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent group-hover:border-cyan-400 transition-all shadow-lg">
                     <img
@@ -123,7 +123,7 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Login Card - Glassmorphism */}
+        {/* Right Side - Login Card - Glassmorphism */}
         <div className="w-full max-w-md">
           <div className="relative bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-500/30 shadow-2xl shadow-cyan-500/20">
             
