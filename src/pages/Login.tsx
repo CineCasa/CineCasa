@@ -26,76 +26,112 @@ const Login = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
-  // Buscar conteúdos do Supabase
+  // Buscar conteúdos do Supabase - atualiza só no reload da página
   useEffect(() => {
-    const fetchRecentContent = async () => {
+    const fetchContent = async () => {
       try {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
         // Buscar filmes dos últimos 7 dias
-        let { data: movies, error: moviesError } = await supabase
+        const { data: recentMovies, error: recentMoviesError } = await supabase
           .from('cinema')
           .select('id, titulo, poster, created_at')
           .gte('created_at', sevenDaysAgo.toISOString())
-          .order('created_at', { ascending: false })
-          .limit(6);
+          .order('created_at', { ascending: false });
         
-        // Se não houver filmes recentes, buscar os mais recentes do banco
-        if (!movies || movies.length === 0) {
-          const { data: allMovies } = await supabase
-            .from('cinema')
-            .select('id, titulo, poster, created_at')
-            .order('created_at', { ascending: false })
-            .limit(6);
-          movies = allMovies;
+        if (recentMoviesError) throw recentMoviesError;
+        
+        let selectedContent: NewContent[] = [];
+        
+        // Se houver conteúdo dos últimos 7 dias, mostrar ordenado por data
+        if (recentMovies && recentMovies.length > 0) {
+          selectedContent = recentMovies.slice(0, 6).map(m => ({
+            id: m.id,
+            title: m.titulo,
+            poster: m.poster,
+            type: 'movie' as const,
+            created_at: m.created_at
+          }));
+        } else {
+          // Sem novidades: buscar TUDO e sortear aleatoriamente com anti-duplicados inteligente
+          const [allMoviesResult, allSeriesResult] = await Promise.all([
+            supabase.from('cinema').select('id, titulo, poster').order('id', { ascending: false }),
+            supabase.from('series').select('id_n, titulo, capa').order('id_n', { ascending: false })
+          ]);
+          
+          const allMovies = allMoviesResult.data || [];
+          const allSeries = allSeriesResult.data || [];
+          
+          // Combinar tudo
+          const allContent: NewContent[] = [
+            ...allMovies.map(m => ({
+              id: m.id,
+              title: m.titulo,
+              poster: m.poster,
+              type: 'movie' as const,
+              created_at: new Date().toISOString()
+            })),
+            ...allSeries.map(s => ({
+              id: s.id_n,
+              title: s.titulo,
+              poster: s.capa,
+              type: 'series' as const,
+              created_at: new Date().toISOString()
+            }))
+          ];
+          
+          // Função para extrair nome base (remove números, "temporada", "vol", etc)
+          const getBaseName = (title: string): string => {
+            return title
+              .toLowerCase()
+              .replace(/\d+/g, '') // remove números
+              .replace(/temporada|season|vol|volume|parte|part|capítulo|episódio/g, '')
+              .replace(/[:\-\(\)\[\]]/g, '') // remove pontuação
+              .trim();
+          };
+          
+          // Agrupar por nome base para evitar duplicados de coleções/temporadas
+          const contentByBaseName = new Map<string, NewContent[]>();
+          allContent.forEach(item => {
+            const baseName = getBaseName(item.title);
+            if (!contentByBaseName.has(baseName)) {
+              contentByBaseName.set(baseName, []);
+            }
+            contentByBaseName.get(baseName)!.push(item);
+          });
+          
+          // Pegar um representante de cada grupo (preferencialmente com poster válido)
+          const uniqueContent: NewContent[] = [];
+          contentByBaseName.forEach(group => {
+            // Ordenar: preferir itens com poster válido
+            const withPoster = group.filter(item => item.poster && item.poster.trim() !== '');
+            const candidates = withPoster.length > 0 ? withPoster : group;
+            
+            // Escolher um aleatório do grupo
+            const randomIndex = Math.floor(Math.random() * candidates.length);
+            uniqueContent.push(candidates[randomIndex]);
+          });
+          
+          // Embaralhar todos os únicos (Fisher-Yates)
+          for (let i = uniqueContent.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [uniqueContent[i], uniqueContent[j]] = [uniqueContent[j], uniqueContent[i]];
+          }
+          
+          // Pegar 6 aleatórios, garantindo que não é o início da lista ordenada
+          selectedContent = uniqueContent.slice(0, 6);
         }
         
-        if (moviesError) throw moviesError;
-        
-        // Buscar séries (a tabela series não tem created_at, usar id_n ordenado desc)
-        const { data: series, error: seriesError } = await supabase
-          .from('series')
-          .select('id_n, titulo, capa')
-          .order('id_n', { ascending: false })
-          .limit(6);
-        
-        if (seriesError) throw seriesError;
-        
-        // Combinar e formatar conteúdos
-        const moviesFormatted = (movies || []).map(m => ({
-          id: m.id,
-          title: m.titulo,
-          poster: m.poster,
-          type: 'movie' as const,
-          created_at: m.created_at
-        }));
-        
-        const seriesFormatted = (series || []).map(s => ({
-          id: s.id_n,
-          title: s.titulo,
-          poster: s.capa,
-          type: 'series' as const,
-          created_at: new Date().toISOString() // series não tem created_at, usar data atual
-        }));
-        
-        // Ordenar por data e pegar os 6 mais recentes
-        const combined = [...moviesFormatted, ...seriesFormatted]
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 6);
-        
-        console.log('Conteúdo carregado:', combined.length, 'itens');
-        setNewContent(combined);
+        console.log('Conteúdo carregado:', selectedContent.length, 'itens');
+        setNewContent(selectedContent);
       } catch (error) {
-        console.error("Error fetching recent content:", error);
+        console.error("Error fetching content:", error);
       }
     };
     
-    fetchRecentContent();
-    
-    // Atualizar a cada 5 minutos para pegar novos conteúdos
-    const interval = setInterval(fetchRecentContent, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    fetchContent();
+    // Sem interval - atualiza só no reload da página
   }, []);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
