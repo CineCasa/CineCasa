@@ -229,12 +229,12 @@ const Login = () => {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col items-center justify-between h-full gap-4 py-4 lg:py-8 overflow-hidden">
         
         {/* Mobile Only - 3 capas não clicáveis (acima do card) */}
-        <div className="lg:hidden w-full flex justify-center">
+        <div className="block lg:hidden w-full flex justify-center">
           <div className="flex justify-center gap-2 overflow-hidden">
             {visibleContent.slice(0, 3).map((item) => (
               <div
-                key={`${item.type}-${item.id}`}
-                className="relative group flex-shrink-0"
+                key={`mobile-${item.type}-${item.id}`}
+                className="relative flex-shrink-0"
                 style={{ width: '90px' }}
               >
                 <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
@@ -378,13 +378,13 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Desktop Only - 4 capas não clicáveis no rodapé */}
-        <div className="hidden lg:block w-full flex justify-center">
+        {/* Desktop Only - 4 capas não clicáveis no rodapé (só lg+) */}
+        <div className="hidden lg:block w-full flex justify-center mt-auto">
           <div className="flex justify-center gap-3 overflow-hidden">
             {visibleContent.slice(0, 4).map((item) => (
               <div
-                key={`${item.type}-${item.id}`}
-                className="relative group flex-shrink-0"
+                key={`desktop-${item.type}-${item.id}`}
+                className="relative flex-shrink-0"
                 style={{ width: '100px' }}
               >
                 <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
