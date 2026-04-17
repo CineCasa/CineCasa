@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./components/AuthProvider";
 import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
@@ -89,9 +89,35 @@ const PlayerContainer = () => {
   );
 };
 
-const App = () => {
+const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const location = useLocation();
+  const isLoginPage = location.pathname === "/login";
 
+  return (
+    <div className={`min-h-screen bg-black ${isLoginPage ? '' : 'pb-14 md:pb-0'}`}>
+      <NotificationProvider>
+        <NotificationContainer />
+        <NewContentNotificationToast />
+        {showNotificationPrompt && (
+          <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
+        )}
+        <PlayerProvider>
+          <KeyboardNavigation>
+            {!isLoginPage && <PremiumNavbar />}
+            <AppRoutes />
+          </KeyboardNavigation>
+          <PlayerContainer />
+          <PWAInstallButton />
+          <PWAImmediateInstall />
+        </PlayerProvider>
+      </NotificationProvider>
+      {!isLoginPage && <MobileBottomNav />}
+    </div>
+  );
+};
+
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -100,25 +126,7 @@ const App = () => {
         <AuthProvider>
           <DeviceAccessManager>
             <BrowserRouter>
-              <div className="min-h-screen bg-black pb-14 md:pb-0">
-                <NotificationProvider>
-                  <NotificationContainer />
-                  <NewContentNotificationToast />
-                  {showNotificationPrompt && (
-                    <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
-                  )}
-                  <PlayerProvider>
-                    <KeyboardNavigation>
-                      <PremiumNavbar />
-                      <AppRoutes />
-                    </KeyboardNavigation>
-                    <PlayerContainer />
-                    <PWAInstallButton />
-                    <PWAImmediateInstall />
-                  </PlayerProvider>
-                </NotificationProvider>
-                <MobileBottomNav />
-              </div>
+              <AppContent />
             </BrowserRouter>
           </DeviceAccessManager>
         </AuthProvider>
