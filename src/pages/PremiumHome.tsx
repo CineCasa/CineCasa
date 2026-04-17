@@ -5,7 +5,6 @@ import PremiumNavbar from '../components/PremiumNavbar';
 import PremiumHeroBanner from '../components/PremiumHeroBanner';
 import { MobileNetflixHero } from '../components/MobileNetflixHero';
 import ContentCarousel from '../components/ContentCarousel';
-import { useIsMobile } from '../hooks/use-mobile';
 import { useContinueWatching } from '../hooks/useContinueWatching';
 import { useLancamentos } from '../hooks/useLancamentos';
 import { useRomances } from '../hooks/useRomances';
@@ -389,7 +388,6 @@ const mockPoderiaSerMelhor = [
 
 const PremiumHome: React.FC = () => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Sempre inicia no topo da página (banner) quando a home é carregada
@@ -484,15 +482,18 @@ const PremiumHome: React.FC = () => {
       ) : null}
 
       {/* Hero Banner - Netflix Style Mobile/Desktop */}
-      {isMobile ? (
+      {/* Mobile Banner - hidden on desktop */}
+      <div className="md:hidden">
         <MobileNetflixHero contentType="movies" />
-      ) : (
+      </div>
+      {/* Desktop Banner - hidden on mobile */}
+      <div className="hidden md:block">
         <PremiumHeroBanner
           {...mockHeroContent}
           onPlay={handleHeroPlay}
           onDetails={handleHeroDetails}
         />
-      )}
+      </div>
 
       {/* Content Sections */}
       <div className="mt-[70px] relative z-30">
