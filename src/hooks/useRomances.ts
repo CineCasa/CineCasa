@@ -21,6 +21,7 @@ interface UseRomancesReturn {
 export const useRomances = (userId?: string): UseRomancesReturn => {
   const [romances, setRomances] = useState<Romance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   const fetchRomances = useCallback(async () => {
     try {
@@ -133,8 +134,12 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
   }, [fetchRomances]);
 
   useEffect(() => {
-    // Sempre buscar na montagem (atualiza a cada reinício)
-    fetchRomances();
+    // Sempre buscar na montagem (atualiza a cada navegação)
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      console.log('[useRomances] Inicializando carregamento...');
+      fetchRomances();
+    }
   }, [fetchRomances]);
 
   return {

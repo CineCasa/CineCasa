@@ -21,6 +21,7 @@ interface UseFinancasReturn {
 export const useFinancas = (userId?: string): UseFinancasReturn => {
   const [financas, setFinancas] = useState<Financa[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   const fetchFinancas = useCallback(async () => {
     try {
@@ -112,8 +113,12 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
   }, [fetchFinancas]);
 
   useEffect(() => {
-    // Sempre buscar na montagem (atualiza a cada reinício)
-    fetchFinancas();
+    // Sempre buscar na montagem (atualiza a cada navegação)
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      console.log('[useFinancas] Inicializando carregamento...');
+      fetchFinancas();
+    }
   }, [fetchFinancas]);
 
   return {

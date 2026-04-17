@@ -35,6 +35,7 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const previousUserId = useRef<string | undefined>(userId);
+  const isInitialized = useRef(false);
 
   const fetchLancamentos = useCallback(async (forceRefresh = true) => {
     // Forçar atualização sempre em localhost para garantir conteúdo fresco
@@ -218,10 +219,14 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
     await fetchLancamentos(true);
   }, [fetchLancamentos]);
 
-  // Carregar na montagem
+  // Carregar na montagem - sempre buscar quando componente montar
   useEffect(() => {
-    fetchLancamentos();
-  }, []);
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      console.log('[useLancamentos] Inicializando carregamento...');
+      fetchLancamentos();
+    }
+  }, [fetchLancamentos]);
 
   // Recarregar quando o usuário mudar
   useEffect(() => {
