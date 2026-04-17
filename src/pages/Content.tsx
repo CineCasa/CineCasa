@@ -1,18 +1,28 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
-import VideoPlayer from "@/components/VideoPlayer";
+import { usePlayer } from "@/contexts/PlayerContext";
 import PremiumHeroBanner from "@/components/PremiumHeroBanner";
 
 const Content = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: categories } = useSupabaseContent();
+  const { openPlayer } = usePlayer();
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const handleHeroPlay = () => {
-    console.log("Playing hero content");
+    if (content?.content) {
+      openPlayer({
+        id: content.id,
+        title: content.title,
+        type: content.type === 'tv' ? 'series' : 'movie',
+        videoUrl: content.content,
+        poster: content.backdrop || content.image,
+        year: content.year,
+      });
+    }
   };
 
   const handleHeroDetails = () => {
@@ -85,14 +95,18 @@ const Content = () => {
             </div>
           </div>
 
-          {/* Video Player - Full Width */}
+          {/* Watch Button */}
           {content.content && (
             <div className="mb-8">
-              <VideoPlayer
-                src={content.content}
-                poster={content.backdrop || content.image}
-                title={content.title}
-              />
+              <button
+                onClick={handleHeroPlay}
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-4 px-8 rounded-xl transition-all flex items-center justify-center gap-3"
+              >
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                ASSISTIR AGORA
+              </button>
             </div>
           )}
 
