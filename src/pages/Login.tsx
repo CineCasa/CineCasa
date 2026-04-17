@@ -26,10 +26,18 @@ const Login = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
+  // Forçar reload limpo - limpa estado anterior
+  useEffect(() => {
+    setNewContent([]);
+  }, []);
+
   // Buscar conteúdos do Supabase - atualiza só no reload da página
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        // Sempre buscar dados frescos a cada reload
+        console.log('[Login] Iniciando fetch de conteúdo...');
+        
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
