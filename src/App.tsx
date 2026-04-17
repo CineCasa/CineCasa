@@ -41,6 +41,9 @@ import { PWAImmediateInstall } from "./components/PWAImmediateInstall";
 const queryClient = new QueryClient();
 
 const AppRoutes = () => {
+  const location = useLocation();
+  console.log('[AppRoutes] Rota atual:', location.pathname);
+  
   return (
     <Routes>
       {/* Todas as rotas são públicas - sem login necessário */}
@@ -93,6 +96,8 @@ const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
+  
+  console.log('[AppContent] pathname:', location.pathname, 'isLoginPage:', isLoginPage);
 
   return (
     <div className={`min-h-screen bg-black ${isLoginPage ? '' : 'pb-14 md:pb-0'}`}>
