@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
@@ -40,33 +40,75 @@ import { PWAImmediateInstall } from "./components/PWAImmediateInstall";
 
 const queryClient = new QueryClient();
 
+// Componente para proteger rotas - redireciona para login se não autenticado
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  
+  if (!user) {
+    // Redireciona para login, salvando a rota atual para redirecionar de volta após login
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Componente para redirecionar usuário logado da página de login para home
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user } = useAuth();
+  
+  if (user) {
+    // Se já está logado, redireciona para home
+    return <Navigate to="/" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
 const AppRoutes = () => {
   const location = useLocation();
-  console.log('[AppRoutes] Rota atual:', location.pathname);
+  const { user } = useAuth();
+  console.log('[AppRoutes] Rota atual:', location.pathname, 'Usuário logado:', !!user);
   
   return (
     <Routes>
-      {/* Todas as rotas são públicas - sem login necessário */}
-      <Route path="/login" element={<Login />} />
+      {/* Rota pública - Login (redireciona para home se já logado) */}
+      <Route 
+        path="/login" 
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } 
+      />
+      
+      {/* Rota pública - Novidades (acessível sem login) */}
       <Route path="/novidades" element={<PublicNotifications />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/filmes-categorias" element={<FilmesCategorias />} />
-      <Route path="/filmes" element={<FilmesESeries />} />
-      <Route path="/filmes/:categoria" element={<FilmesPorCategoria />} />
-      <Route path="/series" element={<PremiumCatalog contentType="series" />} />
-      <Route path="/series-categorias" element={<SeriesPorCategoria />} />
-      <Route path="/details/:type/:id" element={<Details />} />
-      <Route path="/movie-details/:id" element={<MovieDetails />} />
-      <Route path="/series-details/:id" element={<SeriesDetails />} />
-      <Route path="/content/:id" element={<Content />} />
-      <Route path="/favorites" element={<Favorites />} />
-      <Route path="/image-cleanup" element={<ImageCleanup />} />
-      <Route path="/settings/notifications" element={<NotificationSettings />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/search" element={<AdvancedSearch />} />
-      <Route path="/profiles" element={<Profiles />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/" element={<PremiumHome />} />
+      
+      {/* Rotas protegidas - Requerem autenticação */}
+      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+      <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
+      <Route path="/filmes" element={<ProtectedRoute><FilmesESeries /></ProtectedRoute>} />
+      <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
+      <Route path="/series" element={<ProtectedRoute><PremiumCatalog contentType="series" /></ProtectedRoute>} />
+      <Route path="/series-categorias" element={<ProtectedRoute><SeriesPorCategoria /></ProtectedRoute>} />
+      <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />
+      <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />
+      <Route path="/series-details/:id" element={<ProtectedRoute><SeriesDetails /></ProtectedRoute>} />
+      <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
+      <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+      <Route path="/image-cleanup" element={<ProtectedRoute><ImageCleanup /></ProtectedRoute>} />
+      <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
+      <Route path="/profiles" element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      
+      {/* Home - Protegida, redireciona para login se não autenticado */}
+      <Route path="/" element={<ProtectedRoute><PremiumHome /></ProtectedRoute>} />
+      
+      {/* Rota padrão - redireciona para login */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };
