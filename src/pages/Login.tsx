@@ -268,7 +268,7 @@ const Login = () => {
             
             {/* Logo */}
             <div className="flex justify-center mb-4">
-              <img src="/logo.png" alt="CineCasa" className="h-[150px] md:h-[120px] w-auto object-contain" />
+              <img src="/logo.png" alt="CineCasa" className="h-[150px] md:h-[120px] xl:h-[350px] w-auto object-contain" />
             </div>
 
             <h1 className="text-white text-2xl font-bold text-center mb-6">
