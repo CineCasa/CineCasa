@@ -79,7 +79,7 @@ const Login = () => {
       {/* Background Image - Family watching TV */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/login-bg.png"
+          src="/imagem pagina de login.png"
           alt="Family watching TV"
           className="w-full h-full object-cover object-center"
         />
