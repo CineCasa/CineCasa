@@ -61,6 +61,30 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
         })),
       ];
 
+      // Se não temos conteúdo suficiente, buscar filmes de outros gêneros como fallback
+      if (allInfantil.length < 5) {
+        console.log('[useInfantil] Poucos itens encontrados, buscando fallback...');
+        const { data: fallbackData } = await supabase
+          .from('cinema')
+          .select('id, tmdb_id, titulo, poster, year, rating')
+          .not('poster', 'is', null)
+          .limit(20);
+        
+        const fallbackContent = (fallbackData || [])
+          .filter((item: any) => !allInfantil.find(i => i.id === item.id.toString()))
+          .map((item: any) => ({
+            id: item.id.toString(),
+            tmdbId: item.tmdb_id,
+            title: item.titulo,
+            poster: item.poster,
+            type: 'movie' as const,
+            year: item.year,
+            rating: item.rating,
+          }));
+        
+        allInfantil.push(...fallbackContent);
+      }
+
       // Retornar TODOS (sem limite)
       const shuffled = allInfantil.sort(() => Math.random() - 0.5);
       setInfantil(shuffled);

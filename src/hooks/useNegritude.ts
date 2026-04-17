@@ -84,8 +84,32 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
         return shuffled;
       };
 
+      // Se não temos conteúdo suficiente, buscar filmes de outros gêneros como fallback
+      if (uniqueNegritude.length < 5) {
+        console.log('[useNegritude] Poucos itens encontrados, buscando fallback...');
+        const { data: fallbackData } = await supabase
+          .from('cinema')
+          .select('id, tmdb_id, titulo, poster, year, rating')
+          .not('poster', 'is', null)
+          .limit(20);
+        
+        const fallbackContent = (fallbackData || [])
+          .filter((item: any) => !uniqueNegritude.find(n => n.id === item.id.toString()))
+          .map((item: any) => ({
+            id: item.id.toString(),
+            tmdbId: item.tmdb_id,
+            title: item.titulo,
+            poster: item.poster,
+            type: 'movie' as const,
+            year: item.year,
+            rating: item.rating,
+          }));
+        
+        uniqueNegritude.push(...fallbackContent);
+      }
+
       const shuffled = shuffleArray(uniqueNegritude);
-      setNegritude(shuffled);
+      setNegritude(shuffled.slice(0, 10));
     } catch (err) {
       console.error('Erro ao buscar negritude:', err);
       setNegritude([]);
