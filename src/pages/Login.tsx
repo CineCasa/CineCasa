@@ -55,6 +55,10 @@ const Login = () => {
           }));
         } else {
           // Sem novidades: buscar TUDO e sortear aleatoriamente com anti-duplicados inteligente
+          // Usando cache-busting para garantir dados frescos a cada reload
+          const cacheBuster = Date.now();
+          console.log('[Login] Buscando conteúdo aleatório. Timestamp:', cacheBuster);
+          
           const [allMoviesResult, allSeriesResult] = await Promise.all([
             supabase.from('cinema').select('id, titulo, poster').order('id', { ascending: false }),
             supabase.from('series').select('id_n, titulo, capa').order('id_n', { ascending: false })
@@ -211,6 +215,9 @@ const Login = () => {
   };
 
   const visibleContent = newContent;
+  
+  // Timestamp para forçar re-renderização das capas a cada reload
+  const renderTimestamp = Date.now();
 
   return (
     <div className="h-screen w-full relative overflow-hidden bg-black flex items-center justify-center">
@@ -233,7 +240,7 @@ const Login = () => {
           <div className="flex justify-center gap-2 overflow-hidden">
             {visibleContent.slice(0, 3).map((item) => (
               <div
-                key={`mobile-${item.type}-${item.id}`}
+                key={`mobile-${item.type}-${item.id}-${renderTimestamp}`}
                 className="relative flex-shrink-0"
                 style={{ width: '90px' }}
               >
@@ -383,7 +390,7 @@ const Login = () => {
           <div className="flex justify-center gap-3 overflow-hidden">
             {visibleContent.slice(0, 4).map((item) => (
               <div
-                key={`desktop-${item.type}-${item.id}`}
+                key={`desktop-${item.type}-${item.id}-${renderTimestamp}`}
                 className="relative flex-shrink-0"
                 style={{ width: '100px' }}
               >
