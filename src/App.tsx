@@ -42,8 +42,17 @@ const queryClient = new QueryClient();
 
 // Componente para proteger rotas - redireciona para login se não autenticado
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const location = useLocation();
+  
+  // Aguardar o carregamento da autenticação
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
   
   if (!user) {
     // Redireciona para login, salvando a rota atual para redirecionar de volta após login
@@ -55,7 +64,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Componente para redirecionar usuário logado da página de login para home
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  
+  // Aguardar o carregamento da autenticação
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
   
   if (user) {
     // Se já está logado, redireciona para home
