@@ -89,12 +89,37 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
         return shuffled;
       };
 
+      // Se não temos romances suficientes, buscar filmes de outros gêneros como fallback
+      if (uniqueRomances.length < 5) {
+        console.log('[useRomances] Poucos romances encontrados, buscando fallback...');
+        const { data: fallbackData } = await supabase
+          .from('cinema')
+          .select('id, tmdb_id, titulo, poster, year, rating')
+          .not('poster', 'is', null)
+          .limit(20);
+        
+        const fallbackRomances = (fallbackData || [])
+          .filter(isNotCollection)
+          .filter((item: any) => !uniqueRomances.find(r => r.id === item.id.toString()))
+          .map((item: any) => ({
+            id: item.id.toString(),
+            tmdbId: item.tmdb_id,
+            title: item.titulo,
+            poster: item.poster,
+            type: 'movie' as const,
+            year: item.year,
+            rating: item.rating,
+          }));
+        
+        uniqueRomances.push(...fallbackRomances);
+      }
+
       const shuffled = shuffleArray(uniqueRomances);
       console.log('[useRomances] Total combinado:', allRomances.length);
       console.log('[useRomances] Únicos após filtro:', uniqueRomances.length);
       console.log('[useRomances] Selecionados:', shuffled.length);
 
-      setRomances(shuffled);
+      setRomances(shuffled.slice(0, 10));
     } catch (err) {
       console.error('[useRomances] Erro ao buscar romances:', err);
       setRomances([]);

@@ -68,6 +68,31 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
         return shuffled;
       };
 
+      // Se não temos finanças suficientes, buscar filmes de outros gêneros como fallback
+      if (uniqueFinancas.length < 5) {
+        console.log('[useFinancas] Poucos filmes de finanças encontrados, buscando fallback...');
+        const { data: fallbackData } = await supabase
+          .from('cinema')
+          .select('id, tmdb_id, titulo, poster, year, rating')
+          .not('poster', 'is', null)
+          .limit(20);
+        
+        const fallbackFinancas = (fallbackData || [])
+          .filter(isNotCollection)
+          .filter((item: any) => !uniqueFinancas.find(f => f.id === item.id.toString()))
+          .map((item: any) => ({
+            id: item.id.toString(),
+            tmdbId: item.tmdb_id,
+            title: item.titulo,
+            poster: item.poster,
+            type: 'movie' as const,
+            year: item.year,
+            rating: item.rating,
+          }));
+        
+        uniqueFinancas.push(...fallbackFinancas);
+      }
+
       const shuffled = shuffleArray(uniqueFinancas);
       console.log('[useFinancas] Total combinado:', allFinancas.length);
       console.log('[useFinancas] Únicos após filtro:', uniqueFinancas.length);
