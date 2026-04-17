@@ -83,8 +83,8 @@ const Login = () => {
           alt="Family watching TV"
           className="w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/80" />
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/30 to-black/50" />
+        <div className="absolute inset-0 bg-black/20" />
       </div>
 
       {/* Main Content Container */}
