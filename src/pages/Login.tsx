@@ -30,7 +30,7 @@ const Login = () => {
         );
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
-        setTrendingMovies(data.results?.slice(0, 8) || []);
+        setTrendingMovies(data.results?.slice(0, 12) || []);
       } catch (error) {
         console.error("Error fetching trending:", error);
       }
@@ -41,7 +41,7 @@ const Login = () => {
   useEffect(() => {
     if (trendingMovies.length === 0) return;
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % Math.ceil(trendingMovies.length / 4));
+      setCurrentSlide((prev) => (prev + 1) % Math.ceil(trendingMovies.length / 6));
     }, 5000);
     return () => clearInterval(interval);
   }, [trendingMovies]);
@@ -72,7 +72,7 @@ const Login = () => {
     }
   };
 
-  const visibleMovies = trendingMovies.slice(currentSlide * 4, currentSlide * 4 + 4);
+  const visibleMovies = trendingMovies.slice(currentSlide * 6, currentSlide * 6 + 6);
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-black flex items-center justify-center">
@@ -83,8 +83,8 @@ const Login = () => {
           alt="Family watching TV"
           className="w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/80" />
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/90" />
+        <div className="absolute inset-0 bg-black/60" />
       </div>
 
       {/* Main Content Container - Horizontal Layout */}
@@ -114,7 +114,7 @@ const Login = () => {
                   </div>
                   {/* Category Tag */}
                   <div className="absolute top-1 left-1 bg-cyan-500 text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
-                    {index === 0 ? "FILMES" : index === 1 ? "SÉRIES" : index === 2 ? "ALEGORIA" : "NOVO"}
+                    {index === 0 ? "FILMES POPULARES" : index === 1 ? "SÉRIES" : index === 2 ? "ALEGORIA" : index === 3 ? "FICÇÃO" : index === 4 ? "COMÉDIA" : "NOVO"}
                   </div>
                 </div>
               ))}
@@ -125,7 +125,7 @@ const Login = () => {
 
         {/* Right Side - Login Card - Glassmorphism */}
         <div className="w-full max-w-md">
-          <div className="relative bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
+          <div className="relative bg-black/20 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-400/30 shadow-2xl shadow-cyan-500/10">
             
             {/* Logo */}
             <div className="flex justify-center mb-4">
@@ -167,7 +167,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="senha"
-                  className="w-full bg-black/40 border border-gray-600 rounded-xl py-3 pl-10 pr-16 text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm"
+                  className="w-full bg-white/5 border border-gray-500/50 rounded-xl py-3 pl-10 pr-16 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
                   required
                 />
                 <button
