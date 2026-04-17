@@ -246,7 +246,7 @@ const Login = () => {
               >
                 <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
                   <img
-                    src={item.poster || '/placeholder-poster.jpg'}
+                    src={`${item.poster || '/placeholder-poster.jpg'}?t=${renderTimestamp}`}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
@@ -396,7 +396,7 @@ const Login = () => {
               >
                 <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
                   <img
-                    src={item.poster || '/placeholder-poster.jpg'}
+                    src={`${item.poster || '/placeholder-poster.jpg'}?t=${renderTimestamp}`}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
