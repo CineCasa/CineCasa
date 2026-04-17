@@ -226,7 +226,7 @@ const Login = () => {
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col items-center justify-between h-full gap-4 py-4 lg:py-8 overflow-hidden">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-center justify-between lg:justify-end h-full gap-4 py-4 lg:py-8 overflow-hidden">
         
         {/* Mobile Only - 3 capas não clicáveis (acima do card) */}
         <div className="block lg:hidden w-full flex justify-center">
@@ -253,8 +253,8 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Login Card - Centralizado */}
-        <div className="w-full max-w-sm lg:max-w-md">
+        {/* Login Card - Centralizado mobile, Direita em telas grandes */}
+        <div className="w-full max-w-sm lg:max-w-md lg:ml-auto">
           <div className="relative bg-[rgba(0,0,0,0.6)] backdrop-blur-[15px] rounded-2xl p-4 lg:p-6 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
             
             {/* Logo */}
