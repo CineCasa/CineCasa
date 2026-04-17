@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ContinueWatchingItem {
@@ -24,6 +24,7 @@ export const useContinueWatching = () => {
   const [items, setItems] = useState<ContinueWatchingItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   // Obter usuário atual
   useEffect(() => {
@@ -173,10 +174,14 @@ export const useContinueWatching = () => {
     }
   }, [userId]);
 
-  // Carregar progresso quando userId mudar
+  // Carregar progresso quando userId mudar ou componente montar
   useEffect(() => {
-    fetchProgress();
-  }, [fetchProgress]);
+    if (!isInitialized.current && userId) {
+      isInitialized.current = true;
+      console.log('[useContinueWatching] Inicializando carregamento...');
+      fetchProgress();
+    }
+  }, [fetchProgress, userId]);
 
   // Salvar progresso em tempo real no Supabase
   const updateProgress = useCallback(async (
