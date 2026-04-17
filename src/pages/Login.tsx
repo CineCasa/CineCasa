@@ -18,6 +18,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [trendingMovies, setTrendingMovies] = useState<TrendingMovie[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
@@ -69,6 +70,27 @@ const Login = () => {
       if (error) throw error;
     } catch (error: any) {
       alert(error.message || "Erro ao conectar com Google");
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      alert("Conta criada com sucesso! Verifique seu e-mail para confirmar.");
+      setIsSignUp(false);
+    } catch (error: any) {
+      alert(error.message || "Erro ao criar conta");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -133,11 +155,11 @@ const Login = () => {
             </div>
 
             <h1 className="text-white text-2xl font-bold text-center mb-6">
-              Bem-vindo de Volta
+              {isSignUp ? "Criar Conta" : "Bem-vindo de Volta"}
             </h1>
 
             {/* Form */}
-            <form onSubmit={handleEmailLogin} className="space-y-4">
+            <form onSubmit={isSignUp ? handleSignUp : handleEmailLogin} className="space-y-4">
               {/* Campo de E-mail */}
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
@@ -185,16 +207,18 @@ const Login = () => {
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 disabled:opacity-50 text-sm"
               >
-                {isLoading ? "Carregando..." : "ENTRAR"}
+                {isLoading ? "Carregando..." : isSignUp ? "CRIAR CONTA" : "ENTRAR"}
               </button>
             </form>
 
-            {/* Forgot Password */}
-            <div className="text-center mt-3">
-              <button className="text-cyan-400 text-xs hover:text-cyan-300 transition-colors">
-                Esqueceu a senha?
-              </button>
-            </div>
+            {/* Forgot Password - Only show in login mode */}
+            {!isSignUp && (
+              <div className="text-center mt-3">
+                <button className="text-cyan-400 text-xs hover:text-cyan-300 transition-colors">
+                  Esqueceu a senha?
+                </button>
+              </div>
+            )}
 
             {/* Divider */}
             <div className="relative my-4">
@@ -220,13 +244,32 @@ const Login = () => {
               Google
             </button>
 
-            {/* Sign Up Link */}
+            {/* Sign Up / Login Toggle Link */}
             <div className="text-center mt-4">
               <p className="text-gray-400 text-xs">
-                Não tem uma conta?{" "}
-                <button className="text-cyan-400 hover:text-cyan-300 font-medium underline">
-                  Assine Agora
-                </button>
+                {isSignUp ? (
+                  <>
+                    Já tem uma conta?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(false)}
+                      className="text-cyan-400 hover:text-cyan-300 font-medium underline"
+                    >
+                      Entrar
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Não tem uma conta?{" "}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUp(true)}
+                      className="text-cyan-400 hover:text-cyan-300 font-medium underline"
+                    >
+                      Assine Agora
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           </div>
