@@ -101,8 +101,10 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
   }, [fetchInfantil]);
 
   useEffect(() => {
+    // Sempre buscar na montagem (atualiza a cada navegação)
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useInfantil] Inicializando carregamento...');
       fetchInfantil();
     }
   }, [fetchInfantil]);

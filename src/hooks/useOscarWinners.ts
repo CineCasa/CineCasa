@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { isNotCollection } from '@/lib/utils';
 
@@ -53,6 +53,7 @@ const AWARD_KEYWORDS = [
 export const useOscarWinners = () => {
   const [oscarWinners, setOscarWinners] = useState<OscarWinner[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   const fetchOscarWinners = useCallback(async () => {
     try {
@@ -189,7 +190,11 @@ export const useOscarWinners = () => {
   }, []);
 
   useEffect(() => {
-    fetchOscarWinners();
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      console.log('[useOscarWinners] Inicializando carregamento...');
+      fetchOscarWinners();
+    }
   }, [fetchOscarWinners]);
 
   return { oscarWinners, isLoading, refetch: fetchOscarWinners };

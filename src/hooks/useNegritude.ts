@@ -21,6 +21,7 @@ interface UseNegritudeReturn {
 export const useNegritude = (userId?: string): UseNegritudeReturn => {
   const [negritude, setNegritude] = useState<Negritude[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isInitialized = useRef(false);
 
   const fetchNegritude = useCallback(async () => {
     try {
@@ -123,8 +124,12 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
   }, [fetchNegritude]);
 
   useEffect(() => {
-    // Sempre buscar na montagem (atualiza a cada reinício)
-    fetchNegritude();
+    // Sempre buscar na montagem (atualiza a cada navegação)
+    if (!isInitialized.current) {
+      isInitialized.current = true;
+      console.log('[useNegritude] Inicializando carregamento...');
+      fetchNegritude();
+    }
   }, [fetchNegritude]);
 
   return {
