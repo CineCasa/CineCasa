@@ -221,8 +221,8 @@ const Login = () => {
           alt="Family watching TV"
           className="w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/70 to-black/90" />
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40" />
+        <div className="absolute inset-0 bg-black/30" />
       </div>
 
       {/* Main Content Container - Horizontal Layout */}
