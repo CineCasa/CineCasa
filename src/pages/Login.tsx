@@ -228,7 +228,34 @@ const Login = () => {
       {/* Main Content Container - Horizontal Layout */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-between h-full gap-4 lg:gap-8 py-4 lg:py-8 overflow-hidden">
         
-        {/* Left Side - Trending Movies Carousel - Hidden on mobile, visible on lg */}
+        {/* Left Side - Trending Movies Carousel - Mobile: 3 capas não clicáveis, Desktop: 4 capas não clicáveis */}
+        
+        {/* Mobile Only - 3 capas não clicáveis */}
+        <div className="lg:hidden w-full flex justify-center">
+          <div className="flex justify-center gap-2 overflow-hidden">
+            {visibleContent.slice(0, 3).map((item) => (
+              <div
+                key={`${item.type}-${item.id}`}
+                className="relative group flex-shrink-0"
+                style={{ width: '90px' }}
+              >
+                <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
+                  <img
+                    src={item.poster || '/placeholder-poster.jpg'}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Category Tag */}
+                <div className="absolute top-1 left-1 bg-cyan-500 text-black text-[7px] font-bold px-1 py-0.5 rounded">
+                  {item.type === 'movie' ? 'FILME' : 'SÉRIE'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Only - 4 capas não clicáveis */}
         <div className="hidden lg:block w-full lg:w-1/2 max-w-xl lg:max-w-none">
           <h2 className="hidden text-white text-center lg:text-left text-lg font-semibold mb-2 tracking-wider uppercase whitespace-nowrap lg:block">
             Novidades Desta Semana
@@ -240,15 +267,14 @@ const Login = () => {
               {visibleContent.slice(0, 4).map((item) => (
                 <div
                   key={`${item.type}-${item.id}`}
-                  onClick={() => handleContentClick(item)}
-                  className="relative group cursor-pointer flex-shrink-0"
+                  className="relative group flex-shrink-0"
                   style={{ width: '100px' }}
                 >
-                  <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent group-hover:border-cyan-400 transition-all shadow-lg">
+                  <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
                     <img
                       src={item.poster || '/placeholder-poster.jpg'}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   {/* Category Tag */}
