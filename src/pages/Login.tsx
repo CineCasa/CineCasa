@@ -228,7 +228,7 @@ const Login = () => {
   const renderTimestamp = Date.now();
 
   return (
-    <div className="h-screen w-full relative overflow-hidden bg-black flex items-center justify-center">
+    <div className="min-h-screen w-full relative overflow-visible bg-black flex items-center justify-center">
       {/* Background Image - Family watching TV */}
       <div className="absolute inset-0 z-0">
         <img
@@ -241,11 +241,11 @@ const Login = () => {
       </div>
 
       {/* Main Content Container */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-center justify-between lg:justify-end h-full gap-4 py-4 lg:py-8 overflow-hidden">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-start lg:items-center justify-center lg:justify-end min-h-screen lg:min-h-0 py-4 lg:py-6 gap-4 overflow-y-auto lg:overflow-visible">
         
         {/* Login Card - Centralizado mobile, Direita em telas grandes */}
-        <div className="w-full max-w-sm lg:max-w-md lg:ml-auto">
-          <div className="relative bg-[rgba(0,0,0,0.6)] backdrop-blur-[15px] rounded-2xl p-4 lg:p-6 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
+        <div className="w-full max-w-sm lg:max-w-md lg:ml-auto my-auto lg:my-0">
+          <div className="relative bg-[rgba(0,0,0,0.6)] backdrop-blur-[15px] rounded-2xl p-3 sm:p-4 lg:p-5 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
             
             {/* Logo */}
             <div className="flex justify-center mb-2 lg:mb-4">
