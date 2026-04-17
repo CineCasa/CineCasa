@@ -17,7 +17,7 @@ interface UseBaseadoEmFatosReaisReturn {
   refresh: () => Promise<void>;
 }
 
-export const useBaseadoEmFatosReais = (): UseBaseadoEmFatosReaisReturn => {
+export const useBaseadoEmFatosReais = () => {
   const [content, setContent] = useState<BaseadoEmFatosReaisContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -156,6 +156,7 @@ export const useBaseadoEmFatosReais = (): UseBaseadoEmFatosReaisReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useBaseadoEmFatosReais] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

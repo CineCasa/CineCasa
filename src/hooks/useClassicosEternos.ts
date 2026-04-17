@@ -17,7 +17,7 @@ interface UseClassicosEternosReturn {
   refresh: () => Promise<void>;
 }
 
-export const useClassicosEternos = (): UseClassicosEternosReturn => {
+export const useClassicosEternos = () => {
   const [content, setContent] = useState<ClassicosEternosContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -104,6 +104,7 @@ export const useClassicosEternos = (): UseClassicosEternosReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useClassicosEternos] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

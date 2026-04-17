@@ -17,7 +17,7 @@ interface UseOrgulhoNacionalReturn {
   refresh: () => Promise<void>;
 }
 
-export const useOrgulhoNacional = (): UseOrgulhoNacionalReturn => {
+export const useOrgulhoNacional = () => {
   const [content, setContent] = useState<OrgulhoNacionalContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -103,6 +103,7 @@ export const useOrgulhoNacional = (): UseOrgulhoNacionalReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useOrgulhoNacional] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

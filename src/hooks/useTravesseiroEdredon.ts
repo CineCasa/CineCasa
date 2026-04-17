@@ -153,6 +153,7 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useTravesseiroEdredon] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

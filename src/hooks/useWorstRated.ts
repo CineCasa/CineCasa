@@ -162,16 +162,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
-      
-      // Limpar cache ao reiniciar o sistema (nova sessão)
-      const sessionStart = sessionStorage.getItem('session_start');
-      if (!sessionStart) {
-        sessionStorage.setItem('session_start', Date.now().toString());
-        localStorage.removeItem(WORST_RATED_CACHE_KEY);
-        localStorage.removeItem(WORST_RATED_TIMESTAMP_KEY);
-        console.log('[WorstRated] Cache limpo ao iniciar nova sessão');
-      }
-      
+      console.log('[useWorstRated] Inicializando carregamento...');
       fetchContent(false);
     }
   }, [fetchContent]);

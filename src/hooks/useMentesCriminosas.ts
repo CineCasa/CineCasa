@@ -17,7 +17,7 @@ interface UseMentesCriminosasReturn {
   refresh: () => Promise<void>;
 }
 
-export const useMentesCriminosas = (): UseMentesCriminosasReturn => {
+export const useMentesCriminosas = () => {
   const [content, setContent] = useState<MentesCriminosasContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -103,6 +103,7 @@ export const useMentesCriminosas = (): UseMentesCriminosasReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useMentesCriminosas] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

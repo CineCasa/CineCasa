@@ -17,7 +17,7 @@ interface UseRitmoEmocaoReturn {
   refresh: () => Promise<void>;
 }
 
-export const useRitmoEmocao = (): UseRitmoEmocaoReturn => {
+export const useRitmoEmocao = () => {
   const [content, setContent] = useState<RitmoEmocaoContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -103,6 +103,7 @@ export const useRitmoEmocao = (): UseRitmoEmocaoReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useRitmoEmocao] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

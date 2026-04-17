@@ -100,12 +100,17 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
     await fetchSeries();
   }, [fetchSeries]);
 
+  const fetchContent = useCallback(async () => {
+    await fetchSeries();
+  }, [fetchSeries]);
+
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
-      fetchSeries();
+      console.log('[usePreparePipoca] Inicializando carregamento...');
+      fetchContent();
     }
-  }, [fetchSeries]);
+  }, [fetchContent]);
 
   return {
     series,

@@ -17,7 +17,7 @@ interface UsePrepareParaMedoReturn {
   refresh: () => Promise<void>;
 }
 
-export const usePrepareParaMedo = (): UsePrepareParaMedoReturn => {
+export const usePrepareParaMedo = () => {
   const [content, setContent] = useState<PrepareParaMedoContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -103,6 +103,7 @@ export const usePrepareParaMedo = (): UsePrepareParaMedoReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[usePrepareParaMedo] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

@@ -17,7 +17,7 @@ interface UseHistoriasEsperancaReturn {
   refresh: () => Promise<void>;
 }
 
-export const useHistoriasEsperanca = (): UseHistoriasEsperancaReturn => {
+export const useHistoriasEsperanca = () => {
   const [content, setContent] = useState<HistoriasEsperancaContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -103,6 +103,7 @@ export const useHistoriasEsperanca = (): UseHistoriasEsperancaReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useHistoriasEsperanca] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);

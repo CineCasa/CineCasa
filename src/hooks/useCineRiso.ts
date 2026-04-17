@@ -17,7 +17,7 @@ interface UseCineRisoReturn {
   refresh: () => Promise<void>;
 }
 
-export const useCineRiso = (): UseCineRisoReturn => {
+export const useCineRiso = () => {
   const [content, setContent] = useState<CineRisoContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isInitialized = useRef(false);
@@ -119,6 +119,7 @@ export const useCineRiso = (): UseCineRisoReturn => {
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
+      console.log('[useCineRiso] Inicializando carregamento...');
       fetchContent();
     }
   }, [fetchContent]);
