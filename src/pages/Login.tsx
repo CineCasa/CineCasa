@@ -243,8 +243,8 @@ const Login = () => {
       {/* Main Content Container */}
       <div className="relative z-10 w-full h-full flex items-center justify-center lg:justify-end px-4">
         
-        {/* Login Card - 90% largura e Centralizado mobile, Direita em telas grandes */}
-        <div className="w-[90%] max-w-sm lg:max-w-md lg:mr-8 xl:mr-16 mx-auto lg:mx-0">
+        {/* Login Card - 90% largura em mobile, Direita em telas grandes */}
+        <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-full max-w-sm lg:max-w-md lg:mr-8 xl:mr-16">
           <div className="relative bg-[rgba(0,0,0,0.6)] backdrop-blur-[15px] rounded-2xl p-4 sm:p-5 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
             
             {/* Logo */}
