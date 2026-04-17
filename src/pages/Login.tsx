@@ -379,7 +379,7 @@ const Login = () => {
         </div>
 
         {/* Desktop Only - 4 capas não clicáveis no rodapé (só lg+) */}
-        <div className="hidden lg:block w-full flex justify-center mt-auto">
+        <div className="hidden lg:block md:hidden sm:hidden w-full flex justify-center mt-auto">
           <div className="flex justify-center gap-3 overflow-hidden">
             {visibleContent.slice(0, 4).map((item) => (
               <div
