@@ -17,6 +17,8 @@ interface TrendingMovie {
 }
 
 const Login = () => {
+  console.log('[Login] Componente renderizado');
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -97,8 +99,10 @@ const Login = () => {
 
   const visibleMovies = trendingMovies.slice(currentSlide * 4, currentSlide * 4 + 4);
 
+  console.log('[Login] Renderizando JSX, trendingMovies:', trendingMovies.length);
+  
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-black">
+    <div className="min-h-screen w-full relative overflow-hidden bg-black" data-testid="login-page">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
