@@ -127,12 +127,9 @@ const Login = () => {
         <div className="w-full max-w-md">
           <div className="relative bg-black/50 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-500/30 shadow-2xl shadow-cyan-500/20">
             
-            <h1 className="text-white text-2xl font-bold text-center mb-1">
+            <h1 className="text-white text-2xl font-bold text-center mb-6">
               Bem-vindo de Volta
             </h1>
-            <p className="text-gray-400 text-sm text-center mb-6">
-              Faça login para continuar sua jornada
-            </p>
 
             {/* Form */}
             <form onSubmit={handleEmailLogin} className="space-y-4">
