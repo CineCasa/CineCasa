@@ -125,7 +125,7 @@ const Login = () => {
 
         {/* Right Side - Login Card - Glassmorphism */}
         <div className="w-full max-w-md lg:self-center">
-          <div className="relative bg-white/10 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-400/30 shadow-2xl shadow-cyan-500/10">
+          <div className="relative bg-white/5 backdrop-blur-3xl rounded-2xl p-8 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
             
             {/* Logo */}
             <div className="flex justify-center mb-4">
@@ -150,7 +150,7 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="E-mail ou Telefone"
-                  className="w-full bg-white/10 border border-gray-500/50 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
+                  className="w-full bg-white/5 border border-gray-400/50 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
                   required
                 />
               </div>
@@ -167,7 +167,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="senha"
-                  className="w-full bg-white/5 border border-gray-500/50 rounded-xl py-3 pl-10 pr-16 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
+                  className="w-full bg-white/5 border border-gray-400/50 rounded-xl py-3 pl-10 pr-16 text-white placeholder-gray-300 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition-all text-sm backdrop-blur-sm"
                   required
                 />
                 <button
