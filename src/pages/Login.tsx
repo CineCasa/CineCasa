@@ -230,7 +230,7 @@ const Login = () => {
         
         {/* Left Side - Trending Movies Carousel - Hidden on mobile, visible on lg */}
         <div className="hidden lg:block w-full lg:w-1/2 max-w-xl lg:max-w-none">
-          <h2 className="text-white text-center lg:text-left text-lg font-semibold mb-2 tracking-wider uppercase whitespace-nowrap">
+          <h2 className="hidden text-white text-center lg:text-left text-lg font-semibold mb-2 tracking-wider uppercase whitespace-nowrap lg:block">
             Novidades Desta Semana
           </h2>
           
