@@ -243,31 +243,6 @@ const Login = () => {
       {/* Main Content Container */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center lg:items-center justify-between lg:justify-end h-full gap-4 py-4 lg:py-8 overflow-hidden">
         
-        {/* Mobile Only - 3 capas não clicáveis (acima do card) */}
-        <div className="block lg:hidden w-full flex justify-center">
-          <div className="flex justify-center gap-2 overflow-hidden">
-            {visibleContent.slice(0, 3).map((item) => (
-              <div
-                key={`mobile-${item.type}-${item.id}-${renderTimestamp}`}
-                className="relative flex-shrink-0"
-                style={{ width: '90px' }}
-              >
-                <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
-                  <img
-                    src={`${item.poster || '/placeholder-poster.jpg'}?t=${renderTimestamp}`}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {/* Category Tag */}
-                <div className="absolute top-1 left-1 bg-cyan-500 text-black text-[7px] font-bold px-1 py-0.5 rounded">
-                  {item.type === 'movie' ? 'FILME' : 'SÉRIE'}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Login Card - Centralizado mobile, Direita em telas grandes */}
         <div className="w-full max-w-sm lg:max-w-md lg:ml-auto">
           <div className="relative bg-[rgba(0,0,0,0.6)] backdrop-blur-[15px] rounded-2xl p-4 lg:p-6 border border-cyan-400/40 shadow-2xl shadow-cyan-500/20">
@@ -393,30 +368,6 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Desktop Only - 4 capas não clicáveis no rodapé (só lg+) */}
-        <div className="hidden lg:block md:hidden sm:hidden w-full flex justify-center mt-auto">
-          <div className="flex justify-center gap-3 overflow-hidden">
-            {visibleContent.slice(0, 4).map((item) => (
-              <div
-                key={`desktop-${item.type}-${item.id}-${renderTimestamp}`}
-                className="relative flex-shrink-0"
-                style={{ width: '100px' }}
-              >
-                <div className="aspect-[2/3] rounded-lg overflow-hidden border-2 border-transparent shadow-lg">
-                  <img
-                    src={`${item.poster || '/placeholder-poster.jpg'}?t=${renderTimestamp}`}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {/* Category Tag */}
-                <div className="absolute top-1 left-1 bg-cyan-500 text-black text-[7px] font-bold px-1 py-0.5 rounded">
-                  {item.type === 'movie' ? 'FILME' : 'SÉRIE'}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
