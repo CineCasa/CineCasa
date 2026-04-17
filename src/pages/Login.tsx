@@ -13,7 +13,8 @@ interface TrendingMovie {
 }
 
 const Login = () => {
-  console.log('[Login] RENDER START');
+  // Build timestamp: 2026-04-17T02:00:00Z - Forçando novo deploy
+  console.log('[Login] RENDER START v2');
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
