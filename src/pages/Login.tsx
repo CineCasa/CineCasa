@@ -125,7 +125,7 @@ const Login = () => {
 
         {/* Right Side - Login Card - Glassmorphism */}
         <div className="w-full max-w-md lg:self-center">
-          <div className="relative bg-black/20 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-400/30 shadow-2xl shadow-cyan-500/10">
+          <div className="relative bg-white/10 backdrop-blur-2xl rounded-2xl p-8 border border-cyan-400/30 shadow-2xl shadow-cyan-500/10">
             
             {/* Logo */}
             <div className="flex justify-center mb-4">
