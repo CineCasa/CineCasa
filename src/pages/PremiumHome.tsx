@@ -478,10 +478,6 @@ const PremiumHome: React.FC = () => {
             }}
           />
         </div>
-      ) : !isLoadingContinue && user ? (
-        <div className="relative z-30 mt-[70px] mb-4 px-4">
-          <p className="text-gray-400 text-sm">Nenhum item em andamento. Comece a assistir para ver aqui.</p>
-        </div>
       ) : null}
 
       {/* Hero Banner */}
