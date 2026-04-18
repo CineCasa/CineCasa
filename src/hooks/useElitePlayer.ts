@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { 
   generateVideoToken, 
+  getProxiedUrl, 
   getProxiedVideoUrl, 
   refreshVideoToken,
   isArchiveOrgUrl 
@@ -135,20 +136,13 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
           config.contentType
         );
 
-        if (!newToken) {
-          // Fallback: use direct URL
-          setVideoUrl(config.url);
-          console.warn('[ElitePlayer] Using direct URL (no token)');
+        // Usar proxy para URLs do Archive.org
+        if (isArchiveOrgUrl(config.url)) {
+          const proxiedUrl = getProxiedUrl(config.url);
+          setVideoUrl(proxiedUrl);
+          console.log('[ElitePlayer] Using proxied URL:', proxiedUrl);
         } else {
-          setToken(newToken);
-          
-          // If Archive.org URL, use proxy
-          if (isArchiveOrgUrl(config.url)) {
-            const proxiedUrl = getProxiedVideoUrl(config.url, newToken);
-            setVideoUrl(proxiedUrl);
-          } else {
-            setVideoUrl(config.url);
-          }
+          setVideoUrl(config.url);
         }
 
         // Load saved progress
@@ -173,17 +167,17 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
   }, [user, profile, config.url, config.contentId, config.contentType]);
 
   // ==========================================
-  // LOAD SAVED PROGRESS
+  // LOAD SAVED PROGRESS (user_progress table)
   // ==========================================
   
   const loadSavedProgress = async () => {
-    if (!profile?.id || !config.contentId) return;
+    if (!user?.id || !config.contentId) return;
 
     try {
       const { data, error } = await supabase
-        .from('watch_history')
-        .select('progress, duration, last_watched')
-        .eq('profile_id', profile.id)
+        .from('user_progress')
+        .select('current_time, progress, duration')
+        .eq('user_id', user.id)
         .eq('content_id', config.contentId)
         .single();
 
@@ -192,10 +186,9 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
         return;
       }
 
-      if (data && data.duration > 0) {
-        const progressSeconds = (data.progress / 100) * data.duration;
-        setSavedProgress(progressSeconds);
-        console.log('[ElitePlayer] Loaded saved progress:', progressSeconds);
+      if (data && data.current_time > 10) {
+        setSavedProgress(data.current_time);
+        console.log('[ElitePlayer] Loaded saved progress:', data.current_time);
       }
     } catch (err) {
       console.error('[ElitePlayer] Failed to load progress:', err);
@@ -204,13 +197,14 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
 
   // ==========================================
   // SAVE PROGRESS (THROTTLED - 10 SECONDS)
+  // user_progress table
   // ==========================================
   
   const saveProgressToSupabase = useCallback(async (
     currentTime: number,
     duration: number
   ) => {
-    if (!profile?.id || !config.contentId || saveInProgress.current) return;
+    if (!user?.id || !config.contentId || saveInProgress.current) return;
     
     // Avoid saving too frequently
     const now = Date.now();
@@ -226,22 +220,20 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
       const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
       
       const { error } = await supabase
-        .from('watch_history')
+        .from('user_progress')
         .upsert({
-          profile_id: profile.id,
+          user_id: user.id,
           content_id: config.contentId,
           content_type: config.contentType,
-          titulo: config.title,
-          poster: config.poster || '',
+          current_time: Math.round(currentTime),
           progress: Math.round(progress),
           duration: Math.round(duration),
-          current_time: Math.round(currentTime),
           last_watched: new Date().toISOString(),
           episode_id: config.episodeId,
           season_number: config.seasonNumber,
           episode_number: config.episodeNumber,
         }, { 
-          onConflict: 'profile_id,content_id' 
+          onConflict: 'user_id,content_id' 
         });
 
       if (error) {
@@ -254,7 +246,7 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
     } finally {
       saveInProgress.current = false;
     }
-  }, [profile?.id, config]);
+  }, [user?.id, config]);
 
   // Throttled version (10 seconds)
   const saveProgress = useCallback(

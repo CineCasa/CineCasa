@@ -5,7 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-const WORKER_URL = import.meta.env.VITE_CLOUDFLARE_WORKER_URL || 'https://cinecasa-stream.your-subdomain.workers.dev';
+const PROXY_BASE_URL = 'https://proxy-cinecasa.paixaoflix-vip.workers.dev/?url=';
 
 /**
  * Gera token JWT para autenticação com o Worker
@@ -43,6 +43,24 @@ export async function generateVideoToken(
 
 /**
  * Converte URL do Archive.org para URL do proxy Cloudflare
+ * Seguindo especificação exata: https://proxy-cinecasa.paixaoflix-vip.workers.dev/?url=
+ */
+export function getProxiedUrl(originalUrl: string): string {
+  if (!originalUrl) return '';
+  
+  // Verifica se é URL do Archive.org ou IA
+  if (originalUrl.includes('archive.org') || originalUrl.includes('ia.')) {
+    const encodedUrl = encodeURIComponent(originalUrl);
+    return `${PROXY_BASE_URL}${encodedUrl}`;
+  }
+  
+  // Se não for archive.org, retorna URL original
+  return originalUrl;
+}
+
+/**
+ * Converte URL do Archive.org para URL do proxy Cloudflare (com token JWT)
+ * Versão legacy mantida para compatibilidade
  */
 export function getProxiedVideoUrl(
   originalUrl: string,
@@ -50,19 +68,8 @@ export function getProxiedVideoUrl(
 ): string {
   if (!originalUrl) return '';
   
-  // Se não tem token, retorna URL original (fallback)
-  if (!token) {
-    console.warn('[VideoProxy] No token available, using direct URL');
-    return originalUrl;
-  }
-  
-  // Codificar URL original
-  const encodedUrl = encodeURIComponent(originalUrl);
-  
-  // Construir URL do Worker com parâmetros
-  const proxyUrl = `${WORKER_URL}/fetch?url=${encodedUrl}&token=${token}`;
-  
-  return proxyUrl;
+  // Usar nova função getProxiedUrl para consistência
+  return getProxiedUrl(originalUrl);
 }
 
 /**
@@ -85,11 +92,11 @@ export function getVideoHeaders(token: string | null): HeadersInit {
 }
 
 /**
- * Verifica se URL é do Archive.org
+ * Verifica se URL é do Archive.org ou IA
  */
 export function isArchiveOrgUrl(url: string): boolean {
   return url.includes('archive.org') || 
-         url.includes('archive.org/download');
+         url.includes('ia.');
 }
 
 /**

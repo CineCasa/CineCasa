@@ -229,11 +229,11 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       }
     });
 
-    // Detectar fim do vídeo para auto-play próximo episódio
+    // Detectar fim do vídeo para auto-play próximo episódio (5 segundos)
     player.on('ended', () => {
-      if (hasNextEpisode && onNextEpisode) {
+      if (eliteHasNextEpisode && onNextEpisode) {
         setShowNextEpisodeDialog(true);
-        setNextEpisodeCountdown(10);
+        setNextEpisodeCountdown(5); // Contador de 5 segundos
         
         nextEpisodeTimeoutRef.current = setInterval(() => {
           setNextEpisodeCountdown((prev) => {
@@ -247,6 +247,22 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
             return prev - 1;
           });
         }, 1000);
+      }
+    });
+
+    // FALLBACK: Se vídeo falhar, tentar URL original
+    player.on('error', () => {
+      const error = player.error();
+      console.error('[VideoJSPlayer] Video error:', error);
+      
+      // Se era URL proxyada, tentar URL original como fallback
+      if (videoUrl !== originalUrl && isArchiveOrgUrl(originalUrl)) {
+        console.log('[VideoJSPlayer] Fallback: tentando URL original...');
+        player.src({
+          src: originalUrl,
+          type: 'video/mp4'
+        });
+        player.play();
       }
     });
 
@@ -738,9 +754,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           style={{ width: '100%', height: '100%', objectFit: 'contain' }}
           poster={poster}
           preload="auto"
+          crossOrigin="anonymous"
         >
-          <source src={url} type="application/x-mpegURL" />
-          <source src={url} type="video/mp4" />
+          <source src={videoUrl} type={isArchiveOrgUrl(videoUrl) ? 'video/mp4' : 'application/x-mpegURL'} />
         </video>
       </div>
 

@@ -517,6 +517,59 @@ export type Database = {
           }
         ]
       }
+      user_progress: {
+        Row: {
+          id: string
+          user_id: string
+          content_id: string
+          content_type: string
+          current_time: number
+          progress: number
+          duration: number
+          last_watched: string
+          episode_id: string | null
+          season_number: number | null
+          episode_number: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content_id: string
+          content_type: string
+          current_time?: number
+          progress?: number
+          duration?: number
+          last_watched?: string
+          episode_id?: string | null
+          season_number?: number | null
+          episode_number?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content_id?: string
+          content_type?: string
+          current_time?: number
+          progress?: number
+          duration?: number
+          last_watched?: string
+          episode_id?: string | null
+          season_number?: number | null
+          episode_number?: number | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
