@@ -375,8 +375,32 @@ const Details = () => {
                 {releaseYear && <span className="backdrop-blur-sm bg-black/30 px-2 py-1 rounded-md border border-cyan-500/20">{releaseYear}</span>}
                 {data.adult && <span className="backdrop-blur-sm bg-red-500/20 px-2 py-1 rounded-md border border-red-500/30 text-xs">A18</span>}
                 {duration && <span className="backdrop-blur-sm bg-black/30 px-2 py-1 rounded-md border border-cyan-500/20">{duration}</span>}
+                {/* Badge Qualidade 4K Ultra HD */}
+                <span className="backdrop-blur-sm bg-cyan-500/20 px-3 py-1 rounded-md border border-cyan-400/50 flex items-center gap-1.5 hover:bg-cyan-500/30 hover:scale-105 transition-all duration-300 cursor-pointer">
+                  <svg className="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                  </svg>
+                  <span className="text-cyan-400 font-bold text-xs tracking-wider">4K ULTRA HD</span>
+                </span>
+                
+                {/* Nota TMDB com cor neon */}
                 {data.vote_average && data.vote_average > 0 && (
-                  <span className="backdrop-blur-sm bg-green-500/20 px-2 py-1 rounded-md border border-green-500/30 flex items-center gap-1"><span className="text-green-400 font-semibold">{data.vote_average.toFixed(1)}</span><span className="text-gray-400 text-xs">TMDB</span></span>
+                  <span className="backdrop-blur-sm bg-gradient-to-r from-cyan-500/20 to-blue-500/20 px-3 py-1 rounded-md border border-cyan-400/50 flex items-center gap-1.5 hover:scale-105 transition-all duration-300 cursor-pointer group">
+                    <span className="text-cyan-400 font-bold text-lg group-hover:text-cyan-300 transition-colors">{data.vote_average.toFixed(1)}</span>
+                    <span className="text-gray-400 text-xs">/10</span>
+                    <span className="text-cyan-400/70 text-xs ml-1">TMDB</span>
+                  </span>
+                )}
+                
+                {/* Rating de Recomendação com cor neon */}
+                {data.vote_average && (
+                  <span className="backdrop-blur-sm bg-gradient-to-r from-green-500/20 to-emerald-500/20 px-3 py-1 rounded-md border border-green-400/50 flex items-center gap-1.5 hover:scale-105 transition-all duration-300 cursor-pointer group">
+                    <svg className="w-4 h-4 text-green-400 group-hover:text-green-300" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span className="text-green-400 font-bold text-lg group-hover:text-green-300 transition-colors">{Math.round((data.vote_average / 10) * 100)}%</span>
+                    <span className="text-green-400/70 text-xs ml-1">Recomendação</span>
+                  </span>
                 )}
               </motion.div>
 
