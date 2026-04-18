@@ -67,6 +67,37 @@ interface UseAvatarCustomizationOptions {
   autoSave?: boolean;
 }
 
+// Função default movida para antes do hook
+const getDefaultCustomization = (): AvatarCustomization => ({
+  bodyType: 'average',
+  skinTone: 'medium',
+  faceShape: 'round',
+  hairStyle: 'medium',
+  hairColor: 'brown',
+  facialHair: 'none',
+  eyeShape: 'round',
+  eyeColor: 'brown',
+  glasses: 'none',
+  headwear: 'none',
+  accessory: 'none',
+  background: 'gradient',
+  backgroundColor: '#4F46E5',
+  patternColor: '#10B981',
+  topType: 'tshirt',
+  topColor: '#3B82F6',
+  bottomType: 'pants',
+  bottomColor: '#1F2937',
+  expression: 'happy',
+  animation: 'none',
+  specialItems: [],
+  badges: [],
+  frames: [],
+  effects: [],
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  version: '1.0',
+});
+
 export function useAvatarCustomization({
   userId,
   profileId,
@@ -210,10 +241,10 @@ export function useAvatarCustomization({
 
       // Adicionar item aos itens desbloqueados
       const currentItems = currentCustomization.specialItems || [];
-      const newItems = [...newItems, itemId];
+      const updatedItems = [...currentItems, itemId];
 
       await saveCustomization.mutateAsync({
-        specialItems: newItems,
+        specialItems: updatedItems,
       });
 
       return { itemId, pointsRemaining: userPoints - cost };
@@ -297,36 +328,6 @@ export function useAvatarCustomization({
 
     return options[category] || [];
   };
-
-  const getDefaultCustomization = (): AvatarCustomization => ({
-    bodyType: 'average',
-    skinTone: 'medium',
-    faceShape: 'round',
-    hairStyle: 'medium',
-    hairColor: 'brown',
-    facialHair: 'none',
-    eyeShape: 'round',
-    eyeColor: 'brown',
-    glasses: 'none',
-    headwear: 'none',
-    accessory: 'none',
-    background: 'gradient',
-    backgroundColor: '#4F46E5',
-    patternColor: '#10B981',
-    topType: 'tshirt',
-    topColor: '#3B82F6',
-    bottomType: 'pants',
-    bottomColor: '#1F2937',
-    expression: 'happy',
-    animation: 'none',
-    specialItems: [],
-    badges: [],
-    frames: [],
-    effects: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    version: '1.0',
-  });
 
   // Gerar avatar URL baseado na customização
   const generateAvatarUrl = useCallback((customization: AvatarCustomization): string => {

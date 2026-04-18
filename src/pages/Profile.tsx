@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { AvatarCustomizer } from '@/components/AvatarCustomizer';
 
 // ============================================
 // TYPES & INTERFACES
@@ -194,6 +195,9 @@ export default function Profile() {
     color: '#FFFFFF',
     background: true
   });
+
+  // Personalização de Avatar
+  const [showAvatarCustomizer, setShowAvatarCustomizer] = useState(false);
 
   // Verificar se é admin
   const isAdmin = user?.email === 'mpaixaodesigner@gmail.com';
@@ -546,6 +550,49 @@ export default function Profile() {
                 ))}
               </div>
             </div>
+          </motion.div>
+
+          {/* ============================================
+              PERSONALIZAÇÃO DE AVATAR
+              ============================================ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25, duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                <Palette className="w-5 h-5 text-cyan-400" />
+                Personalização de Avatar
+              </h2>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAvatarCustomizer(!showAvatarCustomizer)}
+                className="border-cyan-500/30 hover:bg-cyan-500/10 hover:border-cyan-400/50 text-cyan-300"
+              >
+                {showAvatarCustomizer ? 'Fechar Editor' : 'Personalizar Avatar'}
+              </Button>
+            </div>
+
+            {showAvatarCustomizer && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
+              >
+                <AvatarCustomizer
+                  userId={user?.id}
+                  profileId={profile?.id}
+                  onSave={(customization) => {
+                    toast.success('Avatar personalizado com sucesso!');
+                    setShowAvatarCustomizer(false);
+                  }}
+                />
+              </motion.div>
+            )}
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
