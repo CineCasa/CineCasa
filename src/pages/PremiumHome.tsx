@@ -454,14 +454,24 @@ const PremiumHome: React.FC = () => {
   };
 
   return (
-    <div className="streaming-container min-h-screen bg-black pt-[94px]">
-      {/* Continue Watching - First Section */}
+    <div className="streaming-container min-h-screen bg-black">
+      {/* Hero Banner - Netflix Style Mobile/Desktop - positioned right after navbar */}
+      {/* Mobile Banner - hidden on desktop, no spacing from navbar */}
+      <div className="md:hidden pt-[60px]">
+        <MobileNetflixHero contentType="movies" />
+      </div>
+      {/* Desktop Banner - hidden on mobile */}
+      <div className="hidden md:block pt-[94px]">
+        <PremiumHeroBanner contentType="movies" />
+      </div>
+
+      {/* Continue Watching - After Banner */}
       {(() => {
         console.log('[PremiumHome] Continue Watching - isLoading:', isLoadingContinue, 'items:', continueWatchingItems.length, 'user:', user?.id);
         return null;
       })()}
       {!isLoadingContinue && continueWatchingItems.length > 0 ? (
-        <div className="relative z-30 mt-[70px] mb-4">
+        <div className="relative z-30 mt-4 mb-4">
           <ContinueWatching
             items={continueWatchingItems.slice(0, 3).map(item => ({
               id: item.id,
@@ -482,16 +492,6 @@ const PremiumHome: React.FC = () => {
           />
         </div>
       ) : null}
-
-      {/* Hero Banner - Netflix Style Mobile/Desktop */}
-      {/* Mobile Banner - hidden on desktop */}
-      <div className="md:hidden">
-        <MobileNetflixHero contentType="movies" />
-      </div>
-      {/* Desktop Banner - hidden on mobile */}
-      <div className="hidden md:block">
-        <PremiumHeroBanner contentType="movies" />
-      </div>
 
       {/* Content Sections */}
       <div className="mt-[70px] relative z-30">
