@@ -128,9 +128,8 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   const typePath = contentType === 'movies' ? 'cinema' : 'series';
 
   return (
-    <div className="relative w-full bg-black">
-      {/* Poster Image */}
-      <div className="relative w-full h-[65vh] overflow-hidden">
+    <div className="relative w-full h-[70vh] bg-black overflow-hidden">
+      {/* Hero Banner - Full height with overlaid content */}
         <AnimatePresence mode="wait">
           <motion.div
             key={currentBanner.id}
@@ -140,23 +139,22 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
             transition={{ duration: 0.8 }}
             className="absolute inset-0"
           >
-            <img
-              src={currentBanner.poster}
-              alt={currentBanner.title}
-              className="w-full h-full object-cover object-center"
-              style={{ objectPosition: 'center 15%' }}
-              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-            />
+            <div className="w-full h-full bg-neutral-800">
+              <img
+                src={currentBanner.poster}
+                alt={currentBanner.title}
+                className="w-full h-full object-cover"
+                style={{ objectPosition: 'center 10%' }}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent" />
           </motion.div>
         </AnimatePresence>
-        <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-black/60 to-transparent" />
-      </div>
-
-      {/* Content Section */}
-      <div className="relative -mt-24 px-4 pb-6 z-10">
+        {/* Content Section - Netflix style overlay at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-20 z-20 bg-gradient-to-t from-black via-black/80 to-transparent">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentBanner.id}
