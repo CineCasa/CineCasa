@@ -6,6 +6,7 @@ import { getSupabaseClient } from '../lib/supabase';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useFavorites } from '../hooks/useFavorites';
 import PremiumCard from '../components/PremiumCard';
+import CastSection from '../components/CastSection';
 
 import { Series, Temporada, Episodio } from '../types/database';
 
@@ -38,7 +39,42 @@ const SeriesDetails: React.FC = () => {
     }
   }, [id]);
 
-  const fetchSeriesData = async () => {
+  
+  const fetchTmdbCast = async (tmdbId: string) => {
+    try {
+      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
+      if (!apiKey || apiKey === 'undefined') {
+        console.warn('TMDB API key not configured');
+        return null;
+      }
+      
+      const response = await fetch(
+        `https://api.themoviedb.org/3/tv/${tmdbId}/credits?api_key=${apiKey}&language=pt-BR`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`TMDB API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.cast && data.cast.length > 0) {
+        return data.cast.map((actor: any) => ({
+          name: actor.name,
+          character: actor.character,
+          photo: actor.profile_path ? `https://image.tmdb.org/t/p/w200${actor.profile_path}` : undefined,
+          role: actor.character
+        }));
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching TMDB cast:', error);
+      return null;
+    }
+  };
+
+const fetchSeriesData = async () => {
     try {
       setIsLoading(true);
       
@@ -70,14 +106,30 @@ const SeriesDetails: React.FC = () => {
 
       setSeries(seriesData);
 
-      // Parse elenco se existir
-      if (seriesData.elenco) {
+      // Fetch cast from TMDB if tmdb_id exists
+      if (seriesData.tmdb_id) {
+        const tmdbCast = await fetchTmdbCast(seriesData.tmdb_id.toString());
+        if (tmdbCast && tmdbCast.length > 0) {
+          setCast(tmdbCast.slice(0, 15));
+        } else if (seriesData.elenco) {
+          // Fallback to local cast data
+          const castList = seriesData.elenco.split(',').map(name => ({
+            name: name.trim(),
+            role: 'Ator',
+            photo: undefined,
+            character: ''
+          }));
+          setCast(castList.slice(0, 6));
+        }
+      } else if (seriesData.elenco) {
+        // Parse elenco se existir
         const castList = seriesData.elenco.split(',').map(name => ({
           name: name.trim(),
           role: 'Ator',
-          photo: undefined
+          photo: undefined,
+          character: ''
         }));
-        setCast(castList.slice(0, 6)); // Limitar a 6 membros do elenco
+        setCast(castList.slice(0, 6));
       }
 
       const { data: tempsData, error: tempsError } = await supabase
@@ -428,52 +480,9 @@ const SeriesDetails: React.FC = () => {
         </div>
       </div>
 
-      {/* Elenco com fotos redondas */}
+      {/* Cast Section */}
       {cast.length > 0 && (
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
-          >
-            <div className="flex items-center gap-2 mb-4 sm:mb-6">
-              <Users size={20} className="text-white" />
-              <h2 className="text-xl sm:text-2xl font-bold">Elenco</h2>
-            </div>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6">
-              {cast.map((member, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: 0.1 * index }}
-                  className="text-center group"
-                >
-                  <div className="relative mx-auto mb-2 sm:mb-3">
-                    {member.photo ? (
-                      <img
-                        src={member.photo}
-                        alt={member.name}
-                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-gray-700 group-hover:border-white transition-colors"
-                      />
-                    ) : (
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-800 flex items-center justify-center border-2 border-gray-700 group-hover:border-white transition-colors">
-                        <Users size={24} className="text-gray-500" />
-                      </div>
-                    )}
-                  </div>
-                  <p className="font-medium text-sm sm:text-base text-white line-clamp-1">
-                    {member.name}
-                  </p>
-                  {member.role && (
-                    <p className="text-xs sm:text-sm text-gray-400">{member.role}</p>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+        <CastSection cast={cast.map((member, idx) => ({ id: idx, name: member.name, character: member.character || member.role || '', profile_path: member.photo || null }))} />
       )}
 
       {/* Episódios */}

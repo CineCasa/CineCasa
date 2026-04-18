@@ -6,6 +6,7 @@ import VideoJSPlayer from "@/components/VideoJSPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import CastSection from "@/components/CastSection";
 
 interface MovieData {
   id: string;
@@ -469,68 +470,33 @@ const Details = () => {
       <div className="px-4 md:px-8 lg:px-12 xl:px-16 relative z-10 pb-20">
         <div className="max-w-7xl mx-auto">
 
-          {/* Cast & Awards Section - Above Indicações */}
-          {(castList.length > 0 || data.awards) && (
-            <section className="mt-12 md:mt-16">
-              <div className="flex flex-row gap-8 md:gap-12 items-start">
-                {/* Cast Photos */}
-                {castList.length > 0 && (
-                  <div className="flex-shrink-0">
-                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Elenco Principal</h3>
-                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                      {castList.slice(0, 4).map((actor, index) => (
-                        <motion.div
-                          key={actor.name}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ duration: 0.3, delay: index * 0.05 }}
-                          className="flex-shrink-0 text-center"
-                        >
-                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-gray-800 border-2 border-gray-700">
-                            {actor.profile_path ? (
-                              <img
-                                src={`https://image.tmdb.org/t/p/w185${actor.profile_path}`}
-                                alt={actor.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-gray-700">
-                                <span className="text-xl">👤</span>
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-300 mt-2 w-[70px] leading-tight">{actor.name}</p>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+          {/* Cast Section */}
+          {castList.length > 0 && (
+            <CastSection cast={castList.map((actor, idx) => ({ id: idx, name: actor.name, character: actor.character || '', profile_path: actor.profile_path || null }))} />
+          )}
 
-                {/* Awards */}
-                {data.awards && data.awards.length > 0 && (
-                  <div className="flex-shrink-0">
-                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Prêmios</h3>
-                    <div className="space-y-2">
-                      {data.awards.slice(0, 3).map((award, index) => (
-                        <motion.div
-                          key={`${award.name}-${award.year}`}
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                          className="flex items-center gap-3 bg-[#1f1f1f] rounded-lg px-3 py-2"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                            <span className="text-yellow-400 text-sm">🏆</span>
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm text-white font-medium line-clamp-1">{award.name}</p>
-                            <p className="text-xs text-gray-400">{award.year}</p>
-                          </div>
-                        </motion.div>
-                      ))}
+          {/* Awards */}
+          {data.awards && data.awards.length > 0 && (
+            <section className="mt-8 md:mt-12">
+              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Prêmios</h3>
+              <div className="space-y-2">
+                {data.awards.slice(0, 3).map((award, index) => (
+                  <motion.div
+                    key={`${award.name}-${award.year}`}
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="flex items-center gap-3 bg-[#1f1f1f] rounded-lg px-3 py-2"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                      <span className="text-yellow-400 text-sm">🏆</span>
                     </div>
-                  </div>
-                )}
+                    <div className="min-w-0">
+                      <p className="text-sm text-white font-medium line-clamp-1">{award.name}</p>
+                      <p className="text-xs text-gray-400">{award.year}</p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </section>
           )}
