@@ -473,7 +473,7 @@ const Details = () => {
               className="flex-shrink-0 mx-auto md:mx-0"
             >
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl opacity-30 group-hover:opacity-50 blur transition-all duration-500" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl opacity-30 group-hover:opacity-70 blur transition-all duration-500 group-hover:shadow-[0_0_30px_rgba(0,229,255,0.5)]" />
                 <img 
                   src={data.poster_path || data.backdrop_path || "/placeholder-poster.jpg"}
                   alt={data.title}
@@ -495,25 +495,25 @@ const Details = () => {
               <h2 className="text-xl md:text-2xl font-bold mb-4 text-white">Informações</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {data.vote_average && (
-                  <div className="backdrop-blur-sm bg-cyan-400/10 border border-cyan-500/30 rounded-lg p-3 text-center">
+                  <div className="backdrop-blur-sm bg-cyan-400/10 border border-cyan-500/30 rounded-lg p-3 text-center hover:bg-cyan-400/20 hover:border-cyan-400/50 hover:scale-105 transition-all duration-300 cursor-pointer group">
                     <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Nota TMDB</p>
                     <p className="text-2xl font-bold text-white">{data.vote_average.toFixed(1)}<span className="text-sm text-gray-400">/10</span></p>
                   </div>
                 )}
                 {releaseYear && (
-                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center">
+                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center hover:bg-black/60 hover:border-cyan-400/40 hover:scale-105 transition-all duration-300 cursor-pointer">
                     <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Ano</p>
                     <p className="text-2xl font-bold text-white">{releaseYear}</p>
                   </div>
                 )}
                 {duration && (
-                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center">
+                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center hover:bg-black/60 hover:border-cyan-400/40 hover:scale-105 transition-all duration-300 cursor-pointer">
                     <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Duração</p>
                     <p className="text-xl font-bold text-white">{duration}</p>
                   </div>
                 )}
                 {director && (
-                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center col-span-2 md:col-span-1">
+                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center hover:bg-black/60 hover:border-cyan-400/40 hover:scale-105 transition-all duration-300 cursor-pointer col-span-2 md:col-span-1">
                     <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Direção</p>
                     <p className="text-lg font-bold text-white truncate">{director}</p>
                   </div>
