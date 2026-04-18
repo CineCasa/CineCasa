@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Plus, Info, Check } from 'lucide-react';
+import { Play, Plus, Info, Check, ThumbsUp, ThumbsDown, Film } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useNavigate } from 'react-router-dom';
@@ -164,67 +164,77 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
             transition={{ duration: 0.4 }}
           >
             {/* Title */}
-            <h1 className="text-2xl font-bold text-white mb-2 text-center leading-tight drop-shadow-lg">
+            <h1 className="text-2xl font-bold text-white mb-2 text-left leading-tight drop-shadow-lg">
               {currentBanner.title}
             </h1>
 
             {/* Metadata */}
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-300 mb-3">
-              {currentBanner.year && <span>{currentBanner.year}</span>}
-              {currentBanner.maturityRating && (
+            <div className="flex items-center justify-start gap-2 text-xs text-gray-300 mb-3">
+              {currentBanner.year && <span className="text-green-400 font-medium">{currentBanner.year}</span>}
+              {currentBanner.rating && (
                 <>
                   <span className="w-1 h-1 bg-gray-500 rounded-full" />
-                  <span className="border border-gray-500 px-1 rounded text-[10px]">{currentBanner.maturityRating}</span>
+                  <span className="border border-gray-500 px-1 rounded text-[10px]">{currentBanner.rating}</span>
                 </>
               )}
-              {currentBanner.duration && (
+              {currentBanner.genre && (
                 <>
                   <span className="w-1 h-1 bg-gray-500 rounded-full" />
-                  <span>{currentBanner.duration}</span>
+                  <span>{currentBanner.genre}</span>
                 </>
               )}
             </div>
 
-            {/* Action Buttons - Netflix Style */}
-            <div className="flex items-center justify-center gap-4 mb-4">
+            {/* Description */}
+            {currentBanner.description && (
+              <p className="text-sm text-gray-300 text-left line-clamp-2 mb-4">
+                {currentBanner.description}
+              </p>
+            )}
+
+            {/* Action Buttons Row - Netflix Mobile Style */}
+            <div className="flex items-center justify-start gap-2 mb-4 flex-wrap">
               {/* Play Button */}
               <button
                 onClick={() => openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer || '')}
-                className="flex items-center gap-2 px-8 py-2.5 bg-white hover:bg-gray-200 text-black rounded-md font-semibold text-sm transition-all active:scale-95"
+                className="flex items-center gap-2 px-5 py-2 bg-white hover:bg-gray-200 text-black rounded-md font-semibold text-sm transition-all active:scale-95"
               >
                 <Play className="w-4 h-4 fill-black" />
                 <span>Assistir</span>
               </button>
               
-              {/* My List Button */}
+              {/* Trailer Button */}
               <button
-                onClick={handleToggleList}
-                className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition-colors"
+                onClick={() => currentBanner.trailer && openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer)}
+                disabled={!currentBanner.trailer}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:text-gray-500 text-white rounded-md font-medium text-sm transition-all active:scale-95"
               >
-                <div className="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center">
-                  {isInList ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                </div>
-                <span className="text-[10px]">Minha Lista</span>
+                <Film className="w-4 h-4" />
+                <span>Trailer</span>
               </button>
               
-              {/* Info Button */}
+              {/* My List Button - Icon only */}
               <button
-                onClick={() => navigate(`/${typePath}/${currentBanner.id}`)}
-                className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition-colors"
+                onClick={handleToggleList}
+                className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-400 text-gray-300 hover:text-white hover:border-white transition-colors"
               >
-                <div className="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center">
-                  <Info className="w-4 h-4" />
-                </div>
-                <span className="text-[10px]">Saiba mais</span>
+                {isInList ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              </button>
+              
+              {/* Like Button */}
+              <button
+                className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-400 text-gray-300 hover:text-green-400 hover:border-green-400 transition-colors"
+              >
+                <ThumbsUp className="w-4 h-4" />
+              </button>
+              
+              {/* Dislike Button */}
+              <button
+                className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-400 text-gray-300 hover:text-red-400 hover:border-red-400 transition-colors"
+              >
+                <ThumbsDown className="w-4 h-4" />
               </button>
             </div>
-
-            {/* Description */}
-            {currentBanner.description && (
-              <p className="text-sm text-gray-300 text-center line-clamp-2 px-2">
-                {currentBanner.description}
-              </p>
-            )}
           </motion.div>
         </AnimatePresence>
       </div>
