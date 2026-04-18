@@ -359,7 +359,7 @@ const Details = () => {
                 {data.tagline && (
                   <p className="text-gray-300 text-sm md:text-base mb-2 tracking-wide uppercase">{data.tagline}</p>
                 )}
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight drop-shadow-2xl text-white visible">
+                <h1 className="details-title text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold leading-tight drop-shadow-2xl text-white visible">
                   {data.title}
                 </h1>
               </motion.div>
@@ -487,7 +487,7 @@ const Details = () => {
 
       {/* Main Content - CAMADA 2: Interface Glassmorphism */}
       <div className="px-4 md:px-8 lg:px-12 xl:px-16 relative z-10 pb-20">
-        <div className="max-w-7xl mx-auto">
+        <div className="details-container max-w-7xl xl:max-w-8xl 2xl:max-w-9xl mx-auto">
           {/* CAMADA 1: Poster com drop-shadow-2xl e bordas arredondadas */}
           <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-8">
             <motion.div 
@@ -501,7 +501,7 @@ const Details = () => {
                 <img 
                   src={data.poster_path || data.backdrop_path || "/placeholder-poster.jpg"}
                   alt={data.title}
-                  className="relative w-48 md:w-56 lg:w-64 rounded-lg drop-shadow-2xl object-cover aspect-[2/3] group-hover:scale-105 transition-transform duration-300"
+                  className="details-poster relative w-48 sm:w-52 md:w-56 lg:w-64 xl:w-72 2xl:w-80 rounded-lg drop-shadow-2xl object-cover aspect-[2/3] group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/placeholder-poster.jpg";
                   }}

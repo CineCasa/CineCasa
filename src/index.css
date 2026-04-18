@@ -269,3 +269,127 @@ html, body {
     right: 0 !important;
   }
 }
+
+
+/* ============================================
+   RESPONSIVE DESIGN FOR ALL DEVICES
+   Mobile, Tablet, Desktop, Smart TV, Projectors
+   ============================================ */
+
+/* Small Mobile (320px - 375px) */
+@media (max-width: 375px) {
+  .details-title {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+  .details-poster {
+    width: 8rem !important;
+  }
+}
+
+/* Mobile (376px - 639px) */
+@media (min-width: 376px) and (max-width: 639px) {
+  .details-title {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Tablet (640px - 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .details-title {
+    font-size: 2.5rem !important;
+  }
+}
+
+/* Large Tablet / Small Laptop (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .details-title {
+    font-size: 3rem !important;
+  }
+}
+
+/* Desktop (1280px - 1919px) */
+@media (min-width: 1280px) and (max-width: 1919px) {
+  .details-title {
+    font-size: 3.5rem !important;
+  }
+}
+
+/* Large Desktop / 4K TV (1920px - 2559px) */
+@media (min-width: 1920px) and (max-width: 2559px) {
+  .details-title {
+    font-size: 4rem !important;
+  }
+  .details-poster {
+    width: 20rem !important;
+  }
+  .details-container {
+    max-width: 1600px !important;
+  }
+}
+
+/* 4K+ / 8K TV / Large Projectors (2560px+) */
+@media (min-width: 2560px) {
+  .details-title {
+    font-size: 5rem !important;
+    letter-spacing: -0.02em;
+  }
+  .details-poster {
+    width: 24rem !important;
+  }
+  .details-container {
+    max-width: 2000px !important;
+  }
+  .details-metadata {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Smart TV Specific Optimizations */
+@media (min-width: 1920px) and (pointer: coarse) {
+  /* Larger touch targets for TV remotes */
+  .tv-nav-button {
+    min-height: 60px;
+    min-width: 120px;
+    font-size: 1.25rem;
+  }
+  
+  /* Focus styles for TV navigation */
+  .tv-focusable:focus {
+    outline: 3px solid #00E5FF;
+    outline-offset: 4px;
+  }
+}
+
+/* Ultra-wide screens (21:9, 32:9) */
+@media (min-aspect-ratio: 21/9) {
+  .details-hero {
+    padding-left: 10%;
+    padding-right: 10%;
+  }
+}
+
+/* TV Safe Zones for Roku, Fire Stick, Samsung, LG WebOS */
+@media (min-width: 1280px) {
+  .tv-safe-zone {
+    padding-left: 5%;
+    padding-right: 5%;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles (if needed) */
+@media print {
+  .details-page {
+    background: white !important;
+    color: black !important;
+  }
+}
