@@ -493,8 +493,8 @@ const PremiumHome: React.FC = () => {
         </div>
       ) : null}
 
-      {/* Content Sections */}
-      <div className="mt-[70px] relative z-30">
+      {/* Content Sections - no margin on mobile, keep margin on desktop */}
+      <div className="mt-0 md:mt-[70px] relative z-30">
         {/* Lançamentos & Novidades - Inteligente: 3 de 2026 + 2 de 2025 */}
         <ContentCarousel
           title="Lançamentos & Novidades"
