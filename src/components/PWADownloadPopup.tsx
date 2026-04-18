@@ -13,11 +13,8 @@ const PWADownloadPopup = ({ isOpen, onClose, deviceType }: PWADownloadPopupProps
     setIsInstalling(true);
     
     try {
-      // Registrar Service Worker se não estiver registrado
-      if ('serviceWorker' in navigator) {
-        const registration = await navigator.serviceWorker.register('/sw.js');
-        console.log('Service Worker registrado:', registration);
-      }
+      // REMOVED: Service Worker registration - now handled by sw.js only
+      // to prevent duplicate registrations and conflicts
 
       // Mostrar prompt de instalação PWA
       const promptEvent = (window as any).deferredPrompt;

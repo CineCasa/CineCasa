@@ -37,15 +37,12 @@ export function useNotifications() {
 
   // Verificar suporte a notificações - executa apenas uma vez
   useEffect(() => {
-    if ('Notification' in window && 'serviceWorker' in navigator) {
+    if ('Notification' in window) {
       setIsSupported(true);
       setPermission(Notification.permission);
       
-      // Registrar service worker apenas se ainda não tentamos
-      if (!swRegistrationAttempted) {
-        swRegistrationAttempted = true;
-        registerServiceWorker();
-      }
+      // REMOVED: Service worker registration now handled by sw.js only
+      // to prevent duplicate registrations and conflicts
     }
   }, []);
 

@@ -61,30 +61,12 @@ export function usePushNotifications({
     checkSupport();
   }, []);
 
-  // Registrar service worker
+  // REMOVED: Service worker registration - now handled by sw.js only
+  // to prevent duplicate registrations and conflicts
   useEffect(() => {
-    if (!enableServiceWorker || !isSupported) return;
-
-    const registerServiceWorker = async () => {
-      try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        setRegistration(reg);
-        
-        console.log('✅ Service Worker registrado:', reg);
-        
-        // Verificar subscription existente
-        const existingSubscription = await reg.pushManager.getSubscription();
-        if (existingSubscription) {
-          setSubscription(existingSubscription);
-          await saveSubscription(existingSubscription);
-        }
-      } catch (error) {
-        console.error('❌ Erro ao registrar Service Worker:', error);
-      }
-    };
-
-    registerServiceWorker();
-  }, [enableServiceWorker, isSupported]);
+    // Service worker registration is managed by the main sw.js file
+    // to avoid conflicts between multiple service workers
+  }, []);
 
   // Query para notificações pendentes
   const { data: notifications, isLoading, error, refetch } = useQuery({
