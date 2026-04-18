@@ -45,13 +45,27 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   const fetchPosters = useCallback(async () => {
     try {
       setIsLoading(true);
+      const tableName = contentType === 'movies' ? 'cinema' : 'series';
+      console.log(`[MobileNetflixHero] Buscando dados da tabela: ${tableName}`);
+
       const { data, error } = await supabase
-        .from(contentType === 'movies' ? 'cinema' : 'series')
+        .from(tableName)
         .select('id, titulo, poster, year, description, trailer, rating, genero, duration, maturity_rating')
-        .not('poster', 'is', null).not('poster', 'eq', '');
-      if (error) return;
+        .not('poster', 'is', null)
+        .not('poster', 'eq', '');
+
+      if (error) {
+        console.error('[MobileNetflixHero] Erro Supabase:', error);
+        return;
+      }
+
+      console.log(`[MobileNetflixHero] Dados retornados: ${data?.length || 0} itens`);
+
       if (data && data.length > 0) {
-        const transformed: BannerContent[] = data.map((item: any) => ({
+        const withPosters = data.filter(item => item.poster && item.poster.trim() !== '');
+        console.log(`[MobileNetflixHero] Itens com poster válido: ${withPosters.length}`);
+
+        const transformed: BannerContent[] = withPosters.map((item: any) => ({
           id: item.id.toString(),
           title: item.titulo,
           poster: item.poster,
@@ -64,6 +78,8 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
           maturityRating: item.maturity_rating
         }));
         setDisplayQueue(shuffleArray(transformed).slice(0, 20));
+      } else {
+        console.warn('[MobileNetflixHero] Nenhum dado retornado do Supabase');
       }
     } catch (err) {
       console.error('[MobileNetflixHero] Erro:', err);
