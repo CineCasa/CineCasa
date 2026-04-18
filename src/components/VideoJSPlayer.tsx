@@ -323,6 +323,55 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, [isReady, user, currentTime, duration, saveWatchHistory]);
 
+  // AUTO ROTATE SCREEN TO LANDSCAPE ON MOBILE
+  useEffect(() => {
+    const lockOrientation = async () => {
+      // Check if mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+      
+      if (!isMobile) return;
+
+      try {
+        // Try Screen Orientation API (modern browsers)
+        const screenOrientation = (screen as any).orientation;
+        if (screenOrientation && screenOrientation.lock) {
+          await screenOrientation.lock('landscape');
+          console.log('[VideoJSPlayer] Screen locked to landscape');
+        } else {
+          // Fallback: try to rotate using deprecated methods
+          const anyScreen = screen as any;
+          if (anyScreen.lockOrientation) {
+            anyScreen.lockOrientation('landscape');
+          } else if (anyScreen.mozLockOrientation) {
+            anyScreen.mozLockOrientation('landscape');
+          } else if (anyScreen.msLockOrientation) {
+            anyScreen.msLockOrientation('landscape');
+          }
+        }
+      } catch (err) {
+        console.log('[VideoJSPlayer] Could not lock orientation:', err);
+      }
+    };
+
+    // Lock when player opens
+    lockOrientation();
+
+    // Cleanup: unlock orientation when player closes
+    return () => {
+      try {
+        const screenOrientation = (screen as any).orientation;
+        if (screenOrientation && screenOrientation.unlock) {
+          screenOrientation.unlock();
+          console.log('[VideoJSPlayer] Screen orientation unlocked');
+        }
+      } catch (err) {
+        console.log('[VideoJSPlayer] Could not unlock orientation:', err);
+      }
+    };
+  }, []);
+
   // Auto-hide controls
   useEffect(() => {
     const handleMouseMove = () => {
