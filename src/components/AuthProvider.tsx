@@ -28,11 +28,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('[AuthProvider] Iniciando fetchProfile para userId:', userId);
     try {
       console.log('[AuthProvider] Buscando perfil no Supabase...');
-      const { data, error } = await supabase
+      
+      // Adicionar timeout para evitar que a query fique travada
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile query timeout')), 3000)
+      );
+      
+      const queryPromise = supabase
         .from("profiles" as any)
         .select("*")
         .eq("id", userId)
-        .single();
+        .maybeSingle();
+      
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
       console.log('[AuthProvider] Query completada. Error:', error?.code || 'none', 'Data:', data ? 'existe' : 'null');
       
       if (error) {
