@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PremiumHeroBanner from "@/components/PremiumHeroBanner";
+import { MobileNetflixHero } from "@/components/MobileNetflixHero";
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import getSupabaseClient from '@/lib/supabase';
@@ -220,11 +221,18 @@ const SeriesPorCategoria: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* Hero Banner */}
-      <PremiumHeroBanner
-        contentType="series"
-        onPlay={handleHeroPlay}
-      />
+      {/* Hero Banner - Mobile/Desktop */}
+      {/* Mobile Banner - hidden on desktop */}
+      <div className="md:hidden">
+        <MobileNetflixHero contentType="series" />
+      </div>
+      {/* Desktop Banner - hidden on mobile */}
+      <div className="hidden md:block">
+        <PremiumHeroBanner
+          contentType="series"
+          onPlay={handleHeroPlay}
+        />
+      </div>
 
       {/* Séries por categoria do banco */}
       <div className="py-8 space-y-8">

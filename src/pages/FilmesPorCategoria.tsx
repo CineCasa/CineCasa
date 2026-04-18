@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import CategoryFilms from '@/components/CategoryFilms';
 import useCinemaCategories from '@/hooks/useCinemaCategories';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
+import { MobileNetflixHero } from '@/components/MobileNetflixHero';
 import { 
   Film, 
   Grid, 
@@ -156,10 +157,15 @@ const FilmesPorCategoria: React.FC = () => {
   return (
     <div className="streaming-container min-h-screen bg-black">
       
-      {/* Banner Principal com trailers aleatórios */}
-      <PremiumHeroBanner
-        contentType="movies"
-      />
+      {/* Banner Principal - Mobile/Desktop */}
+      {/* Mobile Banner - hidden on desktop */}
+      <div className="md:hidden">
+        <MobileNetflixHero contentType="movies" />
+      </div>
+      {/* Desktop Banner - hidden on mobile */}
+      <div className="hidden md:block">
+        <PremiumHeroBanner contentType="movies" />
+      </div>
       
       {/* Hero Section */}
       <div className="relative h-64 bg-gradient-to-b from-red-900/20 to-black overflow-hidden">

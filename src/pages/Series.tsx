@@ -1,4 +1,5 @@
 import PremiumHeroBanner from "@/components/PremiumHeroBanner";
+import { MobileNetflixHero } from "@/components/MobileNetflixHero";
 import ContentRow from "@/components/ContentRow";
 import ContinueWatchingRow from '../components/ContinueWatchingRow';
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
@@ -19,11 +20,16 @@ const Series = () => {
     .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR')) || [];
 
   return (
-    <div className="min-h-screen bg-black pt-[94px]">
-      {/* Hero Banner */}
-      <PremiumHeroBanner
-        contentType="series"
-      />
+    <div className="min-h-screen bg-black">
+      {/* Hero Banner - Mobile/Desktop */}
+      {/* Mobile Banner - hidden on desktop */}
+      <div className="md:hidden">
+        <MobileNetflixHero contentType="series" />
+      </div>
+      {/* Desktop Banner - hidden on mobile */}
+      <div className="hidden md:block pt-[94px]">
+        <PremiumHeroBanner contentType="series" />
+      </div>
       
       <main className="pb-20 mt-[70px] relative z-10 bg-black">
         <div className="relative z-10 pt-16 -mt-10 bg-black">
