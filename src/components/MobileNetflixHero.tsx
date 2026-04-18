@@ -49,11 +49,17 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
       const tableName = contentType === 'movies' ? 'cinema' : 'series';
       console.log(`[MobileNetflixHero] Buscando dados da tabela: ${tableName}`);
 
+      // Séries usam colunas diferentes (capa, ano, id_n)
+      const isSeries = contentType === 'series';
+      const posterCol = isSeries ? 'capa' : 'poster';
+      const yearCol = isSeries ? 'ano' : 'year';
+      const idCol = isSeries ? 'id_n' : 'id';
+
       const { data, error } = await supabase
         .from(tableName)
-        .select('id, titulo, poster, year, description, trailer, rating, genero')
-        .not('poster', 'is', null)
-        .not('poster', 'eq', '');
+        .select(`${idCol}, titulo, ${posterCol}, ${yearCol}, description, trailer, rating, genero`)
+        .not(posterCol, 'is', null)
+        .not(posterCol, 'eq', '');
 
       if (error) {
         console.error('[MobileNetflixHero] Erro Supabase:', error);
@@ -63,14 +69,17 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
       console.log(`[MobileNetflixHero] Dados retornados: ${data?.length || 0} itens`);
 
       if (data && data.length > 0) {
-        const withPosters = data.filter(item => item.poster && item.poster.trim() !== '');
+        const withPosters = data.filter(item => {
+          const poster = isSeries ? item.capa : item.poster;
+          return poster && poster.trim() !== '';
+        });
         console.log(`[MobileNetflixHero] Itens com poster válido: ${withPosters.length}`);
 
         const transformed: BannerContent[] = withPosters.map((item: any) => ({
-          id: item.id.toString(),
+          id: (isSeries ? item.id_n : item.id)?.toString(),
           title: item.titulo,
-          poster: item.poster,
-          year: item.year?.toString() || '',
+          poster: isSeries ? item.capa : item.poster,
+          year: (isSeries ? item.ano : item.year)?.toString() || '',
           description: item.description,
           trailer: item.trailer,
           rating: item.rating,
