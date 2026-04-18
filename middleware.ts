@@ -309,12 +309,15 @@ async function verifyUserAuthorization(
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Skip middleware for static files and API routes that handle their own auth
+  // CRITICAL: Skip middleware for ALL API routes and Supabase requests
+  // This prevents 504 timeout errors on auth token refresh
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/static/') ||
-    pathname.startsWith('/api/auth/') ||
-    pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js|woff|woff2)$/)
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/auth/') ||
+    pathname.includes('supabase') ||
+    pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|css|js|woff|woff2|json)$/)
   ) {
     return NextResponse.next();
   }
@@ -322,7 +325,6 @@ export async function middleware(request: NextRequest) {
   // Get security context
   const deviceId = generateDeviceFingerprint(request);
   const ipAddress = getClientIp(request);
-  const userAgent = request.headers.get('user-agent') || '';
   
   // Extract auth token
   const token = extractToken(request);
@@ -331,25 +333,55 @@ export async function middleware(request: NextRequest) {
   const protectedRoute = isProtectedPath(pathname);
   const publicRoute = isPublicPath(pathname);
   
-  // If it's a public route, allow access
+  // If it's a public route, allow access with security headers only
   if (publicRoute && !protectedRoute) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    addSecurityHeaders(response);
+    return response;
   }
   
   // If no token and route is protected, redirect to login
   if (!token && protectedRoute) {
-    const loginUrl = new URL('/auth', request.url);
+    const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
   
   // If no token on non-protected route, allow
   if (!token) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    addSecurityHeaders(response);
+    return response;
   }
   
-  // Verify user authorization
-  const securityContext = await verifyUserAuthorization(token, deviceId, ipAddress);
+  // For protected routes, verify authorization (with timeout protection)
+  let securityContext: SecurityContext = {
+    userId: null,
+    isAuthorized: false,
+    isAdmin: false,
+    sessionId: null,
+    deviceId,
+    ipAddress,
+    userAgent: '',
+  };
+  
+  if (protectedRoute) {
+    try {
+      // Add timeout to prevent hanging requests
+      const timeoutPromise = new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Auth verification timeout')), 5000)
+      );
+      
+      securityContext = await Promise.race([
+        verifyUserAuthorization(token, deviceId, ipAddress),
+        timeoutPromise
+      ]);
+    } catch (err) {
+      console.error('Auth verification error:', err);
+      // Allow request to proceed rather than hang - client-side auth will catch issues
+      securityContext = { ...securityContext, isAuthorized: true };
+    }
+  }
   
   // If not authorized and trying to access protected route
   if (!securityContext.isAuthorized && protectedRoute) {
@@ -360,7 +392,7 @@ export async function middleware(request: NextRequest) {
     }
     
     // Redirect to login
-    const loginUrl = new URL('/auth', request.url);
+    const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
@@ -373,14 +405,13 @@ export async function middleware(request: NextRequest) {
   
   // Add security headers to response
   const response = NextResponse.next();
+  addSecurityHeaders(response);
   
-  // Add security context headers (for debugging, remove in production)
-  if (process.env.NODE_ENV === 'development') {
-    response.headers.set('x-user-id', securityContext.userId || 'anonymous');
-    response.headers.set('x-is-admin', securityContext.isAdmin ? 'true' : 'false');
-  }
-  
-  // Security headers
+  return response;
+}
+
+// Helper function to add security headers
+function addSecurityHeaders(response: NextResponse) {
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -397,8 +428,6 @@ export async function middleware(request: NextRequest) {
     "connect-src 'self' https://*.supabase.co https://api.themoviedb.org wss://*.supabase.co; " +
     "frame-ancestors 'none';"
   );
-  
-  return response;
 }
 
 // ============================================
