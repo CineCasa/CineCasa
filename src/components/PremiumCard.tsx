@@ -48,13 +48,13 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
       tabIndex={tabIndex ?? 0}
       role="button"
       aria-label={`Ver detalhes de ${title}`}
-      whileHover={{ y: -4, scale: 1.02 }}
+      whileHover={{ y: -4, scale: 1.05 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       data-navigable={dataNavigable}
       data-nav-row={dataNavRow}
       data-nav-col={dataNavCol}
     >
-      <div className="relative aspect-[2/3] sm:aspect-[3/4] overflow-hidden rounded-lg">
+      <div className="relative aspect-[2/3] sm:aspect-[3/4] overflow-hidden rounded-xl border border-white/5 transition-all duration-300 group-hover:border-[#00E5FF]/50 group-hover:shadow-[0_0_25px_rgba(0,229,255,0.3)]">
         {/* Imagem do Poster */}
         <img
           src={poster || `https://picsum.photos/seed/${id || title || 'default'}/300/450.jpg`}
@@ -72,6 +72,19 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+        {/* Botão Info/Mais - Estilo Glassmorphism */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick?.();
+            }}
+            className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/30 rounded-lg text-white text-sm font-medium hover:bg-white/20 hover:border-[#00E5FF]/50 hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all duration-300 transform hover:scale-105"
+          >
+            Info/Mais
+          </button>
+        </div>
+
         {/* Tags */}
         {isNew && !isComingSoon && (
           <div className="content-tag">
@@ -85,12 +98,17 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
           </div>
         )}
 
-        {/* Barra de Progresso */}
+        {/* Barra de Progresso Neon */}
         {progress > 0 && !isComingSoon && (
-          <div 
-            className="progress-bar"
-            style={{ width: `${progress}%` }}
-          />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+            <div 
+              className="h-full bg-[#00E5FF] transition-all duration-500"
+              style={{ 
+                width: `${progress}%`,
+                boxShadow: '0 0 10px rgba(0, 229, 255, 0.8), 0 0 20px rgba(0, 229, 255, 0.4)'
+              }}
+            />
+          </div>
         )}
       </div>
     </motion.div>

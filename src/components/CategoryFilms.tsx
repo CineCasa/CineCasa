@@ -102,9 +102,9 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
   const titleText = typeof category === 'string' ? category : 'Categoria';
 
   return (
-    <div className="w-full mb-8">
-      {/* TÍTULO - FORA e ACIMA de tudo */}
-      <h2 className="text-xl lg:text-2xl font-bold text-white px-4 lg:px-6 pt-4 pb-3">
+    <div className="w-full mb-8 pb-8">
+      {/* TÍTULO - Estilo Neon */}
+      <h2 className="text-xl lg:text-2xl font-bold text-white px-4 lg:px-6 pt-4 pb-3 tracking-wide">
         {titleText}
       </h2>
 
@@ -115,7 +115,7 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
         onScroll={handleScroll}
         style={{ overflowY: 'hidden' }}
       >
-        <div className="flex gap-4 px-4 pb-4">
+        <div className="flex gap-5 px-4 pb-4">
           {films.map((film, i) => (
             <motion.div
               key={`m-${film.id}-${i}`}
@@ -142,9 +142,9 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
         </div>
       </div>
 
-      {/* DESKTOP: Grid */}
-      <div className="hidden lg:block px-4">
-        <div className="flex flex-wrap gap-4">
+      {/* DESKTOP: Grid com espaçamento harmonioso */}
+      <div className="hidden lg:block px-6">
+        <div className="flex flex-wrap gap-5">
           {films.map((film, i) => (
             <motion.div
               key={`d-${film.id}-${i}`}
@@ -164,8 +164,8 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
             </motion.div>
           ))}
           {loading && [1,2,3,4,5].map(i => (
-            <div key={`ld-${i}`} className="w-[calc(20%-12.8px)]">
-              <div className="bg-gray-800 rounded-lg h-60 animate-pulse" />
+            <div key={`ld-${i}`} className="w-[calc(20%-16px)]">
+              <div className="bg-gray-800/60 rounded-xl h-60 animate-pulse border border-white/5" />
             </div>
           ))}
         </div>
