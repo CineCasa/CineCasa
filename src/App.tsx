@@ -42,21 +42,26 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
-  
+
+  console.log('[ProtectedRoute] loading:', loading, 'user:', !!user);
+
   // Aguardar o carregamento da autenticação
   if (loading) {
+    console.log('[ProtectedRoute] Exibindo loading spinner');
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
       </div>
     );
   }
-  
+
   if (!user) {
+    console.log('[ProtectedRoute] Sem usuário, redirecionando para login');
     // Redireciona para login, salvando a rota atual para redirecionar de volta após login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  
+
+  console.log('[ProtectedRoute] Usuário autenticado, renderizando children');
   return <>{children}</>;
 };
 
