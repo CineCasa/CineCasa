@@ -9,7 +9,16 @@ const NO_CACHE_URLS = [
   '/js/watch-party.js',
   '/js/criar-sala.js',
   '/watch.html',
-  '/assets/'  // Arquivos de build gerados dinamicamente
+  '/assets/',  // Arquivos de build gerados dinamicamente
+  'supabase.co', // Supabase API - never cache
+  'eqhstnlsmfrwxhvcwoid.supabase.co' // Supabase REST API
+];
+
+// Domínios externos que não devem ser interceptados
+const EXTERNAL_DOMAINS = [
+  'supabase.co',
+  'themoviedb.org',
+  'tmdb.org'
 ];
 
 // Detectar modo de desenvolvimento (localhost)
@@ -224,6 +233,11 @@ self.addEventListener('fetch', event => {
   // Ignorar requisições chrome-extension
   if (url.protocol === 'chrome-extension:') {
     return;
+  }
+
+  // Ignorar requisições cross-origin (evitar CORS issues)
+  if (url.origin !== self.location.origin) {
+    return; // Let the browser handle cross-origin requests normally
   }
 
   // Lidar com diferentes métodos HTTP
