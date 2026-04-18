@@ -255,22 +255,27 @@ const MovieDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white relative overflow-x-hidden">
       {/* ============================================
-          CAMADA 0: FUNDO - Backdrop com blur e vignette
+          CAMADA 0: FUNDO - Backdrop claro e nítido com vignette suave
           ============================================ */}
       <div className="fixed inset-0 z-0">
-        {/* Backdrop Image com blur */}
+        {/* Backdrop Image - clara e nítida com brilho aumentado */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ 
             backgroundImage: `url(${backdropUrl})`,
-            filter: 'blur(20px)',
-            transform: 'scale(1.1)' // Previne bordas brancas do blur
+            filter: 'blur(8px) brightness(1.15) saturate(1.1)',
+            transform: 'scale(1.05)' // Leve zoom para cobrir melhor
           }}
         />
-        {/* Vignette Gradient preto para legibilidade */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/40" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
-        <div className="absolute inset-0 bg-black/30" />
+        {/* Vignette suave nas bordas - mantém foco no centro */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.65) 100%)'
+          }}
+        />
+        {/* Overlay leve na parte inferior para legibilidade do texto */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
       </div>
 
       {/* ============================================
@@ -370,8 +375,11 @@ const MovieDetails: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Título Premium text-4xl font-bold */}
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-white via-cyan-100 to-cyan-300 bg-clip-text text-transparent drop-shadow-lg">
+                {/* Título Premium text-4xl font-bold com text-shadow para legibilidade */}
+                <h1 
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white"
+                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.6)' }}
+                >
                   {movie.titulo}
                 </h1>
                 
