@@ -250,14 +250,16 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
         md:w-[calc((100vw-64px-48px)/4)] 
         lg:w-[calc((100vw-96px-96px)/5)] 
         xl:w-[calc((100vw-128px-128px)/6)] 
-        aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-black rounded-lg cursor-pointer scroll-m-4 ${
-        isHovered ? "z-[99999]" : "z-0"
-      }`}
+        aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5FF] focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-xl cursor-pointer scroll-m-4
+        hover:scale-105 hover:shadow-[0_0_25px_rgba(0,229,255,0.3),0_10px_40px_rgba(0,0,0,0.5)]
+        border border-white/5 hover:border-[#00E5FF]/30
+        ${isHovered ? "z-[99999]" : "z-0"}
+      `}
     >
       {/* BASE PORTRAIT IMAGE */}
       <div 
         onClick={handleNavigateToDetails}
-        className={`w-full h-full rounded-lg overflow-hidden bg-secondary shadow-lg transition-opacity duration-300 ${isHovered ? "opacity-0" : "opacity-100"} ${!item.isComingSoon && 'cursor-pointer hover:opacity-90'}`}>
+        className={`w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300 ${isHovered ? "opacity-0" : "opacity-100"} ${!item.isComingSoon && 'cursor-pointer hover:brightness-110'}`}>
         {isVisible ? (
           <img
             src={item.image}
@@ -325,7 +327,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
               transformOrigin: getTransformOrigin(),
               zIndex: 100000,
             }}
-            className="absolute top-0 left-0 bg-[#1b1b1b] rounded-lg shadow-[0_20px_40px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-white/20 w-[160%] h-auto"
+            className="absolute top-0 left-0 glass-card shadow-[0_20px_40px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-[#00E5FF]/30 w-[160%] h-auto"
           >
             {/* TOP: MEDIA SECTION (VIDEO OR PHOTO) */}
             <div className={`relative w-full aspect-video overflow-hidden bg-black`}>

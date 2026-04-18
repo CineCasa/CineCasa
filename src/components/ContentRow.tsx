@@ -140,10 +140,13 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
   };
 
   return (
-    <section className="row-wrapper">
-      <h2 className="row-title">
-        {category.title}
-      </h2>
+    <section className="row-wrapper py-6 px-4 md:px-8 lg:px-12">
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="section-title text-xl md:text-2xl tracking-wider">
+          {category.title.toUpperCase()}
+        </h2>
+        <div className="flex-1 h-px bg-gradient-to-r from-[#00E5FF]/30 to-transparent" />
+      </div>
 
       {layout === 'grid' ? (
         // Layout em grid: 5 capas por linha

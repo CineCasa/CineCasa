@@ -15,6 +15,12 @@
   /* Cores - fundo preto puro */
   --background: 0 0% 0%;
   --foreground: 0 0% 100%;
+  /* Paleta Neon */
+  --neon-cyan: #00E5FF;
+  --neon-cyan-glow: rgba(0, 229, 255, 0.5);
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(12px);
 }
 
 /* Forçar fundo preto puro em todos os elementos */
@@ -71,6 +77,120 @@ html, body {
     backface-visibility: hidden;
     perspective: 1000px;
     will-change: transform, opacity;
+  }
+
+  /* ============================================
+     GLASSMORPHISM UTILITIES
+     ============================================ */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-card {
+    background: rgba(20, 20, 20, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+  }
+
+  /* ============================================
+     NEON GLOW EFFECTS
+     ============================================ */
+  .neon-glow {
+    box-shadow: 0 0 20px var(--neon-cyan-glow),
+                0 0 40px rgba(0, 229, 255, 0.3);
+  }
+
+  .neon-glow-hover:hover {
+    box-shadow: 0 0 20px var(--neon-cyan-glow),
+                0 0 40px rgba(0, 229, 255, 0.3),
+                0 0 60px rgba(0, 229, 255, 0.2);
+  }
+
+  .neon-border {
+    border: 1px solid var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan-glow),
+                inset 0 0 10px rgba(0, 229, 255, 0.1);
+  }
+
+  .neon-text {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px var(--neon-cyan-glow),
+                 0 0 20px rgba(0, 229, 255, 0.5);
+  }
+
+  /* ============================================
+     CARD STANDARD STYLES
+     ============================================ */
+  .content-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .content-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px var(--neon-cyan-glow),
+                0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  /* ============================================
+     BUTTON STYLES
+     ============================================ */
+  .btn-play {
+    background-color: white;
+    color: black;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .btn-play:hover {
+    transform: scale(1.05);
+    background-color: #f0f0f0;
+  }
+
+  .btn-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    transition: all 0.2s ease;
+  }
+
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+    border-color: var(--neon-cyan);
+  }
+
+  /* ============================================
+     TYPOGRAPHY HIERARCHY
+     ============================================ */
+  .section-title {
+    font-family: var(--font-titles);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: 0.05em;
+    color: white;
+    text-transform: uppercase;
+  }
+
+  .content-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+  }
+
+  .content-subtitle {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
   }
 
   /* Full width layouts - use 100% screen */
