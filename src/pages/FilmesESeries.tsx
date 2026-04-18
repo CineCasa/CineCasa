@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import PremiumNavbar from '@/components/PremiumNavbar';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
+import { MobileNetflixHero } from '@/components/MobileNetflixHero';
 import { MOVIE_CATEGORIES, CATEGORY_MAPPING } from '@/data/movieCategories';
 import { ChevronLeft, ChevronRight, Play, Info } from 'lucide-react';
 import { cleanTitle } from '@/lib/utils';
@@ -158,12 +159,15 @@ const FilmesESeries = () => {
   console.log('[FilmesESeries] Renderizando com', categoriesWithMovies.length, 'categorias');
   
   return (
-    <div className="min-h-screen bg-black pt-[94px]">
-      {/* Banner Hero - Filmes */}
-      <div className="relative">
-        <PremiumHeroBanner
-          contentType="movies"
-        />
+    <div className="min-h-screen bg-black">
+      {/* Banner Hero - Filmes - Mobile/Desktop */}
+      {/* Mobile Banner - hidden on desktop */}
+      <div className="md:hidden">
+        <MobileNetflixHero contentType="movies" />
+      </div>
+      {/* Desktop Banner - hidden on mobile */}
+      <div className="hidden md:block pt-[94px]">
+        <PremiumHeroBanner contentType="movies" />
       </div>
 
       {/* Categorias com Filmes */}
