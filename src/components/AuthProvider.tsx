@@ -25,15 +25,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [approvalError, setApprovalError] = useState<string | null>(null);
 
   const fetchProfile = async (userId: string) => {
+    console.log('[AuthProvider] Iniciando fetchProfile para userId:', userId);
     try {
+      console.log('[AuthProvider] Buscando perfil no Supabase...');
       const { data, error } = await supabase
         .from("profiles" as any)
         .select("*")
         .eq("id", userId)
         .single();
+      console.log('[AuthProvider] Query completada. Error:', error?.code || 'none', 'Data:', data ? 'existe' : 'null');
       
-      if (error && error.code !== "PGRST116") {
-        console.error("Error fetching profile:", error);
+      if (error) {
+        console.error('[AuthProvider] Erro ao buscar perfil:', error);
+        if (error.code === "PGRST116") {
+          console.log('[AuthProvider] Perfil não encontrado (PGRST116)');
+        }
       }
       
       const profileData = data as any;
@@ -55,6 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       // Verificar se o usuário está ativo
       if (profileData && !profileData.is_active && !profileData.is_admin) {
+        console.log('[AuthProvider] Usuário inativo, fazendo logout');
         await supabase.auth.signOut();
         setSession(null);
         setUser(null);
@@ -62,20 +69,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
         return;
       }
+      console.log('[AuthProvider] Perfil carregado com sucesso');
       
       setProfile(profileData || null);
     } catch (e) {
-      console.error("Profile fetch error:", e);
+      console.error('[AuthProvider] Profile fetch error:', e);
     } finally {
+      console.log('[AuthProvider] fetchProfile finally - setLoading(false)');
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log('[AuthProvider] useEffect iniciado');
+    
+    // Safety timeout - force loading to false after 5 seconds
+    const safetyTimeout = setTimeout(() => {
+      console.log('[AuthProvider] Safety timeout ativado - forçando loading false');
+      setLoading(false);
+    }, 5000);
+    
     // Get initial session
     const initSession = async () => {
+      console.log('[AuthProvider] initSession iniciado');
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('[AuthProvider] getSession completado. Session:', session ? 'existe' : 'null', 'Error:', error?.message || 'none');
         
         if (error) {
           console.error("Error getting session:", error);
@@ -87,13 +106,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          console.log('[AuthProvider] Usuário encontrado na sessão, chamando fetchProfile');
           await fetchProfile(session.user.id);
         } else {
+          console.log('[AuthProvider] Sem usuário na sessão, setLoading(false)');
           setLoading(false);
         }
       } catch (e) {
-        console.error("Session init error:", e);
+        console.error('[AuthProvider] Session init error:', e);
         setLoading(false);
+      } finally {
+        clearTimeout(safetyTimeout);
       }
     };
     
@@ -101,16 +124,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+      console.log('[AuthProvider] Auth state changed:', event);
       
       setSession(session);
       setUser(session?.user ?? null);
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
         if (session?.user) {
+          console.log('[AuthProvider] Evento', event, '- chamando fetchProfile');
           await fetchProfile(session.user.id);
         }
       } else if (event === 'SIGNED_OUT') {
+        console.log('[AuthProvider] SIGNED_OUT - limpando estado');
         setProfile(null);
         setIsApproved(false);
         setApprovalError(null);
@@ -118,7 +143,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('[AuthProvider] Cleanup - unsubscribe');
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
