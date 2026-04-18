@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { CastButton } from './CastButton';
+import { useElitePlayer } from '@/hooks/useElitePlayer';
+import { isArchiveOrgUrl } from '@/utils/videoProxy';
 
 interface VideoJSPlayerProps {
   url: string;
@@ -30,12 +32,12 @@ declare global {
 }
 
 const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
-  url,
+  url: originalUrl,
   title,
   poster,
   onClose,
   onNextEpisode,
-  hasNextEpisode,
+  hasNextEpisode: propHasNextEpisode,
   historyItem,
   onProgressUpdate,
   contentId,
@@ -50,6 +52,25 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const progressBarRef = useRef<HTMLDivElement>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
   const { user, profile } = useAuth();
+  
+  // Elite Player Hook - Cloudflare Worker + JWT + Supabase Sync
+  const {
+    videoUrl,
+    isLoading: eliteLoading,
+    error: eliteError,
+    savedProgress,
+    saveProgress,
+    hasNextEpisode: eliteHasNextEpisode,
+  } = useElitePlayer({
+    url: originalUrl,
+    contentId: contentId || '',
+    contentType: contentType || 'movie',
+    title,
+    poster,
+    episodeId,
+    seasonNumber,
+    episodeNumber,
+  });
   
   // Estados do player
   const [isReady, setIsReady] = useState(false);
@@ -131,7 +152,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   // Initialize player when Video.js is loaded
   useEffect(() => {
-    if (!loaded || !videoRef.current || !window.videojs) return;
+    if (!loaded || !videoRef.current || !window.videojs || !videoUrl) return;
 
     const player = window.videojs(videoRef.current, {
       html5: {
@@ -139,12 +160,20 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           overrideNative: true,
           limitRenditionByPlayerDimensions: true,
           useDevicePixelRatio: true,
+          limitRenditionByPlayerDimensionsOnSwitch: true,
         },
       },
       autoplay: true,
       controls: false, // Custom controls
       fluid: true,
-      preload: 'auto',
+      preload: 'metadata', // Performance: preload metadata only
+      poster: poster,
+      sources: [
+        {
+          src: videoUrl,
+          type: isArchiveOrgUrl(videoUrl) ? 'video/mp4' : 'application/x-mpegURL',
+        },
+      ],
     });
 
     playerRef.current = player;
@@ -224,25 +253,31 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     return () => {
       player.dispose();
     };
-  }, [loaded, url, poster, onProgressUpdate, hasNextEpisode, onNextEpisode]);
+  }, [loaded, videoUrl, poster, onProgressUpdate, eliteHasNextEpisode, onNextEpisode, saveProgress]);
 
   // Efeito para mostrar resume dialog quando o vídeo carregar
   useEffect(() => {
-    if (isReady && resumeFrom > 30) { // Só mostrar se já assistiu mais de 30 segundos
-      setResumeTime(resumeFrom);
+    // Usar savedProgress do elite hook ou resumeFrom prop
+    const progressToResume = savedProgress > 0 ? savedProgress : resumeFrom;
+    if (isReady && progressToResume > 30) { // Só mostrar se já assistiu mais de 30 segundos
+      setResumeTime(progressToResume);
       setShowResumeDialog(true);
       if (playerRef.current) {
         playerRef.current.pause();
       }
     }
-  }, [isReady, resumeFrom]);
+  }, [isReady, resumeFrom, savedProgress]);
 
-  // Salvar progresso no Supabase
+  // Salvar progresso usando elite hook (já com throttle de 10s)
   const saveWatchHistory = useCallback(async (current: number, dur: number) => {
     if (!user || !profile || !contentId) return;
     
+    // Usar o saveProgress do elite hook (throttled a cada 10s)
+    saveProgress(current, dur);
+    
+    // Backup: também salvar via Supabase direto para garantir
     try {
-      const progress = dur > 0 ? (current / dur) * 100 : 0;
+      const progressPercent = dur > 0 ? (current / dur) * 100 : 0;
       
       const { error } = await supabase.from('watch_history').upsert({
         profile_id: profile.id,
@@ -250,8 +285,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         content_type: contentType || 'movie',
         titulo: title,
         poster: poster || '',
-        progress: progress,
-        duration: dur,
+        progress: Math.round(progressPercent),
+        duration: Math.round(dur),
+        current_time: Math.round(current),
         last_watched: new Date().toISOString(),
         episode_id: episodeId,
         season_number: seasonNumber,
@@ -264,7 +300,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     } catch (err) {
       console.error('[VideoJSPlayer] Failed to save watch history:', err);
     }
-  }, [user, profile, contentId, contentType, title, poster, episodeId, seasonNumber, episodeNumber]);
+  }, [user, profile, contentId, contentType, title, poster, episodeId, seasonNumber, episodeNumber, saveProgress]);
 
   // Efeito para salvar progresso periodicamente
   useEffect(() => {
@@ -1054,13 +1090,63 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         </div>
       )}
 
-      {/* Brand Logo Overlay */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
-        <div className="flex items-center gap-2 bg-black/50 backdrop-blur px-4 py-2 rounded-full">
-          <MonitorPlay size={20} className="text-[#00A8E1]" />
-          <span className="text-white font-semibold">CineCasa</span>
+      {/* Watermark CineCasa - canto superior direito */}
+      <div className="absolute top-4 right-4 z-30 pointer-events-none">
+        <div className="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity duration-300">
+          <img 
+            src="/logo.png" 
+            alt="CineCasa" 
+            className="h-8 w-auto object-contain drop-shadow-lg"
+            style={{ filter: 'drop-shadow(0 0 8px rgba(0, 229, 255, 0.5))' }}
+          />
         </div>
       </div>
+
+      {/* Neon Skin CSS Injection */}
+      <style>{`
+        /* Video.js Neon Skin */
+        .video-js .vjs-progress-holder {
+          background: rgba(255, 255, 255, 0.2) !important;
+        }
+        .video-js .vjs-play-progress {
+          background: #00E5FF !important;
+          box-shadow: 0 0 10px rgba(0, 229, 255, 0.5) !important;
+        }
+        .video-js .vjs-load-progress {
+          background: rgba(255, 255, 255, 0.3) !important;
+        }
+        .video-js .vjs-slider:focus {
+          box-shadow: 0 0 15px rgba(0, 229, 255, 0.5) !important;
+        }
+        /* Neon controls */
+        .neon-progress-bar {
+          background: linear-gradient(90deg, #00E5FF 0%, #00B8D4 100%);
+          box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+        }
+        .neon-button {
+          filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.3));
+          transition: all 0.2s ease;
+        }
+        .neon-button:hover {
+          filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+          transform: scale(1.05);
+        }
+        .neon-icon {
+          color: #00E5FF !important;
+          filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.5));
+        }
+        /* Mobile touch targets */
+        @media (pointer: coarse) {
+          .touch-button {
+            min-width: 48px !important;
+            min-height: 48px !important;
+            padding: 12px !important;
+          }
+          .touch-progress {
+            height: 20px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 
