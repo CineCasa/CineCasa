@@ -51,7 +51,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
 
       const { data, error } = await supabase
         .from(tableName)
-        .select('id, titulo, poster, year, description, trailer, rating, genero, duration, maturity_rating')
+        .select('id, titulo, poster, year, description, trailer, rating, genero, maturity_rating')
         .not('poster', 'is', null)
         .not('poster', 'eq', '');
 
@@ -75,7 +75,6 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
           trailer: item.trailer,
           rating: item.rating,
           genre: item.genero,
-          duration: item.duration,
           maturityRating: item.maturity_rating
         }));
         setDisplayQueue(shuffleArray(transformed).slice(0, 20));
