@@ -461,9 +461,66 @@ const Details = () => {
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - CAMADA 2: Interface Glassmorphism */}
       <div className="px-4 md:px-8 lg:px-12 xl:px-16 relative z-10 pb-20">
         <div className="max-w-7xl mx-auto">
+          {/* CAMADA 1: Poster com drop-shadow-2xl e bordas arredondadas */}
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-8">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex-shrink-0 mx-auto md:mx-0"
+            >
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl opacity-30 group-hover:opacity-50 blur transition-all duration-500" />
+                <img 
+                  src={data.poster_path || data.backdrop_path || "/placeholder-poster.jpg"}
+                  alt={data.title}
+                  className="relative w-48 md:w-56 lg:w-64 rounded-lg drop-shadow-2xl object-cover aspect-[2/3] group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder-poster.jpg";
+                  }}
+                />
+              </div>
+            </motion.div>
+            
+            {/* Metadata Panel - Glassmorphism */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex-1 backdrop-blur-md bg-black/30 border border-cyan-500/20 rounded-xl p-4 md:p-6"
+            >
+              <h2 className="text-xl md:text-2xl font-bold mb-4 text-white">Informações</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {data.vote_average && (
+                  <div className="backdrop-blur-sm bg-cyan-400/10 border border-cyan-500/30 rounded-lg p-3 text-center">
+                    <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Nota TMDB</p>
+                    <p className="text-2xl font-bold text-white">{data.vote_average.toFixed(1)}<span className="text-sm text-gray-400">/10</span></p>
+                  </div>
+                )}
+                {releaseYear && (
+                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Ano</p>
+                    <p className="text-2xl font-bold text-white">{releaseYear}</p>
+                  </div>
+                )}
+                {duration && (
+                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Duração</p>
+                    <p className="text-xl font-bold text-white">{duration}</p>
+                  </div>
+                )}
+                {director && (
+                  <div className="backdrop-blur-sm bg-black/40 border border-cyan-500/20 rounded-lg p-3 text-center col-span-2 md:col-span-1">
+                    <p className="text-xs text-cyan-400 uppercase tracking-wider mb-1">Direção</p>
+                    <p className="text-lg font-bold text-white truncate">{director}</p>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
 
           {/* Cast Section */}
           {castList.length > 0 && (
