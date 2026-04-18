@@ -197,7 +197,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
               {/* Play Button */}
               <button
                 onClick={() => openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer || '')}
-                className="flex items-center gap-2 px-5 py-2 bg-white hover:bg-gray-200 text-black rounded-md font-semibold text-sm transition-all active:scale-95"
+                className="flex items-center gap-2 px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black rounded-md font-semibold text-sm transition-all active:scale-95"
               >
                 <Play className="w-4 h-4 fill-black" />
                 <span>Assistir</span>
@@ -207,7 +207,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
               <button
                 onClick={() => currentBanner.trailer && openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer)}
                 disabled={!currentBanner.trailer}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 disabled:bg-white/10 disabled:text-gray-500 text-white rounded-md font-medium text-sm transition-all active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-red-900/50 disabled:text-gray-400 text-white rounded-md font-medium text-sm transition-all active:scale-95"
               >
                 <Film className="w-4 h-4" />
                 <span>Trailer</span>
