@@ -387,11 +387,13 @@ const mockPoderiaSerMelhor = [
 ];
 
 const PremiumHome: React.FC = () => {
+  console.log('[PremiumHome] Componente iniciando renderização');
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Sempre inicia no topo da página (banner) quando a home é carregada
   useEffect(() => {
+    console.log('[PremiumHome] useEffect scrollTo executado');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
