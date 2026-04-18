@@ -1,37 +1,68 @@
-import { type VariantProps, type ClassValue, clsx, type ClassProp } from 'clsx';
+import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-
-type Props = VariantProps<{
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  loading?: boolean;
-  disabled?: boolean;
-}>;
 
 export type { ClassValue };
 
-export function cva<T extends Props>(
-  base: ClassProp,
-  config: Record<Exclude<keyof T, 'loading'>, Record<string, ClassValue>>,
-  props?: T
+// Interface para configuração do CVA
+interface CVAConfig {
+  variant?: Record<string, string>;
+  size?: Record<string, string>;
+  loading?: Record<string, string>;
+  disabled?: Record<string, string>;
+  [key: string]: Record<string, string> | undefined;
+}
+
+interface CVAProps {
+  variant?: string;
+  size?: string;
+  loading?: boolean;
+  disabled?: boolean;
+  [key: string]: any;
+}
+
+export function cva(
+  base: string,
+  config: CVAConfig
 ) {
-  const { variant = 'primary', size = 'md', loading = false, disabled = false } = props || {};
+  return function(props?: CVAProps): string {
+    const { variant = 'primary', size = 'md', loading = false, disabled = false, ...rest } = props || {};
 
-  const variantClasses = config[variant]?.[size] || config[variant]?.base || config.primary?.base || '';
-  const sizeClasses = config[variant]?.[size] || config.primary?.[size] || '';
-  const loadingClasses = loading ? (config.loading?.base || '') : '';
-  const disabledClasses = disabled ? (config.disabled?.base || '') : '';
+    // Coletar todas as classes
+    const classes: ClassValue[] = [base];
 
-  return twMerge(
-    clsx(
-      base,
-      variantClasses,
-      sizeClasses,
-      loadingClasses,
-      disabledClasses,
-      props?.class
-    )
-  );
+    // Adicionar classes da variante
+    if (config.variant && variant) {
+      classes.push(config.variant[variant]);
+    }
+
+    // Adicionar classes do tamanho
+    if (config.size && size) {
+      classes.push(config.size[size]);
+    }
+
+    // Adicionar classes de loading
+    if (loading && config.loading) {
+      classes.push(config.loading.base || '');
+    }
+
+    // Adicionar classes de disabled
+    if (disabled && config.disabled) {
+      classes.push(config.disabled.base || '');
+    }
+
+    // Adicionar outras propriedades dinâmicas
+    Object.keys(rest).forEach(key => {
+      if (config[key] && rest[key]) {
+        if (typeof rest[key] === 'boolean' && rest[key]) {
+          classes.push(config[key]?.base || '');
+        } else if (typeof rest[key] === 'string' && config[key]?.[rest[key]]) {
+          classes.push(config[key][rest[key]]);
+        }
+      }
+    });
+
+    return twMerge(clsx(classes));
+  };
 }
 
 // Helper para criar variants
