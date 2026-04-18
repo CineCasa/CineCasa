@@ -384,6 +384,7 @@ export type Database = {
           season_number: number | null
           current_time: number
           duration: number
+          progress_pct: number
           updated_at: string
         }
         Insert: {
@@ -396,6 +397,7 @@ export type Database = {
           season_number?: number | null
           current_time: number
           duration: number
+          progress_pct?: number
           updated_at?: string
         }
         Update: {
@@ -408,6 +410,7 @@ export type Database = {
           season_number?: number | null
           current_time?: number
           duration?: number
+          progress_pct?: number
           updated_at?: string
         }
         Relationships: [
