@@ -240,6 +240,17 @@ html, body {
   z-index: 999999 !important;
   transform: none !important;
   -webkit-transform: none !important;
+  will-change: auto !important;
+  contain: layout style !important;
+}
+
+/* Fix for mobile browsers that hide address bar */
+.mobile-bottom-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  /* Fallback for browsers that don't support env() */
+  bottom: constant(safe-area-inset-bottom) !important;
+  bottom: env(safe-area-inset-bottom) !important;
 }
 
 /* Hide on larger screens */
