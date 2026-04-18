@@ -273,10 +273,66 @@ const Details = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#000401] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-red-600 border-t-transparent" />
-          <span className="text-gray-400 text-sm">Carregando...</span>
+      <div className="min-h-screen bg-[#000401] overflow-x-hidden">
+        {/* Skeleton Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black" />
+        
+        {/* Skeleton Content */}
+        <div className="relative z-10 px-4 md:px-8 lg:px-12 xl:px-16 pt-[120px] pb-20">
+          <div className="max-w-7xl mx-auto">
+            {/* Skeleton Back Button */}
+            <div className="w-24 h-10 bg-gray-800/50 rounded-lg animate-pulse mb-6" />
+            
+            {/* Skeleton Title */}
+            <div className="w-3/4 h-12 md:h-16 bg-gray-800/50 rounded-lg animate-pulse mb-4" />
+            <div className="w-1/2 h-8 md:h-10 bg-gray-800/50 rounded-lg animate-pulse mb-8" />
+            
+            {/* Skeleton Metadata */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              <div className="w-16 h-6 bg-gray-800/50 rounded-md animate-pulse" />
+              <div className="w-20 h-6 bg-gray-800/50 rounded-md animate-pulse" />
+              <div className="w-24 h-6 bg-gray-800/50 rounded-md animate-pulse" />
+              <div className="w-28 h-6 bg-gray-800/50 rounded-md animate-pulse" />
+            </div>
+            
+            {/* Skeleton Description */}
+            <div className="w-full max-w-2xl h-4 bg-gray-800/50 rounded animate-pulse mb-2" />
+            <div className="w-5/6 max-w-2xl h-4 bg-gray-800/50 rounded animate-pulse mb-8" />
+            
+            {/* Skeleton Buttons */}
+            <div className="flex flex-wrap gap-3 mb-12">
+              <div className="w-32 h-12 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-[20px] animate-pulse" />
+              <div className="w-28 h-12 border border-gray-700 rounded-[20px] animate-pulse" />
+              <div className="w-12 h-12 rounded-full border border-gray-700 animate-pulse" />
+            </div>
+            
+            {/* Skeleton Poster and Info Section */}
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+              {/* Skeleton Poster */}
+              <div className="w-48 md:w-56 lg:w-64 aspect-[2/3] bg-gray-800/50 rounded-lg animate-pulse mx-auto md:mx-0" />
+              
+              {/* Skeleton Info Cards */}
+              <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="h-20 bg-gray-800/50 rounded-lg animate-pulse" />
+                <div className="h-20 bg-gray-800/50 rounded-lg animate-pulse" />
+                <div className="h-20 bg-gray-800/50 rounded-lg animate-pulse" />
+                <div className="h-20 bg-gray-800/50 rounded-lg animate-pulse col-span-2 md:col-span-1" />
+              </div>
+            </div>
+            
+            {/* Skeleton Cast Section */}
+            <div className="mt-12">
+              <div className="w-24 h-8 bg-gray-800/50 rounded-lg animate-pulse mb-4" />
+              <div className="flex gap-4 overflow-hidden">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="flex-shrink-0 flex flex-col items-center">
+                    <div className="w-20 h-20 rounded-full bg-gray-800/50 animate-pulse mb-2" />
+                    <div className="w-16 h-4 bg-gray-800/50 rounded animate-pulse" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -440,22 +496,47 @@ const Details = () => {
 
               {/* Action Buttons */}
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="flex flex-wrap items-center gap-3 md:gap-4 pt-2">
+                {/* Botão Assistir - Gradiente Azul Neon Vibrante */}
                 <button
                   onClick={() => { if (videoUrl) { setIsTrailerMode(false); setIsPlayerOpen(true); } }}
                   disabled={!videoUrl}
-                  className={`flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base transition-all duration-200 ${videoUrl ? "bg-[#00A8E1] text-white hover:bg-[#00A8E1]/80 hover:scale-105" : "bg-gray-700 text-gray-400 cursor-not-allowed"}`}
+                  className={`relative flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base transition-all duration-300 overflow-hidden group ${videoUrl ? "hover:scale-105" : "cursor-not-allowed"}`}
                 >
-                  <Play size={20} className="md:w-6 md:h-6" fill="white" />
-                  {videoUrl ? "Assistir" : "Indisponível"}
+                  {videoUrl && (
+                    <>
+                      {/* Gradient background with animation */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 bg-[length:200%_100%] animate-gradient-x" />
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_30px_rgba(0,229,255,0.6)]" />
+                      {/* Shine effect on hover */}
+                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                    </>
+                  )}
+                  {!videoUrl && (
+                    <div className="absolute inset-0 bg-gray-700" />
+                  )}
+                  {/* Content */}
+                  <span className="relative z-10 flex items-center gap-2 md:gap-3 text-white">
+                    <Play size={20} className="md:w-6 md:h-6" fill="white" />
+                    {videoUrl ? "Assistir" : "Indisponível"}
+                  </span>
                 </button>
 
+                {/* Botão Trailer - Estilo Outline com fundo transparente */}
                 {trailerUrl && (
                   <button
                     onClick={() => { setIsTrailerMode(true); setIsPlayerOpen(true); }}
-                    className="flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base bg-[#FF0000] hover:bg-[#CC0000] text-white hover:scale-105 transition-all duration-200 shadow-lg"
+                    className="relative flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base bg-transparent border-2 border-white/60 text-white hover:border-cyan-400 hover:text-cyan-400 hover:scale-105 transition-all duration-300 group overflow-hidden"
                   >
-                    <Play size={20} className="md:w-6 md:h-6" fill="white" />
-                    Trailer
+                    {/* Hover background fill */}
+                    <div className="absolute inset-0 bg-cyan-400/0 group-hover:bg-cyan-400/10 transition-colors duration-300" />
+                    {/* Glow effect on hover */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[inset_0_0_20px_rgba(0,229,255,0.3)]" />
+                    {/* Content */}
+                    <span className="relative z-10 flex items-center gap-2 md:gap-3">
+                      <Play size={20} className="md:w-6 md:h-6" />
+                      Trailer
+                    </span>
                   </button>
                 )}
 
