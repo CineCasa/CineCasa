@@ -224,6 +224,15 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // CRITICAL: Ignorar completamente requisições para Supabase e outros domínios externos
+  // Isso evita problemas de CORS
+  if (url.hostname.includes('supabase.co') || 
+      url.hostname.includes('themoviedb.org') ||
+      url.hostname.includes('tmdb.org') ||
+      url.origin !== self.location.origin) {
+    return; // Deixa o navegador lidar com a requisição normalmente
+  }
+
   // Em desenvolvimento: não usar cache, sempre buscar da rede
   if (isDevelopment) {
     event.respondWith(fetch(request));
@@ -233,11 +242,6 @@ self.addEventListener('fetch', event => {
   // Ignorar requisições chrome-extension
   if (url.protocol === 'chrome-extension:') {
     return;
-  }
-
-  // Ignorar requisições cross-origin (evitar CORS issues)
-  if (url.origin !== self.location.origin) {
-    return; // Let the browser handle cross-origin requests normally
   }
 
   // Lidar com diferentes métodos HTTP
