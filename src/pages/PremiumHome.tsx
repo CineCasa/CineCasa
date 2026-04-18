@@ -462,12 +462,12 @@ const PremiumHome: React.FC = () => {
         <div className="relative z-30 mt-[70px] mb-4">
           <ContinueWatching
             items={continueWatchingItems.slice(0, 3).map(item => ({
-              id: item.contentId,
+              id: item.id,
               title: item.title,
               poster: item.poster,
               banner: item.banner,
               backdrop: item.banner,
-              type: item.contentType,
+              type: item.type,
               progress: item.progress,
               episodeId: item.episodeId,
               seasonNumber: item.seasonNumber,
@@ -488,11 +488,7 @@ const PremiumHome: React.FC = () => {
       </div>
       {/* Desktop Banner - hidden on mobile */}
       <div className="hidden md:block">
-        <PremiumHeroBanner
-          {...mockHeroContent}
-          onPlay={handleHeroPlay}
-          onDetails={handleHeroDetails}
-        />
+        <PremiumHeroBanner contentType="movies" />
       </div>
 
       {/* Content Sections */}
@@ -727,7 +723,7 @@ const PremiumHome: React.FC = () => {
             poster: item.poster,
             type: item.type,
             year: item.year,
-            rating: item.tmdb_rating ? `${item.tmdb_rating.toFixed(1)}/10` : item.rating,
+            rating: item.rating,
             isNew: true
           })), 5) : []}
           onCardClick={handleCardClick}
