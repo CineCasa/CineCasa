@@ -75,7 +75,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   return (
     <>
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-[110] transition-all duration-300 backdrop-blur-md bg-black/40 border-b border-white/10 shadow-lg ${
+        className={`fixed top-0 left-0 right-0 z-[110] transition-all duration-300 backdrop-blur-md bg-black/40 ${
           isScrolled ? 'py-1' : 'py-2'
         }`}
         initial={{ y: -100 }}
