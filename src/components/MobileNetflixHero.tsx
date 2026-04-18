@@ -144,7 +144,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
                 src={currentBanner.poster}
                 alt={currentBanner.title}
                 className="w-full h-full object-cover"
-                style={{ objectPosition: 'center 10%' }}
+                style={{ objectPosition: 'top center' }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             </div>
