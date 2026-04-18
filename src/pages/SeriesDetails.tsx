@@ -1,20 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Play, ArrowLeft, Star, Calendar, Clock, Info, Plus, Check, Users, Globe, Clapperboard } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, ArrowLeft, Star, Calendar, Clock, Info, Plus, Check, Users, ChevronDown, ChevronLeft, ChevronRight, Share2, Monitor, Tv } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useFavorites } from '../hooks/useFavorites';
-import PremiumCard from '../components/PremiumCard';
-import CastSection from '../components/CastSection';
+import { fetchTmdbSeries, tmdbImageUrl } from '../services/tmdb';
 
-import { Series, Temporada, Episodio } from '../types/database';
+// Interface da Série (mapeada do banco)
+interface Series {
+  id_n: string;
+  tmdb_id?: string;
+  titulo: string;
+  descricao?: string;
+  ano?: string;
+  capa?: string;
+  banner?: string;
+  trailer?: string;
+  genero?: string;
+  elenco?: string;
+  classificacao?: string;
+  pais?: string;
+  diretor?: string;
+}
+
+interface Temporada {
+  id: string;
+  id_n: string;
+  serie_id: string;
+  numero_temporada: number;
+  titulo?: string;
+  capa?: string;
+  banner?: string;
+}
+
+interface Episodio {
+  id: string;
+  id_n: string;
+  temporada_id: string;
+  numero_episodio: number;
+  titulo: string;
+  descricao?: string;
+  duracao?: string;
+  arquivo?: string;
+  imagem_185?: string;
+  imagem_342?: string;
+  imagem_500?: string;
+  banner?: string;
+}
 
 interface CastMember {
+  id: number;
   name: string;
-  role?: string;
-  photo?: string;
   character?: string;
+  profile_path?: string | null;
+}
+
+interface TmdbCredits {
+  cast: Array<{
+    id: number;
+    name: string;
+    character: string;
+    profile_path: string | null;
+  }>;
+}
+
+interface TmdbDetails {
+  backdrop_path: string | null;
+  credits?: TmdbCredits;
+  videos?: {
+    results: Array<{
+      key: string;
+      site: string;
+      type: string;
+    }>;
+  };
 }
 
 const SeriesDetails: React.FC = () => {
@@ -30,6 +90,9 @@ const SeriesDetails: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [cast, setCast] = useState<CastMember[]>([]);
+  const [tmdbData, setTmdbData] = useState<TmdbDetails | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
   
   const supabase = getSupabaseClient();
 
@@ -39,129 +102,130 @@ const SeriesDetails: React.FC = () => {
     }
   }, [id]);
 
-  
-  const fetchTmdbCast = async (tmdbId: string) => {
+  const fetchTmdbData = async (tmdbId: string) => {
     try {
-      const apiKey = import.meta.env.VITE_TMDB_API_KEY;
-      if (!apiKey || apiKey === 'undefined') {
-        console.warn('TMDB API key not configured');
-        return null;
+      console.log('🎬 [SeriesDetails] Buscando dados TMDB para série:', tmdbId);
+      const data = await fetchTmdbSeries(tmdbId);
+      if (data) {
+        console.log('✅ [SeriesDetails] Dados TMDB recebidos:', data);
+        setTmdbData({
+          backdrop_path: data.backdrop_path,
+          credits: data.credits,
+          videos: data.videos
+        });
+        
+        // Set cast from TMDB
+        if (data.credits?.cast && data.credits.cast.length > 0) {
+          setCast(data.credits.cast.slice(0, 10).map((actor: any) => ({
+            id: actor.id,
+            name: actor.name,
+            character: actor.character,
+            profile_path: actor.profile_path
+          })));
+        }
       }
-      
-      const response = await fetch(
-        `https://api.themoviedb.org/3/tv/${tmdbId}/credits?api_key=${apiKey}&language=pt-BR`
-      );
-      
-      if (!response.ok) {
-        throw new Error(`TMDB API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.cast && data.cast.length > 0) {
-        return data.cast.map((actor: any) => ({
-          name: actor.name,
-          character: actor.character,
-          photo: actor.profile_path ? `https://image.tmdb.org/t/p/w200${actor.profile_path}` : undefined,
-          role: actor.character
-        }));
-      }
-      
-      return null;
     } catch (error) {
-      console.error('Error fetching TMDB cast:', error);
-      return null;
+      console.error('❌ [SeriesDetails] Erro ao buscar dados TMDB:', error);
     }
   };
 
-const fetchSeriesData = async () => {
+  const fetchSeriesData = async () => {
     try {
       setIsLoading(true);
       
-      let seriesData: Series | null = null;
-      
-      const { data: dataByIdN, error: errorByIdN } = await supabase
+      // Buscar série por id_n
+      const { data: seriesData, error: seriesError } = await supabase
         .from('series')
         .select('*')
-        .eq('id_n', id)
+        .eq('id_n', parseInt(id || '0'))
         .single();
 
-      if (!errorByIdN && dataByIdN) {
-        seriesData = dataByIdN;
-      } else {
-        const { data: dataById, error: errorById } = await supabase
-          .from('series')
-          .select('*')
-          .eq('id', id)
-          .single();
-          
-        if (!errorById && dataById) {
-          seriesData = dataById;
-        }
-      }
-
-      if (!seriesData) {
+      if (seriesError || !seriesData) {
+        console.error('❌ [SeriesDetails] Erro ao buscar série:', seriesError);
         throw new Error('Série não encontrada');
       }
 
-      setSeries(seriesData);
+      // Cast to any to handle dynamic Supabase columns
+      const rawData = seriesData as any;
+      
+      const mappedSeries: Series = {
+        id_n: String(rawData.id_n),
+        tmdb_id: rawData.tmdb_id,
+        titulo: rawData.titulo,
+        descricao: rawData.descricao,
+        ano: String(rawData.ano || ''),
+        capa: rawData.capa,
+        banner: rawData.banner,
+        trailer: rawData.trailer,
+        genero: rawData.genero,
+        elenco: rawData.elenco || '',
+        classificacao: rawData.classificacao || '',
+        pais: rawData.pais || '',
+        diretor: rawData.diretor || ''
+      };
 
-      // Fetch cast from TMDB if tmdb_id exists
-      if (seriesData.tmdb_id) {
-        const tmdbCast = await fetchTmdbCast(seriesData.tmdb_id.toString());
-        if (tmdbCast && tmdbCast.length > 0) {
-          setCast(tmdbCast.slice(0, 15));
-        } else if (seriesData.elenco) {
-          // Fallback to local cast data
-          const castList = seriesData.elenco.split(',').map(name => ({
-            name: name.trim(),
-            role: 'Ator',
-            photo: undefined,
-            character: ''
-          }));
-          setCast(castList.slice(0, 6));
-        }
-      } else if (seriesData.elenco) {
-        // Parse elenco se existir
-        const castList = seriesData.elenco.split(',').map(name => ({
+      setSeries(mappedSeries);
+      
+      // Buscar dados adicionais do TMDB se tiver tmdb_id
+      if (mappedSeries.tmdb_id) {
+        await fetchTmdbData(mappedSeries.tmdb_id);
+      } else if (mappedSeries.elenco) {
+        // Fallback to local cast data
+        const castList = mappedSeries.elenco.split(',').map((name, idx) => ({
+          id: idx,
           name: name.trim(),
-          role: 'Ator',
-          photo: undefined,
           character: ''
         }));
         setCast(castList.slice(0, 6));
       }
 
+      // Buscar temporadas
       const { data: tempsData, error: tempsError } = await supabase
         .from('temporadas')
         .select('*')
-        .eq('serie_id', id)
+        .eq('serie_id', parseInt(id || '0'))
         .order('numero_temporada', { ascending: true });
 
       if (!tempsError && tempsData) {
-        setTemporadas(tempsData);
-      }
+        const mappedTemps: Temporada[] = tempsData.map((t: any) => ({
+          id: String(t.id || t.id_n),
+          id_n: String(t.id_n),
+          serie_id: String(t.serie_id),
+          numero_temporada: t.numero_temporada,
+          titulo: t.titulo,
+          capa: t.capa,
+          banner: t.banner
+        }));
+        setTemporadas(mappedTemps);
 
-      // Buscar episódios através das temporadas (não existe serie_id direto na tabela episodios)
-      if (tempsData && tempsData.length > 0) {
-        console.log('🔍 Buscando episódios para as temporadas:', tempsData.map(t => t.id_n || t.id));
-        const temporadaIds = tempsData.map(t => t.id_n || t.id).filter(Boolean);
-        
-        if (temporadaIds.length > 0) {
-          const { data: epsData, error: epsError } = await supabase
-            .from('episodios')
-            .select('*')
-            .in('temporada_id', temporadaIds)
-            .order('numero_episodio', { ascending: true });
+        // Buscar episódios das temporadas
+        if (mappedTemps.length > 0) {
+          const temporadaIds = mappedTemps.map(t => parseInt(t.id_n)).filter(Boolean);
+          
+          if (temporadaIds.length > 0) {
+            const { data: epsData, error: epsError } = await supabase
+              .from('episodios')
+              .select('*')
+              .in('temporada_id', temporadaIds)
+              .order('numero_episodio', { ascending: true });
 
-          console.log('📊 Resultado episódios:', epsData);
-          console.log('❌ Erro episódios:', epsError);
-
-          if (!epsError && epsData) {
-            console.log('✅ Episódios carregados:', epsData.length);
-            setEpisodios(epsData);
-          } else if (epsError) {
-            console.error('❌ Erro ao carregar episódios:', epsError);
+            if (!epsError && epsData) {
+              const mappedEps: Episodio[] = epsData.map((ep: any) => ({
+                id: String(ep.id || ep.id_n),
+                id_n: String(ep.id_n),
+                temporada_id: String(ep.temporada_id),
+                numero_episodio: ep.numero_episodio,
+                titulo: ep.titulo,
+                descricao: ep.descricao,
+                duracao: ep.duracao,
+                arquivo: ep.arquivo,
+                imagem_185: ep.imagem_185,
+                imagem_342: ep.imagem_342,
+                imagem_500: ep.imagem_500,
+                banner: ep.banner
+              }));
+              setEpisodios(mappedEps);
+            }
           }
         }
       }
@@ -170,13 +234,27 @@ const fetchSeriesData = async () => {
       const { data: relatedData, error: relatedError } = await supabase
         .from('series')
         .select('*')
-        .neq('id', id)
-        .neq('id_n', id)
-        .ilike('genero', `%${seriesData.genero}%`)
+        .neq('id_n', parseInt(id || '0'))
+        .ilike('genero', `%${mappedSeries.genero}%`)
         .limit(12);
 
       if (!relatedError && relatedData) {
-        setRelatedSeries(relatedData);
+        const mappedRelated: Series[] = relatedData.map((s: any) => ({
+          id_n: String(s.id_n),
+          tmdb_id: s.tmdb_id,
+          titulo: s.titulo,
+          descricao: s.descricao,
+          ano: String(s.ano || ''),
+          capa: s.capa,
+          banner: s.banner,
+          trailer: s.trailer,
+          genero: s.genero,
+          elenco: s.elenco,
+          classificacao: s.classificacao,
+          pais: s.pais,
+          diretor: s.diretor
+        }));
+        setRelatedSeries(mappedRelated);
       }
 
     } catch (error) {
@@ -190,19 +268,13 @@ const fetchSeriesData = async () => {
     const temporada = temporadas.find(t => t.numero_temporada === seasonNum);
     if (!temporada) return [];
     
-    return episodios.filter(ep => {
-      // Verificar pelo temporada_id
-      const matchById = ep.temporada_id === temporada.id_n || 
-        ep.temporada_id === temporada.id;
-      
-      return matchById;
-    });
+    return episodios.filter(ep => ep.temporada_id === temporada.id_n);
   };
 
   const handlePlayEpisode = (episodio: Episodio) => {
     if (series && episodio.arquivo) {
       openPlayer({
-        id: episodio.id_n || episodio.id,
+        id: episodio.id_n,
         title: `${series.titulo} - ${episodio.titulo}`,
         type: 'series',
         videoUrl: episodio.arquivo,
@@ -213,7 +285,8 @@ const fetchSeriesData = async () => {
   };
 
   const handlePlayFirstEpisode = () => {
-    const firstEp = getEpisodesBySeason(1)[0];
+    const currentEps = getEpisodesBySeason(selectedSeason);
+    const firstEp = currentEps[0];
     if (firstEp) {
       handlePlayEpisode(firstEp);
     }
@@ -222,7 +295,7 @@ const fetchSeriesData = async () => {
   const handlePlayTrailer = () => {
     if (series?.trailer) {
       openPlayer({
-        id: series.id,
+        id: series.id_n,
         title: series.titulo,
         type: 'series',
         videoUrl: series.trailer,
@@ -236,15 +309,25 @@ const fetchSeriesData = async () => {
     if (!series) return;
     
     await toggleFavorite({
-      content_id: parseInt(series.id_n || series.id),
+      content_id: parseInt(series.id_n),
       content_type: 'series',
       titulo: series.titulo,
       poster: series.banner || series.capa,
       banner: series.banner,
-      rating: series.rating,
+      rating: series.classificacao || 'N/A',
       year: series.ano,
       genero: series.genero
     });
+  };
+
+  // Gerar porcentagem de match
+  const getMatchPercentage = (id: string) => {
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = ((hash << 5) - hash) + id.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return 85 + (Math.abs(hash) % 14);
   };
 
   // Skeleton Loading Screen
@@ -337,317 +420,415 @@ const fetchSeriesData = async () => {
   const currentEpisodes = getEpisodesBySeason(selectedSeason);
   const totalTemporadas = temporadas.length || 1;
   const totalEpisodios = episodios.length;
-  const firstSeasonEpisodes = getEpisodesBySeason(1);
-  const hasEpisodes = firstSeasonEpisodes.length > 0;
-
-  console.log('🎬 Render - totalEpisodios:', totalEpisodios);
-  console.log('🎬 Render - hasEpisodes:', hasEpisodes);
-  console.log('🎬 Render - episodios:', episodios);
-  console.log('🎬 Render - temporadas:', temporadas);
+  const currentSeasonEpisodes = getEpisodesBySeason(selectedSeason);
+  const hasEpisodes = currentSeasonEpisodes.length > 0;
+  const matchPercentage = getMatchPercentage(String(series.id_n));
+  const generos = series.genero?.split(',').map((g: string) => g.trim()) || [];
+  
+  // Usar backdrop do TMDB se disponível
+  const backdropUrl = tmdbData?.backdrop_path 
+    ? tmdbImageUrl(tmdbData.backdrop_path, 'original')
+    : series.banner || series.capa;
 
   return (
-    <div className="min-h-screen bg-black text-white pb-16 md:pb-0 pt-[94px]">
-      
-      {/* Hero Banner - ajustado para mostrar imagem completa */}
-      <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src={series.banner || series.poster}
-            alt={series.titulo}
-            className="w-full h-full object-cover object-top"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-transparent" />
-          <div className="absolute inset-0 bg-black/15" />
-        </div>
+    <div className="min-h-screen bg-black text-white relative overflow-x-hidden">
+      {/* ============================================
+          CAMADA 0: FUNDO - Backdrop claro e nítido com vignette suave
+          ============================================ */}
+      <div className="fixed inset-0 z-0">
+        {/* Backdrop Image - clara e nítida com brilho aumentado */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: `url(${backdropUrl})`,
+            filter: 'blur(8px) brightness(1.15) saturate(1.1)',
+            transform: 'scale(1.05)'
+          }}
+        />
+        {/* Vignette suave nas bordas - mantém foco no centro */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.65) 100%)'
+          }}
+        />
+        {/* Overlay leve na parte inferior para legibilidade do texto */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+      </div>
 
-        {/* Botão Voltar */}
+      {/* ============================================
+          CAMADA 1 & 2: CONTEÚDO E INTERFACE
+          ============================================ */}
+      <div className="relative z-10 min-h-screen">
+        {/* Botão Voltar - Glassmorphism */}
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
           onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 z-20 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg hover:bg-black/70 transition-colors"
+          className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-full hover:bg-black/60 hover:border-cyan-400/50 transition-all duration-300 group"
         >
-          <ArrowLeft size={20} />
-          <span className="hidden sm:inline">Voltar</span>
+          <ArrowLeft size={18} className="text-cyan-400 group-hover:text-cyan-300" />
+          <span className="text-sm font-medium text-white/90">Voltar</span>
         </motion.button>
 
-        <div className="absolute bottom-0 left-0 right-0 z-10 p-4 sm:p-6">
-          <div className="container mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold mb-2 sm:mb-4">
-                {series.titulo}
-              </h1>
-              
-              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4 sm:mb-6 text-sm">
-                {series.rating && (
-                  <div className="flex items-center gap-1 bg-yellow-500/20 px-2 py-1 rounded-full">
-                    <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                    <span className="text-yellow-400 font-semibold">{series.rating}</span>
-                  </div>
+        {/* Container Principal */}
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            
+            {/* Coluna Esquerda: Poster + Info Principal */}
+            <div className="lg:col-span-4 xl:col-span-3">
+              {/* Poster com sombra projetada (Camada 1) */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="relative aspect-[2/3] rounded-lg overflow-hidden drop-shadow-2xl shadow-2xl"
+              >
+                <img
+                  src={series.capa || series.banner}
+                  alt={series.titulo}
+                  onLoad={() => setImageLoaded(true)}
+                  className={`w-full h-full object-cover transition-opacity duration-500 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                />
+                {!imageLoaded && (
+                  <div className="absolute inset-0 bg-gray-800 animate-pulse" />
                 )}
-                <div className="flex items-center gap-1 text-gray-300">
-                  <Calendar size={14} />
-                  <span>{series.ano}</span>
-                </div>
-                <span className="px-2 py-1 bg-white/20 rounded-full">
-                  {series.genero}
-                </span>
-                <span className="px-2 py-1 bg-white/20 rounded-full">
-                  {totalTemporadas} Temporada{totalTemporadas > 1 ? 's' : ''}
-                </span>
-                {totalEpisodios > 0 && (
-                  <span className="px-2 py-1 bg-blue-500/30 rounded-full">
-                    {totalEpisodios} Episódio{totalEpisodios > 1 ? 's' : ''}
-                  </span>
-                )}
-                {series.classificacao && (
-                  <span className="px-2 py-1 bg-green-500/30 text-green-400 rounded-full font-medium">
-                    {series.classificacao}
-                  </span>
-                )}
-              </div>
+                {/* Glow effect no poster */}
+                <div className="absolute inset-0 rounded-lg ring-1 ring-white/10" />
+              </motion.div>
 
-              {/* Diretor e País */}
-              {(series.diretor || series.pais) && (
-                <div className="flex flex-wrap items-center gap-3 mb-4 text-sm text-gray-300">
-                  {series.diretor && (
-                    <div className="flex items-center gap-1">
-                      <Clapperboard size={14} />
-                      <span>Diretor: {series.diretor}</span>
-                    </div>
-                  )}
-                  {series.pais && (
-                    <div className="flex items-center gap-1">
-                      <Globe size={14} />
-                      <span>País: {series.pais}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Descrição/Sinopse - sem título */}
-              {series.descricao && (
-                <p className="text-gray-200 leading-relaxed text-sm sm:text-base mb-4 max-w-3xl line-clamp-3">
-                  {series.descricao}
-                </p>
-              )}
-
-              <div className="flex flex-row flex-nowrap gap-2 sm:gap-4 mb-4 overflow-x-auto scrollbar-hide">
+              {/* Ações rápidas - Glassmorphism cards (Camada 2) */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="mt-4 grid grid-cols-2 gap-3"
+              >
                 {hasEpisodes && (
                   <button
                     onClick={handlePlayFirstEpisode}
-                    className="flex items-center gap-2 bg-[#00A8E1] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-[20px] font-semibold hover:bg-[#00A8E1]/80 transition-colors text-sm sm:text-base"
+                    className="col-span-2 flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/20"
                   >
-                    <Play size={18} fill="white" />
-                    Assistir Agora
-                  </button>
-                )}
-                
-                {series.trailer && (
-                  <button
-                    onClick={handlePlayTrailer}
-                    title="Trailer"
-                    className="flex items-center justify-center bg-[#FF0000] hover:bg-[#CC0000] text-white w-10 h-10 sm:w-12 sm:h-12 rounded-[20px] font-semibold transition-colors shadow-lg"
-                  >
-                    <Play size={20} fill="white" />
+                    <Play size={20} fill="currentColor" />
+                    <span>Assistir T{String(selectedSeason).padStart(2, '0')}E01</span>
                   </button>
                 )}
                 
                 <button
                   onClick={handleToggleFavorite}
-                  className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-white/30 transition-colors text-sm sm:text-base"
+                  className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
                 >
-                  {series && isFavorite(parseInt(series.id_n || series.id), 'series') ? (
-                    <>
-                      <Check size={18} />
-                      Na Lista
-                    </>
+                  {series && isFavorite(parseInt(series.id_n), 'series') ? (
+                    <><Check size={18} className="text-cyan-400" /> <span>Na Lista</span></>
                   ) : (
-                    <>
-                      <Plus size={18} />
-                      Minha Lista
-                    </>
+                    <><Plus size={18} className="text-cyan-400" /> <span>Lista</span></>
                   )}
                 </button>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-
-      {/* Cast Section */}
-      {cast.length > 0 && (
-        <CastSection cast={cast.map((member, idx) => ({ id: idx, name: member.name, character: member.character || member.role || '', profile_path: member.photo || null }))} />
-      )}
-
-      {/* Episódios */}
-      {totalEpisodios > 0 && (
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl sm:text-2xl font-bold">Episódios</h2>
-                <span className="px-2 py-1 bg-blue-500/30 text-blue-300 rounded-full text-sm">
-                  {totalEpisodios} total
-                </span>
-              </div>
-              {temporadas.length > 1 && (
-                <select
-                  value={selectedSeason}
-                  onChange={(e) => setSelectedSeason(Number(e.target.value))}
-                  className="bg-gray-800 px-3 sm:px-4 py-2 rounded-lg border border-gray-700 focus:border-white outline-none text-sm sm:text-base w-full sm:w-auto"
-                >
-                  {temporadas.map((temp) => (
-                    <option key={temp.id} value={temp.numero_temporada}>
-                      Temporada {temp.numero_temporada}
-                      {temp.titulo ? ` - ${temp.titulo}` : ''}
-                    </option>
-                  ))}
-                </select>
-              )}
+                
+                {series.trailer && (
+                  <button
+                    onClick={handlePlayTrailer}
+                    className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
+                  >
+                    <Play size={18} fill="white" />
+                    <span>Trailer</span>
+                  </button>
+                )}
+              </motion.div>
             </div>
 
-            <p className="text-gray-400 mb-4">
-              {currentEpisodes.length} episódio{currentEpisodes.length > 1 ? 's' : ''} na Temporada {selectedSeason}
-            </p>
+            {/* Coluna Direita: Informações Detalhadas */}
+            <div className="lg:col-span-8 xl:col-span-9 space-y-4">
+              {/* Título e Metadata Principal - Glassmorphism Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="bg-black/40 backdrop-blur-md border border-cyan-500/30 rounded-xl p-6"
+              >
+                {/* Badges de Qualidade */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="px-3 py-1 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-400/50 rounded-full text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <Monitor size={14} />
+                    HD
+                  </span>
+                  <span className="px-3 py-1 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50 rounded-full text-xs font-bold text-purple-300 uppercase tracking-wider">
+                    Série
+                  </span>
+                  {totalTemporadas > 1 && (
+                    <span className="px-3 py-1 bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/50 rounded-full text-xs font-bold text-green-300 uppercase tracking-wider">
+                      {totalTemporadas} Temporadas
+                    </span>
+                  )}
+                </div>
 
-            {currentEpisodes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {currentEpisodes.map((episodio, index) => (
-                  <motion.div
-                    key={episodio.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 * index }}
-                    className="bg-gray-900 rounded-lg overflow-hidden hover:bg-gray-800 transition-colors cursor-pointer group"
-                    onClick={() => handlePlayEpisode(episodio)}
-                  >
-                    <div className="relative aspect-video">
-                      <img
-                        src={episodio.imagem_342 || episodio.imagem_185 || episodio.banner || series.capa || series.banner}
-                        alt={episodio.titulo}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Play size={32} className="text-white sm:w-10 sm:h-10" />
-                      </div>
+                {/* Título Premium com text-shadow para legibilidade */}
+                <h1 
+                  className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white"
+                  style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 4px 20px rgba(0,0,0,0.6)' }}
+                >
+                  {series.titulo}
+                </h1>
+                
+                {/* Metadata Panel - Metadados Inteligentes */}
+                <div className="flex flex-wrap items-center gap-3 text-sm md:text-base">
+                  {/* Nota/Classificação com estilo neon */}
+                  {series.classificacao && (
+                    <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 px-3 py-1.5 rounded-full border border-yellow-400/30">
+                      <Star size={16} className="text-yellow-400 fill-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]" />
+                      <span className="font-bold text-yellow-100">{series.classificacao}</span>
                     </div>
-                    
-                    <div className="p-3 sm:p-4">
-                      <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">
-                        {episodio.numero_episodio}. {episodio.titulo}
-                      </h3>
-                      {episodio.descricao && (
-                        <p className="text-xs sm:text-sm text-gray-400 mb-1 sm:mb-2 line-clamp-2">
-                          {episodio.descricao}
-                        </p>
-                      )}
-                      {episodio.duracao && (
-                        <p className="text-xs sm:text-sm text-gray-400 flex items-center gap-1">
-                          <Clock size={12} />
-                          {episodio.duracao}
-                        </p>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-center py-8">
-                Nenhum episódio encontrado para esta temporada.
-              </p>
-            )}
-          </motion.div>
-        </div>
-      )}
+                  )}
 
-      {relatedSeries.length > 0 && (
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Séries Relacionadas</h2>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-              {relatedSeries.map((item, index) => (
+                  {/* Rating de Recomendação (Match %) - Cor Neon */}
+                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-cyan-500/20 to-teal-500/20 px-3 py-1.5 rounded-full border border-cyan-400/30">
+                    <Check size={16} className="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                    <span className="font-bold text-cyan-100">{matchPercentage}%</span>
+                    <span className="text-cyan-400/70 text-xs">Match</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 text-white/70">
+                    <Calendar size={16} className="text-cyan-400" />
+                    <span>{series.ano}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1.5 text-white/70">
+                    <Tv size={16} className="text-cyan-400" />
+                    <span>{totalEpisodios} eps</span>
+                  </div>
+                </div>
+
+                {/* Gêneros */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {generos.map((genero: string, idx: number) => (
+                    <span 
+                      key={idx}
+                      className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded-full text-sm text-cyan-200 hover:bg-cyan-500/30 transition-colors cursor-default"
+                    >
+                      {genero}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Grid de Informações */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Sinopse - Glassmorphism Card */}
                 <motion.div
-                  key={item.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.05 * index }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="md:col-span-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 rounded-xl p-5"
                 >
-                  <PremiumCard
-                    id={item.id}
-                    title={item.titulo}
-                    poster={item.poster}
-                    type="series"
-                    year={item.ano}
-                    rating={item.rating}
-                    onClick={() => navigate(`/series-details/${item.id_n || item.id}`)}
-                  />
+                  <h2 className="text-sm font-bold mb-3 text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                    <Info size={16} /> Sinopse
+                  </h2>
+                  <p className="text-gray-200 leading-relaxed text-base">
+                    {series.descricao || 'Nenhuma descrição disponível para esta série.'}
+                  </p>
                 </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      )}
+              </div>
 
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 border-t border-gray-800">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8"
-        >
-          <div>
-            <h3 className="font-semibold mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2 text-sm sm:text-base">
-              <Info size={16} className="sm:w-5 sm:h-5" />
-              Informações
-            </h3>
-            <div className="space-y-1 text-xs sm:text-sm text-gray-400">
-              <p>{totalTemporadas} Temporada{totalTemporadas > 1 ? 's' : ''}</p>
-              <p>{totalEpisodios} Episódio{totalEpisodios > 1 ? 's' : ''}</p>
+              {/* Elenco TMDB - Glassmorphism Card com Grid Responsivo */}
+              {cast.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.35 }}
+                  className="bg-black/40 backdrop-blur-md border border-cyan-500/30 rounded-xl p-5"
+                >
+                  <h3 className="text-sm font-bold mb-3 text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                    <Users size={16} /> Elenco
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {cast.map((actor, idx) => (
+                      <motion.div
+                        key={actor.id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3, delay: 0.05 * idx }}
+                        className="flex items-center gap-2 bg-white/5 rounded-lg p-2 hover:bg-white/10 transition-colors"
+                      >
+                        {actor.profile_path ? (
+                          <img
+                            src={tmdbImageUrl(actor.profile_path, 'w500')}
+                            alt={actor.name}
+                            className="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-cyan-500/50"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/30 to-blue-500/30 flex items-center justify-center flex-shrink-0 ring-2 ring-cyan-500/50">
+                            <Users size={16} className="text-cyan-300" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-white/90 text-sm font-medium truncate">{actor.name}</p>
+                          <p className="text-white/50 text-xs truncate">{actor.character}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Seção de Episódios */}
+              {totalEpisodios > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                  className="bg-black/40 backdrop-blur-md border border-cyan-500/30 rounded-xl p-5"
+                >
+                  {/* Header com Seletor de Temporadas */}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <Play size={20} className="text-cyan-400" />
+                        Episódios
+                      </h3>
+                      <span className="px-2 py-0.5 bg-cyan-500/30 text-cyan-300 rounded-full text-xs font-semibold">
+                        {currentEpisodes.length} eps
+                      </span>
+                    </div>
+                    
+                    {/* Seletor de Temporadas Elegante */}
+                    {temporadas.length > 1 && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowSeasonDropdown(!showSeasonDropdown)}
+                          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-cyan-500/30 px-4 py-2 rounded-lg transition-all duration-300"
+                        >
+                          <span className="font-semibold">Temporada {selectedSeason}</span>
+                          <ChevronDown size={18} className={`transition-transform duration-300 ${showSeasonDropdown ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        <AnimatePresence>
+                          {showSeasonDropdown && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute right-0 top-full mt-2 bg-black/90 backdrop-blur-md border border-cyan-500/30 rounded-lg overflow-hidden z-50 min-w-[200px]"
+                            >
+                              {temporadas.map((temp) => (
+                                <button
+                                  key={temp.id}
+                                  onClick={() => {
+                                    setSelectedSeason(temp.numero_temporada);
+                                    setShowSeasonDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors ${selectedSeason === temp.numero_temporada ? 'bg-cyan-500/20 text-cyan-300' : 'text-white/80'}`}
+                                >
+                                  Temporada {temp.numero_temporada}
+                                  {temp.titulo && <span className="text-white/50 text-sm ml-2">- {temp.titulo}</span>}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Grid de Episódios */}
+                  {currentEpisodes.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {currentEpisodes.map((episodio, index) => (
+                        <motion.div
+                          key={episodio.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.4, delay: 0.05 * index }}
+                          className="group cursor-pointer"
+                          onClick={() => handlePlayEpisode(episodio)}
+                        >
+                          <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800 ring-1 ring-white/10 group-hover:ring-cyan-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/20">
+                            <img
+                              src={episodio.imagem_342 || episodio.imagem_185 || episodio.banner || series.capa || series.banner}
+                              alt={episodio.titulo}
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            />
+                            {/* Play Button Overlay */}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <div className="bg-cyan-500/90 backdrop-blur-sm p-3 rounded-full transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg shadow-cyan-500/30">
+                                <Play size={24} className="text-black fill-black ml-0.5" />
+                              </div>
+                            </div>
+                            {/* Episode Number Badge */}
+                            <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white">
+                              E{String(episodio.numero_episodio).padStart(2, '0')}
+                            </div>
+                          </div>
+                          
+                          <div className="mt-2">
+                            <h4 className="font-semibold text-white group-hover:text-cyan-300 transition-colors text-sm line-clamp-1">
+                              {episodio.titulo}
+                            </h4>
+                            {episodio.descricao && (
+                              <p className="text-xs text-white/50 line-clamp-2 mt-1">{episodio.descricao}</p>
+                            )}
+                            {episodio.duracao && (
+                              <p className="text-xs text-white/40 flex items-center gap-1 mt-1">
+                                <Clock size={12} />
+                                {episodio.duracao}
+                              </p>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-white/50 text-center py-8">
+                      Nenhum episódio encontrado para esta temporada.
+                    </p>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Séries Relacionadas */}
+              {relatedSeries.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 }}
+                  className="bg-black/40 backdrop-blur-md border border-cyan-500/30 rounded-xl p-5"
+                >
+                  <h3 className="text-sm font-bold mb-4 text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                    <Play size={16} /> Séries Relacionadas
+                  </h3>
+                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent">
+                    {relatedSeries.slice(0, 8).map((item, index) => (
+                      <motion.div
+                        key={item.id_n}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.4, delay: 0.05 * index }}
+                        className="flex-shrink-0 w-[140px]"
+                      >
+                        <div 
+                          onClick={() => navigate(`/series-details/${item.id_n}`)}
+                          className="cursor-pointer group"
+                        >
+                          <div className="aspect-[2/3] rounded-lg overflow-hidden mb-2 shadow-lg shadow-black/50 group-hover:shadow-cyan-500/20 transition-all duration-300">
+                            <img 
+                              src={item.capa || item.banner} 
+                              alt={item.titulo}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                          </div>
+                          <p className="text-sm text-white/80 line-clamp-1 group-hover:text-cyan-300 transition-colors">{item.titulo}</p>
+                          <p className="text-xs text-white/50">{item.ano}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
             </div>
           </div>
-          
-          <div>
-            <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">Gênero</h3>
-            <p className="text-xs sm:text-sm text-gray-400">{series.genero}</p>
-          </div>
-          
-          <div>
-            <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">Lançamento</h3>
-            <p className="text-xs sm:text-sm text-gray-400">{series.ano}</p>
-          </div>
-          
-          <div>
-            <h3 className="font-semibold mb-1 sm:mb-2 text-sm sm:text-base">Classificação</h3>
-            <div className="space-y-1">
-              {series.rating && (
-                <div className="flex items-center gap-1">
-                  <Star size={14} className="text-yellow-500 fill-yellow-500 sm:w-4 sm:h-4" />
-                  <span className="text-xs sm:text-sm text-gray-400">{series.rating} / 10</span>
-                </div>
-              )}
-              {series.classificacao && (
-                <span className="inline-block px-2 py-0.5 bg-green-500/30 text-green-400 rounded text-xs">
-                  {series.classificacao}
-                </span>
-              )}
-            </div>
-          </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
