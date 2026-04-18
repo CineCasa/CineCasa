@@ -389,7 +389,7 @@ const SeriesDetails: React.FC = () => {
                 {hasEpisodes && (
                   <button
                     onClick={handlePlayFirstEpisode}
-                    className="flex items-center gap-2 bg-[#00A8E1] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-[#00A8E1]/80 transition-colors text-sm sm:text-base"
+                    className="flex items-center gap-2 bg-[#00A8E1] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-[20px] font-semibold hover:bg-[#00A8E1]/80 transition-colors text-sm sm:text-base"
                   >
                     <Play size={18} fill="white" />
                     Assistir Agora
@@ -400,7 +400,7 @@ const SeriesDetails: React.FC = () => {
                   <button
                     onClick={handlePlayTrailer}
                     title="Trailer"
-                    className="flex items-center justify-center bg-[#FF0000] hover:bg-[#CC0000] text-white w-10 h-10 sm:w-12 sm:h-12 rounded-lg font-semibold transition-colors shadow-lg"
+                    className="flex items-center justify-center bg-[#FF0000] hover:bg-[#CC0000] text-white w-10 h-10 sm:w-12 sm:h-12 rounded-[20px] font-semibold transition-colors shadow-lg"
                   >
                     <Play size={20} fill="white" />
                   </button>
