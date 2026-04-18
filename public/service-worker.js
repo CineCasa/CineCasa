@@ -3,7 +3,8 @@ const CACHE_NAME = 'cinecasa-notifications-v1';
 // Evento de instalação
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Instalando...');
-  self.skipWaiting();
+  // REMOVED: self.skipWaiting() - prevents aggressive reloads
+  // Let the user control when to update via SKIP_WAITING message
 });
 
 // Evento de ativação

@@ -1,5 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+
+// Global flag to prevent duplicate service worker registrations
+let swRegistrationAttempted = false;
 
 interface NotificationPayload {
   title: string;
@@ -32,14 +35,17 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-  // Verificar suporte a notificações
+  // Verificar suporte a notificações - executa apenas uma vez
   useEffect(() => {
     if ('Notification' in window && 'serviceWorker' in navigator) {
       setIsSupported(true);
       setPermission(Notification.permission);
       
-      // Registrar service worker
-      registerServiceWorker();
+      // Registrar service worker apenas se ainda não tentamos
+      if (!swRegistrationAttempted) {
+        swRegistrationAttempted = true;
+        registerServiceWorker();
+      }
     }
   }, []);
 

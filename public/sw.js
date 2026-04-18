@@ -161,7 +161,8 @@ self.addEventListener('install', event => {
       })
       .then(() => {
         console.log('[SW] Static assets cached successfully');
-        return self.skipWaiting();
+        // REMOVED: self.skipWaiting() - prevents aggressive reloads
+        // Let the user control when to update
       })
       .catch(error => {
         console.error('[SW] Error caching static assets:', error);
