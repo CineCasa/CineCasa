@@ -315,26 +315,21 @@ const Details = () => {
 
   return (
     <div className="min-h-screen bg-[#000401] text-white overflow-x-hidden">
-      {/* Hero Section - Netflix Style */}
-      <div ref={heroRef} className="relative w-full h-auto bg-[#1a1a1a] z-0 pb-20">
-        {/* Background Image */}
-        <div className="absolute inset-0 bg-[#1a1a1a]">
-          <img
-            src={data.backdrop_path || data.banner || data.poster_path || "/placeholder-backdrop.jpg"}
-            alt={data.title}
-            className="w-full h-full object-cover object-top"
-            onError={(e) => {
-              const currentSrc = e.currentTarget.src;
-              console.error('[Details] Banner image failed to load:', currentSrc);
-              // Prevent infinite loop - only set fallback once
-              if (!currentSrc.includes('placeholder') && !currentSrc.includes('unsplash')) {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1920&auto=format&fit=crop";
-              }
+      {/* Hero Section - Premium Design System Blueprint */}
+      <div ref={heroRef} className="relative w-full h-auto z-0 pb-20 overflow-hidden">
+        {/* CAMADA 0: Background com blur(20px) e vignette */}
+        <div className="absolute inset-0">
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ 
+              backgroundImage: `url(${data.backdrop_path || data.banner || data.poster_path || "/placeholder-backdrop.jpg"})`,
+              filter: 'blur(20px)',
+              transform: 'scale(1.1)'
             }}
           />
-          {/* Netflix-style Vignette */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-[#141414]/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#000401] via-transparent to-black/60" />
+          <div className="absolute inset-0 bg-black/30" />
         </div>
 
         {/* Hero Content */}
@@ -347,7 +342,7 @@ const Details = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.05 }}
                 onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-white hover:text-gray-300 transition-colors bg-black/40 hover:bg-black/60 backdrop-blur-sm px-4 py-2 rounded-lg mb-2"
+                className="flex items-center gap-2 text-white hover:text-cyan-400 transition-all bg-black/40 hover:bg-black/60 backdrop-blur-md border border-cyan-500/20 hover:border-cyan-400/50 px-4 py-2 rounded-lg mb-2 group"
               >
                 <ChevronLeft size={24} />
                 <span className="text-sm font-medium">Voltar</span>
@@ -375,13 +370,13 @@ const Details = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-300"
+                className="flex flex-wrap items-center gap-2 md:gap-3 text-xs md:text-sm text-gray-300"
               >
-                {releaseYear && <span>{releaseYear}</span>}
-                {data.adult && <><span className="text-gray-500">|</span><span className="px-1.5 py-0.5 border border-gray-500 rounded text-xs">A18</span></>}
-                {duration && <><span className="text-gray-500">|</span><span>{duration}</span></>}
+                {releaseYear && <span className="backdrop-blur-sm bg-black/30 px-2 py-1 rounded-md border border-cyan-500/20">{releaseYear}</span>}
+                {data.adult && <span className="backdrop-blur-sm bg-red-500/20 px-2 py-1 rounded-md border border-red-500/30 text-xs">A18</span>}
+                {duration && <span className="backdrop-blur-sm bg-black/30 px-2 py-1 rounded-md border border-cyan-500/20">{duration}</span>}
                 {data.vote_average && data.vote_average > 0 && (
-                  <><span className="text-gray-500">|</span><span className="flex items-center gap-1"><span className="text-green-400 font-semibold">{data.vote_average.toFixed(1)}</span><span className="text-gray-400">rating</span></span></>
+                  <span className="backdrop-blur-sm bg-green-500/20 px-2 py-1 rounded-md border border-green-500/30 flex items-center gap-1"><span className="text-green-400 font-semibold">{data.vote_average.toFixed(1)}</span><span className="text-gray-400 text-xs">TMDB</span></span>
                 )}
               </motion.div>
 
@@ -391,7 +386,7 @@ const Details = () => {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.22 }}
-                  className="flex flex-wrap gap-2"
+                  className="flex flex-wrap gap-2 mt-1"
                 >
                   {data.origin_country.map((country) => (
                     <img
@@ -409,7 +404,7 @@ const Details = () => {
 
               {/* Genres */}
               {genres && (
-                <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }} className="text-sm md:text-base text-gray-300">
+                <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.25 }} className="text-sm md:text-base text-cyan-400/90 font-medium">
                   {genres}
                 </motion.p>
               )}
@@ -486,7 +481,7 @@ const Details = () => {
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="flex items-center gap-3 bg-[#1f1f1f] rounded-lg px-3 py-2"
+                    className="flex items-center gap-3 backdrop-blur-md bg-black/40 border border-cyan-500/30 rounded-lg px-3 py-2"
                   >
                     <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
                       <span className="text-yellow-400 text-sm">🏆</span>
