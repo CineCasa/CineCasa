@@ -128,7 +128,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   const typePath = contentType === 'movies' ? 'cinema' : 'series';
 
   return (
-    <div className="relative w-full h-[70vh] bg-black overflow-hidden">
+    <div className="relative w-full h-[70vh] bg-black overflow-hidden top-0">
       {/* Hero Banner - Full height with overlaid content */}
         <AnimatePresence mode="wait">
           <motion.div
