@@ -495,23 +495,6 @@ const PremiumHome: React.FC = () => {
 
       {/* Content Sections - no margin on mobile, keep margin on desktop */}
       <div className="mt-0 md:mt-[70px] relative z-30">
-        {/* Lançamentos & Novidades - Inteligente: 3 de 2026 + 2 de 2025 */}
-        <ContentCarousel
-          title="Lançamentos & Novidades"
-          items={!isLoadingLancamentos ? filterUniqueItems((lancamentos || []).map(item => ({
-            id: item.id,
-            tmdbId: item.tmdbId,
-            title: item.title,
-            poster: item.poster,
-            type: item.type,
-            year: item.year,
-            rating: item.category === 'Lançamento 2026' ? '2026' : '2025',
-            isNew: true
-          })), 5) : []}
-          isLoading={isLoadingLancamentos}
-          onCardClick={handleCardClick}
-        />
-
         {/* Exclusivos para Você - Inteligente: baseado nos 5 gêneros mais vistos */}
         {!isLoadingRecomendacoes && recomendacoes.length > 0 && (
           <ContentCarousel
