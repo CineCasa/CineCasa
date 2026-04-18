@@ -184,10 +184,10 @@ const ContinueWatchingRow = () => {
     });
   };
 
-  // Filtrar itens com progresso válido (entre 1% e 95%)
-  const validItems = rawItems.filter((item) => {
-    return item.progress > 1 && item.progress < 95;
-  });
+  // Filtrar itens com progresso válido (entre 1% e 95%) e limitar a 5
+  const validItems = rawItems
+    .filter((item) => item.progress > 1 && item.progress < 95)
+    .slice(0, 5);
 
   if (isLoading) {
     return (
