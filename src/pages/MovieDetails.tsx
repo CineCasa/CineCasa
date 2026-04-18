@@ -531,8 +531,8 @@ const MovieDetails: React.FC = () => {
                         className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-300"
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-cyan-500/80 backdrop-blur-sm p-4 rounded-full group-hover:bg-cyan-400 group-hover:scale-110 transition-all duration-300 shadow-lg shadow-cyan-500/30">
-                          <Play size={28} className="fill-black text-black ml-1" />
+                        <div className="bg-[#FF0000] backdrop-blur-sm p-4 rounded-full group-hover:bg-[#CC0000] group-hover:scale-110 transition-all duration-300 shadow-lg shadow-red-500/30">
+                          <Play size={28} className="fill-white text-white ml-1" />
                         </div>
                       </div>
                       <div className="absolute inset-0 border border-white/10 rounded-lg" />
