@@ -456,8 +456,8 @@ const PremiumHome: React.FC = () => {
   return (
     <div className="streaming-container min-h-screen bg-black">
       {/* Hero Banner - Netflix Style Mobile/Desktop - positioned right after navbar */}
-      {/* Mobile Banner - hidden on desktop, pulled up to stick to navbar */}
-      <div className="md:hidden -mt-[64px]">
+      {/* Mobile Banner - hidden on desktop */}
+      <div className="md:hidden relative -mt-16 z-10">
         <MobileNetflixHero contentType="movies" />
       </div>
       {/* Desktop Banner - hidden on mobile */}
