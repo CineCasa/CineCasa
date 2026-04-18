@@ -34,6 +34,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentType = 'series' }) => {
+  console.log('[MobileNetflixHero] Componente montado, contentType:', contentType);
   const [displayQueue, setDisplayQueue] = useState<BannerContent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
