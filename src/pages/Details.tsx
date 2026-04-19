@@ -380,7 +380,7 @@ const Details = () => {
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
               backgroundImage: `url(${data.backdrop_path || data.banner || data.poster_path || "/placeholder-backdrop.jpg"})`,
-              filter: 'blur(20px)',
+              filter: 'blur(20px) brightness(1.5)',
               transform: 'scale(1.1)'
             }}
           />
