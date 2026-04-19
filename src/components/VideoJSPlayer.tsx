@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -120,35 +119,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const nextEpisodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveProgressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const thumbnailCanvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // Retry mechanism for DOM initialization
-  const [initAttempts, setInitAttempts] = useState(0);
-  const maxInitAttempts = 50; // 5 seconds max (100ms * 50)
-  
-  useEffect(() => {
-    if (!loaded || !videoUrl) return;
-    
-    // Keep trying to initialize until element is in DOM or max attempts reached
-    const checkInterval = setInterval(() => {
-      if (!videoRef.current) return;
-      
-      if (document.contains(videoRef.current)) {
-        console.log('[VideoJSPlayer] Element found in DOM, ready to initialize');
-        clearInterval(checkInterval);
-        setInitAttempts(prev => prev + 1); // Trigger re-run of init effect
-      } else {
-        setInitAttempts(prev => {
-          if (prev >= maxInitAttempts) {
-            console.log('[VideoJSPlayer] Max retry attempts reached');
-            clearInterval(checkInterval);
-          }
-          return prev + 1;
-        });
-      }
-    }, 100);
-    
-    return () => clearInterval(checkInterval);
-  }, [loaded, videoUrl]);
 
   // Load Video.js from CDN
   useEffect(() => {
@@ -309,7 +279,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     return () => {
       player.dispose();
     };
-  }, [loaded, videoUrl, poster, onProgressUpdate, eliteHasNextEpisode, onNextEpisode, saveProgress, initAttempts]);
+  }, [loaded, videoUrl, poster, onProgressUpdate, eliteHasNextEpisode, onNextEpisode, saveProgress]);
 
   // Efeito para mostrar resume dialog quando o vídeo carregar
   useEffect(() => {
@@ -1255,7 +1225,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     </div>
   );
 
-  return createPortal(playerContent, document.body);
+  return playerContent;
 };
 
 export default VideoJSPlayer;
