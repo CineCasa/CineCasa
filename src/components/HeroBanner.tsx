@@ -279,8 +279,11 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
                 onClick={() => {
                   console.log('[HeroBanner] Botão Assistir clicado:', { hero, contentType: hero?.type });
                   // Navigate to details page instead of trying to play directly
-                  const contentId = hero.id?.toString().split('-')[1] || hero.id;
-                  const type = hero.id?.toString().includes('series') || hero.type === 'series' ? 'series' : 'movie';
+                  // Extract numeric ID from prefixed IDs (e.g., "cinema-123" -> "123", "series-456" -> "456")
+                  const idStr = hero.id?.toString() || '';
+                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
+                  const type = idStr.includes('series') || hero.type === 'series' ? 'series' : 'movie';
+                  console.log('[HeroBanner] Navegando para:', { contentId, type, originalId: hero.id });
                   navigate(type === 'series' ? `/series-details/${contentId}` : `/movie-details/${contentId}`);
                 }}
                 className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"
@@ -292,8 +295,11 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
                 onClick={() => {
                   console.log('[HeroBanner] Botão Trailer clicado:', { hero });
                   // Navigate to details page
-                  const contentId = hero.id?.toString().split('-')[1] || hero.id;
-                  const type = hero.id?.toString().includes('series') || hero.type === 'series' ? 'series' : 'movie';
+                  // Extract numeric ID from prefixed IDs (e.g., "cinema-123" -> "123", "series-456" -> "456")
+                  const idStr = hero.id?.toString() || '';
+                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
+                  const type = idStr.includes('series') || hero.type === 'series' ? 'series' : 'movie';
+                  console.log('[HeroBanner] Navegando para:', { contentId, type, originalId: hero.id });
                   navigate(type === 'series' ? `/series-details/${contentId}` : `/movie-details/${contentId}`);
                 }}
                 className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#FF0000] hover:bg-[#cc0000] text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"

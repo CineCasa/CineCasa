@@ -319,7 +319,11 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                   onClick={() => {
                     console.log('[PremiumHeroBanner] Botão Assistir clicado:', { currentBanner, contentType });
                     // Navigate to details page instead of trying to play directly
-                    navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
+                    // Extract numeric ID from prefixed IDs if needed
+                    const idStr = currentBanner.id?.toString() || '';
+                    const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
+                    console.log('[PremiumHeroBanner] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
+                    navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
                   }}
                   className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white rounded-[20px] font-semibold transition-all duration-300 hover:scale-105"
                 >
@@ -330,7 +334,11 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                   onClick={() => {
                     console.log('[PremiumHeroBanner] Botão Trailer clicado:', { currentBanner, trailer: currentBanner?.trailer });
                     // Navigate to details page
-                    navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
+                    // Extract numeric ID from prefixed IDs if needed
+                    const idStr = currentBanner.id?.toString() || '';
+                    const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
+                    console.log('[PremiumHeroBanner] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
+                    navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
                   }}
                   className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#FF0000] hover:bg-[#cc0000] text-white rounded-[20px] font-semibold transition-all duration-300 hover:scale-105"
                 >

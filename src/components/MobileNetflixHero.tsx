@@ -215,7 +215,11 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
                 onClick={() => {
                   console.log('[MobileNetflixHero] Botão Assistir clicado:', { currentBanner, contentType });
                   // Navigate to details page
-                  navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
+                  // Extract numeric ID from prefixed IDs if needed
+                  const idStr = currentBanner.id?.toString() || '';
+                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
+                  console.log('[MobileNetflixHero] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
+                  navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
                 }}
                 className="flex items-center gap-2 px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black rounded-[20px] font-semibold text-sm transition-all active:scale-95"
               >
@@ -228,7 +232,11 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
                 onClick={() => {
                   console.log('[MobileNetflixHero] Botão Trailer clicado:', { currentBanner, contentType });
                   // Navigate to details page
-                  navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
+                  // Extract numeric ID from prefixed IDs if needed
+                  const idStr = currentBanner.id?.toString() || '';
+                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
+                  console.log('[MobileNetflixHero] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
+                  navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-[20px] font-medium text-sm transition-all active:scale-95"
               >
