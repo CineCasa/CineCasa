@@ -495,6 +495,24 @@ const PremiumHome: React.FC = () => {
 
       {/* Content Sections - no margin on mobile, keep margin on desktop */}
       <div className="mt-0 md:mt-[70px] relative z-30">
+        {/* Lançamentos e Novidades - Primeira seção fixa com filmes 2025-2026 */}
+        {!isLoadingLancamentos && lancamentos.length > 0 && (
+          <ContentCarousel
+            title="Lançamentos e Novidades 🆕"
+            items={filterUniqueItems((lancamentos || []).map(item => ({
+              id: item.id,
+              tmdbId: item.tmdbId,
+              title: item.title,
+              poster: item.poster,
+              type: item.type,
+              year: item.year,
+              rating: item.rating,
+              isNew: true
+            })), 10)}
+            onCardClick={handleCardClick}
+          />
+        )}
+
         {/* Exclusivos para Você - Inteligente: baseado nos 5 gêneros mais vistos */}
         {!isLoadingRecomendacoes && recomendacoes.length > 0 && (
           <ContentCarousel
