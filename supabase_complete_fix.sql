@@ -1,40 +1,10 @@
 -- ============================================
 -- CORREÇÃO COMPLETA DO SCHEMA SUPABASE
+-- Tabelas primeiro, funções depois
 -- ============================================
 
--- 1. FUNÇÃO: register_device_session_simple
+-- 1. TABELA: user_progress (se não existir)
 -- ============================================
-CREATE OR REPLACE FUNCTION public.register_device_session_simple(
-    p_user_id UUID,
-    p_device_type TEXT,
-    p_ip_address TEXT,
-    p_user_agent TEXT,
-    p_user_id_param UUID
-) RETURNS VOID AS $$
-BEGIN
-    INSERT INTO public.user_devices (
-        user_id,
-        device_type,
-        ip_address,
-        user_agent,
-        last_active,
-        created_at
-    ) VALUES (
-        p_user_id,
-        p_device_type,
-        p_ip_address,
-        p_user_agent,
-        NOW(),
-        NOW()
-    )
-    ON CONFLICT (user_id, device_type, ip_address) 
-    DO UPDATE SET 
-        last_active = NOW(),
-        user_agent = p_user_agent;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- 2. TABELA: user_progress (se não existir)
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.user_progress (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -176,6 +146,38 @@ CREATE INDEX IF NOT EXISTS idx_watch_history_profile ON public.watch_history(pro
 CREATE INDEX IF NOT EXISTS idx_user_views_user ON public.user_views(user_id);
 CREATE INDEX IF NOT EXISTS idx_watch_progress_user ON public.watch_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_devices_user ON public.user_devices(user_id);
+
+-- 7. FUNÇÃO: register_device_session_simple (depois das tabelas)
+-- ============================================
+CREATE OR REPLACE FUNCTION public.register_device_session_simple(
+    p_user_id UUID,
+    p_device_type TEXT,
+    p_ip_address TEXT,
+    p_user_agent TEXT,
+    p_user_id_param UUID
+) RETURNS VOID AS $$
+BEGIN
+    INSERT INTO public.user_devices (
+        user_id,
+        device_type,
+        ip_address,
+        user_agent,
+        last_active,
+        created_at
+    ) VALUES (
+        p_user_id,
+        p_device_type,
+        p_ip_address,
+        p_user_agent,
+        NOW(),
+        NOW()
+    )
+    ON CONFLICT (user_id, device_type, ip_address) 
+    DO UPDATE SET 
+        last_active = NOW(),
+        user_agent = p_user_agent;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
 -- FIM DAS CORREÇÕES
