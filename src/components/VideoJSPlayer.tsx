@@ -323,6 +323,32 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           setQualities(levels);
         }
       }
+      
+      // Extract audio tracks (DUAL AUDIO)
+      if (player.audioTracks && player.audioTracks()) {
+        const audioTrackList = player.audioTracks();
+        const tracks: Array<{id: number; label: string; language: string}> = [];
+        
+        for (let i = 0; i < audioTrackList.length; i++) {
+          const track = audioTrackList[i];
+          tracks.push({
+            id: i,
+            label: track.label || `Faixa ${i + 1}`,
+            language: track.language || 'unknown',
+          });
+        }
+        
+        if (tracks.length > 0) {
+          setAudioTracks(tracks);
+          // Find current enabled track
+          for (let i = 0; i < audioTrackList.length; i++) {
+            if (audioTrackList[i].enabled) {
+              setCurrentAudioTrack(i);
+              break;
+            }
+          }
+        }
+      }
     });
 
     player.on('play', () => setIsPlaying(true));
