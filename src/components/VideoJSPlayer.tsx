@@ -878,16 +878,18 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
             onMouseLeave={handleProgressBarMouseLeave}
             onClick={handleProgressBarClick}
           >
-            {/* Preview Thumbnail */}
+            {/* Preview Thumbnail - aparece acima da barra */}
             {showThumbnail && (
               <div
-                className="absolute bottom-8 bg-black/90 rounded-lg p-2 transform -translate-x-1/2 pointer-events-none z-50"
+                className="absolute -top-20 bg-black/90 rounded-lg p-2 transform -translate-x-1/2 pointer-events-none z-[100] border border-white/20 shadow-2xl"
                 style={{ left: thumbnailPosition }}
               >
-                <div className="text-white text-xs mb-1 text-center">{formatTime(thumbnailTime)}</div>
-                <div className="w-24 h-16 bg-gray-700 rounded flex items-center justify-center">
+                <div className="text-white text-xs mb-1 text-center font-medium">{formatTime(thumbnailTime)}</div>
+                <div className="w-28 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded flex items-center justify-center border border-white/10">
                   <span className="text-gray-400 text-xs">Preview</span>
                 </div>
+                {/* Seta indicadora */}
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 rotate-45 border-r border-b border-white/20"></div>
               </div>
             )}
             
