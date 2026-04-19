@@ -335,7 +335,7 @@ const Favorites = () => {
                           <div className="flex items-center gap-2 mt-auto pt-3">
                             <button
                               onClick={() => handleNavigate(item)}
-                              className="flex-1 flex items-center justify-center gap-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-medium py-2 px-4 rounded-lg transition-all duration-300 border border-cyan-500/30 hover:border-cyan-400/50"
+                              className="flex-1 flex items-center justify-center gap-2 bg-[#00A8E1]/20 hover:bg-[#00A8E1]/30 text-[#00D4FF] font-medium py-2 px-4 rounded-lg transition-all duration-300 border border-[#00A8E1]/30 hover:border-[#00D4FF]/50"
                             >
                               <Play className="w-4 h-4" />
                               <span className="text-sm">Assistir</span>

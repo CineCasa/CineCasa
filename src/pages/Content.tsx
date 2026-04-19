@@ -100,7 +100,7 @@ const Content = () => {
             <div className="mb-8">
               <button
                 onClick={handleHeroPlay}
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-4 px-8 rounded-xl transition-all flex items-center justify-center gap-3"
+                className="w-full bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-4 px-8 rounded-xl transition-all flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-[#00A8E1]/30"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>

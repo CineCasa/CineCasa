@@ -505,12 +505,12 @@ const Details = () => {
                 >
                   {videoUrl && (
                     <>
-                      {/* Gradient background with animation */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400 bg-[length:200%_100%] animate-gradient-x" />
+                      {/* Background with logo color */}
+                      <div className="absolute inset-0 bg-[#00A8E1]" />
+                      {/* Hover effect */}
+                      <div className="absolute inset-0 bg-[#0095C8] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       {/* Glow effect */}
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_30px_rgba(0,229,255,0.6)]" />
-                      {/* Shine effect on hover */}
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_30px_rgba(0,168,225,0.6)]" />
                     </>
                   )}
                   {!videoUrl && (

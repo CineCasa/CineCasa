@@ -329,7 +329,7 @@ const MovieDetails: React.FC = () => {
               >
                 <button
                   onClick={handlePlayMovie}
-                  className="col-span-2 flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/20"
+                  className="col-span-2 flex items-center justify-center gap-2 bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00A8E1]/30"
                 >
                   <Play size={20} fill="currentColor" />
                   <span>Assistir</span>
