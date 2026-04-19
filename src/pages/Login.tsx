@@ -31,22 +31,35 @@ const Login = () => {
     setNewContent([]);
   }, []);
 
-  // Buscar conteúdos do Supabase - atualiza só no reload da página
+  // Buscar conteúdos do Supabase - com retry logic
   useEffect(() => {
+    const fetchWithRetry = async (fn: () => Promise<any>, retries = 2) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          return await fn();
+        } catch (error: any) {
+          console.log(`[Login] Tentativa ${i + 1} falhou:`, error.message);
+          if (i === retries - 1) throw error;
+          await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        }
+      }
+    };
+
     const fetchContent = async () => {
       try {
-        // Sempre buscar dados frescos a cada reload
         console.log('[Login] Iniciando fetch de conteúdo...');
         
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         
-        // Buscar filmes dos últimos 7 dias
-        const { data: recentMovies, error: recentMoviesError } = await supabase
-          .from('cinema')
-          .select('id, titulo, poster, created_at')
-          .gte('created_at', sevenDaysAgo.toISOString())
-          .order('created_at', { ascending: false });
+        // Buscar filmes dos últimos 7 dias com retry
+        const { data: recentMovies, error: recentMoviesError } = await fetchWithRetry(async () => 
+          supabase
+            .from('cinema')
+            .select('id, titulo, poster, created_at')
+            .gte('created_at', sevenDaysAgo.toISOString())
+            .order('created_at', { ascending: false })
+        );
         
         if (recentMoviesError) throw recentMoviesError;
         
@@ -68,8 +81,8 @@ const Login = () => {
           console.log('[Login] Buscando conteúdo aleatório. Timestamp:', cacheBuster);
           
           const [allMoviesResult, allSeriesResult] = await Promise.all([
-            supabase.from('cinema').select('id, titulo, poster').order('id', { ascending: false }),
-            supabase.from('series').select('id_n, titulo, capa').order('id_n', { ascending: false })
+            fetchWithRetry(async () => supabase.from('cinema').select('id, titulo, poster').order('id', { ascending: false })),
+            fetchWithRetry(async () => supabase.from('series').select('id_n, titulo, capa').order('id_n', { ascending: false }))
           ]);
           
           const allMovies = allMoviesResult.data || [];
