@@ -173,7 +173,7 @@ const AppContent = () => {
     <div className={`min-h-screen bg-black ${isLoginPage ? '' : 'pb-14 md:pb-0'}`}>
       <NotificationProvider>
         <NotificationContainer />
-        <NewContentNotificationToast />
+        {/* NewContentNotificationToast desabilitado - notificações de conteúdo desativadas */}
         {showNotificationPrompt && (
           <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
         )}
