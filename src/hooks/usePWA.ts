@@ -62,10 +62,13 @@ export function usePWA() {
 
   // Verificar se pode instalar
   const checkCanInstall = useCallback(() => {
+    // Verificar se há um prompt de instalação disponível (do evento beforeinstallprompt ou do window)
+    const hasInstallPrompt = pwaInfo.installPrompt !== null || (window as any).deferredPrompt !== undefined;
+    
     const canInstall = !pwaInfo.isInstalled && 
                        !pwaInfo.isStandalone &&
                        'serviceWorker' in navigator &&
-                       'PushManager' in window;
+                       hasInstallPrompt;
 
     setPwaInfo(prev => ({
       ...prev,
@@ -73,7 +76,7 @@ export function usePWA() {
     }));
 
     return canInstall;
-  }, [pwaInfo.isInstalled, pwaInfo.isStandalone]);
+  }, [pwaInfo.isInstalled, pwaInfo.isStandalone, pwaInfo.installPrompt]);
 
   // Capturar evento de instalação
   useEffect(() => {
