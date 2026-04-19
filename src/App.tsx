@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
+import LoadingScreen from "./components/LoadingScreen";
 import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
 import MobileBottomNav from "./components/MobileBottomNav";
@@ -45,13 +46,15 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   console.log('[ProtectedRoute] loading:', loading, 'user:', !!user);
 
-  // Aguardar o carregamento da autenticação
+  // Aguardar o carregamento da autenticação - mostra LoadingScreen com logo e progress bar
   if (loading) {
-    console.log('[ProtectedRoute] Exibindo loading spinner');
+    console.log('[ProtectedRoute] Exibindo LoadingScreen com logo');
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
-      </div>
+      <LoadingScreen 
+        isLoading={true} 
+        duration={3}
+        onComplete={() => console.log('[ProtectedRoute] Loading completo')}
+      />
     );
   }
 
@@ -69,12 +72,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
-  // Aguardar o carregamento da autenticação
+  // Aguardar o carregamento da autenticação - mostra LoadingScreen com logo e progress bar
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
-      </div>
+      <LoadingScreen 
+        isLoading={true} 
+        duration={3}
+        onComplete={() => console.log('[PublicRoute] Loading completo')}
+      />
     );
   }
   
