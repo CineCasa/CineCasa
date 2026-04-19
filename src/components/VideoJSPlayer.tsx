@@ -575,10 +575,10 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   const openWatchParty = useCallback(() => {
     const roomId = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
-    const videoUrlParam = encodeURIComponent(url);
+    const videoUrlParam = encodeURIComponent(videoUrl || originalUrl);
     const watchUrl = `/watch.html?room=${roomId}&video=${videoUrlParam}`;
     window.open(watchUrl, '_blank');
-  }, [url]);
+  }, [videoUrl, originalUrl]);
 
   // Resume - continuar assistindo
   const handleResume = useCallback(() => {
