@@ -35,7 +35,8 @@ import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
 import PublicNotifications from "./pages/PublicNotifications";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
-import { NotificationPermissionPrompt } from "./components/NotificationPermissionPrompt";
+import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const queryClient = new QueryClient();
 
@@ -186,6 +187,7 @@ const AppContent = () => {
         </PlayerProvider>
       </NotificationProvider>
       {!isLoginPage && <MobileBottomNav />}
+      <PWAInstallPrompt />
     </div>
   );
 };
