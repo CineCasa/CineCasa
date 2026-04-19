@@ -902,17 +902,25 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     document.body.style.width = '100%';
     document.body.style.height = '100%';
     
-    // Forçar fullscreen em mobile
+    // Forçar fullscreen e landscape em mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (isMobile && playerContainerRef.current) {
       playerContainerRef.current.style.height = '100vh';
       playerContainerRef.current.style.width = '100vw';
       
+      // Forçar orientação landscape
+      try {
+        const screenOrientation = (screen as any).orientation;
+        if (screenOrientation?.lock) {
+          screenOrientation.lock('landscape').catch(() => {});
+        }
+      } catch (e) {}
+      
       // Tentar entrar em fullscreen nativo
-      if (playerContainerRef.current.requestFullscreen) {
-        playerContainerRef.current.requestFullscreen().catch(() => {});
-      } else if ((playerContainerRef.current as any).webkitRequestFullscreen) {
-        (playerContainerRef.current as any).webkitRequestFullscreen();
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else if ((document.documentElement as any).webkitRequestFullscreen) {
+        (document.documentElement as any).webkitRequestFullscreen();
       }
     }
     
