@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Plus, Info, Check, ThumbsUp, ThumbsDown, Film } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { usePlayer } from '../contexts/PlayerContext';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '../hooks/useFavorites';
 import { toast } from 'sonner';
@@ -39,7 +38,6 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isInList, setIsInList] = useState(false);
-  const { openPlayer } = usePlayer();
   const navigate = useNavigate();
   const { isFavorite, toggleFavorite } = useFavorites();
 
@@ -115,7 +113,16 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
     if (!currentBanner) return;
     try {
       const contentTypeStr = contentType === 'movies' ? 'movie' : 'series';
-      await toggleFavorite(parseInt(currentBanner.id), currentBanner.title, currentBanner.poster, contentTypeStr);
+      await toggleFavorite({
+        content_id: parseInt(currentBanner.id),
+        content_type: contentTypeStr,
+        titulo: currentBanner.title,
+        poster: currentBanner.poster,
+        banner: currentBanner.poster,
+        rating: currentBanner.rating,
+        year: currentBanner.year,
+        genero: currentBanner.genre
+      });
       setIsInList(!isInList);
       toast.success(!isInList ? 'Adicionado à Minha Lista' : 'Removido da Minha Lista');
     } catch (error) { console.error(error); }
@@ -205,7 +212,11 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
             <div className="flex items-center justify-start gap-2 mb-4 flex-wrap">
               {/* Play Button */}
               <button
-                onClick={() => openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer || '')}
+                onClick={() => {
+                  console.log('[MobileNetflixHero] Botão Assistir clicado:', { currentBanner, contentType });
+                  // Navigate to details page
+                  navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
+                }}
                 className="flex items-center gap-2 px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black rounded-[20px] font-semibold text-sm transition-all active:scale-95"
               >
                 <Play className="w-4 h-4 fill-black" />
@@ -214,9 +225,12 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
               
               {/* Trailer Button */}
               <button
-                onClick={() => currentBanner.trailer && openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer)}
-                disabled={!currentBanner.trailer}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 disabled:bg-red-900/50 disabled:text-gray-400 text-white rounded-[20px] font-medium text-sm transition-all active:scale-95"
+                onClick={() => {
+                  console.log('[MobileNetflixHero] Botão Trailer clicado:', { currentBanner, contentType });
+                  // Navigate to details page
+                  navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-[20px] font-medium text-sm transition-all active:scale-95"
               >
                 <Film className="w-4 h-4" />
                 <span>Trailer</span>
