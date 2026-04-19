@@ -167,26 +167,28 @@ const AppContent = () => {
   const isLoginPage = location.pathname === "/login";
   const { user } = useAuth();
   const isLoggedIn = !!user;
+  const { isPlayerOpen } = usePlayer();
   
-  console.log('[AppContent] pathname:', location.pathname, 'isLoginPage:', isLoginPage);
+  console.log('[AppContent] pathname:', location.pathname, 'isLoginPage:', isLoginPage, 'isPlayerOpen:', isPlayerOpen);
+
+  // Quando player está aberto, esconder ambas as barras de navegação
+  const showNavbars = !isLoginPage && !isPlayerOpen;
 
   return (
-    <div className={`min-h-screen bg-black ${isLoginPage ? '' : 'pb-14 md:pb-0'}`}>
+    <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
       <NotificationProvider>
         <NotificationContainer />
         {/* NewContentNotificationToast desabilitado - notificações de conteúdo desativadas */}
         {showNotificationPrompt && (
           <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
         )}
-        <PlayerProvider>
-          <KeyboardNavigation>
-            {!isLoginPage && <PremiumNavbar />}
-            <AppRoutes />
-          </KeyboardNavigation>
-          <PlayerContainer />
-        </PlayerProvider>
+        <KeyboardNavigation>
+          {showNavbars && <PremiumNavbar />}
+          <AppRoutes />
+        </KeyboardNavigation>
+        <PlayerContainer />
       </NotificationProvider>
-      {!isLoginPage && <MobileBottomNav />}
+      {showNavbars && <MobileBottomNav />}
       <PWAInstallPrompt />
     </div>
   );
