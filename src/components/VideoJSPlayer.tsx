@@ -154,11 +154,13 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   // Initialize player when Video.js is loaded
   useEffect(() => {
-    if (!loaded || !videoRef.current || !window.videojs || !videoUrl) return;
-    
-    console.log('[VideoJSPlayer] Initializing player...');
+    // Small delay to ensure DOM is ready (AnimatePresence may delay mounting)
+    const initTimeout = setTimeout(() => {
+      if (!loaded || !videoRef.current || !window.videojs || !videoUrl) return;
+      
+      console.log('[VideoJSPlayer] Initializing player...');
 
-    const player = window.videojs(videoRef.current, {
+      const player = window.videojs(videoRef.current, {
       html5: {
         vhs: {
           overrideNative: true,
@@ -270,10 +272,22 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       }
     });
 
+    }, 100); // 100ms delay for DOM to be ready
+
     return () => {
-      player.dispose();
+      clearTimeout(initTimeout);
     };
   }, [loaded, videoUrl, poster, onProgressUpdate, eliteHasNextEpisode, onNextEpisode, saveProgress]);
+
+  // Cleanup player on unmount
+  useEffect(() => {
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.dispose();
+        playerRef.current = null;
+      }
+    };
+  }, []);
 
   // Efeito para mostrar resume dialog quando o vídeo carregar
   useEffect(() => {
