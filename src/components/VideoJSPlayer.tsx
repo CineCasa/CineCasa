@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw } from 'lucide-react';
+import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw, Square } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { CastButton } from './CastButton';
@@ -562,6 +562,15 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     }
   }, [isPlaying]);
 
+  const handleStop = useCallback(() => {
+    if (playerRef.current) {
+      playerRef.current.pause();
+      playerRef.current.currentTime(0);
+      setIsPlaying(false);
+      setCurrentTime(0);
+    }
+  }, []);
+
   const toggleMute = useCallback(() => {
     if (playerRef.current) {
       playerRef.current.muted(!isMuted);
@@ -928,6 +937,15 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 ) : (
                   <Play size={28} className="text-white" fill="white" />
                 )}
+              </button>
+
+              {/* Stop */}
+              <button
+                onClick={(e) => { e.stopPropagation(); handleStop(); }}
+                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                title="Parar"
+              >
+                <Square size={24} className="text-white" fill="white" />
               </button>
 
               {/* Skip Backward */}
