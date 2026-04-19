@@ -33,8 +33,9 @@ export const supabase = (() => {
           'X-Client-Info': 'cinecasa-web',
         },
         fetch: (url, options) => {
-          // Custom fetch com timeout e retry
-          return fetchWithTimeout(url as string, options as RequestInit, 8000);
+          // Custom fetch com timeout de 30s (aumentado de 8s)
+          // O Supabase está com lentidão, precisamos de mais tempo
+          return fetchWithTimeout(url as string, options as RequestInit, 30000);
         },
       },
     });

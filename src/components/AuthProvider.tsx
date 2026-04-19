@@ -101,12 +101,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initSession = async () => {
       console.log('[AuthProvider] initSession iniciado');
       try {
-        // Usar supabaseWithRetry para maior resiliência
-        const { data: { session }, error } = await supabaseWithRetry(async () => {
-          const result = await supabase.auth.getSession();
-          if (result.error) throw result.error;
-          return result;
-        }, 2, 1500);
+        // Chamada direta sem retry - o timeout está no client.ts (30s)
+        const { data: { session }, error } = await supabase.auth.getSession();
         console.log('[AuthProvider] getSession completado. Session:', session ? 'existe' : 'null', 'Error:', error?.message || 'none');
         
         if (error) {
