@@ -78,6 +78,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(100);
+  
+  // Definir hasNextEpisode combinando prop e hook
+  const hasNextEpisode = propHasNextEpisode || eliteHasNextEpisode || false;
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
