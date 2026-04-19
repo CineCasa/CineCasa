@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import CastSection from "@/components/CastSection";
+import { getProxiedUrl, isArchiveOrgUrl } from "@/utils/videoProxy";
 
 interface MovieData {
   id: string;
@@ -755,7 +756,11 @@ const Details = () => {
         {isPlayerOpen && data && (
           <VideoJSPlayer
             url={(() => {
-              const url = isTrailerMode ? trailerUrl || "" : videoUrl || "";
+              let url = isTrailerMode ? trailerUrl || "" : videoUrl || "";
+              // Apply proxy for archive.org URLs to bypass CORS
+              if (url && isArchiveOrgUrl(url)) {
+                url = getProxiedUrl(url);
+              }
               console.log('[Details] VideoJSPlayer URL:', url);
               return url;
             })()}

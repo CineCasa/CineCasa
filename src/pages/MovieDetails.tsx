@@ -80,7 +80,7 @@ const MovieDetails: React.FC = () => {
       
       const { data, error } = await supabase
         .from('cinema')
-        .select('id, titulo, poster, url, trailer, description, ano, genero, duracao, rating, classificacao, diretor, elenco, imdb_id, tmdb_id')
+        .select('id, titulo, poster, url, trailer, description, year, genero, duracao, rating, classificacao, diretor, elenco, imdb_id, tmdb_id')
         .eq('id', parseInt(id || '0'))
         .single();
 
