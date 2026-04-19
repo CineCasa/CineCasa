@@ -24,13 +24,94 @@ BEGIN
         RAISE NOTICE 'Coluna current_time adicionada à user_progress';
     END IF;
 
-    -- Adicionar last_watched se não existir
+    -- Renomear last_watched para updated_at se existir
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_schema = 'public' 
+               AND table_name = 'user_progress' 
+               AND column_name = 'last_watched') THEN
+        ALTER TABLE public.user_progress RENAME COLUMN last_watched TO updated_at;
+        RAISE NOTICE 'Coluna last_watched renomeada para updated_at';
+    END IF;
+    
+    -- Adicionar title se não existir
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                    WHERE table_schema = 'public' 
                    AND table_name = 'user_progress' 
-                   AND column_name = 'last_watched') THEN
-        ALTER TABLE public.user_progress ADD COLUMN last_watched TIMESTAMPTZ DEFAULT NOW();
-        RAISE NOTICE 'Coluna last_watched adicionada à user_progress';
+                   AND column_name = 'title') THEN
+        ALTER TABLE public.user_progress ADD COLUMN title TEXT;
+        RAISE NOTICE 'Coluna title adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar poster se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'poster') THEN
+        ALTER TABLE public.user_progress ADD COLUMN poster TEXT;
+        RAISE NOTICE 'Coluna poster adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar banner se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'banner') THEN
+        ALTER TABLE public.user_progress ADD COLUMN banner TEXT;
+        RAISE NOTICE 'Coluna banner adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar progress se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'progress') THEN
+        ALTER TABLE public.user_progress ADD COLUMN progress DOUBLE PRECISION DEFAULT 0;
+        RAISE NOTICE 'Coluna progress adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar duration se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'duration') THEN
+        ALTER TABLE public.user_progress ADD COLUMN duration DOUBLE PRECISION DEFAULT 0;
+        RAISE NOTICE 'Coluna duration adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar episode_id se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'episode_id') THEN
+        ALTER TABLE public.user_progress ADD COLUMN episode_id INTEGER;
+        RAISE NOTICE 'Coluna episode_id adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar episode_title se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'episode_title') THEN
+        ALTER TABLE public.user_progress ADD COLUMN episode_title TEXT;
+        RAISE NOTICE 'Coluna episode_title adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar season_number se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'season_number') THEN
+        ALTER TABLE public.user_progress ADD COLUMN season_number INTEGER;
+        RAISE NOTICE 'Coluna season_number adicionada à user_progress';
+    END IF;
+    
+    -- Adicionar episode_number se não existir
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_schema = 'public' 
+                   AND table_name = 'user_progress' 
+                   AND column_name = 'episode_number') THEN
+        ALTER TABLE public.user_progress ADD COLUMN episode_number INTEGER;
+        RAISE NOTICE 'Coluna episode_number adicionada à user_progress';
     END IF;
 END $$;
 
