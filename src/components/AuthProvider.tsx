@@ -91,17 +91,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     console.log('[AuthProvider] useEffect iniciado');
     
-    // Safety timeout - force loading to false after 5 seconds
+    // Safety timeout - force loading to false after 3 seconds (mais agressivo para mobile)
     const safetyTimeout = setTimeout(() => {
       console.log('[AuthProvider] Safety timeout ativado - forçando loading false');
       setLoading(false);
-    }, 5000);
+    }, 3000);
     
-    // Get initial session
+    // Get initial session com timeout
     const initSession = async () => {
       console.log('[AuthProvider] initSession iniciado');
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Timeout de 2 segundos para getSession
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('getSession timeout')), 2000)
+        );
+        
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
         console.log('[AuthProvider] getSession completado. Session:', session ? 'existe' : 'null', 'Error:', error?.message || 'none');
         
         if (error) {
@@ -120,8 +126,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.log('[AuthProvider] Sem usuário na sessão, setLoading(false)');
           setLoading(false);
         }
-      } catch (e) {
-        console.error('[AuthProvider] Session init error:', e);
+      } catch (e: any) {
+        console.error('[AuthProvider] Session init error:', e.message || e);
+        // Em caso de erro/timeout, limpar estado e permitir acesso à tela de login
+        setSession(null);
+        setUser(null);
         setLoading(false);
       } finally {
         clearTimeout(safetyTimeout);
