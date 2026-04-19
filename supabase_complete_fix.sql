@@ -52,15 +52,15 @@ CREATE TABLE IF NOT EXISTS public.user_progress (
 -- RLS para user_progress
 ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own progress"
+CREATE POLICY "Users can view their own progress"
     ON public.user_progress FOR SELECT
     USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can insert their own progress"
+CREATE POLICY "Users can insert their own progress"
     ON public.user_progress FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can update their own progress"
+CREATE POLICY "Users can update their own progress"
     ON public.user_progress FOR UPDATE
     USING (auth.uid() = user_id);
 
@@ -82,15 +82,15 @@ CREATE TABLE IF NOT EXISTS public.watch_history (
 -- RLS para watch_history
 ALTER TABLE public.watch_history ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own history"
+CREATE POLICY "Users can view their own history"
     ON public.watch_history FOR SELECT
     USING (auth.uid() = profile_id);
 
-CREATE POLICY IF NOT EXISTS "Users can insert their own history"
+CREATE POLICY "Users can insert their own history"
     ON public.watch_history FOR INSERT
     WITH CHECK (auth.uid() = profile_id);
 
-CREATE POLICY IF NOT EXISTS "Users can update their own history"
+CREATE POLICY "Users can update their own history"
     ON public.watch_history FOR UPDATE
     USING (auth.uid() = profile_id);
 
@@ -109,11 +109,11 @@ CREATE TABLE IF NOT EXISTS public.user_views (
 -- RLS para user_views
 ALTER TABLE public.user_views ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own views"
+CREATE POLICY "Users can view their own views"
     ON public.user_views FOR SELECT
     USING (auth.uid()::text = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can insert their own views"
+CREATE POLICY "Users can insert their own views"
     ON public.user_views FOR INSERT
     WITH CHECK (auth.uid()::text = user_id);
 
@@ -133,15 +133,15 @@ CREATE TABLE IF NOT EXISTS public.watch_progress (
 -- RLS para watch_progress
 ALTER TABLE public.watch_progress ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own watch progress"
+CREATE POLICY "Users can view their own watch progress"
     ON public.watch_progress FOR SELECT
     USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can insert their own watch progress"
+CREATE POLICY "Users can insert their own watch progress"
     ON public.watch_progress FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can update their own watch progress"
+CREATE POLICY "Users can update their own watch progress"
     ON public.watch_progress FOR UPDATE
     USING (auth.uid() = user_id);
 
@@ -161,11 +161,11 @@ CREATE TABLE IF NOT EXISTS public.user_devices (
 -- RLS para user_devices
 ALTER TABLE public.user_devices ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own devices"
+CREATE POLICY "Users can view their own devices"
     ON public.user_devices FOR SELECT
     USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can insert their own devices"
+CREATE POLICY "Users can insert their own devices"
     ON public.user_devices FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
