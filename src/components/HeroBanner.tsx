@@ -267,8 +267,11 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
             <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
               <button
                 onClick={() => {
-                  console.log('[HeroBanner] Botão Assistir clicado:', { hero, url: hero?.url, trailerUrl });
-                  setIsPlayerOpen(true);
+                  console.log('[HeroBanner] Botão Assistir clicado:', { hero, contentType: hero?.type });
+                  // Navigate to details page instead of trying to play directly
+                  const contentId = hero.id?.toString().split('-')[1] || hero.id;
+                  const type = hero.id?.toString().includes('series') || hero.type === 'series' ? 'series' : 'movie';
+                  navigate(type === 'series' ? `/series-details/${contentId}` : `/movie-details/${contentId}`);
                 }}
                 className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"
               >

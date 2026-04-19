@@ -317,8 +317,9 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
               <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
                 <button
                   onClick={() => {
-                    console.log('[PremiumHeroBanner] Botão Assistir clicado:', { currentBanner, trailer: currentBanner?.trailer });
-                    openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer || '');
+                    console.log('[PremiumHeroBanner] Botão Assistir clicado:', { currentBanner, contentType });
+                    // Navigate to details page instead of trying to play directly
+                    navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
                   }}
                   className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white rounded-[20px] font-semibold transition-all duration-300 hover:scale-105"
                 >
@@ -328,16 +329,13 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                 <button
                   onClick={() => {
                     console.log('[PremiumHeroBanner] Botão Trailer clicado:', { currentBanner, trailer: currentBanner?.trailer });
-                    if (currentBanner?.trailer) {
-                      openPlayer(currentBanner.id, currentBanner.title, currentBanner.trailer);
-                    } else {
-                      navigate(`/details/${currentBanner.id}`);
-                    }
+                    // Navigate to details page
+                    navigate(contentType === 'movies' ? `/movie-details/${currentBanner.id}` : `/series-details/${currentBanner.id}`);
                   }}
                   className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#FF0000] hover:bg-[#cc0000] text-white rounded-[20px] font-semibold transition-all duration-300 hover:scale-105"
                 >
                   <Info className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Trailer</span>
+                  <span>Detalhes</span>
                 </button>
                 
                 {/* Ícones de interação - mesma linha */}
@@ -356,7 +354,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                       poster: currentBanner.poster,
                       banner: currentBanner.poster,
                       rating: currentBanner.rating,
-                      year: parseInt(currentBanner.year),
+                      year: currentBanner.year,
                       genero: currentBanner.genre
                     });
                   }}
