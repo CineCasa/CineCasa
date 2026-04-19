@@ -475,83 +475,42 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, [isReady, user, currentTime, duration, saveWatchHistory]);
 
-  // AUTO ROTATE SCREEN TO LANDSCAPE + FULLSCREEN ON MOBILE
+  // Controle de orientação para mobile (apenas quando entra em fullscreen manualmente)
   useEffect(() => {
-    const containerRef = playerContainerRef.current;
-    
-    const enterFullscreenAndLockOrientation = async () => {
-      // Check if mobile device
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
-      
-      if (!isMobile) return;
-
-      try {
-        // First: Enter fullscreen (required for orientation lock to work)
-        if (containerRef) {
-          const requestFullscreen = 
-            containerRef.requestFullscreen ||
-            (containerRef as any).webkitRequestFullscreen ||
-            (containerRef as any).mozRequestFullScreen ||
-            (containerRef as any).msRequestFullscreen;
-          
-          if (requestFullscreen) {
-            await requestFullscreen.call(containerRef);
-            console.log('[VideoJSPlayer] Entered fullscreen');
+    const handleOrientationChange = async () => {
+      if (!isFullscreen) {
+        // Sair do fullscreen - desbloquear orientação
+        try {
+          const screenOrientation = (screen as any).orientation;
+          if (screenOrientation?.unlock) {
+            await screenOrientation.unlock();
+            console.log('[VideoJSPlayer] Screen orientation unlocked');
           }
+        } catch (err) {
+          console.log('[VideoJSPlayer] Could not unlock orientation:', err);
         }
+      } else {
+        // Entrar em fullscreen - tentar bloquear em landscape (apenas mobile)
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
         
-        // Then: Lock orientation to landscape
-        const screenOrientation = (screen as any).orientation;
-        if (screenOrientation && screenOrientation.lock) {
-          await screenOrientation.lock('landscape');
-          console.log('[VideoJSPlayer] Screen locked to landscape');
-        } else {
-          // Fallback: try deprecated methods
-          const anyScreen = screen as any;
-          if (anyScreen.lockOrientation) {
-            anyScreen.lockOrientation('landscape');
-          } else if (anyScreen.mozLockOrientation) {
-            anyScreen.mozLockOrientation('landscape');
-          } else if (anyScreen.msLockOrientation) {
-            anyScreen.msLockOrientation('landscape');
+        if (isMobile) {
+          try {
+            const screenOrientation = (screen as any).orientation;
+            if (screenOrientation?.lock) {
+              await screenOrientation.lock('landscape');
+              console.log('[VideoJSPlayer] Screen locked to landscape');
+            }
+          } catch (err) {
+            console.log('[VideoJSPlayer] Could not lock orientation:', err);
           }
         }
-      } catch (err) {
-        console.log('[VideoJSPlayer] Could not enter fullscreen/lock orientation:', err);
       }
     };
 
-    // Enter fullscreen + lock when player opens
-    enterFullscreenAndLockOrientation();
-
-    // Cleanup: exit fullscreen and unlock orientation when player closes
-    return () => {
-      try {
-        // Exit fullscreen
-        const exitFullscreen = 
-          document.exitFullscreen ||
-          (document as any).webkitExitFullscreen ||
-          (document as any).mozCancelFullScreen ||
-          (document as any).msExitFullscreen;
-        
-        if (exitFullscreen && document.fullscreenElement) {
-          exitFullscreen.call(document);
-          console.log('[VideoJSPlayer] Exited fullscreen');
-        }
-        
-        // Unlock orientation
-        const screenOrientation = (screen as any).orientation;
-        if (screenOrientation && screenOrientation.unlock) {
-          screenOrientation.unlock();
-          console.log('[VideoJSPlayer] Screen orientation unlocked');
-        }
-      } catch (err) {
-        console.log('[VideoJSPlayer] Could not exit fullscreen/unlock orientation:', err);
-      }
-    };
-  }, []);
+    handleOrientationChange();
+  }, [isFullscreen]);
 
   // Auto-hide controls - esconde após 3s quando vídeo está tocando
   useEffect(() => {
