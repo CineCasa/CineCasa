@@ -536,6 +536,42 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, [isPlaying]);
 
+  // Funções de controle declaradas antes do handleKeyDown
+  const togglePlayPause = useCallback(() => {
+    if (playerRef.current) {
+      if (isPlaying) {
+        playerRef.current.pause();
+      } else {
+        playerRef.current.play();
+      }
+    }
+  }, [isPlaying]);
+
+  const toggleMute = useCallback(() => {
+    if (playerRef.current) {
+      playerRef.current.muted(!isMuted);
+    }
+  }, [isMuted]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (playerRef.current) {
+      if (isFullscreen) {
+        playerRef.current.exitFullscreen();
+      } else {
+        playerRef.current.requestFullscreen();
+      }
+    }
+  }, [isFullscreen]);
+
+  const skip = useCallback((seconds: number) => {
+    if (playerRef.current) {
+      const current = playerRef.current.currentTime();
+      const newTime = Math.max(0, Math.min(current + seconds, duration));
+      playerRef.current.currentTime(newTime);
+      setCurrentTime(newTime);
+    }
+  }, [duration]);
+
   // Mostrar controles quando mouse se move
   useEffect(() => {
     const handleMouseMove = () => {
@@ -641,17 +677,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, [handleKeyDown]);
 
-  // Funções declaradas antes dos useEffects que as usam
-  const togglePlayPause = useCallback(() => {
-    if (playerRef.current) {
-      if (isPlaying) {
-        playerRef.current.pause();
-      } else {
-        playerRef.current.play();
-      }
-    }
-  }, [isPlaying]);
-
+  // Funções adicionais de controle
   const handleStop = useCallback(() => {
     if (playerRef.current) {
       playerRef.current.pause();
@@ -661,12 +687,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     }
   }, []);
 
-  const toggleMute = useCallback(() => {
-    if (playerRef.current) {
-      playerRef.current.muted(!isMuted);
-    }
-  }, [isMuted]);
-
   const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const vol = parseInt(e.target.value);
     setVolume(vol);
@@ -674,25 +694,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       playerRef.current.volume(vol / 100);
     }
   }, []);
-
-  const toggleFullscreen = useCallback(() => {
-    if (playerRef.current) {
-      if (isFullscreen) {
-        playerRef.current.exitFullscreen();
-      } else {
-        playerRef.current.requestFullscreen();
-      }
-    }
-  }, [isFullscreen]);
-
-  const skip = useCallback((seconds: number) => {
-    if (playerRef.current) {
-      const current = playerRef.current.currentTime();
-      const newTime = Math.max(0, Math.min(current + seconds, duration));
-      playerRef.current.currentTime(newTime);
-      setCurrentTime(newTime);
-    }
-  }, [duration]);
 
   const handleSeek = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const time = parseFloat(e.target.value);
