@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.user_progress (
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     content_id INTEGER NOT NULL,
     content_type TEXT NOT NULL CHECK (content_type IN ('movie', 'series')),
-    current_time INTEGER DEFAULT 0,
+    "current_time" INTEGER DEFAULT 0,
     progress REAL DEFAULT 0,
     duration INTEGER DEFAULT 0,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
