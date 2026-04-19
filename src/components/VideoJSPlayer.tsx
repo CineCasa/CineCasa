@@ -156,6 +156,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   // Initialize player when Video.js is loaded
   useEffect(() => {
     if (!loaded || !videoRef.current || !window.videojs || !videoUrl) return;
+    
+    // Verify element is actually in DOM (portal might delay mounting)
+    if (!document.contains(videoRef.current)) {
+      console.log('[VideoJSPlayer] Video element not in DOM yet, retrying in 100ms...');
+      const retryTimeout = setTimeout(() => {
+        // Trigger re-check by updating a state (this will re-run the effect)
+        setIsReady(false);
+      }, 100);
+      return () => clearTimeout(retryTimeout);
+    }
 
     const player = window.videojs(videoRef.current, {
       html5: {
