@@ -354,6 +354,17 @@ export default function Admin() {
   const [showPixModal, setShowPixModal] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState(3);
   
+  // Add User Modal States
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    plan: 'basic' as const,
+    amount: 19.90,
+    due_date: ''
+  });
+  
   // Real-time subscription simulation
   useEffect(() => {
     const interval = setInterval(() => {
@@ -405,6 +416,45 @@ export default function Admin() {
   const handleDeleteUser = async (userId: string) => {
     setFinancialUsers(prev => prev.filter(u => u.id !== userId));
     toast({ title: 'Usuário excluído', description: 'Removido permanentemente.' });
+  };
+  
+  const handleCreateUser = async () => {
+    if (!newUser.name || !newUser.email) {
+      toast({ title: 'Erro', description: 'Nome e email são obrigatórios.' });
+      return;
+    }
+    
+    setLoading('create-user');
+    
+    const userId = 'u' + Date.now();
+    const createdUser: FinancialUser = {
+      id: userId,
+      name: newUser.name,
+      email: newUser.email,
+      phone: newUser.phone,
+      plan: newUser.plan,
+      status: 'active',
+      amount: newUser.amount,
+      due_date: newUser.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+    
+    setFinancialUsers(prev => [...prev, createdUser]);
+    
+    toast({ 
+      title: 'Usuário criado!', 
+      description: `${newUser.name} foi adicionado com sucesso.` 
+    });
+    
+    setNewUser({
+      name: '',
+      email: '',
+      phone: '',
+      plan: 'basic',
+      amount: 19.90,
+      due_date: ''
+    });
+    setShowAddUserModal(false);
+    setLoading(null);
   };
   
   const handleResolveAlert = async (alertId: string) => {
@@ -785,7 +835,12 @@ export default function Admin() {
               </div>
               
               <GlassCard className="p-4">
-                <h3 className="font-semibold mb-4">Gestão de Usuários</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold">Gestão de Usuários</h3>
+                  <ActionButton onClick={() => setShowAddUserModal(true)} variant="success" icon={Plus}>
+                    Novo Usuário
+                  </ActionButton>
+                </div>
                 <div className="space-y-3">
                   {financialUsers.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl">
@@ -1054,6 +1109,115 @@ export default function Admin() {
               >
                 Enviar via WhatsApp
               </ActionButton>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Add User Modal */}
+      <AnimatePresence>
+        {showAddUserModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowAddUserModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#141414] border border-cyan-500/30 rounded-2xl p-6 max-w-md w-full"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold">Adicionar Novo Usuário</h3>
+                <button onClick={() => setShowAddUserModal(false)} className="p-2 hover:bg-white/10 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-400 block mb-1">Nome *</label>
+                  <input
+                    type="text"
+                    value={newUser.name}
+                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
+                    placeholder="Nome completo"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm text-gray-400 block mb-1">Email *</label>
+                  <input
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm text-gray-400 block mb-1">Telefone (WhatsApp)</label>
+                  <input
+                    type="text"
+                    value={newUser.phone}
+                    onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
+                    placeholder="5511999999999"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-sm text-gray-400 block mb-1">Plano</label>
+                  <select
+                    value={newUser.plan}
+                    onChange={(e) => {
+                      const plan = e.target.value as 'basic' | 'premium' | 'family';
+                      const amount = plan === 'basic' ? 19.90 : plan === 'premium' ? 29.90 : 49.90;
+                      setNewUser({ ...newUser, plan, amount });
+                    }}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="basic">Basic - R$ 19,90</option>
+                    <option value="premium">Premium - R$ 29,90</option>
+                    <option value="family">Family - R$ 49,90</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-sm text-gray-400 block mb-1">Data de Vencimento</label>
+                  <input
+                    type="date"
+                    value={newUser.due_date}
+                    onChange={(e) => setNewUser({ ...newUser, due_date: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <ActionButton 
+                  onClick={() => setShowAddUserModal(false)}
+                  variant="secondary"
+                  className="flex-1 justify-center"
+                >
+                  Cancelar
+                </ActionButton>
+                <ActionButton 
+                  onClick={handleCreateUser}
+                  variant="success"
+                  icon={Plus}
+                  loading={loading === 'create-user'}
+                  className="flex-1 justify-center"
+                >
+                  Criar Usuário
+                </ActionButton>
+              </div>
             </motion.div>
           </motion.div>
         )}
