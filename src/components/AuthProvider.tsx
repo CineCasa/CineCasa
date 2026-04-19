@@ -29,9 +29,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       console.log('[AuthProvider] Buscando perfil no Supabase...');
       
-      // Adicionar timeout para evitar que a query fique travada
+      // Adicionar timeout para evitar que a query fique travada (aumentado para 10s)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Profile query timeout')), 3000)
+        setTimeout(() => reject(new Error('Profile query timeout')), 10000)
       );
       
       const queryPromise = supabase
