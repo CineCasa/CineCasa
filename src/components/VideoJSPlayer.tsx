@@ -445,7 +445,31 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, []);
 
-  // Auto-hide controls
+  // Auto-hide controls - esconde após 3s quando vídeo está tocando
+  useEffect(() => {
+    // Limpa timeout anterior
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+
+    if (isPlaying) {
+      // Inicia timer para esconder controles após 3 segundos
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    } else {
+      // Quando pausado, sempre mostra controles
+      setShowControls(true);
+    }
+
+    return () => {
+      if (controlsTimeoutRef.current) {
+        clearTimeout(controlsTimeoutRef.current);
+      }
+    };
+  }, [isPlaying]);
+
+  // Mostrar controles quando mouse se move
   useEffect(() => {
     const handleMouseMove = () => {
       setShowControls(true);
@@ -462,9 +486,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     window.addEventListener('mousemove', handleMouseMove);
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
     };
   }, [isPlaying]);
 
