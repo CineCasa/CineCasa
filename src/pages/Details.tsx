@@ -384,9 +384,9 @@ const Details = () => {
               transform: 'scale(1.1)'
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/50" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#000401] via-transparent to-black/60" />
-          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#000401]/80 via-transparent to-black/40" />
+          <div className="absolute inset-0 bg-black/10" />
         </div>
 
         {/* Hero Content */}
