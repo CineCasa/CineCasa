@@ -122,12 +122,18 @@ class ScreenCastService {
     if (!window.cast || !window.cast.framework) return;
 
     try {
+      // Verificar se chrome.cast está disponível
+      if (!window.chrome?.cast) {
+        console.error('[ScreenCast] chrome.cast não está disponível');
+        return;
+      }
+
       const castContext = window.cast.framework.CastContext.getInstance();
       
-      // Configurar com Default Media Receiver (não precisa de registro)
+      // Configurar com valores fixos (não dependem de chrome.cast estar completamente carregado)
       castContext.setOptions({
-        receiverApplicationId: window.chrome?.cast?.media?.DEFAULT_MEDIA_RECEIVER_APP_ID || 'CC1AD845',
-        autoJoinPolicy: window.chrome?.cast?.AutoJoinPolicy?.ORIGIN_SCOPED || 'origin_scoped',
+        receiverApplicationId: 'CC1AD845', // Default Media Receiver ID
+        autoJoinPolicy: 'origin_scoped',
         language: 'pt-BR',
         resumeSavedSession: true
       });
@@ -275,6 +281,12 @@ class ScreenCastService {
       return false;
     }
 
+    // Verificar se chrome.cast está disponível
+    if (!window.chrome?.cast?.media) {
+      console.error('[ScreenCast] chrome.cast.media não está disponível');
+      return false;
+    }
+
     try {
       const castSession = this.castContext.getCurrentSession();
       if (!castSession) return false;
@@ -293,8 +305,8 @@ class ScreenCastService {
       }
       mediaInfoObj.metadata = metadata;
 
-      // Stream type
-      mediaInfoObj.streamType = window.chrome.cast.media.StreamType.BUFFERED;
+      // Stream type - usar valor fixo 1 para BUFFERED
+      mediaInfoObj.streamType = 1; // BUFFERED
 
       // Criar request
       const request = new window.chrome.cast.media.LoadRequest(mediaInfoObj);
