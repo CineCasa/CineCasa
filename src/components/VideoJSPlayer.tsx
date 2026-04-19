@@ -536,7 +536,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, [isPlaying]);
 
-  // Funções de controle declaradas antes do handleKeyDown (v2 - build refresh)
+  // Funções de controle declaradas antes do handleKeyDown (v3 - cache bust 2026-04-19)
+  console.log('[VideoJSPlayer] Initializing control functions v3');
+  
   const togglePlayPause = useCallback(() => {
     if (playerRef.current) {
       if (isPlaying) {
