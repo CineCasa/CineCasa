@@ -10,7 +10,7 @@ const NO_CACHE_URLS = [
   '/js/watch-party.js',
   '/js/criar-sala.js',
   '/watch.html',
-  '/assets/',  // Arquivos de build gerados dinamicamente
+  // REMOVIDO: '/assets/' - Arquivos de build PRECISAM ser cacheados para funcionar offline
   'supabase.co', // Supabase API - never cache
   'eqhstnlsmfrwxhvcwoid.supabase.co' // Supabase REST API
 ];
@@ -332,6 +332,7 @@ function isStaticAsset(pathname) {
          pathname.startsWith('/icons/') ||
          pathname.startsWith('/fonts/') ||
          pathname.startsWith('/styles/') ||
+         pathname.startsWith('/assets/') || // Importante: cachear arquivos de build Vite
          pathname.endsWith('.css') ||
          pathname.endsWith('.js') ||
          pathname.endsWith('.woff') ||

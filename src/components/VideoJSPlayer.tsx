@@ -489,9 +489,8 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, [isPlaying]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+  // Keyboard handler - definido fora do useEffect para reuso
+  const handleKeyDown = useCallback((e: KeyboardEvent | React.KeyboardEvent) => {
       // Ignore if typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
@@ -564,13 +563,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           }
           break;
       }
-    };
+    }, [isPlaying, volume, isFullscreen, duration, hasNextEpisode, onNextEpisode, togglePlayPause, skip, toggleMute, toggleFullscreen]);
 
-    window.addEventListener('keydown', handleKeyDown);
+  // Keyboard shortcuts useEffect
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => handleKeyDown(e);
+    window.addEventListener('keydown', onKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keydown', onKeyDown);
     };
-  }, [isPlaying, volume, isFullscreen, duration, hasNextEpisode, onNextEpisode]);
+  }, [handleKeyDown]);
 
   // Funções declaradas antes dos useEffects que as usam
   const togglePlayPause = useCallback(() => {
@@ -825,6 +827,21 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        // Mostrar controles ao pressionar qualquer tecla
+        setShowControls(true);
+        if (controlsTimeoutRef.current) {
+          clearTimeout(controlsTimeoutRef.current);
+        }
+        if (isPlaying) {
+          controlsTimeoutRef.current = setTimeout(() => {
+            setShowControls(false);
+          }, 3000);
+        }
+        // Chamar o handler de teclado existente
+        handleKeyDown(e);
+      }}
     >
       {/* Loading Screen */}
       {!isReady && (
