@@ -890,10 +890,53 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferedPercent = duration > 0 ? (buffered / duration) * 100 : 0;
 
+  // Bloquear scroll do body quando player abrir
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+    const originalHeight = document.body.style.height;
+    
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    
+    // Forçar fullscreen em mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile && playerContainerRef.current) {
+      playerContainerRef.current.style.height = '100vh';
+      playerContainerRef.current.style.width = '100vw';
+      
+      // Tentar entrar em fullscreen nativo
+      if (playerContainerRef.current.requestFullscreen) {
+        playerContainerRef.current.requestFullscreen().catch(() => {});
+      } else if ((playerContainerRef.current as any).webkitRequestFullscreen) {
+        (playerContainerRef.current as any).webkitRequestFullscreen();
+      }
+    }
+    
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+      document.body.style.height = originalHeight;
+    };
+  }, []);
+
   const playerContent = (
     <div 
       ref={playerContainerRef}
-      className="fixed inset-0 bg-black z-50"
+      className="fixed inset-0 bg-black z-[9999] overflow-hidden"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100vh'
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -921,12 +964,18 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         </div>
       )}
 
-      {/* Video Element */}
-      <div className="absolute inset-0">
+      {/* Video Element - forçar tela cheia */}
+      <div className="absolute inset-0 flex items-center justify-center" style={{ width: '100vw', height: '100vh' }}>
         <video
           ref={videoRef}
           className="video-js vjs-fluid vjs-big-play-centered"
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            maxHeight: '100vh',
+            maxWidth: '100vw',
+            objectFit: 'contain'
+          }}
           poster={poster}
           preload="auto"
           crossOrigin="anonymous"
