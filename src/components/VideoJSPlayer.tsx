@@ -34,9 +34,17 @@ declare global {
 const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTMLVideoElement> }> = ({ time, videoRef }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasError, setHasError] = useState(false);
+  const [thumbnail, setThumbnail] = useState<string | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const generateThumbnail = async () => {
+    // Limpar debounce anterior
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    // Debounce de 150ms para evitar múltiplos seeks
+    debounceRef.current = setTimeout(async () => {
       if (!videoRef?.current || !canvasRef.current) {
         setHasError(true);
         return;
@@ -53,16 +61,28 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
 
       try {
         // Verificar se o vídeo está carregado o suficiente
-        if (video.readyState >= 2) {
-          // Salvar tempo atual
+        if (video.readyState >= 2 && video.videoWidth > 0) {
+          // Salvar estado do vídeo
           const currentTime = video.currentTime;
+          const wasPaused = video.paused;
+          
+          // Pausar vídeo temporariamente para evitar flicker
+          if (!wasPaused) {
+            video.pause();
+          }
           
           // Definir tempo para captura
           video.currentTime = time;
           
-          // Aguardar o vídeo seek
-          await new Promise<void>((resolve) => {
+          // Aguardar o vídeo seek com timeout
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              video.removeEventListener('seeked', onSeeked);
+              reject(new Error('Seek timeout'));
+            }, 500);
+            
             const onSeeked = () => {
+              clearTimeout(timeout);
               video.removeEventListener('seeked', onSeeked);
               resolve();
             };
@@ -70,21 +90,34 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
           });
 
           // Desenhar frame no canvas
-          canvas.width = 112;
-          canvas.height = 64;
+          canvas.width = 160;
+          canvas.height = 90;
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          // Restaurar tempo original
-          video.currentTime = currentTime;
+          // Converter para data URL
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          setThumbnail(dataUrl);
           setHasError(false);
+
+          // Restaurar estado original
+          video.currentTime = currentTime;
+          if (!wasPaused) {
+            video.play();
+          }
         }
       } catch (err) {
         console.error('[ThumbnailPreview] Error generating thumbnail:', err);
         setHasError(true);
       }
-    };
+    }, 150);
 
-    generateThumbnail();
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
   }, [time, videoRef]);
 
   if (hasError) {
@@ -1033,14 +1066,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
             onMouseLeave={handleProgressBarMouseLeave}
             onClick={handleProgressBarClick}
           >
-            {/* Preview Thumbnail - aparece acima da barra de progresso */}
+            {/* Preview Thumbnail - aparece bem acima da barra de progresso */}
             {showThumbnail && (
               <div
-                className="absolute -top-28 bg-black/90 rounded-lg p-2 transform -translate-x-1/2 pointer-events-none z-[100] border border-white/20 shadow-2xl"
+                className="absolute -top-40 bg-black/90 rounded-lg p-2 transform -translate-x-1/2 pointer-events-none select-none z-[40] border border-white/20 shadow-2xl"
                 style={{ left: thumbnailPosition }}
               >
                 <div className="text-white text-xs mb-1 text-center font-medium">{formatTime(thumbnailTime)}</div>
-                <ThumbnailPreview time={thumbnailTime} videoRef={videoRef} />
+                <div className="w-28 h-16 overflow-hidden rounded border border-white/10 bg-black">
+                  <ThumbnailPreview time={thumbnailTime} videoRef={videoRef} />
+                </div>
                 {/* Seta indicadora apontando para baixo */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 rotate-45 border-r border-b border-white/20"></div>
               </div>
