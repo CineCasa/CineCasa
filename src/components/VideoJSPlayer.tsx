@@ -120,6 +120,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const saveProgressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const thumbnailCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const isInitializedRef = useRef(false);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
 
   // Load Video.js from CDN
   useEffect(() => {
@@ -789,6 +790,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   const playerContent = (
     <div 
+      ref={playerContainerRef}
       className="fixed inset-0 bg-black z-50"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
