@@ -374,20 +374,17 @@ const Details = () => {
     <div className="min-h-screen bg-[#000401] text-white overflow-x-hidden">
       {/* Hero Section - Premium Design System Blueprint */}
       <div ref={heroRef} className="relative w-full h-auto z-0 pb-20 overflow-hidden">
-        {/* CAMADA 0: Background com blur(20px) e vignette */}
+        {/* CAMADA 0: Background simples sem blur para compatibilidade mobile */}
         <div className="absolute inset-0">
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
               backgroundImage: `url(${data.backdrop_path || data.banner || data.poster_path || "/placeholder-backdrop.jpg"})`,
-              filter: 'blur(8px)',
-              transform: 'scale(1.05)',
-              opacity: 0.9
+              opacity: 0.6
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#000401]/40 via-transparent to-black/20" />
-          <div className="absolute inset-0 bg-black/5" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#000401]/90 via-transparent to-black/50" />
         </div>
 
         {/* Hero Content */}
