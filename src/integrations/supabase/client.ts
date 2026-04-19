@@ -17,12 +17,79 @@ export const supabase = (() => {
       auth: {
         storage: localStorage,
         persistSession: true,
-        autoRefreshToken: true,
-      }
+        autoRefreshToken: false, // Desabilitar auto refresh para evitar timeouts
+        detectSessionInUrl: false,
+        flowType: 'implicit',
+        debug: false,
+      },
+      realtime: {
+        params: {
+          eventsPerSecond: 1,
+        },
+        timeout: 5000, // Timeout curto para realtime
+      },
+      global: {
+        headers: {
+          'X-Client-Info': 'cinecasa-web',
+        },
+        fetch: (url, options) => {
+          // Custom fetch com timeout e retry
+          return fetchWithTimeout(url as string, options as RequestInit, 8000);
+        },
+      },
     });
-    console.log('[Supabase] Nova instância criada');
+    console.log('[Supabase] Nova instância criada com configurações otimizadas');
   } else {
     console.log('[Supabase] Reutilizando instância existente');
   }
   return supabaseInstance;
 })();
+
+// Fetch com timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeout: number) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
+// Função utilitária para retry de operações Supabase
+export async function supabaseWithRetry<T>(
+  operation: () => Promise<T>,
+  retries = 2,
+  delay = 1000
+): Promise<T> {
+  let lastError;
+  
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+      console.log(`[Supabase] Tentativa ${i + 1} falhou:`, error.message);
+      
+      // Só retry em erros de rede, não em erros de auth
+      if (error.message?.includes('Failed to fetch') || 
+          error.message?.includes('timeout') ||
+          error.message?.includes('NetworkError')) {
+        if (i < retries - 1) {
+          await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
+          continue;
+        }
+      }
+      throw error;
+    }
+  }
+  
+  throw lastError;
+}

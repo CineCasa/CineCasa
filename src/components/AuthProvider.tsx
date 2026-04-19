@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseWithRetry } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
@@ -97,17 +97,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     }, 3000);
     
-    // Get initial session com timeout
+    // Get initial session com retry e timeout
     const initSession = async () => {
       console.log('[AuthProvider] initSession iniciado');
       try {
-        // Timeout de 2 segundos para getSession
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('getSession timeout')), 2000)
-        );
-        
-        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+        // Usar supabaseWithRetry para maior resiliência
+        const { data: { session }, error } = await supabaseWithRetry(async () => {
+          const result = await supabase.auth.getSession();
+          if (result.error) throw result.error;
+          return result;
+        }, 2, 1500);
         console.log('[AuthProvider] getSession completado. Session:', session ? 'existe' : 'null', 'Error:', error?.message || 'none');
         
         if (error) {
