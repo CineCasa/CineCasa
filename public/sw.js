@@ -1,8 +1,9 @@
 // Service Worker para CineCasa PWA - Versão Otimizada com Offline Avançado
-const STATIC_CACHE = 'cinecasa-static-v5';
-const DYNAMIC_CACHE = 'cinecasa-dynamic-v5';
-const API_CACHE = 'cinecasa-api-v5';
-const OFFLINE_CACHE = 'cinecasa-offline-v5';
+const CACHE_VERSION = 'v6';
+const STATIC_CACHE = `cinecasa-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `cinecasa-dynamic-${CACHE_VERSION}`;
+const API_CACHE = `cinecasa-api-${CACHE_VERSION}`;
+const OFFLINE_CACHE = `cinecasa-offline-${CACHE_VERSION}`;
 
 // Arquivos/pastas que NÃO devem ser cacheados (sempre buscar do servidor)
 const NO_CACHE_URLS = [
@@ -170,8 +171,8 @@ self.addEventListener('install', event => {
       })
       .then(() => {
         console.log('[SW] Static assets cached successfully');
-        // REMOVED: self.skipWaiting() - prevents aggressive reloads
-        // Let the user control when to update
+        // Forçar atualização imediata para evitar tela branca
+        self.skipWaiting();
       })
       .catch(error => {
         console.error('[SW] Error caching static assets:', error);
@@ -602,4 +603,4 @@ async function forceSync() {
   }
 }
 
-console.log('[SW] Service Worker loaded successfully with advanced offline support');
+console.log(`[SW] Service Worker ${CACHE_VERSION} loaded successfully with advanced offline support`);
