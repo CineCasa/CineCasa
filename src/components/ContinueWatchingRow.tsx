@@ -201,6 +201,21 @@ const ContinueWatchingRow = () => {
   }
 
   if (validItems.length === 0) {
+    // Mostrar seção vazia para debug - ajuda a identificar se o hook está funcionando
+    console.log('[ContinueWatchingRow] Sem itens válidos - rawItems:', rawItems.length, 'isLoading:', isLoading);
+    
+    // Se não há itens e não está carregando, mostrar mensagem informativa (apenas em desenvolvimento)
+    if (rawItems.length === 0 && !isLoading) {
+      return (
+        <section className="relative py-4 px-4 md:px-8 lg:px-12 opacity-50">
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="section-title text-sm">CONTINUAR ASSISTINDO</h2>
+            <Clock size={16} className="text-[#00E5FF]" />
+          </div>
+          <p className="text-white/40 text-xs">Nenhum conteúdo em progresso. Assista algo para vê-lo aqui!</p>
+        </section>
+      );
+    }
     return null;
   }
 
