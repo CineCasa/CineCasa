@@ -309,7 +309,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     return () => {
       player.dispose();
     };
-  }, [loaded, videoUrl, poster, onProgressUpdate, eliteHasNextEpisode, onNextEpisode, saveProgress]);
+  }, [loaded, videoUrl, poster, onProgressUpdate, eliteHasNextEpisode, onNextEpisode, saveProgress, initAttempts]);
 
   // Efeito para mostrar resume dialog quando o vídeo carregar
   useEffect(() => {
