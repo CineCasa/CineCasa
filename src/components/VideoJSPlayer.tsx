@@ -1033,7 +1033,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
               {/* Chromecast */}
               <CastButton
                 mediaInfo={{
-                  contentId: url,
+                  contentId: videoUrl || originalUrl,
                   contentType: 'video/mp4',
                   title: title,
                   poster: poster,
