@@ -380,8 +380,9 @@ const Details = () => {
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
               backgroundImage: `url(${data.backdrop_path || data.banner || data.poster_path || "/placeholder-backdrop.jpg"})`,
-              filter: 'blur(20px) brightness(1.5)',
-              transform: 'scale(1.1)'
+              filter: 'blur(8px)',
+              transform: 'scale(1.05)',
+              opacity: 0.9
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent" />

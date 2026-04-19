@@ -24,11 +24,15 @@ BEGIN
         RAISE NOTICE 'Coluna current_time adicionada à user_progress';
     END IF;
 
-    -- Renomear last_watched para updated_at se existir
+    -- Renomear last_watched para updated_at (se existir e updated_at não existir)
     IF EXISTS (SELECT 1 FROM information_schema.columns 
                WHERE table_schema = 'public' 
                AND table_name = 'user_progress' 
-               AND column_name = 'last_watched') THEN
+               AND column_name = 'last_watched') 
+       AND NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                       WHERE table_schema = 'public' 
+                       AND table_name = 'user_progress' 
+                       AND column_name = 'updated_at') THEN
         ALTER TABLE public.user_progress RENAME COLUMN last_watched TO updated_at;
         RAISE NOTICE 'Coluna last_watched renomeada para updated_at';
     END IF;
