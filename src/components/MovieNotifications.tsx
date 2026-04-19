@@ -118,7 +118,9 @@ function NotificationCard({ movie, onDismiss }: { movie: MovieNotification; onDi
 export function NotificationContainer() {
   const { notifications, removeNotification, addNotification } = useNotifications();
 
-  // Supabase realtime subscription for new movies
+  // DESABILITADO: Supabase realtime subscription está causando locks de auth
+  // Isso será reabilitado quando o Supabase estiver mais estável
+  /*
   useEffect(() => {
     const subscription = supabase
       .channel('new-movies')
@@ -149,6 +151,7 @@ export function NotificationContainer() {
       subscription.unsubscribe();
     };
   }, []);
+  */
 
   if (notifications.length === 0) return null;
 
