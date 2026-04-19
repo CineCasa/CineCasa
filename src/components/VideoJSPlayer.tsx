@@ -119,6 +119,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const nextEpisodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveProgressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const thumbnailCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isInitializedRef = useRef(false);
 
   // Load Video.js from CDN
   useEffect(() => {
@@ -154,9 +155,15 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   // Initialize player when Video.js is loaded
   useEffect(() => {
+    // Skip if already initialized
+    if (isInitializedRef.current) return;
+    
     // Small delay to ensure DOM is ready (AnimatePresence may delay mounting)
     const initTimeout = setTimeout(() => {
       if (!loaded || !videoRef.current || !window.videojs || !videoUrl) return;
+      
+      // Mark as initialized to prevent double initialization
+      isInitializedRef.current = true;
       
       console.log('[VideoJSPlayer] Initializing player...');
 
@@ -286,6 +293,8 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         playerRef.current.dispose();
         playerRef.current = null;
       }
+      // Reset initialization flag for future renders
+      isInitializedRef.current = false;
     };
   }, []);
 
