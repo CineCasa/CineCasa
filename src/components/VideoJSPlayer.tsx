@@ -152,15 +152,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, []);
 
-  // Initialize player when Video.js is loaded and component is mounted in DOM
+  // Initialize player when Video.js is loaded
   useEffect(() => {
     if (!loaded || !videoRef.current || !window.videojs || !videoUrl) return;
-    
-    // Verify element is actually in DOM (portal might delay mounting)
-    if (!document.contains(videoRef.current)) {
-      console.log('[VideoJSPlayer] Video element not in DOM yet, scheduling retry...');
-      return;
-    }
     
     console.log('[VideoJSPlayer] Initializing player...');
 
