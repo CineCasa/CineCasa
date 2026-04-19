@@ -120,7 +120,7 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
     };
   }, [time, videoRef]);
 
-  if (hasError) {
+  if (hasError || !thumbnail) {
     return (
       <div className="w-28 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded flex items-center justify-center border border-white/10">
         <span className="text-gray-400 text-xs">Preview</span>
@@ -129,11 +129,10 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
   }
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-28 h-16 rounded border border-white/10 bg-black"
-      width={112}
-      height={64}
+    <img
+      src={thumbnail}
+      alt="Preview"
+      className="w-28 h-16 rounded border border-white/10 bg-black object-cover"
     />
   );
 };
