@@ -1032,7 +1032,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         className={`absolute inset-0 transition-opacity duration-300 z-40 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {/* Top Bar */}
-        <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent">
+        <div className="absolute top-0 left-0 right-0 p-2 md:p-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
@@ -1068,7 +1068,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         )}
 
         {/* Bottom Controls */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-24 pb-6 px-6">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent pt-4 pb-4 px-4 md:pt-24 md:pb-6 md:px-6">
           {/* Progress Bar Container */}
           <div 
             className="mb-6 group relative"
