@@ -279,7 +279,13 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
                 <span>Assistir</span>
               </button>
               <button
-                onClick={() => setShowTrailer(true)}
+                onClick={() => {
+                  console.log('[HeroBanner] Botão Trailer clicado:', { hero });
+                  // Navigate to details page
+                  const contentId = hero.id?.toString().split('-')[1] || hero.id;
+                  const type = hero.id?.toString().includes('series') || hero.type === 'series' ? 'series' : 'movie';
+                  navigate(type === 'series' ? `/series-details/${contentId}` : `/movie-details/${contentId}`);
+                }}
                 className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#FF0000] hover:bg-[#cc0000] text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"
               >
                 <Info className="w-4 h-4 sm:w-5 sm:h-5" />
