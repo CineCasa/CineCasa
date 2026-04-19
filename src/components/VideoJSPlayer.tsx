@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,6 +74,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   
   // Estados do player
   const [isReady, setIsReady] = useState(false);
+  const [mountReady, setMountReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -121,6 +122,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const saveProgressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const thumbnailCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Mark component as mounted in DOM (needed for createPortal)
+  useLayoutEffect(() => {
+    // Small delay to ensure portal has rendered to DOM
+    const timer = setTimeout(() => {
+      setMountReady(true);
+      console.log('[VideoJSPlayer] Component mounted in DOM');
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Load Video.js from CDN
   useEffect(() => {
     const loadVideoJS = async () => {
@@ -153,19 +164,11 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     };
   }, []);
 
-  // Initialize player when Video.js is loaded
+  // Initialize player when Video.js is loaded and component is mounted in DOM
   useEffect(() => {
-    if (!loaded || !videoRef.current || !window.videojs || !videoUrl) return;
+    if (!loaded || !mountReady || !videoRef.current || !window.videojs || !videoUrl) return;
     
-    // Verify element is actually in DOM (portal might delay mounting)
-    if (!document.contains(videoRef.current)) {
-      console.log('[VideoJSPlayer] Video element not in DOM yet, retrying in 100ms...');
-      const retryTimeout = setTimeout(() => {
-        // Trigger re-check by updating a state (this will re-run the effect)
-        setIsReady(false);
-      }, 100);
-      return () => clearTimeout(retryTimeout);
-    }
+    console.log('[VideoJSPlayer] Initializing player...');
 
     const player = window.videojs(videoRef.current, {
       html5: {
