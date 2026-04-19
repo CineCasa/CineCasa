@@ -80,7 +80,7 @@ const MovieDetails: React.FC = () => {
       
       const { data, error } = await supabase
         .from('cinema')
-        .select('id, titulo, poster, banner, url, trailer, description, ano, genero, duracao, rating, classificacao, diretor, elenco, imdb_id, tmdb_id')
+        .select('id, titulo, poster, url, trailer, description, ano, genero, duracao, rating, classificacao, diretor, elenco, imdb_id, tmdb_id')
         .eq('id', parseInt(id || '0'))
         .single();
 
@@ -192,7 +192,7 @@ const MovieDetails: React.FC = () => {
       content_type: 'movie',
       titulo: movie.titulo,
       poster: movie.poster,
-      banner: movie.banner,
+      banner: movie.poster,
       rating: movie.rating,
       year: movie.ano,
       genero: movie.genero
@@ -238,10 +238,10 @@ const MovieDetails: React.FC = () => {
 
   const matchPercentage = getMatchPercentage(String(movie.id));
   const generos = movie.category?.split(',').map((g: string) => g.trim()) || [];
-  // Usar backdrop do TMDB se disponível, senão usar banner/poster do Supabase
+  // Usar backdrop do TMDB se disponível, senão usar poster do Supabase
   const backdropUrl = tmdbData?.backdrop_path 
     ? tmdbImageUrl(tmdbData.backdrop_path, 'original')
-    : movie.banner || movie.poster;
+    : movie.poster;
     
   // Extrair elenco do TMDB se disponível
   const tmdbCast = tmdbData?.credits?.cast?.slice(0, 10) || [];
