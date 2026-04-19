@@ -115,12 +115,17 @@ export function useAvatarCustomization({
       if (!userId) return getDefaultCustomization();
 
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('user_profiles')
           .select('avatar_customization')
-          .eq('user_id', userId)
-          .eq('id', profileId || '')
-          .single();
+          .eq('user_id', userId);
+        
+        // Se tiver profileId específico, filtra por ele também
+        if (profileId) {
+          query = query.eq('id', profileId);
+        }
+        
+        const { data, error } = await query.maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
           console.error('❌ Erro ao buscar customização do avatar:', error);
