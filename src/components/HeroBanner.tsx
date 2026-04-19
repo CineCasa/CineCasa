@@ -56,7 +56,9 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
   const { user } = useAuth();
 
   const normalizedFilter = filterCategory?.toLowerCase().trim();
-  const filteredItems = filterCategory 
+  
+  // Pegar todos os itens disponíveis sem limitação
+  const allItems = filterCategory 
     ? categories?.filter(cat => {
         if (normalizedFilter === "cinema") return cat.id.startsWith("cinema-");
         if (normalizedFilter === "séries") return cat.id.startsWith("series-");
@@ -64,9 +66,17 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
         if (normalizedFilter?.startsWith("séries infant")) return cat.id === "kids-series";
         return cat.title.toLowerCase().includes(normalizedFilter!);
       }).flatMap(cat => cat.items) || []
-    : categories?.flatMap(cat => cat.items.slice(0, 2)) || [];
+    : categories?.flatMap(cat => cat.items) || [];
 
-  const heroItems = filteredItems.slice(0, 6);
+  // Embaralhar itens aleatoriamente (Fisher-Yates shuffle)
+  const shuffledItems = [...allItems];
+  for (let i = shuffledItems.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
+  }
+
+  // Usar todos os itens embaralhados, sem limitação
+  const heroItems = shuffledItems;
 
   const [currentHeroData, setCurrentHeroData] = useState<any>(null);
   const { isFavorite, toggleFavorite, loading: favLoading } = useFavorites();
