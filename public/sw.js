@@ -220,37 +220,31 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Interceptação de requisições com estratégias inteligentes
+// Interceptação de requisições - SIMPLIFICADO para evitar problemas no Android
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // CRITICAL: Ignorar completamente requisições para Supabase e outros domínios externos
-  // Isso evita problemas de CORS
+  // CRITICAL: Não interceptar requisições para Supabase, APIs externas, ou domínios diferentes
+  // Isso evita problemas de CORS e "Failed to fetch" no Android
   if (url.hostname.includes('supabase.co') || 
       url.hostname.includes('themoviedb.org') ||
       url.hostname.includes('tmdb.org') ||
+      url.protocol === 'chrome-extension:' ||
       url.origin !== self.location.origin) {
     return; // Deixa o navegador lidar com a requisição normalmente
   }
 
-  // Em desenvolvimento: não usar cache, sempre buscar da rede
+  // Em desenvolvimento: não usar cache
   if (isDevelopment) {
-    event.respondWith(fetch(request));
     return;
   }
 
-  // Ignorar requisições chrome-extension
-  if (url.protocol === 'chrome-extension:') {
-    return;
-  }
-
-  // Lidar com diferentes métodos HTTP
+  // Apenas cachear requisições GET de mesma origem (assets estáticos)
   if (request.method === 'GET') {
     event.respondWith(handleGetRequest(request));
-  } else if (request.method === 'POST') {
-    event.respondWith(handlePostRequest(request));
   }
+  // Não interceptar POST, PUT, DELETE - deixa o navegador lidar
 });
 
 // Lidar com requisições GET

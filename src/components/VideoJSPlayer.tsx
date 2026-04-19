@@ -890,7 +890,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferedPercent = duration > 0 ? (buffered / duration) * 100 : 0;
 
-  // Bloquear scroll do body quando player abrir
+  // Bloquear scroll do body quando player abrir - SEM forçar orientação (apenas no fullscreen)
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     const originalPosition = document.body.style.position;
@@ -901,28 +901,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     document.body.style.position = 'fixed';
     document.body.style.width = '100%';
     document.body.style.height = '100%';
-    
-    // Forçar fullscreen e landscape em mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isMobile && playerContainerRef.current) {
-      playerContainerRef.current.style.height = '100vh';
-      playerContainerRef.current.style.width = '100vw';
-      
-      // Forçar orientação landscape
-      try {
-        const screenOrientation = (screen as any).orientation;
-        if (screenOrientation?.lock) {
-          screenOrientation.lock('landscape').catch(() => {});
-        }
-      } catch (e) {}
-      
-      // Tentar entrar em fullscreen nativo
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else if ((document.documentElement as any).webkitRequestFullscreen) {
-        (document.documentElement as any).webkitRequestFullscreen();
-      }
-    }
     
     return () => {
       document.body.style.overflow = originalOverflow;
