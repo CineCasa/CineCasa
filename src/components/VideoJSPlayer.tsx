@@ -848,10 +848,52 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         </video>
       </div>
 
+      {/* Interaction Layer - captura clicks/toque sempre */}
+      <div 
+        className="absolute inset-0 z-30"
+        onClick={(e) => {
+          // Mostrar controles ao clicar
+          setShowControls(true);
+          if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+          }
+          if (isPlaying) {
+            controlsTimeoutRef.current = setTimeout(() => {
+              setShowControls(false);
+            }, 3000);
+          }
+          // Também alternar play/pause
+          togglePlayPause();
+        }}
+        onTouchStart={(e) => {
+          // Mostrar controles ao tocar na tela
+          setShowControls(true);
+          if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+          }
+          if (isPlaying) {
+            controlsTimeoutRef.current = setTimeout(() => {
+              setShowControls(false);
+            }, 3000);
+          }
+        }}
+        onMouseMove={(e) => {
+          // Mostrar controles ao mover mouse
+          setShowControls(true);
+          if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+          }
+          if (isPlaying) {
+            controlsTimeoutRef.current = setTimeout(() => {
+              setShowControls(false);
+            }, 3000);
+          }
+        }}
+      />
+
       {/* Custom Controls Overlay */}
       <div 
         className={`absolute inset-0 transition-opacity duration-300 z-40 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={togglePlayPause}
       >
         {/* Top Bar */}
         <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/90 via-black/50 to-transparent">
