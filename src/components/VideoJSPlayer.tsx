@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw, Square } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -157,6 +158,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const playerRef = useRef<any>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const thumbnailRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const { user, profile } = useAuth();
   
   // Elite Player Hook - Cloudflare Worker + JWT + Supabase Sync
@@ -1047,8 +1049,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                onClick={(e) => { e.stopPropagation(); navigate(-1); }}
                 className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                title="Voltar"
               >
                 <ChevronLeft size={28} className="text-white" />
               </button>
