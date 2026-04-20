@@ -79,7 +79,7 @@ const Index = () => {
   return (
     <main className="min-h-screen bg-black pt-[94px]">
       <HeroBanner />
-        <div className="relative z-10 pt-12 -mt-10 flex flex-col gap-4">
+        <div className="relative z-30 pt-6 flex flex-col gap-4 bg-gradient-to-b from-black/80 via-black to-black">
           <ContinueWatchingRow />
 
           {/* Lançamentos & Novidades (2025/2026) */}

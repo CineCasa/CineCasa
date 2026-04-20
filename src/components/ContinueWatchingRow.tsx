@@ -201,22 +201,32 @@ const ContinueWatchingRow = () => {
   }
 
   if (validItems.length === 0) {
-    // Mostrar seção vazia para debug - ajuda a identificar se o hook está funcionando
+    // SEMPRE mostrar a seção, mesmo sem itens - não retornar null
     console.log('[ContinueWatchingRow] Sem itens válidos - rawItems:', rawItems.length, 'isLoading:', isLoading);
     
-    // Se não há itens e não está carregando, mostrar mensagem informativa (apenas em desenvolvimento)
-    if (rawItems.length === 0 && !isLoading) {
-      return (
-        <section className="relative py-4 px-4 md:px-8 lg:px-12 opacity-50">
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="section-title text-sm">CONTINUAR ASSISTINDO</h2>
-            <Clock size={16} className="text-[#00E5FF]" />
+    return (
+      <section className="relative py-6 px-4 md:px-8 lg:px-12">
+        {/* Header com Ícone Neon Relógio */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="section-title text-lg">CONTINUAR ASSISTINDO</h2>
+            <Clock 
+              size={20} 
+              className="text-[#00E5FF]"
+              style={{ filter: 'drop-shadow(0 0 8px rgba(0, 229, 255, 0.8))' }}
+            />
           </div>
-          <p className="text-white/40 text-xs">Nenhum conteúdo em progresso. Assista algo para vê-lo aqui!</p>
-        </section>
-      );
-    }
-    return null;
+          <div className="flex-1 h-px bg-gradient-to-r from-[#00E5FF]/50 to-transparent" />
+        </div>
+        
+        {/* Mensagem quando não há conteúdo */}
+        <div className="flex items-center justify-center py-8 bg-white/5 rounded-xl border border-white/10">
+          <p className="text-white/50 text-sm">
+            Nenhum conteúdo em progresso. Assista algo para vê-lo aqui!
+          </p>
+        </div>
+      </section>
+    );
   }
 
   return (
