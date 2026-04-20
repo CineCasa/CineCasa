@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cinecasa-notifications-v1';
+const CACHE_NAME = 'cinecasa-notifications-v2-black-bg';
 
 // Evento de instalação
 self.addEventListener('install', (event) => {
