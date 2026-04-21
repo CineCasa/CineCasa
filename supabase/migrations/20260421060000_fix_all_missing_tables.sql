@@ -3,8 +3,18 @@
 -- Data: 2026-04-21
 -- =====================================================
 
--- 1. CRIAR TABELA device_sessions (se não existir)
-CREATE TABLE IF NOT EXISTS public.device_sessions (
+-- 1. CRIAR TABELA device_sessions (dropar e recriar se incompleta)
+-- Primeiro dropar políticas se existirem
+DROP POLICY IF EXISTS "Users can view their own devices" ON public.device_sessions;
+DROP POLICY IF EXISTS "Users can insert their own devices" ON public.device_sessions;
+DROP POLICY IF EXISTS "Users can update their own devices" ON public.device_sessions;
+DROP POLICY IF EXISTS "Users can delete their own devices" ON public.device_sessions;
+
+-- Dropar tabela se existir para garantir estrutura correta
+DROP TABLE IF EXISTS public.device_sessions;
+
+-- Criar tabela com todas as colunas
+CREATE TABLE public.device_sessions (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     device_fingerprint TEXT NOT NULL,
@@ -20,12 +30,6 @@ CREATE TABLE IF NOT EXISTS public.device_sessions (
 
 -- Políticas RLS para device_sessions
 ALTER TABLE public.device_sessions ENABLE ROW LEVEL SECURITY;
-
--- Remover e recriar políticas para device_sessions
-DROP POLICY IF EXISTS "Users can view their own devices" ON public.device_sessions;
-DROP POLICY IF EXISTS "Users can insert their own devices" ON public.device_sessions;
-DROP POLICY IF EXISTS "Users can update their own devices" ON public.device_sessions;
-DROP POLICY IF EXISTS "Users can delete their own devices" ON public.device_sessions;
 
 CREATE POLICY "Users can view their own devices"
     ON public.device_sessions FOR SELECT
