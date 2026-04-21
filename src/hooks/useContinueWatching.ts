@@ -244,28 +244,24 @@ export const useContinueWatching = () => {
     try {
       const data: any = {
         user_id: userId,
+        content_id: parseInt(contentId),
+        content_type: type === 'movie' ? 'movie' : 'series',
         current_time: Math.floor(currentTime),
         duration: Math.floor(totalDuration),
         progress: progress,
         updated_at: new Date().toISOString(),
-        content_type: type === 'movie' ? 'movie' : 'series',
       };
 
-      if (type === 'movie') {
-        data.cinema_id = parseInt(contentId);
-      } else {
-        data.serie_id = parseInt(contentId);
-        data.episodio_id = episodeId ? parseInt(episodeId) : null;
+      if (type === 'series') {
+        data.episode_id = episodeId ? parseInt(episodeId) : null;
         data.season_number = seasonNumber;
       }
 
-      // Upsert - atualizar ou inserir (usando user_progress em vez de watch_progress)
+      // Upsert - atualizar ou inserir na tabela user_progress
       await (supabase
         .from('user_progress') as any)
         .upsert(data, {
-          onConflict: type === 'movie' 
-            ? 'user_id,cinema_id' 
-            : 'user_id,serie_id,episodio_id',
+          onConflict: 'user_id,content_id,content_type,episode_id',
         });
 
       // Atualizar estado local
@@ -303,17 +299,14 @@ export const useContinueWatching = () => {
 
     try {
       let query = (supabase
-        .from('watch_progress') as any)
+        .from('user_progress') as any)
         .delete()
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('content_id', parseInt(contentId))
+        .eq('content_type', type);
 
-      if (type === 'movie') {
-        query = query.eq('cinema_id', contentId);
-      } else {
-        query = query.eq('serie_id', contentId);
-        if (episodeId) {
-          query = query.eq('episodio_id', episodeId);
-        }
+      if (type === 'series' && episodeId) {
+        query = query.eq('episode_id', parseInt(episodeId));
       }
 
       await query;
@@ -333,7 +326,7 @@ export const useContinueWatching = () => {
 
     try {
       await (supabase
-        .from('watch_progress') as any)
+        .from('user_progress') as any)
         .delete()
         .eq('user_id', userId);
 
