@@ -70,10 +70,10 @@ export const useContinueWatching = () => {
       try {
         setIsLoading(true);
         
-        // Buscar na tabela watch_progress com filtro de progresso entre 2% e 95%
+        // Buscar na tabela user_progress com filtro de progresso entre 2% e 95%
         // Ordenar por updated_at DESC e limitar a 5 itens
         const { data, error } = await supabase
-          .from('watch_progress')
+          .from('user_progress')
           .select('*')
           .eq('user_id', user.id)
           .gte('progress_pct', 2)
@@ -95,37 +95,36 @@ export const useContinueWatching = () => {
         // Buscar detalhes do conteúdo (posters/títulos) das tabelas cinema/series
         const mappedItems: ContinueWatchingItem[] = await Promise.all(
           data.map(async (item: any) => {
-            const contentId = item.content_type === 'movie'
-              ? item.cinema_id?.toString() || ''
-              : item.serie_id?.toString() || '';
+            // Usar content_id que é a coluna correta na tabela user_progress
+            const contentId = item.content_id?.toString() || '';
             
             let title = '';
             let poster = '';
             let banner = '';
 
-            if (item.content_type === 'movie' && item.cinema_id) {
+            if (item.content_type === 'movie' && item.content_id) {
               // Buscar dados do filme na tabela cinema
               const { data: movieData } = await supabase
                 .from('cinema')
-                .select('titulo, poster, banner')
-                .eq('id', item.cinema_id)
+                .select('titulo, poster')
+                .eq('id', item.content_id)
                 .single();
               
               if (movieData) {
-                title = movieData.titulo || `Filme ${item.cinema_id}`;
+                title = movieData.titulo || `Filme ${item.content_id}`;
                 poster = movieData.poster || '';
-                banner = movieData.banner || movieData.poster || '';
+                banner = movieData.poster || '';
               }
-            } else if (item.content_type === 'series' && item.serie_id) {
+            } else if (item.content_type === 'series' && item.content_id) {
               // Buscar dados da série na tabela series
               const { data: seriesData } = await supabase
                 .from('series')
                 .select('titulo, capa, banner')
-                .eq('id_n', item.serie_id)
+                .eq('id_n', item.content_id)
                 .single();
               
               if (seriesData) {
-                title = seriesData.titulo || `Série ${item.serie_id}`;
+                title = seriesData.titulo || `Série ${item.content_id}`;
                 poster = seriesData.capa || '';
                 banner = seriesData.banner || seriesData.capa || '';
               }
@@ -135,7 +134,7 @@ export const useContinueWatching = () => {
               id: item.id,
               contentId,
               contentType: item.content_type as 'movie' | 'series',
-              title: title || (item.content_type === 'movie' ? `Filme ${item.cinema_id}` : `Série ${item.serie_id}`),
+              title: title || (item.content_type === 'movie' ? `Filme ${item.content_id}` : `Série ${item.content_id}`),
               poster,
               banner,
               progressPct: item.progress_pct || Math.round((item.current_time / item.duration) * 100),
