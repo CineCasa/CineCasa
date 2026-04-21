@@ -93,47 +93,79 @@ export const useContinueWatching = () => {
 
       const formattedItems: ContinueWatchingItem[] = [];
 
-      // Formatar filmes (estrutura user_progress)
+      // Buscar dados completos dos filmes (incluindo poster)
       if (movieProgress && movieProgress.length > 0) {
         console.log('🎬 [useContinueWatching] Formatando', movieProgress.length, 'filmes');
+        
+        // Buscar dados de posters e títulos da tabela cinema
+        const movieIds = movieProgress.map((p: any) => p.content_id).filter(Boolean);
+        console.log('🎬 [useContinueWatching] Buscando dados dos filmes IDs:', movieIds);
+        
+        const { data: moviesData } = await supabase
+          .from('cinema')
+          .select('id, titulo, poster')
+          .in('id', movieIds);
+        
+        const moviesMap = new Map(moviesData?.map(m => [m.id, m]) || []);
+        
         movieProgress.forEach((progress: any, index: number) => {
           console.log(`🎬 [useContinueWatching] Filme ${index}:`, progress);
-          // Usar dados da tabela user_progress diretamente
           if (progress.content_id) {
+            const movieData = moviesMap.get(progress.content_id);
+            const title = movieData?.titulo || progress.title || `Filme ${progress.content_id}`;
+            const poster = movieData?.poster || '';
+            const banner = movieData?.poster || '';
+            
+            console.log(`🎬 [useContinueWatching] Filme ${index} - Título: ${title}, Poster: ${poster ? 'OK' : 'MISSING'}`);
+            
             formattedItems.push({
               id: progress.id,
-              contentId: progress.content_id,
+              contentId: progress.content_id.toString(),
               contentType: 'movie',
-              title: progress.title || progress.content_id,
-              poster: progress.poster || '',
-              banner: progress.banner || progress.poster || '',
+              title: title,
+              poster: poster,
+              banner: banner,
               progress: Math.min(100, Math.round(((progress.progress || 0) / 100) * 100)),
               currentTime: progress.current_time || 0,
               duration: progress.duration || 0,
               updatedAt: progress.updated_at,
             });
-          } else {
-            console.log(`⚠️ [useContinueWatching] Filme ${index} não tem content_id`);
           }
         });
-      } else {
-        console.log('⚠️ [useContinueWatching] Nenhum filme encontrado');
       }
 
-      // Formatar séries (estrutura user_progress)
+      // Buscar dados completos das séries (incluindo poster)
       if (seriesProgress && seriesProgress.length > 0) {
         console.log('📺 [useContinueWatching] Formatando', seriesProgress.length, 'séries');
+        
+        // Buscar dados de posters e títulos da tabela series
+        const seriesIds = seriesProgress.map((p: any) => p.content_id).filter(Boolean);
+        console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
+        
+        const { data: seriesData } = await supabase
+          .from('series')
+          .select('id_n, titulo, capa, banner')
+          .in('id_n', seriesIds);
+        
+        const seriesMap = new Map(seriesData?.map(s => [s.id_n, s]) || []);
+        
         seriesProgress.forEach((progress: any, index: number) => {
           console.log(`📺 [useContinueWatching] Série ${index}:`, progress);
-          // Usar dados da tabela user_progress diretamente
           if (progress.content_id) {
+            const serieData = seriesMap.get(progress.content_id);
+            const title = serieData?.titulo || progress.title || `Série ${progress.content_id}`;
+            const poster = serieData?.capa || '';
+            const banner = serieData?.banner || serieData?.capa || '';
+            
+            console.log(`📺 [useContinueWatching] Série ${index} - Título: ${title}, Poster: ${poster ? 'OK' : 'MISSING'}`);
+            
             formattedItems.push({
               id: progress.id,
-              contentId: progress.content_id,
+              contentId: progress.content_id.toString(),
               contentType: 'series',
-              title: progress.title || progress.content_id,
-              poster: progress.poster || progress.banner || '',
-              banner: progress.banner || progress.poster || '',
+              title: title,
+              poster: poster,
+              banner: banner,
               episodeId: progress.episode_id,
               episodeTitle: progress.episode_title,
               seasonNumber: progress.season_number,
@@ -143,12 +175,8 @@ export const useContinueWatching = () => {
               duration: progress.duration || 0,
               updatedAt: progress.updated_at,
             });
-          } else {
-            console.log(`⚠️ [useContinueWatching] Série ${index} não tem content_id`);
           }
         });
-      } else {
-        console.log('⚠️ [useContinueWatching] Nenhuma série encontrada');
       }
 
       console.log('📊 [useContinueWatching] Total de itens formatados:', formattedItems.length);
