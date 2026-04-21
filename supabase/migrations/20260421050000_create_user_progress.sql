@@ -6,7 +6,7 @@ create table if not exists public.user_progress (
   user_id uuid not null references auth.users(id) on delete cascade,
   content_id integer not null,
   content_type text not null, -- 'movie' ou 'series'
-  current_time integer not null default 0, -- segundos
+  "current_time" integer not null default 0, -- segundos
   duration integer not null default 0, -- segundos
   progress integer not null default 0, -- porcentagem 0-100
   episode_id integer null, -- apenas para séries
