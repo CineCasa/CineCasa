@@ -61,10 +61,7 @@ export const useContinueWatching = () => {
       console.log('🎬 [useContinueWatching] Buscando filmes para user:', userId);
       const { data: movieProgress, error: movieError } = await (supabase
         .from('user_progress') as any)
-        .select(`
-          *,
-          cinema:content_id (*)
-        `)
+        .select('*')
         .eq('user_id', userId)
         .eq('content_type', 'movie')
         .order('updated_at', { ascending: false })
@@ -81,10 +78,7 @@ export const useContinueWatching = () => {
       console.log('📺 [useContinueWatching] Buscando séries para user:', userId);
       const { data: seriesProgress, error: seriesError } = await (supabase
         .from('user_progress') as any)
-        .select(`
-          *,
-          series:content_id (*)
-        `)
+        .select('*')
         .eq('user_id', userId)
         .eq('content_type', 'series')
         .order('updated_at', { ascending: false })

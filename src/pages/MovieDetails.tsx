@@ -144,7 +144,7 @@ const MovieDetails: React.FC = () => {
         ...item,
         ano: item.year,
         genero: item.category,
-        duracao: item.duration || item.duracao
+        duracao: 'N/A'
       })) as Movie[];
       setRelatedMovies(relatedData);
     } catch (error) {
