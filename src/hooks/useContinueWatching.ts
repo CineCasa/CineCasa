@@ -143,14 +143,18 @@ export const useContinueWatching = () => {
         console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
         console.log('📺 [useContinueWatching] Tipos dos IDs:', seriesIds.map((id: any) => typeof id));
         
-        // Converter IDs para string para compatibilidade com bigint do PostgreSQL
-        const seriesIdsString = seriesIds.map((id: any) => String(id));
-        console.log('📺 [useContinueWatching] IDs como string:', seriesIdsString);
+        // Construir query com .or() para compatibilidade com bigint do PostgreSQL
+        // .in() não funciona bem com bigint, então usamos múltiplos .eq()
+        let seriesQuery = supabase.from('series').select('id_n, titulo, capa, banner');
         
-        const { data: seriesData, error: seriesDataError } = await supabase
-          .from('series')
-          .select('id_n, titulo, capa, banner')
-          .in('id_n', seriesIdsString);
+        if (seriesIds.length === 1) {
+          seriesQuery = seriesQuery.eq('id_n', seriesIds[0]);
+        } else if (seriesIds.length > 1) {
+          const orConditions = seriesIds.map((id: any) => `id_n.eq.${id}`).join(',');
+          seriesQuery = seriesQuery.or(orConditions);
+        }
+        
+        const { data: seriesData, error: seriesDataError } = await seriesQuery;
         
         console.log('📺 [useContinueWatching] Dados retornados da tabela series:', seriesData);
         console.log('📺 [useContinueWatching] Quantidade retornada:', seriesData?.length || 0);
@@ -160,7 +164,7 @@ export const useContinueWatching = () => {
         const seriesMap = new Map(seriesData?.map(s => [String(s.id_n), s]) || []);
         console.log('📺 [useContinueWatching] Map de séries criado:', Array.from(seriesMap.entries()));
         console.log('📺 [useContinueWatching] IDs buscados vs encontrados:', { 
-          buscados: seriesIdsString, 
+          buscados: seriesIds, 
           encontrados: seriesData?.map(s => s.id_n) 
         });
         

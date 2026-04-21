@@ -460,18 +460,18 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       
       const { error } = await supabase.from('watch_history').upsert({
         profile_id: profile.id,
-        content_id: contentId,
-        content_type: contentType || 'movie',
-        title: title,
+        content_id: parseInt(contentId),
+        content_type: contentType === 'series' ? 'series' : 'movie',
+        titulo: title,
         poster: poster || '',
         progress: Math.round(progressPercent),
         duration: Math.round(dur),
-        current_time: Math.round(current),
+        "current_time": Math.round(current),
         last_watched: new Date().toISOString(),
-        episode_id: episodeId,
+        episode_id: episodeId ? parseInt(episodeId) : null,
         season_number: seasonNumber,
         episode_number: episodeNumber,
-      }, { onConflict: 'profile_id,content_id' });
+      }, { onConflict: 'profile_id,content_id,content_type,episode_id' });
       
       if (error) {
         console.error('[VideoJSPlayer] Error saving watch history:', error);

@@ -223,17 +223,17 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
         .from('user_progress')
         .upsert({
           user_id: user.id,
-          content_id: config.contentId,
-          content_type: config.contentType,
-          current_time: Math.round(currentTime),
+          content_id: parseInt(config.contentId),
+          content_type: config.contentType === 'series' ? 'series' : 'movie',
+          "current_time": Math.round(currentTime),
           progress: Math.round(progress),
           duration: Math.round(duration),
-          last_watched: new Date().toISOString(),
-          episode_id: config.episodeId,
+          updated_at: new Date().toISOString(),
+          episode_id: config.episodeId ? parseInt(config.episodeId) : null,
           season_number: config.seasonNumber,
           episode_number: config.episodeNumber,
         }, { 
-          onConflict: 'user_id,content_id' 
+          onConflict: 'user_id,content_id,content_type,episode_id'
         });
 
       if (error) {
