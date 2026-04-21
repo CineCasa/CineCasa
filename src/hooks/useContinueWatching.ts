@@ -143,30 +143,32 @@ export const useContinueWatching = () => {
         console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
         console.log('📺 [useContinueWatching] Tipos dos IDs:', seriesIds.map((id: any) => typeof id));
         
-        // Converter IDs para número garantido
-        const seriesIdsNumeric = seriesIds.map((id: any) => parseInt(id, 10)).filter((id: number) => !isNaN(id));
-        console.log('📺 [useContinueWatching] IDs numéricos:', seriesIdsNumeric);
+        // Converter IDs para string para compatibilidade com bigint do PostgreSQL
+        const seriesIdsString = seriesIds.map((id: any) => String(id));
+        console.log('📺 [useContinueWatching] IDs como string:', seriesIdsString);
         
         const { data: seriesData, error: seriesDataError } = await supabase
           .from('series')
           .select('id_n, titulo, capa, banner')
-          .in('id_n', seriesIdsNumeric);
+          .in('id_n', seriesIdsString);
         
         console.log('📺 [useContinueWatching] Dados retornados da tabela series:', seriesData);
         console.log('📺 [useContinueWatching] Quantidade retornada:', seriesData?.length || 0);
         console.log('📺 [useContinueWatching] Erro na query series:', seriesDataError);
         
-        const seriesMap = new Map(seriesData?.map(s => [s.id_n, s]) || []);
+        // Criar map com IDs como string para compatibilidade
+        const seriesMap = new Map(seriesData?.map(s => [String(s.id_n), s]) || []);
         console.log('📺 [useContinueWatching] Map de séries criado:', Array.from(seriesMap.entries()));
         console.log('📺 [useContinueWatching] IDs buscados vs encontrados:', { 
-          buscados: seriesIdsNumeric, 
+          buscados: seriesIdsString, 
           encontrados: seriesData?.map(s => s.id_n) 
         });
         
         seriesProgress.forEach((progress: any, index: number) => {
           console.log(`📺 [useContinueWatching] Série ${index}:`, progress);
           if (progress.content_id) {
-            const serieData = seriesMap.get(progress.content_id);
+            // Buscar usando ID como string para compatibilidade com bigint
+            const serieData = seriesMap.get(String(progress.content_id));
             const title = serieData?.titulo || progress.title || `Série ${progress.content_id}`;
             const poster = serieData?.capa || '';
             const banner = serieData?.banner || serieData?.capa || '';
