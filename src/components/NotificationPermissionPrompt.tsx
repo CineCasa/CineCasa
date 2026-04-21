@@ -52,8 +52,17 @@ export const NotificationPermissionPrompt: React.FC<NotificationPermissionPrompt
     return null;
   }
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleDismiss();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-auto shadow-2xl transform transition-all">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

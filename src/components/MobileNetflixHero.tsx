@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Plus, Info, Check, ThumbsUp, ThumbsDown, Film } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
-import { useFavorites } from '../hooks/useFavorites';
-import { toast } from 'sonner';
 
 interface BannerContent {
   id: string;
@@ -38,8 +34,6 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isInList, setIsInList] = useState(false);
-  const navigate = useNavigate();
-  const { isFavorite, toggleFavorite } = useFavorites();
 
   const fetchPosters = useCallback(async () => {
     try {
@@ -169,106 +163,49 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black to-transparent" />
           </motion.div>
         </AnimatePresence>
-        {/* Content Section - Netflix style overlay at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-20 z-20 bg-gradient-to-t from-black via-black/80 to-transparent">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentBanner.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4 }}
-          >
-            {/* Title */}
-            <h1 className="text-2xl font-bold text-white mb-2 text-left leading-tight drop-shadow-lg">
-              {currentBanner.title}
-            </h1>
+        
+        {/* Conteúdo - Metadados e descrição apenas (sem botões) */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-8 pt-20 z-20 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBanner.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.4 }}
+              className="pointer-events-none"
+            >
+              {/* Title */}
+              <h1 className="text-2xl font-bold text-white mb-2 text-left leading-tight drop-shadow-lg">
+                {currentBanner.title}
+              </h1>
 
-            {/* Metadata */}
-            <div className="flex items-center justify-start gap-2 text-xs text-gray-300 mb-3">
-              {currentBanner.year && <span className="text-green-400 font-medium">{currentBanner.year}</span>}
-              {currentBanner.rating && (
-                <>
-                  <span className="w-1 h-1 bg-gray-500 rounded-full" />
-                  <span className="border border-gray-500 px-1 rounded text-[10px]">{currentBanner.rating}</span>
-                </>
+              {/* Metadata */}
+              <div className="flex items-center justify-start gap-2 text-xs text-gray-300 mb-3">
+                {currentBanner.year && <span className="text-green-400 font-medium">{currentBanner.year}</span>}
+                {currentBanner.rating && (
+                  <>
+                    <span className="w-1 h-1 bg-gray-500 rounded-full" />
+                    <span className="border border-gray-500 px-1 rounded text-[10px]">{currentBanner.rating}</span>
+                  </>
+                )}
+                {currentBanner.genre && (
+                  <>
+                    <span className="w-1 h-1 bg-gray-500 rounded-full" />
+                    <span>{currentBanner.genre}</span>
+                  </>
+                )}
+              </div>
+
+              {/* Description */}
+              {currentBanner.description && (
+                <p className="text-sm text-gray-300 text-left line-clamp-2 mb-4">
+                  {currentBanner.description}
+                </p>
               )}
-              {currentBanner.genre && (
-                <>
-                  <span className="w-1 h-1 bg-gray-500 rounded-full" />
-                  <span>{currentBanner.genre}</span>
-                </>
-              )}
-            </div>
-
-            {/* Description */}
-            {currentBanner.description && (
-              <p className="text-sm text-gray-300 text-left line-clamp-2 mb-4">
-                {currentBanner.description}
-              </p>
-            )}
-
-            {/* Action Buttons Row - Netflix Mobile Style */}
-            <div className="flex items-center justify-start gap-2 mb-4 flex-wrap">
-              {/* Play Button */}
-              <button
-                onClick={() => {
-                  console.log('[MobileNetflixHero] Botão Assistir clicado:', { currentBanner, contentType });
-                  // Navigate to details page
-                  // Extract numeric ID from prefixed IDs if needed
-                  const idStr = currentBanner.id?.toString() || '';
-                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
-                  console.log('[MobileNetflixHero] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
-                  navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
-                }}
-                className="flex items-center gap-2 px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-black rounded-[20px] font-semibold text-sm transition-all active:scale-95"
-              >
-                <Play className="w-4 h-4 fill-black" />
-                <span>Assistir</span>
-              </button>
-              
-              {/* Trailer Button */}
-              <button
-                onClick={() => {
-                  console.log('[MobileNetflixHero] Botão Trailer clicado:', { currentBanner, contentType });
-                  // Navigate to details page
-                  // Extract numeric ID from prefixed IDs if needed
-                  const idStr = currentBanner.id?.toString() || '';
-                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
-                  console.log('[MobileNetflixHero] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
-                  navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-[20px] font-medium text-sm transition-all active:scale-95"
-              >
-                <Film className="w-4 h-4" />
-                <span>Trailer</span>
-              </button>
-              
-              {/* My List Button - Icon only */}
-              <button
-                onClick={handleToggleList}
-                className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-400 text-gray-300 hover:text-white hover:border-white transition-colors"
-              >
-                {isInList ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-              </button>
-              
-              {/* Like Button */}
-              <button
-                className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-400 text-gray-300 hover:text-green-400 hover:border-green-400 transition-colors"
-              >
-                <ThumbsUp className="w-4 h-4" />
-              </button>
-              
-              {/* Dislike Button */}
-              <button
-                className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-gray-400 text-gray-300 hover:text-red-400 hover:border-red-400 transition-colors"
-              >
-                <ThumbsDown className="w-4 h-4" />
-              </button>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
     </div>
   );
 };

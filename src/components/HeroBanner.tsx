@@ -1,14 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Info, Heart, ThumbsUp, ThumbsDown } from "lucide-react";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useAuth } from '@/components/AuthProvider';
-import { useRatings } from "@/hooks/useRatings";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
-import { useNavigate } from "react-router-dom";
 import VideoJSPlayer from "./VideoJSPlayer";
-import { toast } from "sonner";
 
 interface HeroBannerProps {
   filterCategory?: string;
@@ -210,8 +204,8 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
       <div className="absolute inset-0 gradient-hero-bottom z-[1] pointer-events-none" />
       <div className="absolute inset-0 gradient-hero-left z-[1] pointer-events-none" />
 
-      {/* Content */}
-      <div className="absolute bottom-[12%] sm:bottom-[20%] left-0 px-3 sm:px-4 md:px-8 lg:px-12 max-w-2xl z-30 pointer-events-auto w-full sm:w-auto pr-4 sm:pr-0">
+      {/* Content - Metadados e descrição apenas */}
+      <div className="absolute bottom-[12%] sm:bottom-[20%] left-0 px-3 sm:px-4 md:px-8 lg:px-12 max-w-2xl z-30 pointer-events-none w-full sm:w-auto pr-4 sm:pr-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={hero.id + "-content"}
@@ -219,7 +213,7 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="pointer-events-auto"
+            className="pointer-events-none"
           >
             <p className="text-[10px] sm:text-xs md:text-sm font-bold text-muted-foreground mb-2 flex items-center gap-1.5 sm:gap-2 text-shadow-premium flex-wrap">
               <span className="text-primary">Novo</span>
@@ -272,122 +266,10 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
                 </span>
               )}
             </div>
-
-            {/* Botões de Ação */}
-            <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
-              <button
-                onClick={() => {
-                  console.log('[HeroBanner] Botão Assistir clicado:', { hero, contentType: hero?.type });
-                  // Navigate to details page instead of trying to play directly
-                  // Extract numeric ID from prefixed IDs (e.g., "cinema-123" -> "123", "series-456" -> "456")
-                  const idStr = hero.id?.toString() || '';
-                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
-                  const type = idStr.includes('series') || hero.type === 'series' ? 'series' : 'movie';
-                  console.log('[HeroBanner] Navegando para:', { contentId, type, originalId: hero.id });
-                  navigate(type === 'series' ? `/series-details/${contentId}` : `/movie-details/${contentId}`);
-                }}
-                className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"
-              >
-                <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-                <span>Assistir</span>
-              </button>
-              <button
-                onClick={() => {
-                  console.log('[HeroBanner] Botão Trailer clicado:', { hero });
-                  // Navigate to details page
-                  // Extract numeric ID from prefixed IDs (e.g., "cinema-123" -> "123", "series-456" -> "456")
-                  const idStr = hero.id?.toString() || '';
-                  const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
-                  const type = idStr.includes('series') || hero.type === 'series' ? 'series' : 'movie';
-                  console.log('[HeroBanner] Navegando para:', { contentId, type, originalId: hero.id });
-                  navigate(type === 'series' ? `/series-details/${contentId}` : `/movie-details/${contentId}`);
-                }}
-                className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#FF0000] hover:bg-[#cc0000] text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105"
-              >
-                <Info className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>Trailer</span>
-              </button>
-              
-              {/* Ícones de interação - mesma linha */}
-              <div className="w-px h-8 bg-white/20 mx-1 sm:mx-2 flex-shrink-0" />
-              <button
-                onClick={async () => {
-                  if (!user) {
-                    toast.error("Faça login para adicionar aos favoritos");
-                    return;
-                  }
-                  if (!hero) return;
-                  
-                  const contentId = hero.id?.toString().split('-')[1] || hero.id;
-                  const contentType = hero.id?.toString().startsWith('series') ? 'series' : 'movie';
-                  
-                  await toggleFavorite({
-                    content_id: parseInt(contentId),
-                    content_type: contentType,
-                    titulo: hero.title,
-                    poster: hero.image,
-                    banner: hero.backdrop,
-                    rating: hero.rating,
-                    year: hero.year,
-                    genero: Array.isArray(hero.genre) ? hero.genre[0] : hero.genre
-                  });
-                }}
-                disabled={favLoading}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 flex-shrink-0 disabled:opacity-50"
-                title={isFavorite(parseInt(hero?.id?.toString().split('-')[1] || '0'), hero?.id?.toString().startsWith('series') ? 'series' : 'movie') ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-              >
-                <Heart 
-                  className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isFavorite(parseInt(hero?.id?.toString().split('-')[1] || '0'), hero?.id?.toString().startsWith('series') ? 'series' : 'movie') ? 'fill-red-600 text-red-600' : 'text-white'}`} 
-                />
-              </button>
-              <button
-                onClick={async () => {
-                  if (!user) { toast.error("Faça login para avaliar"); return; }
-                  if (!hero) return;
-                  const contentId = hero.id?.toString().split('-')[1] || hero.id;
-                  const contentType = hero.id?.toString().startsWith('series') ? 'series' : 'movie';
-                  await toggleRating({
-                    content_id: contentId,
-                    content_type: contentType,
-                    titulo: hero.title,
-                    poster: hero.image,
-                    banner: hero.backdrop,
-                    rating: hero.rating
-                  }, 'like');
-                }}
-                className={`p-2 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0 ${isLiked(hero?.id?.toString().split('-')[1] || '', hero?.id?.toString().startsWith('series') ? 'series' : 'movie') ? 'bg-green-500/30' : 'bg-white/10 hover:bg-white/20'}`}
-                title="Gostei"
-              >
-                <ThumbsUp 
-                  className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isLiked(hero?.id?.toString().split('-')[1] || '', hero?.id?.toString().startsWith('series') ? 'series' : 'movie') ? 'fill-green-500 text-green-500' : 'text-white'}`} 
-                />
-              </button>
-              <button
-                onClick={async () => {
-                  if (!user) { toast.error("Faça login para avaliar"); return; }
-                  if (!hero) return;
-                  const contentId = hero.id?.toString().split('-')[1] || hero.id;
-                  const contentType = hero.id?.toString().startsWith('series') ? 'series' : 'movie';
-                  await toggleRating({
-                    content_id: contentId,
-                    content_type: contentType,
-                    titulo: hero.title,
-                    poster: hero.image,
-                    banner: hero.backdrop,
-                    rating: hero.rating
-                  }, 'dislike');
-                }}
-                className={`p-2 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0 ${isDisliked(hero?.id?.toString().split('-')[1] || '', hero?.id?.toString().startsWith('series') ? 'series' : 'movie') ? 'bg-red-500/30' : 'bg-white/10 hover:bg-white/20'}`}
-                title="Não gostei"
-              >
-                <ThumbsDown 
-                  className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isDisliked(hero?.id?.toString().split('-')[1] || '', hero?.id?.toString().startsWith('series') ? 'series' : 'movie') ? 'fill-red-500 text-red-500' : 'text-white'}`} 
-                />
-              </button>
-            </div>
           </motion.div>
         </AnimatePresence>
       </div>
+
 
       {isPlayerOpen && hero && (
         <VideoJSPlayer 
@@ -410,19 +292,6 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
       {/* Shadow Overlays (Vignette) */}
       <div className="absolute inset-0 bg-black/20 shadow-[inset_0_0_200px_rgba(0,0,0,0.8)] z-[2] pointer-events-none" />
 
-      {/* Indicators */}
-      <div className="absolute bottom-3 sm:bottom-6 md:bottom-8 lg:bottom-10 left-3 sm:left-6 md:left-8 lg:left-12 flex gap-1.5 sm:gap-3 z-20 pointer-events-auto" style={{ pointerEvents: 'auto' }}>
-        {heroItems.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            aria-label={`Ir para slide ${i + 1}`}
-            className={`h-0.5 sm:h-1 md:h-1.5 rounded-full transition-all duration-500 ${
-              i === current ? "w-4 sm:w-8 md:w-12 bg-primary shadow-[0_0_10px_rgba(59,130,246,0.5)]" : "w-2 sm:w-4 md:w-6 bg-white/30"
-            }`}
-          />
-        ))}
-      </div>
     </section>
   );
 };

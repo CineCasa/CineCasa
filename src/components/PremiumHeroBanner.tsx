@@ -1,12 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Info, Heart, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase';
-import { usePlayer } from '../contexts/PlayerContext';
-import { useNavigate } from 'react-router-dom';
-import { useFavorites } from '../hooks/useFavorites';
-import { useRatings } from '../hooks/useRatings';
-import { toast } from 'sonner';
 
 interface BannerContent {
   id: string;
@@ -77,10 +71,6 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [userRating, setUserRating] = useState<'like' | 'dislike' | null>(null);
   const supabase = getSupabaseClient();
-  const { openPlayer } = usePlayer();
-  const navigate = useNavigate();
-  const { isFavorite, toggleFavorite, loading: favLoading } = useFavorites();
-  const { isLiked, isDisliked, toggleRating } = useRatings();
 
   // Buscar posters da tabela correta baseado no contentType
   const fetchPosters = useCallback(async () => {
@@ -254,8 +244,8 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         </motion.div>
       </AnimatePresence>
 
-      {/* Conteúdo do Banner */}
-      <div className="relative z-10 h-full flex items-end sm:items-center pb-20 sm:pb-0">
+      {/* Conteúdo - Metadados e descrição apenas (sem botões) */}
+      <div className="relative z-10 h-full flex items-end sm:items-center pb-20 sm:pb-0 pointer-events-none">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
           <AnimatePresence mode="wait">
             <motion.div
@@ -264,7 +254,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
-              className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl"
+              className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl pointer-events-none"
             >
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-2 sm:mb-4 leading-tight break-words whitespace-normal line-clamp-3">
                 {currentBanner.title}
@@ -313,115 +303,11 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
                 </p>
               )}
 
-              {/* Botões de Ação */}
-              <div className="flex flex-nowrap items-center gap-2 sm:gap-3 overflow-x-auto">
-                <button
-                  onClick={() => {
-                    console.log('[PremiumHeroBanner] Botão Assistir clicado:', { currentBanner, contentType });
-                    // Navigate to details page instead of trying to play directly
-                    // Extract numeric ID from prefixed IDs if needed
-                    const idStr = currentBanner.id?.toString() || '';
-                    const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
-                    console.log('[PremiumHeroBanner] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
-                    navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
-                  }}
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white rounded-[20px] font-semibold transition-all duration-300 hover:scale-105"
-                >
-                  <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-                  <span>Assistir</span>
-                </button>
-                <button
-                  onClick={() => {
-                    console.log('[PremiumHeroBanner] Botão Trailer clicado:', { currentBanner, trailer: currentBanner?.trailer });
-                    // Navigate to details page
-                    // Extract numeric ID from prefixed IDs if needed
-                    const idStr = currentBanner.id?.toString() || '';
-                    const contentId = idStr.includes('-') ? idStr.split('-').pop() : idStr;
-                    console.log('[PremiumHeroBanner] Navegando para:', { contentId, contentType, originalId: currentBanner.id });
-                    navigate(contentType === 'movies' ? `/movie-details/${contentId}` : `/series-details/${contentId}`);
-                  }}
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-[#FF0000] hover:bg-[#cc0000] text-white rounded-[20px] font-semibold transition-all duration-300 hover:scale-105"
-                >
-                  <Info className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Detalhes</span>
-                </button>
-                
-                {/* Ícones de interação - mesma linha */}
-                <div className="w-px h-8 bg-white/20 mx-1 sm:mx-2 flex-shrink-0" />
-                <button
-                  onClick={async () => {
-                    if (!currentBanner) return;
-                    
-                    const contentId = parseInt(currentBanner.id);
-                    const contentTypeValue = contentType === 'movies' ? 'movie' : 'series';
-                    
-                    await toggleFavorite({
-                      content_id: contentId,
-                      content_type: contentTypeValue,
-                      titulo: currentBanner.title,
-                      poster: currentBanner.poster,
-                      banner: currentBanner.poster,
-                      rating: currentBanner.rating,
-                      year: currentBanner.year,
-                      genero: currentBanner.genre
-                    });
-                  }}
-                  disabled={favLoading}
-                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:scale-110 flex-shrink-0 disabled:opacity-50"
-                  title={isFavorite(parseInt(currentBanner?.id || '0'), contentType === 'movies' ? 'movie' : 'series') ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-                >
-                  <Heart 
-                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isFavorite(parseInt(currentBanner?.id || '0'), contentType === 'movies' ? 'movie' : 'series') ? 'fill-red-600 text-red-600' : 'text-white'}`} 
-                  />
-                </button>
-                <button
-                  onClick={async () => {
-                  const current = displayQueue[currentIndex];
-                  const contentId = current.id;
-                  const typeValue = contentType === 'movies' ? 'movie' : 'series';
-                  await toggleRating({
-                    content_id: contentId,
-                    content_type: typeValue,
-                    titulo: current.title,
-                    poster: current.poster,
-                    banner: current.poster,
-                    rating: current.rating
-                  }, 'like');
-                }}
-                  className={`p-2 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0 ${isLiked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'bg-green-500/30' : 'bg-white/10 hover:bg-white/20'}`}
-                  title="Gostei"
-                >
-                  <ThumbsUp 
-                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isLiked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'fill-green-500 text-green-500' : 'text-white'}`} 
-                  />
-                </button>
-                <button
-                  onClick={async () => {
-                    const current = displayQueue[currentIndex];
-                    const contentId = current.id;
-                    const type = contentType === 'movies' ? 'movie' : 'series';
-                    await toggleRating({
-                      content_id: contentId,
-                      content_type: type,
-                      titulo: current.title,
-                      poster: current.poster,
-                      banner: current.poster,
-                      rating: current.rating
-                    }, 'dislike');
-                  }}
-                  className={`p-2 rounded-full transition-all duration-300 hover:scale-110 flex-shrink-0 ${isDisliked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'bg-red-500/30' : 'bg-white/10 hover:bg-white/20'}`}
-                  title="Não gostei"
-                >
-                  <ThumbsDown 
-                    className={`w-5 h-5 sm:w-6 sm:h-6 transition-all duration-300 ${isDisliked(currentBanner?.id || '', contentType === 'movies' ? 'movie' : 'series') ? 'fill-red-500 text-red-500' : 'text-white'}`} 
-                  />
-                </button>
-              </div>
-
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
+
     </div>
   );
 };

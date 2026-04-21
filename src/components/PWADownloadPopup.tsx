@@ -50,8 +50,17 @@ const PWADownloadPopup = ({ isOpen, onClose, deviceType }: PWADownloadPopupProps
 
   if (!isOpen) return null;
 
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-gray-900 rounded-2xl p-8 max-w-md w-full mx-4 border border-white/10 shadow-2xl">
         {/* Header */}
         <div className="text-center mb-6">

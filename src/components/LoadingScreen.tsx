@@ -50,7 +50,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0a0d15]"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black"
     >
       {/* Container principal com responsividade */}
       <div className="flex flex-col items-center justify-center w-full h-full px-4 sm:px-6 lg:px-8">
@@ -213,20 +213,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Background gradiente animado */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-purple/5"
-          animate={{
-            opacity: [0.3, 0.6, 0.3],
-          }}
-          transition={{
-            duration: 4,
-            ease: "easeInOut",
-            repeat: Infinity,
-          }}
-        />
-      </div>
+      {/* Fundo preto total */}
     </motion.div>
   );
 };

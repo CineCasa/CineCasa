@@ -92,26 +92,62 @@ export const useContinueWatching = () => {
           return;
         }
 
-        // Mapear para o formato do componente
-        const mappedItems: ContinueWatchingItem[] = data.map((item: any) => ({
-          id: item.id,
-          contentId: item.content_type === 'movie' 
-            ? item.cinema_id?.toString() || '' 
-            : item.serie_id?.toString() || '',
-          contentType: item.content_type as 'movie' | 'series',
-          title: item.content_type === 'movie' 
-            ? `Filme ${item.cinema_id}` 
-            : `Série ${item.serie_id}`,
-          poster: '',
-          banner: '',
-          progressPct: item.progress_pct || Math.round((item.current_time / item.duration) * 100),
-          currentTime: item.current_time,
-          duration: item.duration,
-          seasonNumber: item.season_number,
-          episodeNumber: item.episodio_id,
-          episodeId: item.episodio_id?.toString(),
-          updatedAt: item.updated_at,
-        }));
+        // Buscar detalhes do conteúdo (posters/títulos) das tabelas cinema/series
+        const mappedItems: ContinueWatchingItem[] = await Promise.all(
+          data.map(async (item: any) => {
+            const contentId = item.content_type === 'movie'
+              ? item.cinema_id?.toString() || ''
+              : item.serie_id?.toString() || '';
+            
+            let title = '';
+            let poster = '';
+            let banner = '';
+
+            if (item.content_type === 'movie' && item.cinema_id) {
+              // Buscar dados do filme na tabela cinema
+              const { data: movieData } = await supabase
+                .from('cinema')
+                .select('titulo, poster, banner')
+                .eq('id', item.cinema_id)
+                .single();
+              
+              if (movieData) {
+                title = movieData.titulo || `Filme ${item.cinema_id}`;
+                poster = movieData.poster || '';
+                banner = movieData.banner || movieData.poster || '';
+              }
+            } else if (item.content_type === 'series' && item.serie_id) {
+              // Buscar dados da série na tabela series
+              const { data: seriesData } = await supabase
+                .from('series')
+                .select('titulo, capa, banner')
+                .eq('id_n', item.serie_id)
+                .single();
+              
+              if (seriesData) {
+                title = seriesData.titulo || `Série ${item.serie_id}`;
+                poster = seriesData.capa || '';
+                banner = seriesData.banner || seriesData.capa || '';
+              }
+            }
+
+            return {
+              id: item.id,
+              contentId,
+              contentType: item.content_type as 'movie' | 'series',
+              title: title || (item.content_type === 'movie' ? `Filme ${item.cinema_id}` : `Série ${item.serie_id}`),
+              poster,
+              banner,
+              progressPct: item.progress_pct || Math.round((item.current_time / item.duration) * 100),
+              currentTime: item.current_time,
+              duration: item.duration,
+              seasonNumber: item.season_number,
+              episodeNumber: item.episodio_id,
+              episodeId: item.episodio_id?.toString(),
+              updatedAt: item.updated_at,
+            };
+          })
+        );
 
         setItems(mappedItems);
       } catch (err) {

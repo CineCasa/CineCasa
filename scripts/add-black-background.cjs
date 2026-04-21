@@ -5,12 +5,11 @@ const path = require('path');
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const ICONS_DIR = path.join(PUBLIC_DIR, 'icons');
 
-// Arquivos a processar
-const filesToProcess = [
-  { input: path.join(PUBLIC_DIR, 'logo.png'), output: path.join(PUBLIC_DIR, 'logo.png') },
-];
+// Apenas ícones PWA devem ter fundo preto
+// O logo.png principal (usado no loading screen) permanece sem fundo (transparente)
+const filesToProcess = [];
 
-// Adicionar todos os ícones da pasta icons
+// Adicionar apenas os ícones da pasta icons (PWA)
 const iconFiles = fs.readdirSync(ICONS_DIR).filter(f => f.endsWith('.png'));
 iconFiles.forEach(file => {
   const inputPath = path.join(ICONS_DIR, file);
@@ -45,13 +44,15 @@ async function addBlackBackground(inputPath, outputPath) {
 }
 
 async function main() {
-  console.log('🎨 Adicionando fundo preto nas logos do PWA...\n');
+  console.log('🎨 Adicionando fundo preto nos ícones PWA (apenas ícones, não no logo principal)...\n');
+  console.log('ℹ️  O logo.png permanece sem fundo para o loading screen\n');
   
   for (const file of filesToProcess) {
     await addBlackBackground(file.input, file.output);
   }
   
-  console.log('\n✨ Todos os arquivos foram processados!');
+  console.log('\n✨ Ícones PWA processados com fundo preto!');
+  console.log('✅ Logo principal (logo.png) permanece transparente para o loading screen');
 }
 
 main().catch(console.error);
