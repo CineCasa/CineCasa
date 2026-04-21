@@ -141,17 +141,27 @@ export const useContinueWatching = () => {
         // Buscar dados de posters e títulos da tabela series
         const seriesIds = seriesProgress.map((p: any) => p.content_id).filter(Boolean);
         console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
+        console.log('📺 [useContinueWatching] Tipos dos IDs:', seriesIds.map((id: any) => typeof id));
+        
+        // Converter IDs para número garantido
+        const seriesIdsNumeric = seriesIds.map((id: any) => parseInt(id, 10)).filter((id: number) => !isNaN(id));
+        console.log('📺 [useContinueWatching] IDs numéricos:', seriesIdsNumeric);
         
         const { data: seriesData, error: seriesDataError } = await supabase
           .from('series')
           .select('id_n, titulo, capa, banner')
-          .in('id_n', seriesIds);
+          .in('id_n', seriesIdsNumeric);
         
         console.log('📺 [useContinueWatching] Dados retornados da tabela series:', seriesData);
+        console.log('📺 [useContinueWatching] Quantidade retornada:', seriesData?.length || 0);
         console.log('📺 [useContinueWatching] Erro na query series:', seriesDataError);
         
         const seriesMap = new Map(seriesData?.map(s => [s.id_n, s]) || []);
         console.log('📺 [useContinueWatching] Map de séries criado:', Array.from(seriesMap.entries()));
+        console.log('📺 [useContinueWatching] IDs buscados vs encontrados:', { 
+          buscados: seriesIdsNumeric, 
+          encontrados: seriesData?.map(s => s.id_n) 
+        });
         
         seriesProgress.forEach((progress: any, index: number) => {
           console.log(`📺 [useContinueWatching] Série ${index}:`, progress);
