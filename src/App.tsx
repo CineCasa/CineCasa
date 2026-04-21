@@ -27,7 +27,7 @@ import MovieDetails from "./pages/MovieDetails";
 import SeriesPorCategoria from "./pages/SeriesPorCategoria";
 import ImageCleanup from "./pages/ImageCleanup";
 import NotificationSettings from "./pages/NotificationSettings";
-import AdvancedSearch from "./pages/AdvancedSearch";
+import Search from "./pages/Search";
 import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
 import NotificationProvider from "./components/NotificationProvider";
@@ -127,7 +127,7 @@ const AppRoutes = () => {
       <Route path="/image-cleanup" element={<ProtectedRoute><ImageCleanup /></ProtectedRoute>} />
       <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-      <Route path="/search" element={<ProtectedRoute><AdvancedSearch /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
       <Route path="/profiles" element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       
