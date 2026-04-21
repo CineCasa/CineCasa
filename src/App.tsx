@@ -203,7 +203,9 @@ const App = () => {
         <AuthProvider>
           <DeviceAccessManager>
             <BrowserRouter>
-              <AppContent />
+              <PlayerProvider>
+                <AppContent />
+              </PlayerProvider>
             </BrowserRouter>
           </DeviceAccessManager>
         </AuthProvider>
