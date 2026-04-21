@@ -424,7 +424,7 @@ const SeriesDetails: React.FC = () => {
               navigate(-1);
             }
           }}
-          className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-full hover:bg-black/60 hover:border-cyan-400/50 transition-all duration-300 group"
+          className="fixed top-[36px] sm:top-4 left-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-full hover:bg-black/60 hover:border-cyan-400/50 transition-all duration-300 group"
         >
           <ArrowLeft size={18} className="text-cyan-400 group-hover:text-cyan-300" />
           <span className="text-sm font-medium text-white/90">{isPlayerOpen ? 'Fechar' : 'Voltar'}</span>
