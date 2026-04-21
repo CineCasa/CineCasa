@@ -80,7 +80,7 @@ const MovieDetails: React.FC = () => {
       
       const { data, error } = await supabase
         .from('cinema')
-        .select('id, titulo, poster, url, trailer, description, year, genero, duracao, rating, classificacao, diretor, elenco, imdb_id, tmdb_id')
+        .select('id, titulo, poster, url, trailer, description, year, category, rating, tmdb_id')
         .eq('id', parseInt(id || '0'))
         .single();
 
@@ -96,7 +96,7 @@ const MovieDetails: React.FC = () => {
         ...movieData,
         ano: movieData.year,
         genero: movieData.category,
-        duracao: movieData.duration || movieData.duracao
+        duracao: 'N/A'
       } as Movie;
       
       setMovie(mappedMovie);
