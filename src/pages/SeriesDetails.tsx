@@ -330,78 +330,13 @@ const SeriesDetails: React.FC = () => {
     return 85 + (Math.abs(hash) % 14);
   };
 
-  // Skeleton Loading Screen
+  // Loading Screen - Padronizado com MovieDetails
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white">
-          
-        {/* Hero Skeleton */}
-        <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] overflow-hidden">
-          <div className="absolute inset-0 bg-gray-800 animate-pulse" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-          
-          <div className="absolute top-20 sm:top-24 left-4 z-20">
-            <div className="flex items-center gap-2 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <ArrowLeft size={20} />
-              <span className="hidden sm:inline">Voltar</span>
-            </div>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 z-10 p-4 sm:p-6">
-            <div className="container mx-auto">
-              <div className="h-8 sm:h-12 md:h-16 bg-gray-700 rounded animate-pulse w-3/4 mb-4" />
-              <div className="flex flex-wrap items-center gap-2 mb-4">
-                <div className="h-6 w-20 bg-gray-700 rounded-full animate-pulse" />
-                <div className="h-6 w-24 bg-gray-700 rounded-full animate-pulse" />
-                <div className="h-6 w-16 bg-gray-700 rounded-full animate-pulse" />
-              </div>
-              <div className="flex gap-3">
-                <div className="h-10 w-32 bg-gray-700 rounded-lg animate-pulse" />
-                <div className="h-10 w-28 bg-gray-700 rounded-lg animate-pulse" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content Skeleton */}
-        <div className="container mx-auto px-4 sm:px-6 py-8">
-          <div className="max-w-4xl">
-            <div className="h-8 w-32 bg-gray-700 rounded animate-pulse mb-4" />
-            <div className="space-y-2">
-              <div className="h-4 bg-gray-700 rounded animate-pulse w-full" />
-              <div className="h-4 bg-gray-700 rounded animate-pulse w-full" />
-              <div className="h-4 bg-gray-700 rounded animate-pulse w-3/4" />
-            </div>
-          </div>
-        </div>
-
-        {/* Cast Skeleton */}
-        <div className="container mx-auto px-4 sm:px-6 py-8">
-          <div className="h-8 w-48 bg-gray-700 rounded animate-pulse mb-6" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="text-center">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-700 rounded-full mx-auto animate-pulse mb-2" />
-                <div className="h-4 w-24 bg-gray-700 rounded animate-pulse mx-auto" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Episodes Skeleton */}
-        <div className="container mx-auto px-4 sm:px-6 py-8">
-          <div className="h-8 w-32 bg-gray-700 rounded animate-pulse mb-6" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-gray-800 rounded-lg overflow-hidden animate-pulse">
-                <div className="aspect-video bg-gray-700" />
-                <div className="p-3 sm:p-4 space-y-2">
-                  <div className="h-4 bg-gray-700 rounded w-3/4" />
-                  <div className="h-3 bg-gray-700 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="fixed inset-0 bg-[#000401] z-50 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 border-4 border-[#E50914] border-t-transparent rounded-full animate-spin" />
+          <span className="text-white text-lg">Carregando...</span>
         </div>
       </div>
     );
@@ -409,9 +344,15 @@ const SeriesDetails: React.FC = () => {
 
   if (!series) {
     return (
-      <div className="min-h-screen bg-black">
-          <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-white text-xl">Série não encontrada</div>
+      <div className="fixed inset-0 bg-[#000401] z-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white text-xl mb-4">Série não encontrada</p>
+          <button 
+            onClick={() => navigate(-1)}
+            className="bg-white text-black px-6 py-2 rounded hover:bg-gray-200 transition"
+          >
+            Voltar
+          </button>
         </div>
       </div>
     );
@@ -551,10 +492,15 @@ const SeriesDetails: React.FC = () => {
                 {/* Badges de Qualidade */}
                 <div className="flex items-center gap-2 mb-3">
                   <span className="px-3 py-1 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 border border-cyan-400/50 rounded-full text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <Monitor size={14} />
-                    HD
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    4K Ultra HD
                   </span>
                   <span className="px-3 py-1 bg-gradient-to-r from-purple-500/30 to-pink-500/30 border border-purple-400/50 rounded-full text-xs font-bold text-purple-300 uppercase tracking-wider">
+                    Dolby Vision
+                  </span>
+                  <span className="px-3 py-1 bg-gradient-to-r from-green-500/30 to-emerald-500/30 border border-green-400/50 rounded-full text-xs font-bold text-green-300 uppercase tracking-wider">
                     Série
                   </span>
                   {totalTemporadas > 1 && (
