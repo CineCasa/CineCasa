@@ -274,12 +274,16 @@ const SeriesDetails: React.FC = () => {
   const handlePlayEpisode = (episodio: Episodio) => {
     if (series && episodio.arquivo) {
       openPlayer({
-        id: episodio.id_n,
+        id: series.id_n,
         title: `${series.titulo} - ${episodio.titulo}`,
         type: 'series',
         videoUrl: episodio.arquivo,
         poster: episodio.imagem_342 || episodio.imagem_185 || series.capa || series.banner,
-        year: series.ano
+        year: series.ano,
+        seriesId: series.id_n,
+        episodeId: episodio.id_n,
+        seasonNumber: selectedSeason,
+        episodeNumber: episodio.numero_episodio
       });
     }
   };
@@ -300,7 +304,8 @@ const SeriesDetails: React.FC = () => {
         type: 'series',
         videoUrl: series.trailer,
         poster: series.banner || series.capa,
-        year: series.ano
+        year: series.ano,
+        seriesId: series.id_n
       });
     }
   };
