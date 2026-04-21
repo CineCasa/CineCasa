@@ -42,21 +42,26 @@ alter table public.favorites enable row level security;
 -- Remover políticas existentes
 -- (Se houver erro "policy does not exist", podemos ignorar)
 
+-- Remover políticas antigas se existirem (para evitar conflito)
+drop policy if exists "Users can view own favorites" on public.favorites;
+drop policy if exists "Users can insert own favorites" on public.favorites;
+drop policy if exists "Users can delete own favorites" on public.favorites;
+
 -- Criar políticas novas
 -- Política: usuários podem ver apenas seus próprios favoritos
-create policy if not exists "Users can view own favorites"
+create policy "Users can view own favorites"
   on public.favorites
   for select
   using (auth.uid() = user_id);
 
 -- Política: usuários podem inserir apenas seus próprios favoritos
-create policy if not exists "Users can insert own favorites"
+create policy "Users can insert own favorites"
   on public.favorites
   for insert
   with check (auth.uid() = user_id);
 
 -- Política: usuários podem deletar apenas seus próprios favoritos
-create policy if not exists "Users can delete own favorites"
+create policy "Users can delete own favorites"
   on public.favorites
   for delete
   using (auth.uid() = user_id);
