@@ -143,22 +143,29 @@ export const useContinueWatching = () => {
         console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
         console.log('📺 [useContinueWatching] Tipos dos IDs:', seriesIds.map((id: any) => typeof id));
         
-        // Construir query com .or() para compatibilidade com bigint do PostgreSQL
-        // .in() não funciona bem com bigint, então usamos múltiplos .eq()
-        let seriesQuery = supabase.from('series').select('id_n, titulo, capa, banner');
+        // Buscar séries individualmente para evitar problemas com bigint
+        console.log('📺 [useContinueWatching] Buscando séries individualmente...');
         
-        if (seriesIds.length === 1) {
-          seriesQuery = seriesQuery.eq('id_n', seriesIds[0]);
-        } else if (seriesIds.length > 1) {
-          const orConditions = seriesIds.map((id: any) => `id_n.eq.${id}`).join(',');
-          seriesQuery = seriesQuery.or(orConditions);
+        const seriesData: any[] = [];
+        for (const id of seriesIds) {
+          console.log(`📺 [useContinueWatching] Buscando série ID: ${id} (tipo: ${typeof id})`);
+          const { data: serie, error: serieError } = await supabase
+            .from('series')
+            .select('id_n, titulo, capa, banner')
+            .eq('id_n', id)
+            .maybeSingle();
+          
+          if (serieError) {
+            console.log(`📺 [useContinueWatching] Erro ao buscar série ${id}:`, serieError);
+          } else if (serie) {
+            console.log(`📺 [useContinueWatching] Série ${id} encontrada:`, serie.titulo);
+            seriesData.push(serie);
+          } else {
+            console.log(`📺 [useContinueWatching] Série ${id} NÃO encontrada na tabela`);
+          }
         }
         
-        const { data: seriesData, error: seriesDataError } = await seriesQuery;
-        
-        console.log('📺 [useContinueWatching] Dados retornados da tabela series:', seriesData);
-        console.log('📺 [useContinueWatching] Quantidade retornada:', seriesData?.length || 0);
-        console.log('📺 [useContinueWatching] Erro na query series:', seriesDataError);
+        console.log('📺 [useContinueWatching] Total de séries encontradas:', seriesData.length);
         
         // Criar map com IDs como string para compatibilidade
         const seriesMap = new Map(seriesData?.map(s => [String(s.id_n), s]) || []);
