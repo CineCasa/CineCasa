@@ -1049,7 +1049,11 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button
-                onClick={(e) => { e.stopPropagation(); navigate(-1); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  console.log('[VideoJSPlayer] Botão voltar clicado - chamando onClose');
+                  onClose();
+                }}
                 className="p-2 hover:bg-white/20 rounded-full transition-colors"
                 title="Voltar"
               >
