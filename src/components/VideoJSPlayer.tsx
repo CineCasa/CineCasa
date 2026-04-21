@@ -987,7 +987,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
             height: '100%', 
             maxHeight: '100vh',
             maxWidth: '100vw',
-            objectFit: 'contain'
+            objectFit: 'cover'
           }}
           poster={poster}
           preload="auto"
