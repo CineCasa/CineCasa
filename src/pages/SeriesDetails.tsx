@@ -80,7 +80,7 @@ interface TmdbDetails {
 const SeriesDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { openPlayer } = usePlayer();
+  const { openPlayer, closePlayer, isPlayerOpen } = usePlayer();
   const { isFavorite, toggleFavorite } = useFavorites();
   
   const [series, setSeries] = useState<Series | null>(null);
@@ -348,10 +348,16 @@ const SeriesDetails: React.FC = () => {
         <div className="text-center">
           <p className="text-white text-xl mb-4">Série não encontrada</p>
           <button 
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (isPlayerOpen) {
+                closePlayer();
+              } else {
+                navigate(-1);
+              }
+            }}
             className="bg-white text-black px-6 py-2 rounded hover:bg-gray-200 transition"
           >
-            Voltar
+            {isPlayerOpen ? 'Fechar Player' : 'Voltar'}
           </button>
         </div>
       </div>
@@ -406,11 +412,17 @@ const SeriesDetails: React.FC = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            if (isPlayerOpen) {
+              closePlayer();
+            } else {
+              navigate(-1);
+            }
+          }}
           className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-full hover:bg-black/60 hover:border-cyan-400/50 transition-all duration-300 group"
         >
           <ArrowLeft size={18} className="text-cyan-400 group-hover:text-cyan-300" />
-          <span className="text-sm font-medium text-white/90">Voltar</span>
+          <span className="text-sm font-medium text-white/90">{isPlayerOpen ? 'Fechar' : 'Voltar'}</span>
         </motion.button>
 
         {/* Container Principal */}
