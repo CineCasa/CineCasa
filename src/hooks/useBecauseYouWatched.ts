@@ -51,14 +51,7 @@ export function useBecauseYouWatched() {
 
       const { data: watchHistory, error: historyError } = await supabase
         .from('watch_progress')
-        .select(`
-          content_id,
-          content_type,
-          progress,
-          updated_at,
-          cinema:content_id (id, titulo, poster, banner, genero, rating, ano, descricao),
-          series:content_id (id_n, titulo, banner, genero, rating, ano, descricao)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .gte('updated_at', thirtyDaysAgo.toISOString())
         .order('updated_at', { ascending: false });
@@ -75,14 +68,23 @@ export function useBecauseYouWatched() {
       const becauseYouWatchedData: BecauseYouWatchedData[] = [];
 
       for (const watchItem of watchHistory) {
-        const contentData = watchItem.content_type === 'movie' 
-          ? watchItem.cinema 
-          : watchItem.series;
+        // Buscar dados do conteúdo em tabela separada
+        const table = watchItem.content_type === 'movie' ? 'cinema' : 'series';
+        const idColumn = watchItem.content_type === 'movie' ? 'id' : 'id_n';
+        const contentId = watchItem.cinema_id || watchItem.serie_id;
+
+        if (!contentId) continue;
+
+        const { data: contentData } = await supabase
+          .from(table)
+          .select('titulo, genero')
+          .eq(idColumn, contentId)
+          .single();
 
         if (!contentData) continue;
 
         const sourceItem: WatchHistoryItem = {
-          content_id: watchItem.content_id,
+          content_id: contentId.toString(),
           content_type: watchItem.content_type,
           title: contentData.titulo,
           genero: contentData.genero,

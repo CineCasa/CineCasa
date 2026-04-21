@@ -243,13 +243,7 @@ export function useContinueWatchingReminder() {
       // Buscar conteúdo parado (progresso entre 10% e 90%)
       const { data: pausedContent } = await supabase
         .from('watch_progress')
-        .select(`
-          content_id,
-          content_type,
-          progress,
-          cinema:content_id (titulo, poster),
-          series:content_id (titulo, poster)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .gt('progress', 10)
         .lt('progress', 90)
@@ -258,8 +252,24 @@ export function useContinueWatchingReminder() {
         .single();
 
       if (pausedContent) {
-        const title = pausedContent.cinema?.titulo || pausedContent.series?.titulo;
-        const poster = pausedContent.cinema?.poster || pausedContent.series?.poster;
+        // Buscar dados do conteúdo em tabela separada
+        const table = pausedContent.content_type === 'movie' ? 'cinema' : 'series';
+        const idColumn = pausedContent.content_type === 'movie' ? 'id' : 'id_n';
+        const contentId = pausedContent.cinema_id || pausedContent.serie_id;
+
+        let title = '';
+        let poster = '';
+
+        if (contentId) {
+          const { data: contentData } = await supabase
+            .from(table)
+            .select('titulo, poster')
+            .eq(idColumn, contentId)
+            .single();
+
+          title = contentData?.titulo || '';
+          poster = contentData?.poster || '';
+        }
 
         if (title) {
           await notifyContinueWatching(
