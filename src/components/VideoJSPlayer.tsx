@@ -978,7 +978,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       )}
 
       {/* Video Element - forçar tela cheia */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ width: '100vw', height: '100vh' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-10" style={{ width: '100vw', height: '100vh' }}>
         <video
           ref={videoRef}
           className="video-js vjs-fluid vjs-big-play-centered"
@@ -1015,15 +1015,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           togglePlayPause();
         }}
         onTouchStart={(e) => {
-          // Mostrar controles ao tocar na tela
+          // Mostrar controles ao tocar na tela - não esconder automaticamente no mobile
           setShowControls(true);
           if (controlsTimeoutRef.current) {
             clearTimeout(controlsTimeoutRef.current);
           }
+          // No mobile, manter controles visíveis por mais tempo (5s) para melhor UX
           if (isPlaying) {
             controlsTimeoutRef.current = setTimeout(() => {
               setShowControls(false);
-            }, 3000);
+            }, 5000);
           }
         }}
         onMouseMove={(e) => {
@@ -1054,8 +1055,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                   console.log('[VideoJSPlayer] Botão voltar clicado - chamando onClose');
                   onClose();
                 }}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="p-3 md:p-2 hover:bg-white/20 rounded-full transition-colors touch-button"
                 title="Voltar"
+                style={{ minWidth: '44px', minHeight: '44px' }}
               >
                 <ChevronLeft size={28} className="text-white" />
               </button>
