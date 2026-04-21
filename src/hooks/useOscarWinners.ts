@@ -46,9 +46,7 @@ const OSCAR_BEST_PICTURE_WINNERS = [
 
 // Palavras-chave simplificadas para buscar filmes premiados
 // Reduzido para evitar query muito longa (erro 400)
-const AWARD_KEYWORDS = [
-  'oscar', 'academy', 'winner'
-];
+const AWARD_KEYWORDS = ['oscar'];
 
 export const useOscarWinners = () => {
   const [oscarWinners, setOscarWinners] = useState<OscarWinner[]>([]);
@@ -61,7 +59,7 @@ export const useOscarWinners = () => {
       console.log('[useOscarWinners] Buscando vencedores do Oscar 2000+...');
 
       // Estratégia 1: Buscar por TMDB IDs conhecidos de vencedores
-      const batchSize = 20;
+      const batchSize = 10;
       const moviePromises = [];
       
       for (let i = 0; i < OSCAR_BEST_PICTURE_WINNERS.length; i += batchSize) {
@@ -69,34 +67,30 @@ export const useOscarWinners = () => {
         moviePromises.push(
           supabase
             .from('cinema')
-            .select('id, tmdb_id, titulo, poster, year, rating, genero, description, category')
+            .select('id, tmdb_id, titulo, poster, year, rating, category, description')
             .in('tmdb_id', batch)
             .gte('year', '2000')
         );
       }
 
-      // Estratégia 2: Buscar filmes com rating >= 8.0 e palavras-chave de prêmios
-      const oscarKeywords = AWARD_KEYWORDS.map(kw => 
-        `genero.ilike.%${kw}%,titulo.ilike.%${kw}%,description.ilike.%${kw}%,category.ilike.%${kw}%`
-      ).join(',');
-
+      // Estratégia 2: Buscar filmes com rating >= 8.0 e palavras-chave simplificadas
       const [knownWinnersResult, ...additionalResults] = await Promise.all([
         ...moviePromises,
-        // Busca adicional por filmes de alta qualidade com palavras-chave
+        // Busca adicional por filmes de alta qualidade
         supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, genero, description, category')
+          .select('id, tmdb_id, titulo, poster, year, rating, category, description')
           .gte('year', '2000')
           .gte('rating', '8.5')
-          .or(`(${oscarKeywords})`)
+          .ilike('category', '%oscar%')
           .limit(30),
-        // Busca em séries também - usar apenas genero (category nao existe)
+        // Busca em séries - simplificada
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, banner, ano, genero, descricao')
+          .select('id_n, titulo, banner, ano, genero')
           .ilike('genero', '%documentario%')
           .not('banner', 'is', null)
-          .limit(30)
+          .limit(10)
       ]);
 
       // Combinar todos os resultados
