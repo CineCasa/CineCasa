@@ -33,7 +33,6 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   const [displayQueue, setDisplayQueue] = useState<BannerContent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInList, setIsInList] = useState(false);
 
   const fetchPosters = useCallback(async () => {
     try {
@@ -95,32 +94,6 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
     const interval = setInterval(() => setCurrentIndex(p => (p + 1) % displayQueue.length), 8000);
     return () => clearInterval(interval);
   }, [displayQueue.length]);
-
-  useEffect(() => {
-    if (displayQueue[currentIndex]) {
-      const item = displayQueue[currentIndex];
-      setIsInList(isFavorite(parseInt(item.id), contentType === 'movies' ? 'movie' : 'series'));
-    }
-  }, [currentIndex, displayQueue, isFavorite, contentType]);
-
-  const handleToggleList = async () => {
-    if (!currentBanner) return;
-    try {
-      const contentTypeStr = contentType === 'movies' ? 'movie' : 'series';
-      await toggleFavorite({
-        content_id: parseInt(currentBanner.id),
-        content_type: contentTypeStr,
-        titulo: currentBanner.title,
-        poster: currentBanner.poster,
-        banner: currentBanner.poster,
-        rating: currentBanner.rating,
-        year: currentBanner.year,
-        genero: currentBanner.genre
-      });
-      setIsInList(!isInList);
-      toast.success(!isInList ? 'Adicionado à Minha Lista' : 'Removido da Minha Lista');
-    } catch (error) { console.error(error); }
-  };
 
   if (isLoading) return (
     <div className="relative w-full h-[60vh] bg-neutral-900 flex items-center justify-center">
