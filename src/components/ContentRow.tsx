@@ -64,10 +64,23 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
       clearInterval(autoScrollInterval);
     };
 
-    // Iniciar auto-scroll apenas em mobile
-    startAutoScroll();
+    // NÃO iniciar auto-scroll automaticamente em mobile - apenas após interação do usuário
+    // Isso evita conflito com o scroll manual do usuário
+    let hasUserInteracted = false;
+    
+    const handleFirstInteraction = () => {
+      if (!hasUserInteracted) {
+        hasUserInteracted = true;
+        // Iniciar auto-scroll após primeira interação
+        startAutoScroll();
+      }
+    };
 
-    // Parar quando o usuário interagir (apenas em mobile)
+    // Iniciar auto-scroll após primeira interação do usuário
+    el.addEventListener('touchstart', handleFirstInteraction, { once: true });
+    el.addEventListener('mousedown', handleFirstInteraction, { once: true });
+    
+    // Parar auto-scroll quando usuário interage ativamente
     el.addEventListener('touchstart', stopAutoScroll);
     el.addEventListener('mousedown', stopAutoScroll);
 
@@ -182,22 +195,17 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
             ref={scrollRef}
             onScroll={checkScroll}
             onWheel={handleWheel}
-            className="row-scroll-container snap-x snap-mandatory overflow-x-auto scrollbar-hide"
+            className="row-scroll-container snap-x snap-mandatory overflow-x-auto overflow-y-hidden flex flex-row flex-nowrap gap-5 pb-3"
             style={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexWrap: 'nowrap',
               WebkitOverflowScrolling: 'touch',
-              overflowX: 'auto',
-              overflowY: 'hidden',
-              touchAction: 'pan-y',
+              touchAction: 'pan-x',
               scrollBehavior: 'smooth',
-              msOverflowStyle: 'none',
-              scrollbarWidth: 'none'
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#00E5FF transparent'
             }}
           >
             {limitedItems.map((item, idx) => (
-              <div key={`${item.id}-${idx}`} className="snap-start flex-shrink-0">
+              <div key={`${item.id}-${idx}`} className="snap-start flex-shrink-0" style={{ flex: '0 0 auto' }}>
                 <ContentCard 
                   item={item} 
                   index={idx} 
