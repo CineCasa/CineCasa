@@ -67,4 +67,4 @@ create policy "Users can delete own favorites"
   using (auth.uid() = user_id);
 
 -- Comentários
-dcomment on table public.favorites is 'Tabela de favoritos dos usuários - corrigida para usar content_id como integer';
+comment on table public.favorites is 'Tabela de favoritos dos usuários - corrigida para usar content_id como integer';
