@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, ArrowLeft, Star, Calendar, Clock, Info, Plus, Check, Users, ChevronDown, ChevronLeft, ChevronRight, Share2, Monitor, Tv } from 'lucide-react';
+import { Play, ArrowLeft, Star, Calendar, Clock, Info, Plus, Check, Users, ChevronDown, ChevronLeft, ChevronRight, Share2, Monitor, Tv, Heart } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useFavorites } from '../hooks/useFavorites';
@@ -518,11 +518,12 @@ const SeriesDetails: React.FC = () => {
                 <button
                   onClick={handleToggleFavorite}
                   className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
+                  title={series && isFavorite(parseInt(series.id_n), 'series') ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                 >
                   {series && isFavorite(parseInt(series.id_n), 'series') ? (
-                    <><Check size={18} className="text-cyan-400" /> <span>Na Lista</span></>
+                    <Heart size={20} className="text-red-500 fill-red-500" />
                   ) : (
-                    <><Plus size={18} className="text-cyan-400" /> <span>Lista</span></>
+                    <Heart size={20} className="text-cyan-400" />
                   )}
                 </button>
                 

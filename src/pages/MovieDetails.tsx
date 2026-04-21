@@ -338,11 +338,12 @@ const MovieDetails: React.FC = () => {
                 <button
                   onClick={handleToggleFavorite}
                   className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
+                  title={movie && isFavorite(movie.id, 'movie') ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                 >
                   {movie && isFavorite(movie.id, 'movie') ? (
-                    <><Check size={18} className="text-cyan-400" /> <span>Na Lista</span></>
+                    <Heart size={20} className="text-red-500 fill-red-500" />
                   ) : (
-                    <><Plus size={18} className="text-cyan-400" /> <span>Lista</span></>
+                    <Heart size={20} className="text-cyan-400" />
                   )}
                 </button>
                 
