@@ -142,12 +142,16 @@ export const useContinueWatching = () => {
         const seriesIds = seriesProgress.map((p: any) => p.content_id).filter(Boolean);
         console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
         
-        const { data: seriesData } = await supabase
+        const { data: seriesData, error: seriesDataError } = await supabase
           .from('series')
           .select('id_n, titulo, capa, banner')
           .in('id_n', seriesIds);
         
+        console.log('📺 [useContinueWatching] Dados retornados da tabela series:', seriesData);
+        console.log('📺 [useContinueWatching] Erro na query series:', seriesDataError);
+        
         const seriesMap = new Map(seriesData?.map(s => [s.id_n, s]) || []);
+        console.log('📺 [useContinueWatching] Map de séries criado:', Array.from(seriesMap.entries()));
         
         seriesProgress.forEach((progress: any, index: number) => {
           console.log(`📺 [useContinueWatching] Série ${index}:`, progress);
