@@ -44,10 +44,10 @@ const OSCAR_BEST_PICTURE_WINNERS = [
   '1934',     // American Beauty (2000)
 ];
 
-// Palavras-chave para buscar filmes premiados
+// Palavras-chave simplificadas para buscar filmes premiados
+// Reduzido para evitar query muito longa (erro 400)
 const AWARD_KEYWORDS = [
-  'oscar', 'academy award', 'winner', 'premiado', 'melhor filme',
-  'best picture', 'golden globe', 'bafta', 'critics choice'
+  'oscar', 'academy', 'winner'
 ];
 
 export const useOscarWinners = () => {
