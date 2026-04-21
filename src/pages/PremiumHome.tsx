@@ -470,26 +470,32 @@ const PremiumHome: React.FC = () => {
         console.log('[PremiumHome] Continue Watching - isLoading:', isLoadingContinue, 'items:', continueWatchingItems.length, 'user:', user?.id);
         return null;
       })()}
-      {!isLoadingContinue && continueWatchingItems.length > 0 ? (
+      {!isLoadingContinue ? (
         <div className="relative z-30 mt-4 mb-4">
-          <ContinueWatching
-            items={continueWatchingItems.slice(0, 3).map(item => ({
-              id: item.id,
-              title: item.title,
-              poster: item.poster,
-              banner: item.banner,
-              backdrop: item.banner,
-              type: item.type,
-              progress: item.progress,
-              episodeId: item.episodeId,
-              seasonNumber: item.seasonNumber,
-              episodeNumber: item.episodeNumber
-            }))}
-            onRemove={(id, type, episodeId) => {
-              // Remover item ao clicar no X
-              console.log("Removendo item:", id, type, episodeId);
-            }}
-          />
+          {continueWatchingItems.length > 0 ? (
+            <ContinueWatching
+              items={continueWatchingItems.slice(0, 3).map(item => ({
+                id: item.id,
+                title: item.title,
+                poster: item.poster,
+                banner: item.banner,
+                backdrop: item.banner,
+                type: item.type,
+                progress: item.progress,
+                episodeId: item.episodeId,
+                seasonNumber: item.seasonNumber,
+                episodeNumber: item.episodeNumber
+              }))}
+              onRemove={(id, type, episodeId) => {
+                console.log("Removendo item:", id, type, episodeId);
+              }}
+            />
+          ) : (
+            <div className="px-4 md:px-8 py-4">
+              <h2 className="text-lg font-semibold text-white mb-2">Continuar Assistindo</h2>
+              <p className="text-sm text-gray-400">Comece a assistir algo para ver aqui</p>
+            </div>
+          )}
         </div>
       ) : null}
 
