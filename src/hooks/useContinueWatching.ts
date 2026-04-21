@@ -143,7 +143,7 @@ export const useContinueWatching = () => {
         console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
         console.log('📺 [useContinueWatching] Tipos dos IDs:', seriesIds.map((id: any) => typeof id));
         
-        // Buscar séries individualmente para evitar problemas com bigint
+        // Buscar séries individualmente - content_id corresponde ao campo 'id', não 'id_n'
         console.log('📺 [useContinueWatching] Buscando séries individualmente...');
         
         const seriesData: any[] = [];
@@ -151,8 +151,8 @@ export const useContinueWatching = () => {
           console.log(`📺 [useContinueWatching] Buscando série ID: ${id} (tipo: ${typeof id})`);
           const { data: serie, error: serieError } = await supabase
             .from('series')
-            .select('id_n, titulo, capa, banner')
-            .eq('id_n', id)
+            .select('id, id_n, titulo, capa, banner')
+            .eq('id', id)
             .maybeSingle();
           
           if (serieError) {
@@ -167,8 +167,8 @@ export const useContinueWatching = () => {
         
         console.log('📺 [useContinueWatching] Total de séries encontradas:', seriesData.length);
         
-        // Criar map com IDs como string para compatibilidade
-        const seriesMap = new Map(seriesData?.map(s => [String(s.id_n), s]) || []);
+        // Criar map com IDs (content_id) como chave
+        const seriesMap = new Map(seriesData?.map(s => [String(s.id), s]) || []);
         console.log('📺 [useContinueWatching] Map de séries criado:', Array.from(seriesMap.entries()));
         console.log('📺 [useContinueWatching] IDs buscados vs encontrados:', { 
           buscados: seriesIds, 
