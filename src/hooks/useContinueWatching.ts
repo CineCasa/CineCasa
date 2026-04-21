@@ -143,36 +143,57 @@ export const useContinueWatching = () => {
         console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
         console.log('📺 [useContinueWatching] Tipos dos IDs:', seriesIds.map((id: any) => typeof id));
         
-        // Buscar séries individualmente - content_id corresponde ao campo 'id_n'
+        // Buscar séries individualmente - tentar por id_n e depois por tmdb_id
         console.log('📺 [useContinueWatching] Buscando séries individualmente...');
         
         const seriesData: any[] = [];
         for (const id of seriesIds) {
           console.log(`📺 [useContinueWatching] Buscando série ID: ${id} (tipo: ${typeof id})`);
-          const { data: serie, error: serieError } = await supabase
+          
+          // Tentar buscar por id_n primeiro
+          let { data: serie, error: serieError } = await supabase
             .from('series')
-            .select('id_n, titulo, capa, banner')
+            .select('id_n, titulo, capa, banner, tmdb_id')
             .eq('id_n', id)
             .maybeSingle();
+          
+          // Se não encontrou, tentar por tmdb_id
+          if (!serie && !serieError) {
+            console.log(`📺 [useContinueWatching] ID ${id} não encontrado em id_n, tentando tmdb_id...`);
+            const result = await supabase
+              .from('series')
+              .select('id_n, titulo, capa, banner, tmdb_id')
+              .eq('tmdb_id', id.toString())
+              .maybeSingle();
+            serie = result.data;
+            serieError = result.error;
+          }
           
           if (serieError) {
             console.log(`📺 [useContinueWatching] Erro ao buscar série ${id}:`, serieError);
           } else if (serie) {
-            console.log(`📺 [useContinueWatching] Série ${id} encontrada:`, serie.titulo);
+            console.log(`📺 [useContinueWatching] Série ${id} encontrada: ${serie.titulo} (id_n: ${serie.id_n}, tmdb_id: ${serie.tmdb_id})`);
             seriesData.push(serie);
           } else {
-            console.log(`📺 [useContinueWatching] Série ${id} NÃO encontrada na tabela`);
+            console.log(`📺 [useContinueWatching] Série ${id} NÃO encontrada na tabela (nem id_n nem tmdb_id)`);
           }
         }
         
         console.log('📺 [useContinueWatching] Total de séries encontradas:', seriesData.length);
         
-        // Criar map com IDs (content_id = id_n) como chave
-        const seriesMap = new Map(seriesData?.map(s => [String(s.id_n), s]) || []);
+        // Criar map com IDs (tanto id_n quanto tmdb_id) como chaves
+        // Isso permite encontrar a série tanto pelo id_n quanto pelo tmdb_id
+        const seriesMap = new Map<string, any>();
+        seriesData?.forEach(s => {
+          seriesMap.set(String(s.id_n), s);
+          if (s.tmdb_id) {
+            seriesMap.set(String(s.tmdb_id), s);
+          }
+        });
         console.log('📺 [useContinueWatching] Map de séries criado:', Array.from(seriesMap.entries()));
-        console.log('📺 [useContinueWatching] IDs buscados vs encontrados:', { 
-          buscados: seriesIds, 
-          encontrados: seriesData?.map(s => s.id_n) 
+        console.log('📺 [useContinueWatching] IDs buscados vs encontrados:', {
+          buscados: seriesIds,
+          encontrados: seriesData?.map(s => ({ id_n: s.id_n, tmdb_id: s.tmdb_id, titulo: s.titulo }))
         });
         
         seriesProgress.forEach((progress: any, index: number) => {
