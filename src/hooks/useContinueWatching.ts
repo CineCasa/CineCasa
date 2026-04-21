@@ -206,20 +206,20 @@ export const useContinueWatching = () => {
         duration: Math.floor(totalDuration),
         progress: progress,
         updated_at: new Date().toISOString(),
-        content_type: type,
+        content_type: type === 'movie' ? 'movie' : 'series',
       };
 
       if (type === 'movie') {
-        data.cinema_id = contentId;
+        data.cinema_id = parseInt(contentId);
       } else {
-        data.serie_id = contentId;
-        data.episodio_id = episodeId;
+        data.serie_id = parseInt(contentId);
+        data.episodio_id = episodeId ? parseInt(episodeId) : null;
         data.season_number = seasonNumber;
       }
 
-      // Upsert - atualizar ou inserir
+      // Upsert - atualizar ou inserir (usando user_progress em vez de watch_progress)
       await (supabase
-        .from('watch_progress') as any)
+        .from('user_progress') as any)
         .upsert(data, {
           onConflict: type === 'movie' 
             ? 'user_id,cinema_id' 

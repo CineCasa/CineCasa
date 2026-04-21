@@ -117,12 +117,17 @@ const DeviceAccessManager = ({ children }: DeviceAccessProps) => {
 
   const registerNewDevice = async (userId: string, fingerprint: string, ipAddress: string, userAgent: string) => {
     try {
+      // Usar insert direto na tabela em vez de RPC com parâmetros incorretos
       const { error } = await supabase
-        .rpc('register_device_session_simple', {
-          user_id_param: userId,
+        .from('device_sessions')
+        .upsert({
+          user_id: userId,
           device_fingerprint: fingerprint,
           ip_address: ipAddress,
-          user_agent: userAgent
+          user_agent: userAgent,
+          last_activity: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,device_fingerprint'
         });
 
       if (error) {

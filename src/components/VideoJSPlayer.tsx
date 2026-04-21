@@ -462,7 +462,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         profile_id: profile.id,
         content_id: contentId,
         content_type: contentType || 'movie',
-        titulo: title,
+        title: title,
         poster: poster || '',
         progress: Math.round(progressPercent),
         duration: Math.round(dur),
