@@ -219,10 +219,10 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
       return;
     }
     
-    // Avoid saving too frequently
+    // Avoid saving too frequently - permitir a cada 10 segundos
     const now = Date.now();
-    if (now - lastSavedTime.current < 5000) {
-      console.log('[ElitePlayer] ❌ Salvamento abortado: muito frequente');
+    if (now - lastSavedTime.current < 10000) {
+      console.log('[ElitePlayer] ⏭️ Salvamento pulado (throttle):', Math.round((now - lastSavedTime.current) / 1000), 's desde último save');
       return;
     }
     
