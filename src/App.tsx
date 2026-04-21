@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -37,23 +37,33 @@ import PublicNotifications from "./pages/PublicNotifications";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import { useSilentUpdate } from "@/hooks/useSilentUpdate";
+import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
 const queryClient = new QueryClient();
 
 // Componente para proteger rotas - redireciona para login se não autenticado
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { allCriticalReady, setAuthReady } = useAppLoading();
   const location = useLocation();
 
-  console.log('[ProtectedRoute] loading:', loading, 'user:', !!user);
+  // Notificar quando auth estiver pronto
+  useEffect(() => {
+    if (!authLoading && user) {
+      setAuthReady(true);
+    }
+  }, [authLoading, user, setAuthReady]);
 
-  // Aguardar o carregamento da autenticação - mostra LoadingScreen com logo e progress bar
-  if (loading) {
-    console.log('[ProtectedRoute] Exibindo LoadingScreen com logo');
+  console.log('[ProtectedRoute] authLoading:', authLoading, 'user:', !!user, 'allCriticalReady:', allCriticalReady);
+
+  // Aguardar autenticação E conteúdo crítico (imagens do hero, primeiro row)
+  if (authLoading || (user && !allCriticalReady)) {
+    console.log('[ProtectedRoute] Exibindo LoadingScreen - aguardando auth e conteúdo crítico');
     return (
       <LoadingScreen 
         isLoading={true} 
-        duration={3}
+        duration={8}
         onComplete={() => console.log('[ProtectedRoute] Loading completo')}
       />
     );
@@ -61,11 +71,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (!user) {
     console.log('[ProtectedRoute] Sem usuário, redirecionando para login');
-    // Redireciona para login, salvando a rota atual para redirecionar de volta após login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  console.log('[ProtectedRoute] Usuário autenticado, renderizando children');
+  console.log('[ProtectedRoute] Tudo pronto - renderizando children');
   return <>{children}</>;
 };
 
@@ -169,6 +178,14 @@ const AppContent = () => {
   const isLoggedIn = !!user;
   const { isPlayerOpen } = usePlayer();
   
+  // Atualização silenciosa do PWA - verifica a cada 5 minutos
+  useSilentUpdate({
+    checkInterval: 5 * 60 * 1000, // 5 minutos
+    onUpdateAvailable: () => {
+      console.log('[App] Nova versão disponível - atualizará silenciosamente');
+    }
+  });
+  
   console.log('[AppContent] pathname:', location.pathname, 'isLoginPage:', isLoginPage, 'isPlayerOpen:', isPlayerOpen);
 
   // Quando player está aberto, esconder ambas as barras de navegação
@@ -200,15 +217,17 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <AuthProvider>
-          <DeviceAccessManager>
-            <BrowserRouter>
-              <PlayerProvider>
-                <AppContent />
-              </PlayerProvider>
-            </BrowserRouter>
-          </DeviceAccessManager>
-        </AuthProvider>
+        <AppLoadingProvider>
+          <AuthProvider>
+            <DeviceAccessManager>
+              <BrowserRouter>
+                <PlayerProvider>
+                  <AppContent />
+                </PlayerProvider>
+              </BrowserRouter>
+            </DeviceAccessManager>
+          </AuthProvider>
+        </AppLoadingProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

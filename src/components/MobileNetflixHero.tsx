@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import { useAppLoading } from '@/contexts/AppLoadingContext';
 
 interface BannerContent {
   id: string;
@@ -28,11 +29,32 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled;
 };
 
+// Função para pré-carregar imagens
+const preloadImages = (urls: string[]): Promise<void[]> => {
+  return Promise.all(
+    urls.map(url => 
+      new Promise<void>((resolve) => {
+        if (!url || url.trim() === '' || url.toLowerCase().includes('none')) {
+          resolve();
+          return;
+        }
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = url;
+        // Timeout de segurança
+        setTimeout(() => resolve(), 3000);
+      })
+    )
+  );
+};
+
 export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentType = 'series' }) => {
   console.log('[MobileNetflixHero] Componente montado, contentType:', contentType);
   const [displayQueue, setDisplayQueue] = useState<BannerContent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const { setHeroImagesReady } = useAppLoading();
 
   const fetchPosters = useCallback(async () => {
     try {
@@ -46,9 +68,14 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
       const yearCol = isSeries ? 'ano' : 'year';
       const idCol = isSeries ? 'id_n' : 'id';
 
+      // Séries não têm coluna description, apenas filmes
+      const selectCols = isSeries 
+        ? `${idCol}, titulo, ${posterCol}, ${yearCol}, trailer, rating, genero`
+        : `${idCol}, titulo, ${posterCol}, ${yearCol}, description, trailer, rating, genero`;
+      
       const { data, error } = await supabase
         .from(tableName)
-        .select(`${idCol}, titulo, ${posterCol}, ${yearCol}, description, trailer, rating, genero`)
+        .select(selectCols)
         .not(posterCol, 'is', null)
         .not(posterCol, 'eq', '');
 
@@ -76,16 +103,33 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
           rating: item.rating,
           genre: item.genero
         }));
-        setDisplayQueue(shuffleArray(transformed).slice(0, 20));
+        
+        // Pegar apenas os primeiros 5 itens para o hero
+        const shuffled = shuffleArray(transformed).slice(0, 5);
+        
+        // Pré-carregar as imagens antes de mostrar
+        console.log('[MobileNetflixHero] Pré-carregando', shuffled.length, 'imagens...');
+        const posterUrls = shuffled.map(item => item.poster).filter(url => url && url.trim() !== '');
+        await preloadImages(posterUrls);
+        console.log('[MobileNetflixHero] Imagens pré-carregadas!');
+        
+        setDisplayQueue(shuffled);
+        
+        // Notificar que imagens do hero estão prontas
+        setHeroImagesReady(true);
       } else {
         console.warn('[MobileNetflixHero] Nenhum dado retornado do Supabase');
+        // Mesmo sem dados, marcar como pronto para não travar
+        setHeroImagesReady(true);
       }
     } catch (err) {
       console.error('[MobileNetflixHero] Erro:', err);
+      // Marcar como pronto mesmo com erro para não travar
+      setHeroImagesReady(true);
     } finally {
       setIsLoading(false);
     }
-  }, [contentType]);
+  }, [contentType, setHeroImagesReady]);
 
   useEffect(() => { fetchPosters(); }, [fetchPosters]);
 
@@ -96,13 +140,13 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   }, [displayQueue.length]);
 
   if (isLoading) return (
-    <div className="relative w-full h-[60vh] bg-neutral-900 flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+    <div className="relative w-full h-[70vh] bg-black flex items-center justify-center z-50">
+      <div className="w-8 h-8 border-2 border-[#00E5FF] border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   if (displayQueue.length === 0) return (
-    <div className="relative w-full h-[60vh] bg-neutral-900 flex items-center justify-center">
+    <div className="relative w-full h-[70vh] bg-black flex items-center justify-center z-50">
       <p className="text-gray-400 text-sm">Nenhum conteúdo disponível</p>
     </div>
   );
@@ -111,7 +155,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
   const typePath = contentType === 'movies' ? 'cinema' : 'series';
 
   return (
-    <div className="relative w-full h-[70vh] bg-black overflow-hidden top-0">
+    <div className="relative w-full h-[70vh] bg-black overflow-hidden top-0 z-50">
       {/* Hero Banner - Full height with overlaid content */}
         <AnimatePresence mode="wait">
           <motion.div

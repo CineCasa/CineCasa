@@ -16,6 +16,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { AvatarCustomizer } from '@/components/AvatarCustomizer';
+import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
 
 // ============================================
 // TYPES & INTERFACES
@@ -50,28 +51,6 @@ interface Profile {
   isKid: boolean;
   color: string;
 }
-
-// ============================================
-// MOCK DATA ( será substituído por Supabase )
-// ============================================
-const MOCK_DEVICES: Device[] = [
-  { id: '1', name: 'Smart TV Samsung', type: 'tv', location: 'São Paulo, BR', lastActive: 'Agora', isCurrent: false },
-  { id: '2', name: 'iPhone 15 Pro', type: 'mobile', location: 'São Paulo, BR', lastActive: '2 horas atrás', isCurrent: true },
-  { id: '3', name: 'Chrome - Windows', type: 'web', location: 'Rio de Janeiro, BR', lastActive: '3 dias atrás', isCurrent: false },
-];
-
-const MOCK_INVOICES: Invoice[] = [
-  { id: '1', date: '15 Jan 2025', amount: 'R$ 29,90', status: 'paid', description: 'Plano Premium - Jan/25' },
-  { id: '2', date: '15 Dez 2024', amount: 'R$ 29,90', status: 'paid', description: 'Plano Premium - Dez/24' },
-  { id: '3', date: '15 Nov 2024', amount: 'R$ 29,90', status: 'paid', description: 'Plano Premium - Nov/24' },
-];
-
-const MOCK_PROFILES: Profile[] = [
-  { id: '1', name: 'João', avatar: 'J', isKid: false, color: 'from-cyan-500 to-blue-500' },
-  { id: '2', name: 'Maria', avatar: 'M', isKid: false, color: 'from-purple-500 to-pink-500' },
-  { id: '3', name: 'Pedro', avatar: 'P', isKid: true, color: 'from-green-500 to-emerald-500' },
-  { id: '4', name: '+', avatar: '+', isKid: false, color: 'from-gray-600 to-gray-700' },
-];
 
 // ============================================
 // COMPONENT: NEON SWITCH
@@ -186,8 +165,14 @@ export default function Profile() {
   // Estados de Configurações
   const [parentalControl, setParentalControl] = useState(false);
   const [pinEnabled, setPinEnabled] = useState(false);
-  const [devices, setDevices] = useState<Device[]>(MOCK_DEVICES);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [removingDevice, setRemovingDevice] = useState<string | null>(null);
+  
+  // Dados reais do usuário
+  const [watchHistory, setWatchHistory] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [watchProgress, setWatchProgress] = useState<any[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(true);
   
   // Configurações de Legenda
   const [subtitleSettings, setSubtitleSettings] = useState<SubtitleSettings>({
@@ -206,7 +191,71 @@ export default function Profile() {
   // ============================================
   // HANDLERS
   // ============================================
-  
+
+  useEffect(() => {
+    if (user?.id) {
+      loadUserData();
+    }
+  }, [user?.id]);
+
+  const loadUserData = async () => {
+    if (!user?.id) return;
+    
+    setIsLoadingData(true);
+    try {
+      // Buscar histórico de assistidos
+      const { data: history } = await supabase
+        .from('watch_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('watched_at', { ascending: false })
+        .limit(10);
+      
+      if (history) setWatchHistory(history);
+
+      // Buscar favoritos
+      const { data: favs } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', user.id)
+        .limit(10);
+      
+      if (favs) setFavorites(favs);
+
+      // Buscar progresso de visualização
+      const { data: progress } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .gt('progress_seconds', 0)
+        .limit(10);
+      
+      if (progress) setWatchProgress(progress);
+
+      // Buscar dispositivos
+      const { data: userDevices } = await supabase
+        .from('device_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('last_activity', { ascending: false });
+      
+      if (userDevices) {
+        setDevices(userDevices.map(d => ({
+          id: d.id,
+          name: d.device_name || 'Dispositivo Desconhecido',
+          type: d.device_type || 'unknown',
+          location: d.ip_address || 'Localização Desconhecida',
+          lastActive: new Date(d.last_activity).toLocaleString('pt-BR'),
+          isCurrent: d.device_fingerprint === localStorage.getItem('device_fingerprint')
+        })));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do usuário:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
   const handleSaveProfile = async () => {
     try {
       // Optimistic update
@@ -238,19 +287,19 @@ export default function Profile() {
   };
 
   const handleRemoveDevice = async (deviceId: string) => {
-    // Optimistic removal
-    setRemovingDevice(deviceId);
-    
     try {
-      // Simular API call - será substituído por Supabase
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const { error } = await supabase
+        .from('device_sessions')
+        .delete()
+        .eq('id', deviceId);
       
-      setDevices(prev => prev.filter(d => d.id !== deviceId));
-      toast.success('Sessão encerrada com sucesso!');
+      if (error) throw error;
+      
+      setDevices(devices.filter(d => d.id !== deviceId));
+      toast.success('Dispositivo removido com sucesso');
     } catch (error) {
-      toast.error('Erro ao encerrar sessão');
-    } finally {
-      setRemovingDevice(null);
+      console.error('Erro ao remover dispositivo:', error);
+      toast.error('Erro ao remover dispositivo');
     }
   };
 
@@ -453,7 +502,7 @@ export default function Profile() {
           </motion.div>
 
           {/* ============================================
-              DASHBOARD DE ATIVIDADE - 3 Cards Glassmorphism
+              DASHBOARD DE ATIVIDADE
               ============================================ */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -462,30 +511,30 @@ export default function Profile() {
             className="mb-8"
           >
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
-              <BarChart3 className="w-5 h-5 text-cyan-400" />
-              Sua Atividade
+              <Activity className="w-5 h-5 text-cyan-400" />
+              Dashboard de Atividade
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
                 { 
                   icon: Film, 
-                  value: '124', 
+                  value: isLoadingData ? '...' : watchHistory.length.toString(), 
                   label: 'Filmes Assistidos',
                   gradient: 'from-cyan-500/20 to-blue-500/20',
                   iconColor: 'text-cyan-400'
                 },
                 { 
                   icon: Clock, 
-                  value: '47h', 
+                  value: isLoadingData ? '...' : Math.floor(watchHistory.length * 1.5) + 'h', 
                   label: 'Horas Assistidas',
                   gradient: 'from-purple-500/20 to-pink-500/20',
                   iconColor: 'text-purple-400'
                 },
                 { 
                   icon: Star, 
-                  value: '4.2', 
-                  label: 'Avaliação Média',
+                  value: isLoadingData ? '...' : favorites.length.toString(), 
+                  label: 'Favoritos',
                   gradient: 'from-green-500/20 to-emerald-500/20',
                   iconColor: 'text-green-400'
                 },
@@ -528,26 +577,36 @@ export default function Profile() {
             
             <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
               <div className="flex flex-wrap items-center gap-4">
-                {MOCK_PROFILES.map((p, index) => (
+                {/* Perfil atual do usuário */}
+                {profile && (
                   <motion.button
-                    key={p.id}
+                    key={profile.id}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3 + index * 0.05 }}
+                    transition={{ delay: 0.3 }}
                     whileHover={{ scale: 1.1 }}
                     className="group relative"
                   >
-                    <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br ${p.color} flex items-center justify-center shadow-lg group-hover:shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-shadow duration-300 ${p.name === '+' ? 'border-2 border-dashed border-white/30' : ''}`}>
-                      <span className="text-2xl md:text-3xl font-bold text-white">{p.avatar}</span>
+                    <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg group-hover:shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-shadow duration-300`}>
+                      <span className="text-2xl md:text-3xl font-bold text-white">{profile.username?.charAt(0).toUpperCase() || 'U'}</span>
                     </div>
-                    {p.isKid && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-xs">👶</span>
-                      </div>
-                    )}
-                    <p className="text-center text-sm text-white/70 mt-2 group-hover:text-cyan-300 transition-colors">{p.name}</p>
+                    <p className="text-center text-sm text-white/70 mt-2 group-hover:text-cyan-300 transition-colors">{profile.username || 'Usuário'}</p>
                   </motion.button>
-                ))}
+                )}
+                
+                {/* Botão para adicionar novo perfil */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.35 }}
+                  whileHover={{ scale: 1.1 }}
+                  className="group relative"
+                >
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-black/50 border-2 border-dashed border-white/30 flex items-center justify-center shadow-lg group-hover:border-cyan-400/50 transition-all duration-300">
+                    <span className="text-2xl md:text-3xl font-bold text-white/50">+</span>
+                  </div>
+                  <p className="text-center text-sm text-white/50 mt-2 group-hover:text-cyan-300 transition-colors">Adicionar</p>
+                </motion.button>
               </div>
             </div>
           </motion.div>
@@ -593,6 +652,33 @@ export default function Profile() {
                 />
               </motion.div>
             )}
+          </motion.div>
+
+          {/* ============================================
+              FOTO DE PERFIL
+              ============================================ */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="mb-8"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-white flex items-center gap-2" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
+                <Camera className="w-5 h-5 text-cyan-400" />
+                Foto de Perfil
+              </h2>
+            </div>
+            
+            <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+              <ProfilePhotoUploader
+                userId={user?.id}
+                profileId={profile?.id}
+                onPhotoChange={(url) => {
+                  toast.success(url ? 'Foto de perfil atualizada!' : 'Foto de perfil removida');
+                }}
+              />
+            </div>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -678,28 +764,11 @@ export default function Profile() {
                 Histórico de Faturas
               </h2>
               
-              <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
-                <div className="divide-y divide-white/5">
-                  {MOCK_INVOICES.map((invoice) => (
-                    <div 
-                      key={invoice.id}
-                      className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white/5 rounded-lg">
-                          <FileText className="w-4 h-4 text-cyan-400" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-white text-sm">{invoice.description}</div>
-                          <div className="text-xs text-white/40">{invoice.date}</div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-white">{invoice.amount}</span>
-                        {getStatusBadge(invoice.status)}
-                      </div>
-                    </div>
-                  ))}
+              <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-2xl p-6 text-center">
+                <div className="p-4 bg-white/5 rounded-xl">
+                  <FileText className="w-8 h-8 text-cyan-400 mx-auto mb-3" />
+                  <p className="text-white/70 text-sm">Nenhuma fatura encontrada</p>
+                  <p className="text-white/40 text-xs mt-1">Suas faturas aparecerão aqui</p>
                 </div>
               </div>
             </motion.div>

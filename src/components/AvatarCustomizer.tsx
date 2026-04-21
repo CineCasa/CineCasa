@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { Palette, RotateCcw, Save, Download, Upload, Sparkles, Crown, Star, Lock, Unlock } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui';
-import { Badge } from '@/components/ui';
+import { useState, useCallback, useEffect } from 'react';
+import { Palette, RotateCcw, Save, User, Shirt, Glasses, Sparkles, Crown, Star, Download, Upload } from 'lucide-react';
+import { Card, Badge } from '@/components/ui';
 import { Button } from '@/components/ui';
-import { useAvatarCustomization, useAvatarPreview } from '@/hooks/useAvatarCustomization';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AvatarCustomizerProps {
   userId?: string;
@@ -13,6 +12,16 @@ interface AvatarCustomizerProps {
   className?: string;
 }
 
+const BODY_TYPES = ['slim', 'average', 'athletic', 'plus'] as const;
+const SKIN_TONES = ['#F5D0A9', '#E8C39E', '#D4A574', '#B8956A', '#9C7B5C', '#7D5A3C', '#5C3A21', '#3D2314'] as const;
+const HAIR_STYLES = ['short', 'medium', 'long', 'bald', 'mohawk', 'afro', 'curly'] as const;
+const HAIR_COLORS = ['#000000', '#2C2C2C', '#4A3728', '#8B4513', '#D2691E', '#FFD700', '#DC143C', '#4B0082'] as const;
+const EYE_COLORS = ['#4A6741', '#5D4E37', '#8B4513', '#6495ED', '#808080', '#40E0D0'] as const;
+const SHIRT_TYPES = ['basic', 'polo', 'hoodie', 'jacket', 'formal'] as const;
+const SHIRT_COLORS = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#1F2937', '#FFFFFF'] as const;
+const ACCESSORIES = ['none', 'glasses', 'sunglasses', 'hat', 'cap'] as const;
+const EXPRESSIONS = ['neutral', 'smile', 'laugh', 'serious', 'wink'] as const;
+
 export function AvatarCustomizer({
   userId,
   profileId,
@@ -20,176 +29,135 @@ export function AvatarCustomizer({
   className,
 }: AvatarCustomizerProps) {
   const [activeTab, setActiveTab] = useState<'appearance' | 'clothing' | 'accessories' | 'special'>('appearance');
-  const [showPreview, setShowPreview] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
-
-  const {
-    customization,
-    availableItems,
-    itemsByCategory,
-    isLoading,
-    isSaving,
-    isUnlocking,
-    updateCustomization,
-    resetCustomization,
-    randomizeCustomization,
-    saveCustomization,
-    generateAvatarUrl,
-    isItemUnlocked,
-    exportCustomization,
-    importCustomization,
-    hasSpecialItems,
-  } = useAvatarCustomization({
-    userId,
-    profileId,
-    enableSpecialItems: true,
-    enableAnimations: true,
-    autoSave: false,
+  const [avatar, setAvatar] = useState({
+    bodyType: 'average',
+    skinTone: '#E8C39E',
+    hairStyle: 'short',
+    hairColor: '#4A3728',
+    eyeColor: '#4A6741',
+    shirtType: 'basic',
+    shirtColor: '#3B82F6',
+    accessory: 'none',
+    expression: 'neutral',
   });
 
-  const {
-    previewUrl,
-    isGenerating,
-    generatePreview,
-  } = useAvatarPreview(customization);
+  // Carregar avatar salvo
+  useEffect(() => {
+    if (!userId) return;
+    
+    const loadAvatar = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('avatar_customization')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      if (data?.avatar_customization) {
+        setAvatar(prev => ({ ...prev, ...data.avatar_customization }));
+      }
+    };
+    
+    loadAvatar();
+  }, [userId]);
 
-  const handleSave = () => {
-    saveCustomization(customization);
-    onSave?.(customization);
-  };
+  const updateAvatar = useCallback((key: string, value: string) => {
+    setAvatar(prev => ({ ...prev, [key]: value }));
+  }, []);
 
-  const handleImport = async () => {
-    if (importFile) {
-      await importCustomization(importFile);
-      setImportFile(null);
+  const handleSave = async () => {
+    if (!userId) return;
+    
+    setIsSaving(true);
+    try {
+      await supabase
+        .from('profiles')
+        .update({ 
+          avatar_customization: avatar,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+      
+      onSave?.(avatar);
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleUnlockItem = (itemId: string, cost: number) => {
-    // Em produção, verificaria se usuário tem pontos suficientes
-    if (window.confirm(`Desbloquear este item por ${cost} pontos?`)) {
-      // unlockItem.mutate({ itemId, cost });
+  const resetAvatar = () => {
+    setAvatar({
+      bodyType: 'average',
+      skinTone: '#E8C39E',
+      hairStyle: 'short',
+      hairColor: '#4A3728',
+      eyeColor: '#4A6741',
+      shirtType: 'basic',
+      shirtColor: '#3B82F6',
+      accessory: 'none',
+      expression: 'neutral',
+    });
+  };
+
+  const exportCustomization = () => {
+    const dataStr = JSON.stringify(avatar, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'avatar-customization.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const importCustomization = async (file: File) => {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      setAvatar(prev => ({ ...prev, ...data }));
+    } catch (error) {
+      console.error('Erro ao importar:', error);
     }
   };
 
-  const renderCustomizationOption = <T extends string>(
-    category: string,
-    options: readonly T[],
-    currentValue: T,
-    onChange: (value: T) => void
-  ) => (
-    <div className="space-y-2">
-      <div className="text-sm font-medium text-gray-300 capitalize">{category}</div>
-      <div className="grid grid-cols-3 gap-2">
-        {options.map(option => (
-          <button
-            key={option}
-            onClick={() => onChange(option)}
-            className={cn(
-              'p-3 rounded-lg border-2 transition-all',
-              currentValue === option
-                ? 'border-primary bg-primary/10'
-                : 'border-gray-700 hover:border-gray-600'
-            )}
-          >
-            <div className="w-8 h-8 mx-auto mb-1 bg-gray-700 rounded-full" />
-            <div className="text-xs text-gray-300 capitalize">{option}</div>
-          </button>
-        ))}
-      </div>
+  // Renderizar opções de customização
+  const renderOptionGrid = (options: readonly string[], currentValue: string, onSelect: (value: string) => void) => (
+    <div className="grid grid-cols-3 gap-2">
+      {options.map(option => (
+        <button
+          key={option}
+          onClick={() => onSelect(option)}
+          className={cn(
+            'p-2 rounded-lg border-2 text-xs transition-all',
+            currentValue === option
+              ? 'border-cyan-400 bg-cyan-400/20 text-white'
+              : 'border-gray-700 text-gray-400 hover:border-gray-600'
+          )}
+        >
+          {option.charAt(0).toUpperCase() + option.slice(1)}
+        </button>
+      ))}
     </div>
   );
 
-  const renderColorPicker = (
-    category: string,
-    currentValue: string,
-    onChange: (value: string) => void
-  ) => {
-    const colors = [
-      '#000000', '#1F2937', '#374151', '#6B7280', '#9CA3AF',
-      '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
-      '#EC4899', '#F97316', '#84CC16', '#06B6D4', '#6366F1',
-    ];
-
-    return (
-      <div className="space-y-2">
-        <div className="text-sm font-medium text-gray-300">{category}</div>
-        <div className="grid grid-cols-6 gap-2">
-          {colors.map(color => (
-            <button
-              key={color}
-              onClick={() => onChange(color)}
-              className={cn(
-                'w-10 h-10 rounded-lg border-2 transition-all',
-                currentValue === color
-                  ? 'border-primary scale-110'
-                  : 'border-gray-700 hover:border-gray-600'
-              )}
-              style={{ backgroundColor: color }}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderSpecialItems = (category: string, items: any[]) => (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="text-sm font-medium text-gray-300 capitalize">{category}</div>
-        <Badge variant="secondary" size="xs">
-          {items.filter(item => isItemUnlocked(item.id)).length}/{items.length}
-        </Badge>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {items.map(item => (
-          <Card
-            key={item.id}
-            variant={isItemUnlocked(item.id) ? 'default' : 'outlined'}
-            size="sm"
-            className={cn(
-              'cursor-pointer transition-all',
-              !isItemUnlocked(item.id) && 'opacity-50'
-            )}
-            onClick={() => {
-              if (isItemUnlocked(item.id)) {
-                // Aplicar item
-              } else {
-                handleUnlockItem(item.id, item.price || 100);
-              }
-            }}
-          >
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 bg-gray-700 rounded-lg" />
-                {item.price && !isItemUnlocked(item.id) && (
-                  <Badge variant="secondary" size="xs">
-                    <Lock className="w-3 h-3" />
-                    {item.price}
-                  </Badge>
-                )}
-              </div>
-              <div className="text-xs text-gray-300">{item.name}</div>
-              {item.unlockCondition && (
-                <div className="text-xs text-gray-500 mt-1">{item.unlockCondition}</div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+  // Renderizar seletor de cor
+  const renderColorGrid = (colors: readonly string[], currentValue: string, onSelect: (value: string) => void) => (
+    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+      {colors.map(color => (
+        <button
+          key={color}
+          onClick={() => onSelect(color)}
+          className={cn(
+            'w-10 h-10 rounded-lg border-2 transition-all',
+            currentValue === color ? 'border-white scale-110' : 'border-gray-700'
+          )}
+          style={{ backgroundColor: color }}
+        />
+      ))}
     </div>
   );
-
-  if (isLoading) {
-    return (
-      <div className={cn('space-y-6', className)}>
-        <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 text-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <div className="text-gray-400">Carregando customização...</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -197,11 +165,11 @@ export function AvatarCustomizer({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Palette className="w-6 h-6 text-primary" />
-            Customizar Avatar
+            <Palette className="w-6 h-6 text-cyan-400" />
+            Personalizar Avatar
           </h2>
-          <p className="text-gray-400 mt-1">
-            Personalize seu avatar com aparência, roupas e acessórios exclusivos
+          <p className="text-gray-400 mt-1 text-sm">
+            Escolha opções de aparência, roupas e acessórios
           </p>
         </div>
         
@@ -209,18 +177,10 @@ export function AvatarCustomizer({
           <Button
             variant="outline"
             size="sm"
-            onClick={randomizeCustomization}
+            onClick={resetAvatar}
             className="text-gray-400 border-gray-700"
           >
             <RotateCcw className="w-4 h-4 mr-2" />
-            Aleatório
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={resetCustomization}
-            className="text-gray-400 border-gray-700"
-          >
             Resetar
           </Button>
         </div>
@@ -228,35 +188,9 @@ export function AvatarCustomizer({
 
       {/* Preview */}
       <Card variant="elevated" className="p-6">
-        <div className="flex items-center justify-center">
-          <div className="relative">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-600 to-gray-700 flex items-center justify-center">
-              {/* Preview do avatar */}
-              <div className="text-4xl">👤</div>
-            </div>
-            
-            {/* Badge de preview */}
-            {showPreview && (
-              <Badge variant="primary" className="absolute -top-2 -right-2">
-                <Sparkles className="w-3 h-3" />
-              </Badge>
-            )}
-          </div>
-        </div>
+        {renderPreview()}
         
         <div className="flex justify-center gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              generatePreview();
-              setShowPreview(true);
-            }}
-            disabled={isGenerating}
-            className="text-gray-400 border-gray-700"
-          >
-            {isGenerating ? 'Gerando...' : 'Preview'}
-          </Button>
           <Button
             variant="primary"
             size="sm"
@@ -284,7 +218,7 @@ export function AvatarCustomizer({
             className={cn(
               'flex items-center gap-2 px-4 py-2 border-b-2 transition-colors',
               activeTab === tab.id
-                ? 'border-primary text-primary'
+                ? 'border-cyan-400 text-cyan-400'
                 : 'border-transparent text-gray-400 hover:text-gray-300'
             )}
           >
@@ -299,176 +233,72 @@ export function AvatarCustomizer({
         {/* Aparência */}
         {activeTab === 'appearance' && (
           <div className="space-y-6">
-            {renderCustomizationOption(
-              'Tipo de corpo',
-              ['slim', 'average', 'athletic', 'plus'] as const,
-              customization.bodyType,
-              (value) => updateCustomization({ bodyType: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Tipo de Corpo</div>
+              {renderOptionGrid(BODY_TYPES, avatar.bodyType, (val) => updateAvatar('bodyType', val))}
+            </div>
             
-            {renderColorPicker(
-              'Tom de pele',
-              customization.skinTone,
-              (value) => updateCustomization({ skinTone: value as 'light' | 'medium' | 'tan' | 'dark' | 'deep' })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Tom de Pele</div>
+              {renderColorGrid(SKIN_TONES, avatar.skinTone, (val) => updateAvatar('skinTone', val))}
+            </div>
             
-            {renderCustomizationOption(
-              'Formato do rosto',
-              ['round', 'square', 'heart', 'oval', 'diamond'] as const,
-              customization.faceShape,
-              (value) => updateCustomization({ faceShape: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Estilo de Cabelo</div>
+              {renderOptionGrid(HAIR_STYLES, avatar.hairStyle, (val) => updateAvatar('hairStyle', val))}
+            </div>
             
-            {renderCustomizationOption(
-              'Cabelo',
-              ['short', 'medium', 'long', 'bald', 'ponytail', 'mohawk', 'buzzcut'] as const,
-              customization.hairStyle,
-              (value) => updateCustomization({ hairStyle: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Cor do Cabelo</div>
+              {renderColorGrid(HAIR_COLORS, avatar.hairColor, (val) => updateAvatar('hairColor', val))}
+            </div>
             
-            {renderColorPicker(
-              'Cor do cabelo',
-              customization.hairColor,
-              (value) => updateCustomization({ hairColor: value as 'black' | 'brown' | 'blonde' | 'red' | 'gray' | 'blue' | 'pink' | 'purple' | 'green' })
-            )}
-            
-            {renderCustomizationOption(
-              'Barba',
-              ['none', 'beard', 'mustache', 'goatee', 'full'] as const,
-              customization.facialHair,
-              (value) => updateCustomization({ facialHair: value })
-            )}
-            
-            {renderCustomizationOption(
-              'Olhos',
-              ['round', 'almond', 'monolid', 'hooded', 'upturned', 'downturned'] as const,
-              customization.eyeShape,
-              (value) => updateCustomization({ eyeShape: value })
-            )}
-            
-            {renderColorPicker(
-              'Cor dos olhos',
-              customization.eyeColor,
-              (value) => updateCustomization({ eyeColor: value as 'brown' | 'gray' | 'blue' | 'green' | 'hazel' | 'amber' | 'violet' })
-            )}
-            
-            {renderCustomizationOption(
-              'Óculos',
-              ['none', 'regular', 'sunglasses', 'reading', 'monocle'] as const,
-              customization.glasses,
-              (value) => updateCustomization({ glasses: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Cor dos Olhos</div>
+              {renderColorGrid(EYE_COLORS, avatar.eyeColor, (val) => updateAvatar('eyeColor', val))}
+            </div>
           </div>
         )}
 
         {/* Roupas */}
         {activeTab === 'clothing' && (
           <div className="space-y-6">
-            {renderCustomizationOption(
-              'Parte de cima',
-              ['none', 'tshirt', 'shirt', 'sweater', 'jacket', 'suit', 'dress'],
-              customization.topType,
-              (value) => updateCustomization({ topType: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Tipo de Camisa</div>
+              {renderOptionGrid(SHIRT_TYPES, avatar.shirtType, (val) => updateAvatar('shirtType', val))}
+            </div>
             
-            {renderColorPicker(
-              'Cor da parte de cima',
-              customization.topColor,
-              (value) => updateCustomization({ topColor: value })
-            )}
-            
-            {renderCustomizationOption(
-              'Parte de baixo',
-              ['none', 'pants', 'shorts', 'skirt', 'dress'],
-              customization.bottomType,
-              (value) => updateCustomization({ bottomType: value })
-            )}
-            
-            {renderColorPicker(
-              'Cor da parte de baixo',
-              customization.bottomColor,
-              (value) => updateCustomization({ bottomColor: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Cor da Camisa</div>
+              {renderColorGrid(SHIRT_COLORS, avatar.shirtColor, (val) => updateAvatar('shirtColor', val))}
+            </div>
           </div>
         )}
 
         {/* Acessórios */}
         {activeTab === 'accessories' && (
           <div className="space-y-6">
-            {renderCustomizationOption(
-              'Chapéu',
-              ['none', 'cap', 'beanie', 'headband', 'crown', 'helmet', 'hat'] as const,
-              customization.headwear,
-              (value) => updateCustomization({ headwear: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Acessório</div>
+              {renderOptionGrid(ACCESSORIES, avatar.accessory, (val) => updateAvatar('accessory', val))}
+            </div>
             
-            {renderCustomizationOption(
-              'Acessório',
-              ['none', 'earrings', 'necklace', 'tie', 'scarf', 'glasses'] as const,
-              customization.accessory,
-              (value) => updateCustomization({ accessory: value })
-            )}
-            
-            {renderCustomizationOption(
-              'Fundo',
-              ['none', 'gradient', 'pattern', 'solid', 'image'] as const,
-              customization.background,
-              (value) => updateCustomization({ background: value })
-            )}
-            
-            {renderColorPicker(
-              'Cor do fundo',
-              customization.backgroundColor,
-              (value) => updateCustomization({ backgroundColor: value })
-            )}
-            
-            {renderCustomizationOption(
-              'Expressão',
-              ['happy', 'neutral', 'sad', 'excited', 'cool', 'sleeping', 'wink', 'surprised'] as const,
-              customization.expression,
-              (value) => updateCustomization({ expression: value })
-            )}
-            
-            {renderCustomizationOption(
-              'Animação',
-              ['none', 'bounce', 'wave', 'blink', 'float', 'spin', 'pulse'] as const,
-              customization.animation,
-              (value) => updateCustomization({ animation: value })
-            )}
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-300">Expressão</div>
+              {renderOptionGrid(EXPRESSIONS, avatar.expression, (val) => updateAvatar('expression', val))}
+            </div>
           </div>
         )}
 
         {/* Especiais */}
         {activeTab === 'special' && (
           <div className="space-y-6">
-            {/* Itens especiais */}
-            {itemsByCategory.special && itemsByCategory.special.length > 0 && (
-              renderSpecialItems('Itens Especiais', itemsByCategory.special)
-            )}
-            
-            {/* Badges */}
-            {itemsByCategory.badges && itemsByCategory.badges.length > 0 && (
-              renderSpecialItems('Badges', itemsByCategory.badges)
-            )}
-            
-            {/* Frames */}
-            {itemsByCategory.frames && itemsByCategory.frames.length > 0 && (
-              renderSpecialItems('Frames', itemsByCategory.frames)
-            )}
-            
-            {/* Effects */}
-            {itemsByCategory.effects && itemsByCategory.effects.length > 0 && (
-              renderSpecialItems('Efeitos', itemsByCategory.effects)
-            )}
-            
-            {!hasSpecialItems && (
-              <div className="text-center py-8 text-gray-500">
-                <Crown className="w-12 h-12 mx-auto mb-4 text-gray-600" />
-                <p className="text-sm">
-                  Complete conquistas para desbloquear itens especiais!
-                </p>
-              </div>
-            )}
+            <div className="text-center py-8 text-gray-500">
+              <Crown className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+              <p className="text-sm">
+                Complete conquistas para desbloquear itens especiais!
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -504,33 +334,38 @@ export function AvatarCustomizer({
           id="import-avatar"
           type="file"
           accept=".json"
-          onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) importCustomization(file);
+          }}
           className="hidden"
         />
-        {importFile && (
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-sm text-gray-400">Arquivo: {importFile.name}</span>
-            <Button
-              variant="outline"
-              size="xs"
-              onClick={handleImport}
-              className="text-xs"
-            >
-              Importar
-            </Button>
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={() => setImportFile(null)}
-              className="text-xs text-gray-400"
-            >
-              Cancelar
-            </Button>
-          </div>
-        )}
       </Card>
     </div>
   );
+
+  // Preview visual simples
+  function renderPreview() {
+    return (
+      <div className="flex justify-center">
+        <div 
+          className="w-32 h-32 rounded-full flex items-center justify-center text-6xl shadow-lg transition-all duration-300"
+          style={{ 
+            backgroundColor: avatar.skinTone,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+          }}
+        >
+          <span className="filter drop-shadow-lg">
+            {avatar.expression === 'smile' && '😊'}
+            {avatar.expression === 'laugh' && '😄'}
+            {avatar.expression === 'serious' && '😐'}
+            {avatar.expression === 'wink' && '😉'}
+            {avatar.expression === 'neutral' && '🙂'}
+          </span>
+        </div>
+      </div>
+    );
+  }
 }
 
 // Componente para avatar preview em tempo real
@@ -551,7 +386,7 @@ export function AvatarPreview({
     lg: 'w-32 h-32',
   };
 
-  const animationClass = showAnimation && customization.animation !== 'none' 
+  const animationClass = showAnimation && customization?.animation !== 'none' 
     ? `animate-${customization.animation}` 
     : '';
 
@@ -561,29 +396,29 @@ export function AvatarPreview({
       sizeClasses[size],
       animationClass
     )}>
-      {/* Avatar simplificado - em produção renderizaria avatar real */}
+      {/* Avatar simplificado */}
       <div className="text-center">
         <div className="text-2xl md:text-3xl lg:text-4xl">
-          {customization.expression === 'happy' ? '😊' :
-           customization.expression === 'sad' ? '😢' :
-           customization.expression === 'excited' ? '🤩' :
-           customization.expression === 'cool' ? '😎' :
-           customization.expression === 'sleeping' ? '😴' :
-           customization.expression === 'wink' ? '😉' :
-           customization.expression === 'surprised' ? '😮' : '😐'}
+          {customization?.expression === 'happy' ? '😊' :
+           customization?.expression === 'sad' ? '😢' :
+           customization?.expression === 'excited' ? '🤩' :
+           customization?.expression === 'cool' ? '😎' :
+           customization?.expression === 'sleeping' ? '😴' :
+           customization?.expression === 'wink' ? '😉' :
+           customization?.expression === 'surprised' ? '😮' : '😐'}
         </div>
         
         {/* Acessórios visuais */}
-        {customization.glasses !== 'none' && (
+        {customization?.glasses !== 'none' && (
           <div className="text-xs">👓</div>
         )}
-        {customization.headwear !== 'none' && (
+        {customization?.headwear !== 'none' && (
           <div className="text-xs">🎩</div>
         )}
       </div>
       
       {/* Badge de especial */}
-      {customization.specialItems && customization.specialItems.length > 0 && (
+      {customization?.specialItems && customization.specialItems.length > 0 && (
         <Badge variant="secondary" className="absolute -top-1 -right-1">
           <Star className="w-3 h-3" />
         </Badge>

@@ -917,7 +917,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
   const bufferedPercent = duration > 0 ? (buffered / duration) * 100 : 0;
 
-  // Bloquear scroll do body quando player abrir - SEM forçar orientação (apenas no fullscreen)
+  // Auto fullscreen e rotação landscape em mobile quando player abrir
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
     const originalPosition = document.body.style.position;
@@ -929,11 +929,53 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     document.body.style.width = '100%';
     document.body.style.height = '100%';
     
+    // Auto fullscreen + landscape em mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+    
+    if (isMobile) {
+      // Tentar entrar em fullscreen automaticamente
+      const enterFullscreen = async () => {
+        try {
+          const element = playerContainerRef.current || document.documentElement;
+          if (element.requestFullscreen) {
+            await element.requestFullscreen();
+          } else if ((element as any).webkitRequestFullscreen) {
+            await (element as any).webkitRequestFullscreen();
+          } else if ((element as any).msRequestFullscreen) {
+            await (element as any).msRequestFullscreen();
+          }
+          setIsFullscreen(true);
+          
+          // Bloquear em landscape
+          const screenOrientation = (screen as any).orientation;
+          if (screenOrientation?.lock) {
+            await screenOrientation.lock('landscape');
+            console.log('[VideoJSPlayer] Auto: Screen locked to landscape');
+          }
+        } catch (err) {
+          console.log('[VideoJSPlayer] Auto fullscreen failed (user interaction required):', err);
+        }
+      };
+      
+      // Tentar após pequeno delay para garantir que DOM está pronto
+      setTimeout(enterFullscreen, 500);
+    }
+    
     return () => {
       document.body.style.overflow = originalOverflow;
       document.body.style.position = originalPosition;
       document.body.style.width = originalWidth;
       document.body.style.height = originalHeight;
+      
+      // Desbloquear orientação ao sair
+      if (isMobile) {
+        const screenOrientation = (screen as any).orientation;
+        if (screenOrientation?.unlock) {
+          screenOrientation.unlock();
+        }
+      }
     };
   }, []);
 
@@ -1293,30 +1335,48 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 <PictureInPicture2 size={22} className="text-white" />
               </button>
 
-              {/* Audio Track Selector */}
+              {/* Audio Track Selector - Mobile Optimized */}
               {audioTracks.length > 1 && (
                 <div className="relative">
                   <button
                     onClick={(e) => { e.stopPropagation(); setShowAudioMenu(!showAudioMenu); setShowSubtitleMenu(false); }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+                    title="Selecionar áudio"
                   >
-                    {audioTracks.find(t => t.id === currentAudioTrack)?.label || 'Audio'}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                    <span className="hidden sm:inline">{audioTracks.find(t => t.id === currentAudioTrack)?.label || 'Áudio'}</span>
+                    <span className="sm:hidden">{currentAudioTrack + 1}/{audioTracks.length}</span>
                   </button>
                   
                   {showAudioMenu && (
                     <div 
-                      className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur rounded-lg p-2 min-w-[140px] shadow-2xl border border-white/10"
+                      className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur rounded-lg p-2 min-w-[180px] shadow-2xl border border-white/10 z-50"
                       onClick={(e) => e.stopPropagation()}
                     >
+                      <div className="text-xs text-gray-400 px-3 py-1 border-b border-white/10 mb-1">
+                        Selecionar idioma
+                      </div>
                       {audioTracks.map((track) => (
                         <button
                           key={track.id}
                           onClick={() => changeAudioTrack(track.id)}
-                          className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
+                          className={`w-full text-left px-3 py-2.5 text-sm rounded transition-colors flex items-center gap-2 ${
                             currentAudioTrack === track.id ? 'bg-[#00A8E1] text-white font-medium' : 'text-white hover:bg-white/10'
                           }`}
                         >
-                          {track.label} {track.language !== 'unknown' && `(${track.language})`}
+                          {currentAudioTrack === track.id && (
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          )}
+                          <span className={currentAudioTrack === track.id ? '' : 'pl-6'}>
+                            {track.label}
+                          </span>
+                          {track.language !== 'unknown' && (
+                            <span className="text-xs opacity-60 ml-auto">({track.language})</span>
+                          )}
                         </button>
                       ))}
                     </div>
@@ -1452,14 +1512,17 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         </div>
       )}
 
-      {/* Watermark CineCasa - canto superior direito */}
+      {/* Watermark CineCasa - canto superior direito - TRANSPARENTE */}
       <div className="absolute top-4 right-4 z-30 pointer-events-none">
-        <div className="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity duration-300">
+        <div className="flex items-center gap-2 opacity-40 hover:opacity-80 transition-opacity duration-300">
           <img 
             src="/logo.png" 
             alt="CineCasa" 
-            className="h-8 w-auto object-contain drop-shadow-lg"
-            style={{ filter: 'drop-shadow(0 0 8px rgba(0, 229, 255, 0.5))' }}
+            className="h-8 w-auto object-contain"
+            style={{ 
+              filter: 'drop-shadow(0 0 8px rgba(0, 229, 255, 0.7)) brightness(1.2)',
+              mixBlendMode: 'screen'
+            }}
           />
         </div>
       </div>

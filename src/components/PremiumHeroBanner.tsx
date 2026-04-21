@@ -126,40 +126,40 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         setCurrentIndex(randomStartIndex);
         console.log('[PremiumHeroBanner] Filmes embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
       } else {
-        // Buscar banners da tabela series (mantém banner para séries)
+        // Buscar capas da tabela series (usa 'capa' como o mobile)
         const { data, error } = await supabase
           .from('series')
-          .select('id_n, titulo, banner, ano, descricao, genero')
-          .not('banner', 'is', null)
-          .not('banner', 'eq', '');
+          .select('id_n, titulo, capa, ano, descricao, genero')
+          .not('capa', 'is', null)
+          .not('capa', 'eq', '');
 
         if (error) {
-          console.error('Erro ao buscar banners:', error);
+          console.error('Erro ao buscar capas:', error);
           setIsLoading(false);
           return;
         }
 
-        const uniqueBanners = (data || [])
-          .filter((item: any, index: number, self: any[]) => 
-            index === self.findIndex((t) => t.banner === item.banner)
+        const uniquePosters = (data || [])
+          .filter((item: any) => item.capa && item.capa.trim() !== '')
+          .filter((item: any, index: number, self: any[]) =>
+            index === self.findIndex((t) => t.capa === item.capa)
           )
           .map((item: any) => ({
-            id: item.id_n?.toString() || item.id?.toString() || Math.random().toString(),
+            id: item.id_n?.toString() || Math.random().toString(),
             title: item.titulo || 'Sem título',
-            poster: item.banner,
+            poster: item.capa,
             year: item.ano?.toString() || '',
             description: item.descricao || '',
             rating: '',
             genre: item.genero || ''
           }));
 
-        setAllPosters(uniqueBanners);
-        const shuffledBanners = shuffleArray(uniqueBanners);
-        setDisplayQueue(shuffledBanners);
-        // Inicia em um índice aleatório para séries também
-        const randomStartIndex = shuffledBanners.length > 0 ? Math.floor(Math.random() * shuffledBanners.length) : 0;
+        setAllPosters(uniquePosters);
+        const shuffled = shuffleArray(uniquePosters);
+        setDisplayQueue(shuffled);
+        const randomStartIndex = shuffled.length > 0 ? Math.floor(Math.random() * shuffled.length) : 0;
         setCurrentIndex(randomStartIndex);
-        console.log('[PremiumHeroBanner] Séries embaralhadas:', shuffledBanners.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffledBanners[randomStartIndex]?.title);
+        console.log('[PremiumHeroBanner] Séries embaralhadas:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
       }
       
       setIsLoading(false);

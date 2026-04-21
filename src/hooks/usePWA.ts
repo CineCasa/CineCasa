@@ -41,6 +41,11 @@ export function usePWA() {
 
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [installStatus, setInstallStatus] = useState<'idle' | 'installing' | 'installed' | 'dismissed'>('idle');
+  
+  // Função para esconder o prompt de instalação
+  const hideInstallPrompt = useCallback(() => {
+    setShowInstallPrompt(false);
+  }, []);
 
   // Verificar se está rodando como PWA instalada
   const checkIsInstalled = useCallback(() => {
@@ -138,11 +143,24 @@ export function usePWA() {
     };
   }, []);
 
-  // Verificar status inicial
+  // Verificar status inicial E checar se deferredPrompt já existe
   useEffect(() => {
     checkIsInstalled();
+    
+    // Verificar se deferredPrompt já foi capturado pelo window (index.html)
+    const deferredPromptFromWindow = (window as any).deferredPrompt;
+    if (deferredPromptFromWindow && !pwaInfo.installPrompt) {
+      console.log('[usePWA] deferredPrompt encontrado no window');
+      setPwaInfo(prev => ({
+        ...prev,
+        installPrompt: deferredPromptFromWindow,
+        canInstall: true,
+      }));
+      setShowInstallPrompt(true);
+    }
+    
     checkCanInstall();
-  }, [checkIsInstalled, checkCanInstall]);
+  }, [checkIsInstalled, checkCanInstall, pwaInfo.installPrompt]);
 
   // Instalar PWA
   const installPWA = useCallback(async () => {
@@ -229,7 +247,7 @@ export function usePWA() {
   const showNotification = useCallback((
     title: string,
     options?: NotificationOptions & {
-      actions?: NotificationAction[];
+      actions?: any[];
       tag?: string;
       requireInteraction?: boolean;
     }
@@ -348,8 +366,8 @@ export function usePWA() {
     getDeviceInfo,
     
     // Controle do prompt
-    showInstallPrompt: () => setShowInstallPrompt(true),
-    hideInstallPrompt: () => setShowInstallPrompt(false),
+    showInstallPromptManually: () => setShowInstallPrompt(true),
+    hideInstallPrompt,
     
     // Estados derivados
     isInstallable: pwaInfo.canInstall && !pwaInfo.isInstalled,

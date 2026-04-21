@@ -190,12 +190,12 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
             </button>
           )}
 
-          {/* Scrollable row */}
+          {/* Scrollable row com rolagem horizontal estilo Netflix */}
           <div
             ref={scrollRef}
             onScroll={checkScroll}
             onWheel={handleWheel}
-            className="row-scroll-container snap-x snap-mandatory overflow-x-auto overflow-y-hidden flex flex-row flex-nowrap gap-5 pb-3"
+            className="row-scroll-container snap-x snap-mandatory overflow-x-auto overflow-y-hidden flex flex-row flex-nowrap gap-5 pb-3 cursor-grab active:cursor-grabbing"
             style={{
               WebkitOverflowScrolling: 'touch',
               touchAction: 'pan-x',
@@ -204,6 +204,22 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
               scrollbarColor: '#00E5FF transparent'
             }}
           >
+            {/* Estilização da scrollbar neon/ciano */}
+            <style>{`
+              .row-scroll-container::-webkit-scrollbar {
+                height: 4px;
+              }
+              .row-scroll-container::-webkit-scrollbar-track {
+                background: transparent;
+              }
+              .row-scroll-container::-webkit-scrollbar-thumb {
+                background: rgba(0, 229, 255, 0.3);
+                border-radius: 10px;
+              }
+              .row-scroll-container::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 229, 255, 0.6);
+              }
+            `}</style>
             {limitedItems.map((item, idx) => (
               <div key={`${item.id}-${idx}`} className="snap-start flex-shrink-0" style={{ flex: '0 0 auto' }}>
                 <ContentCard 

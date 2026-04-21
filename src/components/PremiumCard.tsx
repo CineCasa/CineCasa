@@ -19,6 +19,15 @@ interface PremiumCardProps {
   tabIndex?: number;
 }
 
+// Função para validar URL de poster
+const isValidPosterUrl = (url: string): boolean => {
+  if (!url || url.trim() === '') return false;
+  const lowerUrl = url.toLowerCase();
+  if (lowerUrl === 'none' || lowerUrl === 'null' || lowerUrl === 'undefined') return false;
+  if (lowerUrl.includes('none') || lowerUrl.includes('null') || lowerUrl.includes('undefined')) return false;
+  return true;
+};
+
 const PremiumCard: React.FC<PremiumCardProps> = ({
   id,
   title,
@@ -35,6 +44,9 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
   'data-nav-col': dataNavCol,
   tabIndex
 }) => {
+  // Validar poster URL
+  const validPoster = isValidPosterUrl(poster) ? poster : `https://picsum.photos/seed/${id || title || 'default'}/300/450.jpg`;
+  
   return (
     <motion.div
       className="premium-card cursor-pointer group w-full"
@@ -57,7 +69,7 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
       <div className="relative aspect-[2/3] sm:aspect-[3/4] overflow-hidden rounded-xl border border-white/5 transition-all duration-300 group-hover:border-[#00E5FF]/50 group-hover:shadow-[0_0_25px_rgba(0,229,255,0.3)]">
         {/* Imagem do Poster */}
         <img
-          src={poster || `https://picsum.photos/seed/${id || title || 'default'}/300/450.jpg`}
+          src={validPoster}
           alt={title}
           className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           loading="lazy"

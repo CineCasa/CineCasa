@@ -184,10 +184,15 @@ const ContinueWatchingRow = () => {
     });
   };
 
-  // Filtrar itens com progresso válido (entre 1% e 95%) e limitar a 5
+  // Handler para remover - wrapper com assinatura correta
+  const handleRemove = (item: ContinueWatchingItem) => {
+    removeItem(item.contentId, item.contentType, item.episodeId);
+  };
+
+  // Filtrar itens com progresso válido (entre 1% e 90%) e limitar a 4
   const validItems = rawItems
-    .filter((item) => item.progress > 1 && item.progress < 95)
-    .slice(0, 5);
+    .filter((item) => item.progress > 1 && item.progress < 90)
+    .slice(0, 4);
 
   if (isLoading) {
     return (
@@ -200,33 +205,9 @@ const ContinueWatchingRow = () => {
     );
   }
 
+  // Não mostrar a seção se não houver itens válidos
   if (validItems.length === 0) {
-    // SEMPRE mostrar a seção, mesmo sem itens - não retornar null
-    console.log('[ContinueWatchingRow] Sem itens válidos - rawItems:', rawItems.length, 'isLoading:', isLoading);
-    
-    return (
-      <section className="relative py-6 px-4 md:px-8 lg:px-12">
-        {/* Header com Ícone Neon Relógio */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <h2 className="section-title text-lg">CONTINUAR ASSISTINDO</h2>
-            <Clock 
-              size={20} 
-              className="text-[#00E5FF]"
-              style={{ filter: 'drop-shadow(0 0 8px rgba(0, 229, 255, 0.8))' }}
-            />
-          </div>
-          <div className="flex-1 h-px bg-gradient-to-r from-[#00E5FF]/50 to-transparent" />
-        </div>
-        
-        {/* Mensagem quando não há conteúdo */}
-        <div className="flex items-center justify-center py-8 bg-white/5 rounded-xl border border-white/10">
-          <p className="text-white/50 text-sm">
-            Nenhum conteúdo em progresso. Assista algo para vê-lo aqui!
-          </p>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   return (
@@ -271,7 +252,7 @@ const ContinueWatchingRow = () => {
             <ContinueWatchingCard
               key={item.id}
               item={item}
-              onRemove={removeItem}
+              onRemove={() => handleRemove(item)}
               onPlay={handlePlay}
             />
           ))}

@@ -217,19 +217,32 @@ const Login = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log('[Login] Iniciando cadastro de novo usuário:', email);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: window.location.origin,
         },
       });
-      if (error) throw error;
-      alert("Conta criada com sucesso! Verifique seu e-mail para confirmar.");
-      setIsSignUp(false);
+      console.log('[Login] Resposta do signUp:', { data, error });
+      if (error) {
+        console.error('[Login] Erro no signUp:', error);
+        throw error;
+      }
+      
+      if (data.user) {
+        console.log('[Login] Usuário criado com sucesso:', data.user.id);
+        alert("Conta criada com sucesso! Verifique seu e-mail para confirmar.");
+        setIsSignUp(false);
+      } else {
+        console.log('[Login] SignUp retornou sem usuário');
+        alert("Cadastro realizado, mas houve um problema. Tente fazer login.");
+      }
     } catch (error: any) {
-      alert(error.message || "Erro ao criar conta");
+      console.error('[Login] Erro completo no cadastro:', error);
+      alert(error.message || "Erro ao criar conta. Tente novamente.");
     } finally {
       setIsLoading(false);
     }

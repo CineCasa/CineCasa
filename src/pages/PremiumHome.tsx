@@ -455,14 +455,48 @@ const PremiumHome: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* Hero Banner - Netflix Style Mobile/Desktop - positioned right after navbar */}
+      {/* HERO BANNER - Primeiro elemento visível da página */}
       {/* Mobile Banner - hidden on desktop */}
-      <div className="md:hidden" style={{ marginTop: '-70px !important' }}>
+      <div className="md:hidden relative z-[100]">
         <MobileNetflixHero contentType="movies" />
       </div>
       {/* Desktop Banner - hidden on mobile */}
-      <div className="hidden md:block pt-[94px]">
+      <div className="hidden md:block relative z-[100]">
         <PremiumHeroBanner contentType="movies" />
+      </div>
+
+      {/* LANÇAMENTOS E NOVIDADES - Seção principal, sempre visível */}
+      <div className="relative z-40 my-6">
+        {isLoadingLancamentos ? (
+          <div className="px-4 md:px-8 py-8">
+            <div className="h-8 w-48 bg-gray-800 rounded animate-pulse mb-4"></div>
+            <div className="flex gap-4 overflow-hidden">
+              {[1,2,3,4,5].map(i => (
+                <div key={i} className="w-32 h-48 bg-gray-800 rounded animate-pulse flex-shrink-0"></div>
+              ))}
+            </div>
+          </div>
+        ) : lancamentos.length > 0 ? (
+          <ContentCarousel
+            title="Lançamentos e Novidades 🆕"
+            items={filterUniqueItems((lancamentos || []).map(item => ({
+              id: item.id,
+              tmdbId: item.tmdbId,
+              title: item.title,
+              poster: item.poster,
+              type: item.type,
+              year: item.year,
+              rating: item.rating,
+              isNew: true
+            })), 10)}
+            onCardClick={handleCardClick}
+          />
+        ) : (
+          <div className="px-4 md:px-8 py-8">
+            <h2 className="text-xl font-bold text-white mb-4">Lançamentos e Novidades 🆕</h2>
+            <p className="text-gray-400">Em breve novos lançamentos!</p>
+          </div>
+        )}
       </div>
 
       {/* Continue Watching - After Banner */}
@@ -501,24 +535,6 @@ const PremiumHome: React.FC = () => {
 
       {/* Content Sections - no margin on mobile, keep margin on desktop */}
       <div className="mt-0 md:mt-[70px] relative z-30">
-        {/* Lançamentos e Novidades - Primeira seção fixa com filmes 2025-2026 */}
-        {!isLoadingLancamentos && lancamentos.length > 0 && (
-          <ContentCarousel
-            title="Lançamentos e Novidades 🆕"
-            items={filterUniqueItems((lancamentos || []).map(item => ({
-              id: item.id,
-              tmdbId: item.tmdbId,
-              title: item.title,
-              poster: item.poster,
-              type: item.type,
-              year: item.year,
-              rating: item.rating,
-              isNew: true
-            })), 10)}
-            onCardClick={handleCardClick}
-          />
-        )}
-
         {/* Exclusivos para Você - Inteligente: baseado nos 5 gêneros mais vistos */}
         {!isLoadingRecomendacoes && recomendacoes.length > 0 && (
           <ContentCarousel

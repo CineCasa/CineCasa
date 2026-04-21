@@ -115,17 +115,11 @@ export function useAvatarCustomization({
       if (!userId) return getDefaultCustomization();
 
       try {
-        let query = supabase
-          .from('user_profiles')
+        const { data, error } = await supabase
+          .from('profiles')
           .select('avatar_customization')
-          .eq('user_id', userId);
-        
-        // Se tiver profileId específico, filtra por ele também
-        if (profileId) {
-          query = query.eq('id', profileId);
-        }
-        
-        const { data, error } = await query.maybeSingle();
+          .eq('id', userId)
+          .maybeSingle();
 
         if (error && error.code !== 'PGRST116') {
           console.error('❌ Erro ao buscar customização do avatar:', error);
@@ -185,13 +179,12 @@ export function useAvatarCustomization({
       };
 
       const { data, error } = await supabase
-        .from('user_profiles')
+        .from('profiles')
         .update({
           avatar_customization: updatedCustomization,
           updated_at: new Date().toISOString(),
         })
-        .eq('user_id', userId)
-        .eq('id', profileId || '')
+        .eq('id', userId)
         .select()
         .single();
 
@@ -211,38 +204,10 @@ export function useAvatarCustomization({
     },
   });
 
-  // Mutation para desbloquear item especial
+  // Mutation para desbloquear item especial (simplificado - sem sistema de pontos)
   const unlockItem = useMutation({
-    mutationFn: async ({ itemId, cost }: { itemId: string; cost: number }) => {
+    mutationFn: async ({ itemId }: { itemId: string; cost: number }) => {
       if (!userId) throw new Error('Usuário não autenticado');
-
-      // Verificar se usuário tem pontos suficientes
-      const { data: userProfile } = await supabase
-        .from('user_profiles')
-        .select('points')
-        .eq('user_id', userId)
-        .eq('id', profileId || '')
-        .single();
-
-      const userPoints = userProfile?.points || 0;
-      if (userPoints < cost) {
-        throw new Error('Pontos insuficientes');
-      }
-
-      // Descontar pontos e desbloquear item
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .update({
-          points: userPoints - cost,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId)
-        .eq('id', profileId || '');
-
-      if (error) {
-        console.error('❌ Erro ao descontar pontos:', error);
-        throw error;
-      }
 
       // Adicionar item aos itens desbloqueados
       const currentItems = currentCustomization.specialItems || [];
@@ -252,7 +217,7 @@ export function useAvatarCustomization({
         specialItems: updatedItems,
       });
 
-      return { itemId, pointsRemaining: userPoints - cost };
+      return { itemId, pointsRemaining: 0 };
     },
     onSuccess: ({ pointsRemaining }) => {
       console.log(`🎉 Item desbloqueado! Pontos restantes: ${pointsRemaining}`);
