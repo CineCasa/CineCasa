@@ -204,20 +204,49 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
     currentTime: number,
     duration: number
   ) => {
-    if (!user?.id || !config.contentId || saveInProgress.current) return;
+    console.log('[ElitePlayer] saveProgressToSupabase chamado:', { currentTime, duration, userId: user?.id, contentId: config.contentId });
+    
+    if (!user?.id) {
+      console.log('[ElitePlayer] ❌ Salvamento abortado: sem usuário');
+      return;
+    }
+    if (!config.contentId) {
+      console.log('[ElitePlayer] ❌ Salvamento abortado: sem contentId');
+      return;
+    }
+    if (saveInProgress.current) {
+      console.log('[ElitePlayer] ❌ Salvamento abortado: já em progresso');
+      return;
+    }
     
     // Avoid saving too frequently
     const now = Date.now();
-    if (now - lastSavedTime.current < 5000) return; // Minimum 5s between saves
+    if (now - lastSavedTime.current < 5000) {
+      console.log('[ElitePlayer] ❌ Salvamento abortado: muito frequente');
+      return;
+    }
     
     // Don't save if at end (>= 95%)
-    if (duration > 0 && (currentTime / duration) >= 0.95) return;
+    if (duration > 0 && (currentTime / duration) >= 0.95) {
+      console.log('[ElitePlayer] ❌ Salvamento abortado: vídeo no final');
+      return;
+    }
 
     saveInProgress.current = true;
     lastSavedTime.current = now;
 
     try {
       const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+      
+      console.log('[ElitePlayer] 💾 Salvando no Supabase:', {
+        user_id: user.id,
+        content_id: parseInt(config.contentId),
+        content_type: config.contentType,
+        current_time: Math.round(currentTime),
+        progress: Math.round(progress),
+        duration: Math.round(duration),
+        episode_id: config.episodeId ? parseInt(config.episodeId) : null,
+      });
       
       const { error } = await supabase
         .from('user_progress')
@@ -237,12 +266,12 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
         });
 
       if (error) {
-        console.error('[ElitePlayer] Error saving progress:', error);
+        console.error('[ElitePlayer] ❌ Erro ao salvar progresso:', error);
       } else {
-        console.log('[ElitePlayer] Progress saved:', currentTime, '/', duration);
+        console.log('[ElitePlayer] ✅ Progresso salvo com sucesso:', Math.round(currentTime), '/', Math.round(duration));
       }
     } catch (err) {
-      console.error('[ElitePlayer] Failed to save progress:', err);
+      console.error('[ElitePlayer] ❌ Falha ao salvar progresso:', err);
     } finally {
       saveInProgress.current = false;
     }
