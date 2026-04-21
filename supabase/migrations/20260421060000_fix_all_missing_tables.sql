@@ -4,13 +4,7 @@
 -- =====================================================
 
 -- 1. CRIAR TABELA device_sessions (dropar e recriar se incompleta)
--- Primeiro dropar políticas se existirem
-DROP POLICY IF EXISTS "Users can view their own devices" ON public.device_sessions;
-DROP POLICY IF EXISTS "Users can insert their own devices" ON public.device_sessions;
-DROP POLICY IF EXISTS "Users can update their own devices" ON public.device_sessions;
-DROP POLICY IF EXISTS "Users can delete their own devices" ON public.device_sessions;
-
--- Dropar tabela se existir para garantir estrutura correta
+-- Dropar tabela se existir (políticas são removidas automaticamente)
 DROP TABLE IF EXISTS public.device_sessions;
 
 -- Criar tabela com todas as colunas
