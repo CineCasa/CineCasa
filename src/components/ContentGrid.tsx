@@ -75,7 +75,7 @@ export function ContentGrid({
   // Loading state
   if (loading) {
     return (
-      <div className={cn('grid grid-responsive', gridClassName, className)}>
+      <div className={cn('grid grid-responsive gap-5', gridClassName, className)}>
         {Array.from({ length: loadingCount }).map((_, index) => (
           <MovieCardSkeleton
             key={`skeleton-${index}`}
@@ -97,7 +97,7 @@ export function ContentGrid({
 
   // Content loaded
   return (
-    <div className={cn('grid grid-responsive', gridClassName, className)}>
+    <div className={cn('grid grid-responsive gap-5', gridClassName, className)}>
       {items.map((item) => (
         <MovieCard
           key={item.id}
@@ -257,7 +257,19 @@ export function InfiniteGrid({
       {/* Loading indicator para mais itens */}
       {loading && (
         <div className="flex justify-center py-8">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="bg-gray-900 border border-white/10 rounded-xl overflow-hidden">
+            <div className="aspect-[2/3] relative">
+              <div className="w-full h-full bg-gray-800 animate-pulse" />
+            </div>
+            <div className="p-3 space-y-3 backdrop-blur-md bg-black/40">
+              <div className="h-5 bg-gray-800 animate-pulse rounded w-3/4" />
+              <div className="flex gap-2">
+                <div className="h-4 bg-gray-800 animate-pulse rounded-full w-12" />
+                <div className="h-4 bg-gray-800 animate-pulse rounded-full w-16" />
+                <div className="h-4 bg-gray-800 animate-pulse rounded-full w-20" />
+              </div>
+            </div>
+          </div>
         </div>
       )}
       
