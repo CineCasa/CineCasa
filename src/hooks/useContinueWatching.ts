@@ -201,9 +201,16 @@ export const useContinueWatching = () => {
           if (progress.content_id) {
             // Buscar usando ID como string para compatibilidade com bigint
             const serieData = seriesMap.get(String(progress.content_id));
-            const title = serieData?.titulo || progress.title || `Série ${progress.content_id}`;
-            const poster = serieData?.capa || '';
-            const banner = serieData?.banner || serieData?.capa || '';
+            
+            // Se não encontrou a série na tabela, pular este registro (dados inválidos/antigos)
+            if (!serieData) {
+              console.log(`📺 [useContinueWatching] Série ${index} IGNORADA - não encontrada na tabela (ID: ${progress.content_id})`);
+              return;
+            }
+            
+            const title = serieData.titulo;
+            const poster = serieData.capa || '';
+            const banner = serieData.banner || serieData.capa || '';
             
             console.log(`📺 [useContinueWatching] Série ${index} - Título: ${title}, Poster: ${poster ? 'OK' : 'MISSING'}`);
             
