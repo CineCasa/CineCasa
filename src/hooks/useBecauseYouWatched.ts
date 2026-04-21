@@ -126,9 +126,9 @@ export function useBecauseYouWatched() {
       // Extrair gêneros do item fonte
       const sourceGenres = sourceItem.genero?.split(',').map(g => g.trim()) || [];
       
-      // Buscar conteúdos assistidos para excluir
+      // Buscar conteúdos assistidos para excluir (usando user_progress em vez de watch_progress)
       const { data: watchedContent } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('content_id')
         .eq('user_id', userId);
 
