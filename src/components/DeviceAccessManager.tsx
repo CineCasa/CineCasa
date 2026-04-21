@@ -117,23 +117,45 @@ const DeviceAccessManager = ({ children }: DeviceAccessProps) => {
 
   const registerNewDevice = async (userId: string, fingerprint: string, ipAddress: string, userAgent: string) => {
     try {
-      // Usar insert direto na tabela em vez de RPC com parâmetros incorretos
-      const { error } = await supabase
+      // Verificar se já existe sessão para este user+fingerprint
+      const { data: existingSession } = await supabase
         .from('device_sessions')
-        .upsert({
-          user_id: userId,
-          device_fingerprint: fingerprint,
-          ip_address: ipAddress,
-          user_agent: userAgent,
-          last_activity: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,device_fingerprint'
-        });
+        .select('id')
+        .eq('user_id', userId)
+        .eq('device_fingerprint', fingerprint)
+        .maybeSingle();
 
-      if (error) {
-        console.error('Error registering device:', error);
+      if (existingSession) {
+        // Atualizar sessão existente
+        const { error } = await supabase
+          .from('device_sessions')
+          .update({
+            ip_address: ipAddress,
+            user_agent: userAgent,
+            last_activity: new Date().toISOString()
+          })
+          .eq('id', existingSession.id);
+
+        if (error) {
+          console.error('Error updating device:', error);
+        }
       } else {
-        toast.success('Dispositivo registrado com sucesso');
+        // Criar nova sessão
+        const { error } = await supabase
+          .from('device_sessions')
+          .insert({
+            user_id: userId,
+            device_fingerprint: fingerprint,
+            ip_address: ipAddress,
+            user_agent: userAgent,
+            last_activity: new Date().toISOString()
+          });
+
+        if (error) {
+          console.error('Error registering device:', error);
+        } else {
+          toast.success('Dispositivo registrado com sucesso');
+        }
       }
     } catch (error) {
       console.error('Error in registerNewDevice:', error);
