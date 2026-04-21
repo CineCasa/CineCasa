@@ -21,19 +21,25 @@ CREATE TABLE IF NOT EXISTS public.device_sessions (
 -- Políticas RLS para device_sessions
 ALTER TABLE public.device_sessions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users can view their own devices"
+-- Remover e recriar políticas para device_sessions
+DROP POLICY IF EXISTS "Users can view their own devices" ON public.device_sessions;
+DROP POLICY IF EXISTS "Users can insert their own devices" ON public.device_sessions;
+DROP POLICY IF EXISTS "Users can update their own devices" ON public.device_sessions;
+DROP POLICY IF EXISTS "Users can delete their own devices" ON public.device_sessions;
+
+CREATE POLICY "Users can view their own devices"
     ON public.device_sessions FOR SELECT
     USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can insert their own devices"
+CREATE POLICY "Users can insert their own devices"
     ON public.device_sessions FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can update their own devices"
+CREATE POLICY "Users can update their own devices"
     ON public.device_sessions FOR UPDATE
     USING (auth.uid() = user_id);
 
-CREATE POLICY IF NOT EXISTS "Users can delete their own devices"
+CREATE POLICY "Users can delete their own devices"
     ON public.device_sessions FOR DELETE
     USING (auth.uid() = user_id);
 
@@ -133,6 +139,12 @@ BEGIN
         );
         
         ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
+        
+        -- Remover políticas existentes antes de criar
+        DROP POLICY IF EXISTS "Users can view own progress" ON public.user_progress;
+        DROP POLICY IF EXISTS "Users can insert own progress" ON public.user_progress;
+        DROP POLICY IF EXISTS "Users can update own progress" ON public.user_progress;
+        DROP POLICY IF EXISTS "Users can delete own progress" ON public.user_progress;
         
         CREATE POLICY "Users can view own progress" 
             ON public.user_progress FOR SELECT 
