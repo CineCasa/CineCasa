@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Download } from 'lucide-react';
 import { usePWA } from '@/hooks/usePWA';
 
@@ -17,28 +17,73 @@ const PWAInstallPrompt = ({
   const { pwaInfo, installPWA } = usePWA();
   const [isVisible, setIsVisible] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
 
-  // Mostrar prompt após delay
+  // Check if user has already dismissed the prompt in this session
+  const hasUserDismissed = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+    const dismissed = localStorage.getItem('pwa-prompt-dismissed');
+    return dismissed === 'true';
+  }, []);
+
+  // Mark as dismissed
+  const markAsDismissed = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('pwa-prompt-dismissed', 'true');
+    localStorage.setItem('pwa-dismiss-time', Date.now().toString());
+  }, []);
+
+  // Mostrar prompt após delay (apenas uma vez)
   useEffect(() => {
     if (!pwaInfo.canInstall || pwaInfo.isInstalled) return;
+    if (hasUserDismissed()) return;
 
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [pwaInfo.canInstall, pwaInfo.isInstalled, delay]);
+  }, [pwaInfo.canInstall, pwaInfo.isInstalled, delay, hasUserDismissed]);
+
+  // Handle click outside
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        handleDismiss();
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleDismiss();
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isVisible]);
 
   // Handler para instalação
   const handleInstall = async () => {
     setIsInstalling(true);
-    
+
     try {
       const result = await installPWA();
-      
+
       if (result) {
         console.log('[PWA] Instalação iniciada');
         setIsVisible(false);
+        markAsDismissed();
       } else {
         // Fallback: tentar usar o prompt do navegador diretamente
         const deferredPrompt = (window as any).deferredPrompt;
@@ -48,6 +93,7 @@ const PWAInstallPrompt = ({
           if (outcome === 'accepted') {
             console.log('[PWA] Instalação aceita');
             setIsVisible(false);
+            markAsDismissed();
           }
         }
       }
@@ -61,7 +107,7 @@ const PWAInstallPrompt = ({
   // Handler para dispensar
   const handleDismiss = () => {
     setIsVisible(false);
-    localStorage.setItem('pwa-dismiss-time', Date.now().toString());
+    markAsDismissed();
   };
 
   // Posicionamento do prompt
@@ -90,11 +136,12 @@ const PWAInstallPrompt = ({
   }
 
   return (
-    <div className={getPositionClasses()}>
+    <div ref={popupRef} className={getPositionClasses()}>
       {/* Botão fechar */}
       <button
         onClick={handleDismiss}
         className="absolute top-2 right-2 p-1 hover:bg-white/10 rounded-lg transition-colors"
+        aria-label="Fechar"
       >
         <X className="w-4 h-4 text-gray-400" />
       </button>
