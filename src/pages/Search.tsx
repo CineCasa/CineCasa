@@ -48,11 +48,11 @@ const Search = () => {
         console.error('Erro ao buscar filmes:', moviesError);
       }
 
-      // Buscar em séries - busca parcial em título, descrição e gênero
+      // Buscar em séries - busca parcial em título e gênero (description não existe na tabela)
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, capa, banner, ano, rating, genero, description')
-        .or(`titulo.ilike.%${searchLower}%,description.ilike.%${searchLower}%,genero.ilike.%${searchLower}%`)
+        .select('id_n, titulo, capa, banner, ano, rating, genero, sinopse')
+        .or(`titulo.ilike.%${searchLower}%,sinopse.ilike.%${searchLower}%,genero.ilike.%${searchLower}%`)
         .limit(20);
 
       if (seriesError) {
@@ -78,7 +78,7 @@ const Search = () => {
           year: item.ano?.toString(),
           rating: item.rating?.toString(),
           genre: item.genero,
-          description: item.description
+          description: item.sinopse
         }))
       ];
 

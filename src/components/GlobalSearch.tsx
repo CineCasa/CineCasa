@@ -83,14 +83,14 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
           table: 'cinema' as const
         })),
         ...(seriesResults.data || []).map(item => ({
-          id: item.id.toString(),
+          id: item.id_n?.toString() || item.id?.toString(),
           title: item.titulo || item.title,
-          poster: item.poster || '/api/placeholder/300/450',
+          poster: item.capa || item.poster || '/api/placeholder/300/450',
           type: 'series' as const,
           year: item.ano?.toString(),
-          rating: item.nota?.toString(),
-          category: item.category,
-          description: item.description || item.sinopse,
+          rating: item.rating?.toString() || item.nota?.toString(),
+          category: item.genero || item.category,
+          description: item.sinopse || item.description,
           table: 'series' as const
         }))
       ];
