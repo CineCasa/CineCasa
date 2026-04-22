@@ -39,8 +39,8 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
 
       // Buscar filmes das últimas 24h
       const { data: movies, error: moviesError } = await supabase
-        .from('cinema')
-        .select('id, titulo, poster, year, category, genero, created_at, tmdb_id, rating')
+        .from('filmes')
+        .select('id, titulo, capa, year, category, genero, created_at, tmdb_id, rating')
         .gte('created_at', cutoffDate)
         .order('created_at', { ascending: false });
 
@@ -48,11 +48,12 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
         console.error('[useRecentContent] Erro ao buscar filmes:', moviesError);
       }
 
-      // Buscar séries (sem filtro de data pois pode não ter created_at)
+      // Buscar séries das últimas 24h
       const { data: series, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, ano, genero, tmdb_id')
-        .limit(20);
+        .select('id_n, titulo, capa, ano, genero, tmdb_id, created_at')
+        .gte('created_at', cutoffDate)
+        .order('created_at', { ascending: false });
 
       if (seriesError) {
         console.error('[useRecentContent] Erro ao buscar séries:', seriesError);
@@ -63,7 +64,7 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
         id: item.id.toString(),
         title: item.titulo,
         type: 'movie' as const,
-        poster: item.poster,
+        poster: item.capa,
         year: item.year,
         category: item.category,
         genero: item.genero,
@@ -76,11 +77,11 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
         id: item.id_n?.toString() || item.id?.toString(),
         title: item.titulo,
         type: 'series' as const,
-        poster: undefined, // Séries não têm poster na tabela
+        poster: item.capa,
         year: item.ano,
         category: undefined,
         genero: item.genero,
-        created_at: new Date().toISOString(),
+        created_at: item.created_at,
         tmdb_id: item.tmdb_id,
         rating: undefined,
       }));
