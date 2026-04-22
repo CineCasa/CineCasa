@@ -16,6 +16,7 @@ import PremiumHome from "./pages/PremiumHome";
 import Series from "./pages/Series";
 import FilmesPorCategoria from "./pages/FilmesPorCategoria";
 import FilmesCategorias from "./pages/FilmesCategorias";
+import Cinema from "./pages/Cinema";
 import Favorites from "./pages/Favorites";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
@@ -123,6 +124,7 @@ const AppRoutes = () => {
       {/* Rotas protegidas - Requerem autenticação */}
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
       <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
+      <Route path="/cinema" element={<ProtectedRoute><Cinema /></ProtectedRoute>} />
             <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
       <Route path="/series" element={<ProtectedRoute><Series /></ProtectedRoute>} />
             <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />

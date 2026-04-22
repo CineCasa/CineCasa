@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 
 const navItems = [
   { label: "Início", path: "/", icon: Home },
-  { label: "Filmes", path: "/filmes-categorias", icon: Film },
+  { label: "Filmes", path: "/cinema", icon: Film },
   { label: "Séries", path: "/series", icon: Tv },
   { label: "Favoritos", path: "/favorites", icon: Heart },
   { label: "Notificações", path: "/notifications", icon: Bell },
