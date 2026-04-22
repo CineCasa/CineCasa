@@ -326,51 +326,21 @@ function HeroSection({ serie, onPlay, onMoreInfo }: HeroSectionProps) {
             {serie.titulo}
           </h1>
           
-          <div className="flex flex-wrap items-center gap-3 mb-4 text-sm md:text-base">
-            {rating !== 'N/A' && (
-              <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 px-3 py-1.5 rounded-full border border-yellow-400/30">
-                <Star size={16} className="text-yellow-400 fill-yellow-400" />
-                <span className="font-bold text-yellow-100">{rating}</span>
-              </div>
-            )}
-            {serie.ano && (
-              <div className="flex items-center gap-1.5 text-white/80">
-                <Calendar size={16} className="text-cyan-400" />
-                <span>{serie.ano}</span>
-              </div>
-            )}
-            {serie.genero && (
-              <span className="px-2 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded text-cyan-300 text-sm">
-                {serie.genero.split(',')[0]}
-              </span>
-            )}
-          </div>
+          {serie.ano && (
+            <div className="flex items-center gap-1.5 text-white/80 mb-4 text-sm md:text-base">
+              <Calendar size={16} className="text-cyan-400" />
+              <span>{serie.ano}</span>
+            </div>
+          )}
 
           {serie.descricao && (
             <p 
-              className="text-white/90 text-base md:text-lg max-w-2xl mb-6 line-clamp-3"
+              className="text-white/90 text-base md:text-lg max-w-2xl line-clamp-2"
               style={{ textShadow: '0 1px 10px rgba(0,0,0,0.8)' }}
             >
               {serie.descricao}
             </p>
           )}
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={onPlay}
-              className="flex items-center gap-2 bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00A8E1]/30"
-            >
-              <Play size={20} fill="currentColor" />
-              <span>Assistir</span>
-            </button>
-            <button
-              onClick={onMoreInfo}
-              className="flex items-center gap-2 bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/30 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105"
-            >
-              <Info size={20} />
-              <span>Mais Informações</span>
-            </button>
-          </div>
         </motion.div>
       </div>
     </div>
