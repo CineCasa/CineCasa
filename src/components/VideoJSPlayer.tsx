@@ -39,15 +39,31 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const tempVideoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Local formatTime function for error state
+  const formatTimeLocal = (seconds: number): string => {
+    if (isNaN(seconds)) return '0:00';
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    if (hours > 0) {
+      return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    return `${minutes}:${String(secs).padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     // Limpar debounce anterior
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
 
+    // Debug: log dos props recebidos
+    console.log('[ThumbnailPreview] Props:', { time, hasVideoRef: !!videoRef?.current, videoUrl: !!videoUrl, poster: !!poster, posterUrl: poster?.substring(0, 50) });
+
     // Debounce de 100ms para evitar múltiplos seeks
     debounceRef.current = setTimeout(async () => {
       if (!canvasRef.current) {
+        console.log('[ThumbnailPreview] No canvas ref');
         setHasError(true);
         return;
       }
@@ -56,6 +72,7 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
       const ctx = canvas.getContext('2d');
 
       if (!ctx) {
+        console.log('[ThumbnailPreview] No canvas context');
         setHasError(true);
         return;
       }
@@ -64,6 +81,7 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
         // Primeiro tentar usar o videoRef atual (se disponível e sem CORS)
         if (videoRef?.current && videoRef.current.videoWidth > 0) {
           const video = videoRef.current;
+          console.log('[ThumbnailPreview] Trying videoRef, videoWidth:', video.videoWidth, 'src:', video.src?.substring(0, 50));
           
           // Tentar desenhar frame atual - se falhar por CORS, usamos fallback
           try {
@@ -78,21 +96,27 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
             
             // Se chegou aqui, o vídeo não está tainted
             // Agora criar um vídeo temporário para fazer seek
+            console.log('[ThumbnailPreview] Video not tainted, using temp video for seek');
             await captureFrameWithTempVideo(video.src || video.currentSrc, time, canvas, ctx, setThumbnail, setHasError);
             return;
           } catch (corsErr) {
-            console.log('[ThumbnailPreview] CORS detected, using fallback approach');
+            console.log('[ThumbnailPreview] CORS detected on videoRef, using fallback approach');
             // CORS error - usar vídeo temporário com crossOrigin
           }
+        } else {
+          console.log('[ThumbnailPreview] videoRef not available or not ready, videoWidth:', videoRef?.current?.videoWidth);
         }
 
         // Fallback: criar vídeo temporário com crossOrigin
         if (videoUrl) {
+          console.log('[ThumbnailPreview] Using videoUrl fallback:', videoUrl.substring(0, 50));
           await captureFrameWithTempVideo(videoUrl, time, canvas, ctx, setThumbnail, setHasError);
         } else if (poster) {
           // Último fallback: usar poster
+          console.log('[ThumbnailPreview] Using poster fallback:', poster.substring(0, 50));
           await loadPosterAsThumbnail(poster, canvas, ctx, setThumbnail, setHasError);
         } else {
+          console.log('[ThumbnailPreview] No videoUrl or poster available');
           setHasError(true);
         }
       } catch (err) {
@@ -271,7 +295,7 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
     return (
       <div className="w-28 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded flex flex-col items-center justify-center border border-white/10">
         <Clock className="w-5 h-5 text-gray-500 mb-1" />
-        <span className="text-gray-400 text-[10px]">{formatTime(time)}</span>
+        <span className="text-gray-400 text-[10px]">{formatTimeLocal(time)}</span>
       </div>
     );
   }
