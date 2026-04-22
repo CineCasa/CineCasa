@@ -26,15 +26,15 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
     try {
       setIsLoading(true);
       
-      console.log('[TravesseiroEdredon] Buscando conteúdo adulto...');
+      console.log('[TravesseiroEdredon] Buscando conteúdo relaxante (drama, romance, família)...');
       
-      // Buscar filmes da categoria adulto (case-insensitive) - buscar em 'genero' e 'category'
+      // Buscar filmes relaxantes (drama, romance, família, musical)
       const { data: cinemaData, error: cinemaError } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, description, category')
-        .or('genero.ilike.%adulto%,category.ilike.%adulto%')
+        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
+        .or('genero.ilike.%drama%,genero.ilike.%romance%,genero.ilike.%família%,category.ilike.%drama%,category.ilike.%romance%,category.ilike.%família%')
         .not('poster', 'is', null)
-        .limit(10);
+        .limit(15);
       
       if (cinemaError) {
         console.error('[TravesseiroEdredon] Erro cinema:', cinemaError);
@@ -42,13 +42,13 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
         console.log('[TravesseiroEdredon] Cinema raw:', cinemaData);
       }
       
-      // Buscar séries da categoria adulto - usar apenas 'genero' pois 'category' não existe na tabela series
+      // Buscar séries relaxantes (drama, romance, família)
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, banner, ano, genero, descricao')
-        .ilike('genero', '%adulto%')
+        .select('id_n, tmdb_id, titulo, banner, ano, genero')
+        .or('genero.ilike.%drama%,genero.ilike.%romance%,genero.ilike.%família%')
         .not('banner', 'is', null)
-        .limit(10);
+        .limit(15);
       
       if (seriesError) {
         console.error('[TravesseiroEdredon] Erro series:', seriesError);
