@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw, Square } from 'lucide-react';
+import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw, Square, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { CastButton } from './CastButton';
@@ -32,11 +32,12 @@ declare global {
 }
 
 // Componente para gerar preview de thumbnail do vídeo
-const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTMLVideoElement> }> = ({ time, videoRef }) => {
+const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTMLVideoElement>; videoUrl?: string; poster?: string }> = ({ time, videoRef, videoUrl, poster }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [hasError, setHasError] = useState(false);
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const tempVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     // Limpar debounce anterior
@@ -44,14 +45,13 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
       clearTimeout(debounceRef.current);
     }
 
-    // Debounce de 150ms para evitar múltiplos seeks
+    // Debounce de 100ms para evitar múltiplos seeks
     debounceRef.current = setTimeout(async () => {
-      if (!videoRef?.current || !canvasRef.current) {
+      if (!canvasRef.current) {
         setHasError(true);
         return;
       }
 
-      const video = videoRef.current;
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
 
@@ -61,70 +61,217 @@ const ThumbnailPreview: React.FC<{ time: number; videoRef?: React.RefObject<HTML
       }
 
       try {
-        // Verificar se o vídeo está carregado o suficiente
-        if (video.readyState >= 2 && video.videoWidth > 0) {
-          // Salvar estado do vídeo
-          const currentTime = video.currentTime;
-          const wasPaused = video.paused;
+        // Primeiro tentar usar o videoRef atual (se disponível e sem CORS)
+        if (videoRef?.current && videoRef.current.videoWidth > 0) {
+          const video = videoRef.current;
           
-          // Pausar vídeo temporariamente para evitar flicker
-          if (!wasPaused) {
-            video.pause();
-          }
-          
-          // Definir tempo para captura
-          video.currentTime = time;
-          
-          // Aguardar o vídeo seek com timeout
-          await new Promise<void>((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              video.removeEventListener('seeked', onSeeked);
-              reject(new Error('Seek timeout'));
-            }, 500);
+          // Tentar desenhar frame atual - se falhar por CORS, usamos fallback
+          try {
+            canvas.width = 160;
+            canvas.height = 90;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            const onSeeked = () => {
-              clearTimeout(timeout);
-              video.removeEventListener('seeked', onSeeked);
-              resolve();
-            };
-            video.addEventListener('seeked', onSeeked, { once: true });
-          });
-
-          // Desenhar frame no canvas
-          canvas.width = 160;
-          canvas.height = 90;
-          ctx.fillStyle = '#000';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          // Converter para data URL
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          setThumbnail(dataUrl);
-          setHasError(false);
-
-          // Restaurar estado original
-          video.currentTime = currentTime;
-          if (!wasPaused) {
-            video.play();
+            // Testar se canvas está tainted
+            canvas.toDataURL('image/jpeg', 0.1);
+            
+            // Se chegou aqui, o vídeo não está tainted
+            // Agora criar um vídeo temporário para fazer seek
+            await captureFrameWithTempVideo(video.src || video.currentSrc, time, canvas, ctx, setThumbnail, setHasError);
+            return;
+          } catch (corsErr) {
+            console.log('[ThumbnailPreview] CORS detected, using fallback approach');
+            // CORS error - usar vídeo temporário com crossOrigin
           }
+        }
+
+        // Fallback: criar vídeo temporário com crossOrigin
+        if (videoUrl) {
+          await captureFrameWithTempVideo(videoUrl, time, canvas, ctx, setThumbnail, setHasError);
+        } else if (poster) {
+          // Último fallback: usar poster
+          await loadPosterAsThumbnail(poster, canvas, ctx, setThumbnail, setHasError);
+        } else {
+          setHasError(true);
         }
       } catch (err) {
         console.error('[ThumbnailPreview] Error generating thumbnail:', err);
         setHasError(true);
       }
-    }, 150);
+    }, 100);
 
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
+      if (tempVideoRef.current) {
+        tempVideoRef.current.pause();
+        tempVideoRef.current.src = '';
+        tempVideoRef.current.load();
+        tempVideoRef.current = null;
+      }
     };
-  }, [time, videoRef]);
+  }, [time, videoRef, videoUrl, poster]);
+
+  // Função auxiliar para capturar frame usando vídeo temporário
+  const captureFrameWithTempVideo = async (
+    src: string, 
+    seekTime: number, 
+    canvas: HTMLCanvasElement, 
+    ctx: CanvasRenderingContext2D,
+    setThumb: (url: string) => void,
+    setErr: (err: boolean) => void
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // Limpar vídeo temporário anterior
+      if (tempVideoRef.current) {
+        tempVideoRef.current.pause();
+        tempVideoRef.current.src = '';
+        tempVideoRef.current.load();
+      }
+
+      // Criar novo vídeo temporário
+      const tempVideo = document.createElement('video');
+      tempVideo.crossOrigin = 'anonymous';
+      tempVideo.preload = 'metadata';
+      tempVideo.muted = true;
+      tempVideo.playsInline = true;
+      tempVideo.style.display = 'none';
+      document.body.appendChild(tempVideo);
+      tempVideoRef.current = tempVideo;
+
+      let isResolved = false;
+      const timeout = setTimeout(() => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          setErr(true);
+          reject(new Error('Thumbnail generation timeout'));
+        }
+      }, 3000);
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+        tempVideo.removeEventListener('seeked', onSeeked);
+        tempVideo.removeEventListener('error', onError);
+        tempVideo.removeEventListener('loadedmetadata', onLoadedMetadata);
+        if (tempVideo.parentNode) {
+          tempVideo.parentNode.removeChild(tempVideo);
+        }
+      };
+
+      const onError = () => {
+        if (!isResolved) {
+          isResolved = true;
+          cleanup();
+          setErr(true);
+          reject(new Error('Video load error'));
+        }
+      };
+
+      const onSeeked = () => {
+        if (isResolved) return;
+        
+        try {
+          canvas.width = 160;
+          canvas.height = 90;
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+          
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          setThumb(dataUrl);
+          setErr(false);
+          
+          isResolved = true;
+          cleanup();
+          resolve();
+        } catch (err) {
+          console.error('[ThumbnailPreview] Canvas error:', err);
+          if (!isResolved) {
+            isResolved = true;
+            cleanup();
+            setErr(true);
+            reject(err);
+          }
+        }
+      };
+
+      const onLoadedMetadata = () => {
+        if (seekTime > tempVideo.duration) {
+          tempVideo.currentTime = tempVideo.duration * 0.5;
+        } else {
+          tempVideo.currentTime = seekTime;
+        }
+      };
+
+      tempVideo.addEventListener('seeked', onSeeked, { once: true });
+      tempVideo.addEventListener('error', onError, { once: true });
+      tempVideo.addEventListener('loadedmetadata', onLoadedMetadata, { once: true });
+      
+      tempVideo.src = src;
+      tempVideo.load();
+    });
+  };
+
+  // Função auxiliar para usar poster como thumbnail
+  const loadPosterAsThumbnail = async (
+    posterUrl: string,
+    canvas: HTMLCanvasElement, 
+    ctx: CanvasRenderingContext2D,
+    setThumb: (url: string) => void,
+    setErr: (err: boolean) => void
+  ): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = () => {
+        try {
+          canvas.width = 160;
+          canvas.height = 90;
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // Crop to 16:9 aspect ratio
+          const imgRatio = img.width / img.height;
+          const canvasRatio = 160 / 90;
+          let sx = 0, sy = 0, sw = img.width, sh = img.height;
+          
+          if (imgRatio > canvasRatio) {
+            sw = img.height * canvasRatio;
+            sx = (img.width - sw) / 2;
+          } else {
+            sh = img.width / canvasRatio;
+            sy = (img.height - sh) / 2;
+          }
+          
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 160, 90);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+          setThumb(dataUrl);
+          setErr(false);
+          resolve();
+        } catch (err) {
+          setErr(true);
+          reject(err);
+        }
+      };
+      
+      img.onerror = () => {
+        setErr(true);
+        reject(new Error('Failed to load poster'));
+      };
+      
+      img.src = posterUrl;
+    });
+  };
 
   if (hasError || !thumbnail) {
     return (
-      <div className="w-28 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded flex items-center justify-center border border-white/10">
-        <span className="text-gray-400 text-xs">Preview</span>
+      <div className="w-28 h-16 bg-gradient-to-br from-gray-800 to-gray-900 rounded flex flex-col items-center justify-center border border-white/10">
+        <Clock className="w-5 h-5 text-gray-500 mb-1" />
+        <span className="text-gray-400 text-[10px]">{formatTime(time)}</span>
       </div>
     );
   }
@@ -1147,7 +1294,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
               >
                 <div className="text-white text-xs mb-1 text-center font-medium">{formatTime(thumbnailTime)}</div>
                 <div className="w-28 h-16 overflow-hidden rounded border border-white/10 bg-black">
-                  <ThumbnailPreview time={thumbnailTime} videoRef={videoRef} />
+                  <ThumbnailPreview time={thumbnailTime} videoRef={videoRef} videoUrl={originalUrl} poster={poster} />
                 </div>
                 {/* Seta indicadora apontando para baixo */}
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black/90 rotate-45 border-r border-b border-white/20"></div>
