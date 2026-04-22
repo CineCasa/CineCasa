@@ -161,9 +161,9 @@ const FilmesCategorias = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="pt-24 pb-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-black relative z-0">
+      {/* Header - z-index fix for navbar */}
+      <div className="pt-24 pb-8 px-4 sm:px-6 lg:px-8 relative z-1 pointer-events-auto">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-4 mb-4">
             <Clapperboard className="w-10 h-10 text-[#00A8E1]" />
