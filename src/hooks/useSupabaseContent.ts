@@ -13,6 +13,8 @@ export const useSupabaseContent = () => {
   return useQuery({
     queryKey: ["supabase-content", plan],
     queryFn: async () => {
+      console.log('[useSupabaseContent] Query started, plan:', plan);
+      
       // 1. Fetch Supabase Data Recursively to bypass the 1000 rows limit
       const fetchAllRecords = async (table: "cinema" | "filmes_kids" | "series" | "series_kids" | "tv_ao_vivo") => {
         let allData: any[] = [];
