@@ -499,6 +499,191 @@
       border: 1px solid rgba(255,255,255,0.1);
     }
     
+    /* =========================================
+       CHAT PANEL - BATE-PAPO
+       ========================================= */
+    .chat-panel {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 320px;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      border-left: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
+    
+    .chat-header {
+      padding: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(90deg, rgba(0,229,255,0.1) 0%, transparent 100%);
+    }
+    
+    .chat-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #00E5FF;
+    }
+    
+    .chat-status {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .chat-status .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+    
+    .chat-status .status-dot.offline {
+      background: #ef4444;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .chat-welcome {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255,255,255,0.5);
+    }
+    
+    .chat-welcome p {
+      margin-top: 15px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .chat-message {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .chat-message.own {
+      align-items: flex-end;
+    }
+    
+    .chat-message-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    
+    .chat-message-author {
+      color: #00E5FF;
+      font-weight: 600;
+    }
+    
+    .chat-message-time {
+      color: rgba(255,255,255,0.4);
+    }
+    
+    .chat-message-content {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 14px;
+      border-radius: 12px;
+      border-bottom-left-radius: 4px;
+      font-size: 14px;
+      line-height: 1.4;
+      max-width: 85%;
+      word-wrap: break-word;
+    }
+    
+    .chat-message.own .chat-message-content {
+      background: #00E5FF;
+      color: #000;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .chat-message.own .chat-message-author {
+      color: #00E5FF;
+    }
+    
+    .chat-input-form {
+      padding: 15px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      gap: 10px;
+    }
+    
+    .chat-input {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 10px 15px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .chat-input:focus {
+      border-color: #00E5FF;
+    }
+    
+    .chat-input::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+    
+    .chat-send-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #00E5FF;
+      border: none;
+      color: #000;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+    
+    .chat-send-btn:hover {
+      transform: scale(1.05);
+      background: #00ffff;
+    }
+    
+    .chat-send-btn:active {
+      transform: scale(0.95);
+    }
+    
+    /* Responsividade - esconder chat em telas pequenas */
+    @media (max-width: 1024px) {
+      .chat-panel {
+        width: 100%;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        height: 50%;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.1);
+      }
+    }
+    
     .toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
@@ -663,6 +848,49 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
   
+  <!-- ============================================
+       CHAT PANEL - BATE-PAPO
+       ============================================ -->
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-header">
+      <div class="chat-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        </svg>
+        <span>Bate-papo</span>
+      </div>
+      <div class="chat-status" id="chat-status">
+        <span class="status-dot offline"></span>
+        <span class="status-text">Offline</span>
+      </div>
+    </div>
+    
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-welcome">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+        </svg>
+        <p>Nenhuma mensagem ainda.<br>Seja o primeiro a conversar!</p>
+      </div>
+    </div>
+    
+    <form class="chat-input-form" id="chat-form" onsubmit="sendChatMessage(event)">
+      <input 
+        type="text" 
+        class="chat-input" 
+        id="chat-input" 
+        placeholder="Digite sua mensagem..." 
+        maxlength="500"
+        autocomplete="off"
+      />
+      <button type="submit" class="chat-send-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </form>
+  </div>
+
   <!-- ============================================
        SCRIPTS DA PÁGINA
        ============================================ -->
@@ -849,6 +1077,155 @@
         console.error('[Watch] Erro ao criar sala:', error);
         showToast('Erro ao criar sala');
       }
+    }
+    
+    // ============================================
+    // CHAT FUNCTIONS - BATE-PAPO
+    // ============================================
+    let chatSubscription = null;
+    let currentUser = null;
+    
+    // Inicializar chat
+    async function initChat() {
+      if (!roomId) return;
+      
+      // Buscar usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user;
+      
+      // Carregar mensagens existentes
+      await loadChatMessages();
+      
+      // Subscrever a novas mensagens
+      chatSubscription = supabase
+        .channel(`chat:${roomId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'watch_party_messages',
+          filter: `room_id=eq.${roomId}`
+        }, payload => {
+          displayChatMessage(payload.new);
+        })
+        .subscribe(status => {
+          console.log('[Chat] Status:', status);
+          const statusEl = document.getElementById('chat-status');
+          const dotEl = statusEl.querySelector('.status-dot');
+          const textEl = statusEl.querySelector('.status-text');
+          
+          if (status === 'SUBSCRIBED') {
+            dotEl.classList.remove('offline');
+            textEl.textContent = 'Online';
+          } else {
+            dotEl.classList.add('offline');
+            textEl.textContent = 'Offline';
+          }
+        });
+    }
+    
+    // Carregar mensagens do chat
+    async function loadChatMessages() {
+      try {
+        const { data: messages, error } = await supabase
+          .from('watch_party_messages')
+          .select('*')
+          .eq('room_id', roomId)
+          .order('created_at', { ascending: true })
+          .limit(100);
+        
+        if (error) {
+          console.error('[Chat] Erro ao carregar:', error);
+          return;
+        }
+        
+        const container = document.getElementById('chat-messages');
+        container.innerHTML = '';
+        
+        if (messages && messages.length > 0) {
+          messages.forEach(msg => displayChatMessage(msg));
+        } else {
+          container.innerHTML = `
+            <div class="chat-welcome">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+              </svg>
+              <p>Nenhuma mensagem ainda.<br>Seja o primeiro a conversar!</p>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('[Chat] Erro:', err);
+      }
+    }
+    
+    // Enviar mensagem
+    async function sendChatMessage(e) {
+      e.preventDefault();
+      
+      const input = document.getElementById('chat-input');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      if (!currentUser) {
+        showToast('Faça login para enviar mensagens');
+        return;
+      }
+      
+      try {
+        const { error } = await supabase
+          .from('watch_party_messages')
+          .insert({
+            room_id: roomId,
+            user_id: currentUser.id,
+            username: currentUser.email?.split('@')[0] || 'Anônimo',
+            message: message
+          });
+        
+        if (error) {
+          console.error('[Chat] Erro ao enviar:', error);
+          showToast('Erro ao enviar mensagem');
+          return;
+        }
+        
+        input.value = '';
+      } catch (err) {
+        console.error('[Chat] Erro:', err);
+        showToast('Erro ao enviar mensagem');
+      }
+    }
+    
+    // Exibir mensagem no chat
+    function displayChatMessage(msg) {
+      const container = document.getElementById('chat-messages');
+      const isOwn = currentUser && msg.user_id === currentUser.id;
+      const time = new Date(msg.created_at).toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      // Remover welcome message se existir
+      const welcome = container.querySelector('.chat-welcome');
+      if (welcome) welcome.remove();
+      
+      const msgEl = document.createElement('div');
+      msgEl.className = `chat-message ${isOwn ? 'own' : ''}`;
+      msgEl.innerHTML = `
+        <div class="chat-message-header">
+          <span class="chat-message-author">${msg.username}</span>
+          <span class="chat-message-time">${time}</span>
+        </div>
+        <div class="chat-message-content">${escapeHtml(msg.message)}</div>
+      `;
+      
+      container.appendChild(msgEl);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    // Escape HTML para segurança
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
     
     function showToast(message) {
