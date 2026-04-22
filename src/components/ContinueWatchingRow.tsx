@@ -222,6 +222,13 @@ const ContinueWatchingRow = () => {
           </div>
           <div className="flex-1 h-px bg-gradient-to-r from-[#00E5FF]/50 to-transparent" />
         </div>
+        <div className="px-4 py-6 bg-white/5 rounded-xl border border-white/10">
+          <p className="text-gray-400 text-sm">Comece a assistir algo para ver aqui</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative py-8 px-4 md:px-8 lg:px-12">
       {/* Header com Ícone Neon Relógio */}

@@ -1,6 +1,6 @@
 // Service Worker CineCasa v15 - PWA com Cache Estratégico
-const CACHE_VERSION = 'v15-pwa-cache';
-const BUILD_TIMESTAMP = '20260421-005';
+const CACHE_VERSION = 'v16-pwa-cache';
+const BUILD_TIMESTAMP = '20260421-211951';
 
 // Arquivos essenciais para PWA funcionar offline
 const PRECACHE_ASSETS = [
@@ -19,7 +19,7 @@ const CLEAR_ALL_CACHES = true;
 
 // Instalação: cachear arquivos essenciais do PWA
 self.addEventListener('install', e => {
-  console.log('[SW] Instalando v14 - cacheando assets PWA...');
+  console.log('[SW] Instalando v16 - cacheando assets PWA...');
   
   e.waitUntil(
     (async () => {
@@ -46,7 +46,7 @@ self.addEventListener('install', e => {
 
 // Ativação: limpar caches antigos e assumir controle
 self.addEventListener('activate', e => {
-  console.log('[SW] Ativado v15');
+  console.log('[SW] Ativado v16');
   
   e.waitUntil(
     (async () => {
