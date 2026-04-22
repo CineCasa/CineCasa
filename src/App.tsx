@@ -36,6 +36,7 @@ import { NewContentNotificationToast } from "./components/NewContentNotification
 import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useSilentUpdate } from "@/hooks/useSilentUpdate";
+import { useForceUpdate } from "@/hooks/useForceUpdate";
 import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
 const queryClient = new QueryClient();
@@ -173,6 +174,9 @@ const AppContent = () => {
   const { user } = useAuth();
   const isLoggedIn = !!user;
   const { isPlayerOpen } = usePlayer();
+  
+  // Inicializar sistema de force update automático
+  useForceUpdate();
   
   // Atualização silenciosa do PWA - verifica a cada 5 minutos
   useSilentUpdate({
