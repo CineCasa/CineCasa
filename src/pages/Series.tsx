@@ -1,60 +1,471 @@
-import PremiumHeroBanner from "@/components/PremiumHeroBanner";
-import { MobileNetflixHero } from "@/components/MobileNetflixHero";
-import ContentRow from "@/components/ContentRow";
-import ContinueWatchingRow from '../components/ContinueWatchingRow';
-import { useSupabaseContent } from "@/hooks/useSupabaseContent";
-const seriesHeroContent = {
-  title: "SÉRIES",
-  description: "Descubra séries incríveis para maratonar. Desde dramas intensos até comédias divertidas, encontre sua próxima obsessão.",
-  backdrop: "https://images.unsplash.com/photo-1522869635100-9f4c5e86d37b?q=80&w=1920&auto=format&fit=crop",
-  year: "2024",
-  rating: "8.7",
-};
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Play, Info, ChevronLeft, ChevronRight, Star, Calendar, Tv } from 'lucide-react';
+import { useSeriesData, Serie } from '@/hooks/useSeriesData';
+import { usePlayer } from '@/contexts/PlayerContext';
+import { tmdbImageUrl } from '@/services/tmdb';
 
-const Series = () => {
-  const { data: categories, isLoading } = useSupabaseContent();
+const seriesPageStyles = `
+  .series-page-container {
+    background-color: #000000 !important;
+    min-height: 100vh;
+  }
+  .series-hero-section {
+    position: relative;
+    width: 100%;
+    height: 85vh;
+    min-height: 600px;
+    overflow: hidden;
+  }
+  .series-hero-backdrop {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .series-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, #000000 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.5) 100%);
+  }
+  .series-hero-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0 4% 8% 4%;
+    z-index: 10;
+  }
+  .series-category-row {
+    margin-bottom: 3rem;
+    padding: 0 4%;
+  }
+  .series-category-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e5e5e5;
+    margin-bottom: 1rem;
+    text-transform: capitalize;
+  }
+  .series-slider-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .series-slider {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 1rem 0;
+    width: 100%;
+  }
+  .series-slider::-webkit-scrollbar {
+    display: none;
+  }
+  .series-card {
+    flex-shrink: 0;
+    width: 16%;
+    min-width: 200px;
+    aspect-ratio: 2/3;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: #1a1a1a;
+  }
+  .series-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.7);
+    z-index: 20;
+  }
+  .series-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .series-card:hover .series-card-image {
+    transform: scale(1.1);
+  }
+  .series-slider-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 60px;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .series-slider-container:hover .series-slider-button {
+    opacity: 1;
+  }
+  .series-slider-button:hover {
+    background: rgba(0,0,0,0.8);
+  }
+  .series-slider-button.left {
+    left: 0;
+  }
+  .series-slider-button.right {
+    right: 0;
+  }
+  @media (max-width: 768px) {
+    .series-hero-section {
+      height: 70vh;
+      min-height: 500px;
+    }
+    .series-hero-content {
+      padding: 0 4% 15% 4%;
+    }
+    .series-card {
+      width: 33%;
+      min-width: 140px;
+    }
+    .series-category-title {
+      font-size: 1.1rem;
+    }
+    .series-slider-button {
+      display: none;
+    }
+  }
+  @media (max-width: 480px) {
+    .series-card {
+      width: 45%;
+      min-width: 120px;
+    }
+  }
+`;
 
-  // Filtrar apenas categorias de séries e ordenar alfabeticamente
-  const seriesCategories = categories
-    ?.filter(cat => cat.id.startsWith("series-"))
-    .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR')) || [];
+interface SeriesCardProps {
+  serie: Serie;
+  onClick: () => void;
+}
+
+function SeriesCard({ serie, onClick }: SeriesCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const imageUrl = serie.capa || serie.banner || serie.poster_tmdb 
+    ? tmdbImageUrl(serie.capa || serie.banner || serie.poster_tmdb || '', 'w500')
+    : null;
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Hero Banner - Mobile/Desktop */}
-      {/* Mobile Banner - hidden on desktop */}
-      <div className="md:hidden">
-        <MobileNetflixHero contentType="series" />
-      </div>
-      {/* Desktop Banner - hidden on mobile */}
-      <div className="hidden md:block pt-[94px]">
-        <PremiumHeroBanner contentType="series" />
-      </div>
-      
-      <main className="pb-20 mt-[70px] relative z-10 bg-black">
-        <div className="relative z-10 pt-16 -mt-10 bg-black">
-          {/* Continue Watching Row */}
-          <ContinueWatchingRow />
-          
-          {isLoading ? (
-            <div className="flex items-center justify-center p-20 text-muted-foreground">
-              Carregando séries...
-            </div>
-          ) : (
-            seriesCategories.map((cat) => (
-              <ContentRow 
-                key={cat.id} 
-                category={cat} 
-                maxItems={20}
-                layout="scroll"
-                infiniteScroll={true}
-              />
-            ))
-          )}
+    <motion.div
+      className="series-card"
+      onClick={onClick}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ scale: 1.05 }}
+    >
+      {!imageLoaded && !imageError && (
+        <div className="absolute inset-0 bg-gray-800 animate-pulse flex items-center justify-center">
+          <Tv className="w-8 h-8 text-gray-600" />
         </div>
-      </main>
+      )}
+      {imageUrl && !imageError ? (
+        <img
+          src={imageUrl}
+          alt={serie.titulo}
+          className="series-card-image"
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
+          style={{ opacity: imageLoaded ? 1 : 0 }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex flex-col items-center justify-center p-4">
+          <Tv className="w-12 h-12 text-gray-600 mb-2" />
+          <span className="text-gray-500 text-sm text-center line-clamp-2">
+            {serie.titulo}
+          </span>
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+        <span className="text-white font-semibold text-sm line-clamp-2 drop-shadow-lg">
+          {serie.titulo}
+        </span>
+        {serie.ano && (
+          <span className="text-gray-300 text-xs mt-1">{serie.ano}</span>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+interface CategoryRowProps {
+  genre: string;
+  series: Serie[];
+  onSeriesClick: (serie: Serie) => void;
+}
+
+function CategoryRow({ genre, series, onSeriesClick }: CategoryRowProps) {
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const scroll = useCallback((direction: 'left' | 'right') => {
+    if (sliderRef.current) {
+      const scrollAmount = sliderRef.current.clientWidth * 0.8;
+      sliderRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  }, []);
+
+  if (!series || series.length === 0) return null;
+
+  return (
+    <div className="series-category-row">
+      <h2 className="series-category-title">{genre}</h2>
+      <div className="series-slider-container">
+        <button
+          className="series-slider-button left"
+          onClick={() => scroll('left')}
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="w-8 h-8 text-white" />
+        </button>
+        <div className="series-slider" ref={sliderRef}>
+          {series.map((serie) => (
+            <SeriesCard
+              key={serie.id_n}
+              serie={serie}
+              onClick={() => onSeriesClick(serie)}
+            />
+          ))}
+        </div>
+        <button
+          className="series-slider-button right"
+          onClick={() => scroll('right')}
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="w-8 h-8 text-white" />
+        </button>
+      </div>
     </div>
   );
-};
+}
 
-export default Series;
+interface HeroSectionProps {
+  serie: Serie | null;
+  onPlay: () => void;
+  onMoreInfo: () => void;
+}
+
+function HeroSection({ serie, onPlay, onMoreInfo }: HeroSectionProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  if (!serie) {
+    return (
+      <div className="series-hero-section bg-black flex items-center justify-center">
+        <div className="animate-pulse text-gray-600">Carregando...</div>
+      </div>
+    );
+  }
+
+  const backdropUrl = serie.backdrop_tmdb || serie.banner || serie.capa
+    ? tmdbImageUrl(serie.backdrop_tmdb || serie.banner || serie.capa || '', 'original')
+    : null;
+
+  const rating = serie.classificacao || serie.rating_tmdb || 'N/A';
+
+  return (
+    <div className="series-hero-section">
+      <style>{seriesPageStyles}</style>
+      {backdropUrl && (
+        <>
+          <div
+            className="series-hero-backdrop"
+            style={{
+              backgroundImage: `url(${backdropUrl})`,
+              opacity: imageLoaded ? 1 : 0,
+              transition: 'opacity 0.5s ease',
+            }}
+          />
+          <img
+            src={backdropUrl}
+            alt=""
+            className="hidden"
+            onLoad={() => setImageLoaded(true)}
+          />
+        </>
+      )}
+      {!imageLoaded && backdropUrl && (
+        <div className="absolute inset-0 bg-gray-900 animate-pulse" />
+      )}
+      <div className="series-hero-overlay" />
+      
+      <div className="series-hero-content">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <h1 
+            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4"
+            style={{ textShadow: '0 2px 20px rgba(0,0,0,0.8)' }}
+          >
+            {serie.titulo}
+          </h1>
+          
+          <div className="flex flex-wrap items-center gap-3 mb-4 text-sm md:text-base">
+            {rating !== 'N/A' && (
+              <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 px-3 py-1.5 rounded-full border border-yellow-400/30">
+                <Star size={16} className="text-yellow-400 fill-yellow-400" />
+                <span className="font-bold text-yellow-100">{rating}</span>
+              </div>
+            )}
+            {serie.ano && (
+              <div className="flex items-center gap-1.5 text-white/80">
+                <Calendar size={16} className="text-cyan-400" />
+                <span>{serie.ano}</span>
+              </div>
+            )}
+            {serie.genero && (
+              <span className="px-2 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded text-cyan-300 text-sm">
+                {serie.genero.split(',')[0]}
+              </span>
+            )}
+          </div>
+
+          {serie.descricao && (
+            <p 
+              className="text-white/90 text-base md:text-lg max-w-2xl mb-6 line-clamp-3"
+              style={{ textShadow: '0 1px 10px rgba(0,0,0,0.8)' }}
+            >
+              {serie.descricao}
+            </p>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={onPlay}
+              className="flex items-center gap-2 bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#00A8E1]/30"
+            >
+              <Play size={20} fill="currentColor" />
+              <span>Assistir</span>
+            </button>
+            <button
+              onClick={onMoreInfo}
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/30 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105"
+            >
+              <Info size={20} />
+              <span>Mais Informações</span>
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
+export default function SeriesPage() {
+  const navigate = useNavigate();
+  const { openPlayer } = usePlayer();
+  const { series, seriesByGenre, heroSerie, isLoading, error, getFirstEpisode, getAllGenres } = useSeriesData();
+
+  const handleSeriesClick = useCallback((serie: Serie) => {
+    navigate(`/series-details/${serie.id_n}`);
+  }, [navigate]);
+
+  const handlePlayHero = useCallback(async () => {
+    if (!heroSerie) return;
+    
+    const firstEpisode = await getFirstEpisode(heroSerie.id_n);
+    if (firstEpisode && firstEpisode.arquivo) {
+      openPlayer({
+        id: String(heroSerie.id_n),
+        title: `${heroSerie.titulo} - ${firstEpisode.titulo}`,
+        type: 'series',
+        videoUrl: firstEpisode.arquivo,
+        poster: heroSerie.capa || heroSerie.banner || undefined,
+        year: heroSerie.ano || undefined,
+        seriesId: String(heroSerie.id_n),
+        episodeId: String(firstEpisode.id_n),
+        seasonNumber: 1,
+        episodeNumber: firstEpisode.numero_episodio,
+      });
+    } else {
+      navigate(`/series-details/${heroSerie.id_n}`);
+    }
+  }, [heroSerie, getFirstEpisode, openPlayer, navigate]);
+
+  const handleMoreInfoHero = useCallback(() => {
+    if (heroSerie) {
+      navigate(`/series-details/${heroSerie.id_n}`);
+    }
+  }, [heroSerie, navigate]);
+
+  const genres = getAllGenres();
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 text-lg mb-4">Erro ao carregar séries</p>
+          <p className="text-gray-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded transition-colors"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="series-page-container bg-black min-h-screen">
+      <style>{seriesPageStyles}</style>
+      
+      <HeroSection
+        serie={heroSerie}
+        onPlay={handlePlayHero}
+        onMoreInfo={handleMoreInfoHero}
+      />
+
+      <div className="relative z-10 bg-black pt-8">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
+              <span className="text-white/60">Carregando séries...</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            {genres.length === 0 ? (
+              <div className="text-center py-20">
+                <Tv className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-400">Nenhuma série encontrada</p>
+              </div>
+            ) : (
+              genres.map((genre) => (
+                <CategoryRow
+                  key={genre}
+                  genre={genre}
+                  series={seriesByGenre[genre] || []}
+                  onSeriesClick={handleSeriesClick}
+                />
+              ))
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="h-20 bg-black" />
+    </div>
+  );
+}
