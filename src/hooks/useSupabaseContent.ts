@@ -56,6 +56,14 @@ export const useSupabaseContent = () => {
         fetchAllRecords("tv_ao_vivo")
       ]);
 
+      console.log('[useSupabaseContent] Raw data fetched:', {
+        cinemaCount: cinema?.length || 0,
+        filmesKidsCount: filmesKids?.length || 0,
+        seriesCount: series?.length || 0,
+        seriesKidsCount: seriesKids?.length || 0,
+        tvAoVivoCount: tvAoVivo?.length || 0
+      });
+
       const splitGenres = (genreStr: string | null) => {
         if (!genreStr) return [];
         return genreStr.split(",").map(g => g.trim()).filter(g => g.length > 0);
@@ -353,6 +361,8 @@ export const useSupabaseContent = () => {
       if (finalTv && finalTv.length > 0) {
         categories.push({ id: "tv-live", title: "TV ao Vivo", items: finalTv.map(mapTv) });
       }
+
+      console.log('[useSupabaseContent] Final categories:', categories.map(c => ({ id: c.id, title: c.title, itemsCount: c.items.length })));
 
       return categories;
     },
