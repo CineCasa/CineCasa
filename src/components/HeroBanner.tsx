@@ -46,25 +46,42 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
   console.log('[HeroBanner] Component mounted, filterCategory:', filterCategory);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
-  const { data: categories, isLoading } = useSupabaseContent();
+  const { data: categories, isLoading, error } = useSupabaseContent();
   const trailerTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Debug: log categories data
+  useEffect(() => {
+    console.log('[HeroBanner] Categories data:', { 
+      categoriesCount: categories?.length || 0, 
+      isLoading, 
+      error: error?.message || null,
+      categoryIds: categories?.map(c => c.id) || []
+    });
+  }, [categories, isLoading, error]);
+
   const normalizedFilter = filterCategory?.toLowerCase().trim();
   
   // Pegar todos os itens disponíveis sem limitação - memoizado para não recalcular
   const allItems = useMemo(() => {
+    console.log('[HeroBanner] Calculating allItems, filterCategory:', filterCategory, 'normalizedFilter:', normalizedFilter);
+    console.log('[HeroBanner] Available categories:', categories?.map(c => ({ id: c.id, title: c.title, itemsCount: c.items.length })));
+    
     const items = filterCategory 
       ? categories?.filter(cat => {
-          if (normalizedFilter === "cinema") return cat.id.startsWith("cinema-");
-          if (normalizedFilter === "séries") return cat.id.startsWith("series-");
-          if (normalizedFilter === "filmes infantis") return cat.id === "kids-movies";
-          if (normalizedFilter?.startsWith("séries infant")) return cat.id === "kids-series";
-          return cat.title.toLowerCase().includes(normalizedFilter!);
+          const matches = normalizedFilter === "cinema" ? cat.id.startsWith("cinema-") :
+                         normalizedFilter === "séries" ? cat.id.startsWith("series-") :
+                         normalizedFilter === "filmes infantis" ? cat.id === "kids-movies" :
+                         normalizedFilter?.startsWith("séries infant") ? cat.id === "kids-series" :
+                         cat.title.toLowerCase().includes(normalizedFilter!);
+          console.log('[HeroBanner] Checking category:', cat.id, 'matches:', matches);
+          return matches;
         }).flatMap(cat => cat.items) || []
       : categories?.flatMap(cat => cat.items) || [];
+    
+    console.log('[HeroBanner] allItems count:', items.length);
     return items;
   }, [categories, filterCategory, normalizedFilter]);
 
