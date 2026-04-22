@@ -79,7 +79,7 @@ export function useForceUpdate() {
       }
       
       // 2. Limpar tudo
-      await clearAllStorage();
+      await clearAllStorage;
       
       // 3. Marcar versão atual
       localStorage.setItem(UPDATE_VERSION_KEY, Date.now().toString());
@@ -92,7 +92,7 @@ export function useForceUpdate() {
       
     } catch (err) {
       console.error('[ForceUpdate] Erro no reload:', err);
-      window.location.reload(true);
+      window.location.reload();
     }
   }, [clearAllStorage]);
 
@@ -114,59 +114,17 @@ export function useForceUpdate() {
     }
   }, []);
 
-  // Listener para mensagens do SW
+  // Listener para mensagens do SW - DESATIVADO para evitar loops
   useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'SW_FORCE_UPDATE') {
-        console.log('[ForceUpdate] Update forçado detectado!');
-        setState(prev => ({ ...prev, updateAvailable: true }));
-        
-        // Aplicar imediatamente
-        forceReload();
-      }
-      
-      if (event.data?.type === 'SW_UPDATED') {
-        console.log('[ForceUpdate] Nova versão disponível');
-        setState(prev => ({ ...prev, updateAvailable: true }));
-        
-        // Auto-aplicar após 1 segundo
-        setTimeout(() => {
-          forceReload();
-        }, 1000);
-      }
-    };
-
-    navigator.serviceWorker.addEventListener('message', handleMessage);
+    // Não escutar mais mensagens de force update - causa loop infinito
+    console.log('[ForceUpdate] Modo passivo - sem auto-reload');
     
-    // Verificar ao montar
-    checkForUpdates();
+    // Apenas expor funções globais para debug manual
+    (window as any).__forceUpdateNow = forceReload;
+    (window as any).__clearAllStorage = clearAllStorage;
     
-    // Verificar periodicamente
-    const interval = setInterval(checkForUpdates, CHECK_INTERVAL);
-    
-    // Verificar quando voltar a ficar visível
-    const handleVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        checkForUpdates();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    
-    // Verificar quando voltar online
-    const handleOnline = () => {
-      checkForUpdates();
-    };
-    window.addEventListener('online', handleOnline);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibility);
-      window.removeEventListener('online', handleOnline);
-      navigator.serviceWorker.removeEventListener('message', handleMessage);
-    };
-  }, [checkForUpdates, forceReload]);
+    return () => {};
+  }, [forceReload, clearAllStorage]);
 
   // Expor função global para debug/forçar
   useEffect(() => {

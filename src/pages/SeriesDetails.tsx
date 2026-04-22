@@ -5,6 +5,8 @@ import { Play, ArrowLeft, Star, Calendar, Clock, Info, Plus, Check, Users, Chevr
 import { getSupabaseClient } from '../lib/supabase';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useFavorites } from '../hooks/useFavorites';
+import { useWatchProgress } from '../hooks/useWatchProgress';
+import { useAuth } from '../components/AuthProvider';
 import { fetchTmdbSeries, tmdbImageUrl } from '../services/tmdb';
 
 // Interface da Série (mapeada do banco)
@@ -82,6 +84,8 @@ const SeriesDetails: React.FC = () => {
   const navigate = useNavigate();
   const { openPlayer, closePlayer, isPlayerOpen } = usePlayer();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { user } = useAuth();
+  const { progress: watchProgress, getProgress } = useWatchProgress({ userId: user?.id });
   
   const [series, setSeries] = useState<Series | null>(null);
   const [temporadas, setTemporadas] = useState<Temporada[]>([]);
@@ -335,6 +339,24 @@ const SeriesDetails: React.FC = () => {
     return 85 + (Math.abs(hash) % 14);
   };
 
+  // Helper function to get episode progress
+  const getEpisodeProgress = (episodeId: string, episodeNum: number) => {
+    if (!watchProgress || !Array.isArray(watchProgress) || !series) return null;
+    const progress = watchProgress as Array<{
+      content_id: string;
+      content_type: string;
+      episode_number: number;
+      season_number: number;
+      progress: number;
+    }>;
+    return progress.find(p => 
+      p.content_id === series.id_n && 
+      p.content_type === 'series' &&
+      p.episode_number === episodeNum &&
+      p.season_number === selectedSeason
+    );
+  };
+
   // Loading Screen - Padronizado com MovieDetails
   if (isLoading) {
     return (
@@ -424,7 +446,7 @@ const SeriesDetails: React.FC = () => {
               navigate(-1);
             }
           }}
-          className="fixed top-[56px] sm:top-9 left-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-full hover:bg-black/60 hover:border-cyan-400/50 transition-all duration-300 group"
+          className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 px-4 py-2 rounded-full hover:bg-black/60 hover:border-cyan-400/50 transition-all duration-300 group"
         >
           <ArrowLeft size={18} className="text-cyan-400 group-hover:text-cyan-300" />
           <span className="text-sm font-medium text-white/90">{isPlayerOpen ? 'Fechar' : 'Voltar'}</span>
@@ -466,7 +488,7 @@ const SeriesDetails: React.FC = () => {
                 {hasEpisodes && (
                   <button
                     onClick={handlePlayFirstEpisode}
-                    className="col-span-2 flex items-center justify-center gap-2 bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00A8E1]/30"
+                    className="col-span-2 flex items-center justify-center gap-2 bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-3 px-6 rounded-[20px] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00A8E1]/30"
                   >
                     <Play size={20} fill="currentColor" />
                     <span>Assistir T{String(selectedSeason).padStart(2, '0')}E01</span>
@@ -475,20 +497,20 @@ const SeriesDetails: React.FC = () => {
                 
                 <button
                   onClick={handleToggleFavorite}
-                  className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
+                  className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 hover:border-[#00E5FF]/50 text-white font-medium py-3 px-4 rounded-[20px] transition-all duration-300"
                   title={series && isFavorite(parseInt(series.id_n), 'series') ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                 >
                   {series && isFavorite(parseInt(series.id_n), 'series') ? (
-                    <Heart size={20} className="text-red-500 fill-red-500" />
+                    <Heart size={20} className="text-[#00E5FF] fill-[#00E5FF]" />
                   ) : (
-                    <Heart size={20} className="text-cyan-400" />
+                    <Heart size={20} className="text-white/70" />
                   )}
                 </button>
                 
                 {series.trailer && (
                   <button
                     onClick={handlePlayTrailer}
-                    className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
+                    className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white font-medium py-3 px-4 rounded-[20px] transition-all duration-300"
                   >
                     <Play size={18} fill="white" />
                     <span>Trailer</span>
@@ -657,41 +679,24 @@ const SeriesDetails: React.FC = () => {
                       </span>
                     </div>
                     
-                    {/* Seletor de Temporadas Elegante */}
+                    {/* Seletor de Temporadas - Estilo Pílulas Glassmorphism */}
                     {temporadas.length > 1 && (
-                      <div className="relative">
-                        <button
-                          onClick={() => setShowSeasonDropdown(!showSeasonDropdown)}
-                          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-cyan-500/30 px-4 py-2 rounded-lg transition-all duration-300"
-                        >
-                          <span className="font-semibold">Temporada {selectedSeason}</span>
-                          <ChevronDown size={18} className={`transition-transform duration-300 ${showSeasonDropdown ? 'rotate-180' : ''}`} />
-                        </button>
-                        
-                        <AnimatePresence>
-                          {showSeasonDropdown && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="absolute right-0 top-full mt-2 bg-black/90 backdrop-blur-md border border-cyan-500/30 rounded-lg overflow-hidden z-50 min-w-[200px]"
-                            >
-                              {temporadas.map((temp) => (
-                                <button
-                                  key={temp.id}
-                                  onClick={() => {
-                                    setSelectedSeason(temp.numero_temporada);
-                                    setShowSeasonDropdown(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-3 hover:bg-white/10 transition-colors ${selectedSeason === temp.numero_temporada ? 'bg-cyan-500/20 text-cyan-300' : 'text-white/80'}`}
-                                >
-                                  Temporada {temp.numero_temporada}
-                                  {temp.titulo && <span className="text-white/50 text-sm ml-2">- {temp.titulo}</span>}
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                      <div className="flex flex-wrap gap-2">
+                        {temporadas.map((temp) => (
+                          <motion.button
+                            key={temp.id}
+                            onClick={() => setSelectedSeason(temp.numero_temporada)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`px-4 py-2 rounded-full font-semibold text-sm transition-all duration-300 ${
+                              selectedSeason === temp.numero_temporada
+                                ? 'bg-[#00E5FF]/20 border border-[#00E5FF] text-[#00E5FF] shadow-[0_0_15px_rgba(0,229,255,0.3)]'
+                                : 'bg-white/10 backdrop-blur-md border border-white/20 text-white/70 hover:bg-white/20 hover:border-[#00E5FF]/50 hover:text-white'
+                            }`}
+                          >
+                            T{temp.numero_temporada}
+                          </motion.button>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -699,49 +704,76 @@ const SeriesDetails: React.FC = () => {
                   {/* Grid de Episódios */}
                   {currentEpisodes.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {currentEpisodes.map((episodio, index) => (
-                        <motion.div
-                          key={episodio.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.4, delay: 0.05 * index }}
-                          className="group cursor-pointer"
-                          onClick={() => handlePlayEpisode(episodio)}
-                        >
-                          <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800 ring-1 ring-white/10 group-hover:ring-cyan-500/50 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-cyan-500/20">
-                            <img
-                              src={episodio.imagem_342 || episodio.imagem_185 || episodio.banner || series.capa || series.banner}
-                              alt={episodio.titulo}
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                            {/* Play Button Overlay */}
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                              <div className="bg-cyan-500/90 backdrop-blur-sm p-3 rounded-full transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg shadow-cyan-500/30">
-                                <Play size={24} className="text-black fill-black ml-0.5" />
+                      {currentEpisodes.map((episodio, index) => {
+                        const episodeProgress = getEpisodeProgress(episodio.id_n, episodio.numero_episodio);
+                        const hasProgress = episodeProgress && episodeProgress.progress > 0 && episodeProgress.progress < 95;
+                        const isCompleted = episodeProgress && episodeProgress.progress >= 95;
+                        
+                        return (
+                          <motion.div
+                            key={episodio.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.05 * index }}
+                            className="group cursor-pointer"
+                            onClick={() => handlePlayEpisode(episodio)}
+                          >
+                            {/* Thumbnail Container with Neon Glow */}
+                            <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-800 ring-1 ring-white/10 transition-all duration-300 group-hover:ring-[#00E5FF]/60 group-hover:shadow-[0_0_25px_rgba(0,229,255,0.3)]">
+                              <img
+                                src={episodio.imagem_342 || episodio.imagem_185 || episodio.banner || series.capa || series.banner}
+                                alt={episodio.titulo}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              
+                              {/* Play Button Overlay */}
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <div className="bg-[#00E5FF]/90 backdrop-blur-sm p-3 rounded-full transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-lg shadow-[#00E5FF]/30">
+                                  <Play size={24} className="text-black fill-black ml-0.5" />
+                                </div>
                               </div>
+                              
+                              {/* Episode Number Badge */}
+                              <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-white">
+                                E{String(episodio.numero_episodio).padStart(2, '0')}
+                              </div>
+                              
+                              {/* Completed Badge */}
+                              {isCompleted && (
+                                <div className="absolute top-2 right-2 bg-green-500/80 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-white flex items-center gap-1">
+                                  <Check size={12} />
+                                </div>
+                              )}
+                              
+                              {/* Progress Bar at bottom */}
+                              {hasProgress && (
+                                <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+                                  <div 
+                                    className="h-full bg-[#00E5FF] shadow-[0_0_8px_rgba(0,229,255,0.8)]"
+                                    style={{ width: `${episodeProgress.progress}%` }}
+                                  />
+                                </div>
+                              )}
                             </div>
-                            {/* Episode Number Badge */}
-                            <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-xs font-bold text-white">
-                              E{String(episodio.numero_episodio).padStart(2, '0')}
+                            
+                            {/* Episode Info */}
+                            <div className="mt-2">
+                              <h4 className="font-semibold text-white group-hover:text-[#00E5FF] transition-colors text-sm line-clamp-1">
+                                {episodio.numero_episodio}. {episodio.titulo}
+                              </h4>
+                              {episodio.descricao && (
+                                <p className="text-xs text-white/50 line-clamp-2 mt-1">{episodio.descricao}</p>
+                              )}
+                              {episodio.duracao && (
+                                <p className="text-xs text-white/40 flex items-center gap-1 mt-1">
+                                  <Clock size={12} />
+                                  {episodio.duracao}
+                                </p>
+                              )}
                             </div>
-                          </div>
-                          
-                          <div className="mt-2">
-                            <h4 className="font-semibold text-white group-hover:text-cyan-300 transition-colors text-sm line-clamp-1">
-                              {episodio.titulo}
-                            </h4>
-                            {episodio.descricao && (
-                              <p className="text-xs text-white/50 line-clamp-2 mt-1">{episodio.descricao}</p>
-                            )}
-                            {episodio.duracao && (
-                              <p className="text-xs text-white/40 flex items-center gap-1 mt-1">
-                                <Clock size={12} />
-                                {episodio.duracao}
-                              </p>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-white/50 text-center py-8">

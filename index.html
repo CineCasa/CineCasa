@@ -1,17 +1,21 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <meta name="app-version" content="20260422-001200">
+    <meta name="app-version" content="20260422-210000">
     <meta charset="UTF-8" />
     
     <!-- WHITE SCREEN RECOVERY - Detecta e corrige tela branca no Android -->
     <script>
       (function() {
-        // Configurações
-        const CHECK_INTERVAL = 2000; // Verificar a cada 2 segundos
-        const MAX_WAIT_TIME = 8000;  // Máximo 8 segundos para carregar
+        // Detectar se está rodando como PWA standalone
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                            window.navigator.standalone === true;
+        
+        // Configurações - mais tolerantes para PWA
+        const CHECK_INTERVAL = 3000; // Verificar a cada 3 segundos
+        const MAX_WAIT_TIME = isStandalone ? 15000 : 10000;  // 15s para PWA, 10s para browser
         const RECOVERY_KEY = '__cinecasa_recovery_attempts__';
-        const MAX_RECOVERY_ATTEMPTS = 3;
+        const MAX_RECOVERY_ATTEMPTS = isStandalone ? 2 : 3; // Menos tentativas no PWA
         
         let checkTimer = null;
         let startTime = Date.now();
@@ -19,6 +23,9 @@
         
         // Verificar tentativas anteriores
         const attempts = parseInt(localStorage.getItem(RECOVERY_KEY) || '0');
+        
+        console.log('[WhiteScreenRecovery] Modo:', isStandalone ? 'PWA Standalone' : 'Browser', 
+                    'Max tempo:', MAX_WAIT_TIME, 'ms');
         
         // Função para verificar se a app carregou
         function checkAppLoaded() {
@@ -50,34 +57,41 @@
               // Incrementar tentativas
               localStorage.setItem(RECOVERY_KEY, (attempts + 1).toString());
               
-              // Tentar limpar cache do Service Worker
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                  registrations.forEach(function(registration) {
-                    registration.unregister();
-                    console.log('[WhiteScreenRecovery] Service Worker desregistrado');
+              // NO PWA: NÃO limpar caches, apenas tentar recarregar
+              if (!isStandalone) {
+                // Apenas no browser: tentar limpar cache do Service Worker
+                if ('serviceWorker' in navigator) {
+                  navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    registrations.forEach(function(registration) {
+                      registration.unregister();
+                      console.log('[WhiteScreenRecovery] Service Worker desregistrado');
+                    });
                   });
-                });
+                }
+                
+                if ('caches' in window) {
+                  caches.keys().then(function(cacheNames) {
+                    cacheNames.forEach(function(cacheName) {
+                      caches.delete(cacheName);
+                    });
+                  });
+                }
               }
               
-              // Limpar caches
-              if ('caches' in window) {
-                caches.keys().then(function(cacheNames) {
-                  cacheNames.forEach(function(cacheName) {
-                    caches.delete(cacheName);
-                    console.log('[WhiteScreenRecovery] Cache deletado:', cacheName);
-                  });
-                });
-              }
-              
-              // Recarregar após limpar
+              // Recarregar após breve delay
               setTimeout(function() {
-                window.location.reload(true);
-              }, 500);
+                window.location.reload();
+              }, 1000);
               
             } else {
-              console.error('[WhiteScreenRecovery] Máximo de tentativas atingido. Mostrando página de erro.');
-              showErrorPage();
+              console.error('[WhiteScreenRecovery] Máximo de tentativas atingido.');
+              // No PWA, tentar uma última vez sem mostrar erro
+              if (isStandalone) {
+                localStorage.removeItem(RECOVERY_KEY);
+                setTimeout(() => window.location.reload(), 2000);
+              } else {
+                showErrorPage();
+              }
             }
           }
         }
@@ -352,10 +366,10 @@
               console.log('Nova versão do Service Worker encontrada');
             });
             
-            // Handle controller change
+            // Handle controller change - NÃO recarregar automaticamente
             registration.addEventListener('controllerchange', function() {
-              console.log('Service Worker controller mudou');
-              window.location.reload();
+              console.log('Service Worker controller mudou - aguardando próximo carregamento natural');
+              // NÃO dar reload automatico - causa loop infinito no PWA
             });
             
             // Request notification permission

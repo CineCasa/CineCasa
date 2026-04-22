@@ -67,57 +67,24 @@ export function useSilentUpdate(options: SilentUpdateOptions = {}) {
     }
   }, []);
 
-  // Escutar mensagens do SW
+  // Escutar mensagens do SW - DESATIVADO para evitar loops
+  useEffect(() => {
+    // Não escutar mais mensagens de update - causa loop infinito no PWA
+    console.log('[SilentUpdate] Modo passivo - sem auto-reload');
+    return () => {};
+  }, []);
+
+  // NÃO registrar SW aqui - já registrado no index.html
+  // Apenas usar o SW existente
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'SW_UPDATED') {
-        console.log('[SilentUpdate] Nova versão disponível:', event.data.version);
-        
-        // Disparar evento customizado para a aplicação
-        window.dispatchEvent(new CustomEvent('app-updated', {
-          detail: { version: event.data.version, timestamp: event.data.timestamp }
-        }));
-        
-        onUpdateAvailable?.();
-        
-        // Se for update forçado, limpar e recarregar imediatamente
-        if (event.data?.force) {
-          console.log('[SilentUpdate] Update forçado detectado - aplicando...');
-          // Pequeno delay para permitir que outros processos terminem
-          setTimeout(forceCleanAndReload, 1000);
-        }
-      }
-    };
-
-    navigator.serviceWorker.addEventListener('message', handleMessage);
-    return () => navigator.serviceWorker.removeEventListener('message', handleMessage);
-  }, [onUpdateAvailable, forceCleanAndReload]);
-
-  // Registrar SW e guardar referência
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-
-    const register = async () => {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js', {
-          scope: '/',
-          updateViaCache: 'none' // Sempre buscar nova versão
-        });
-        registrationRef.current = registration;
-        
-        // Verificar imediatamente ao registrar
-        checkForUpdates();
-        
-        console.log('[SilentUpdate] SW registrado');
-      } catch (err) {
-        console.error('[SilentUpdate] Erro ao registrar:', err);
-      }
-    };
-
-    register();
-  }, [checkForUpdates]);
+    
+    // Apenas obter referência ao SW existente
+    navigator.serviceWorker.ready.then(registration => {
+      registrationRef.current = registration;
+      console.log('[SilentUpdate] SW pronto');
+    });
+  }, []);
 
   // Verificação periódica
   useEffect(() => {
