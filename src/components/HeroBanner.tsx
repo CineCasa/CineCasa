@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useRatings } from "@/hooks/useRatings";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
 import VideoJSPlayer from "./VideoJSPlayer";
+import { useAuth } from "./AuthProvider";
 
 interface HeroBannerProps {
   filterCategory?: string;
