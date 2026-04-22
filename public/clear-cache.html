@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Cache - CineCasa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00E5FF, #FF0055);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+        .status {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status-line {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .status-line.success { color: #4ade80; }
+        .status-line.error { color: #f87171; }
+        .status-line.info { color: #60a5fa; }
+        .btn {
+            background: linear-gradient(90deg, #00E5FF, #FF0055);
+            border: none;
+            color: #fff;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,229,255,0.3);
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #00E5FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .redirect-msg {
+            margin-top: 30px;
+            padding: 15px;
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid #4ade80;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">CineCasa</div>
+        <h1>Limpar Cache e Atualizar</h1>
+        
+        <div class="status" id="status">
+            <div class="status-line info">Aguardando comando...</div>
+        </div>
+        
+        <div class="spinner" id="spinner"></div>
+        
+        <button class="btn" id="clearBtn" onclick="clearAllCache()">
+            🧹 Limpar Todo o Cache
+        </button>
+        
+        <div class="redirect-msg" id="redirectMsg">
+            ✅ Cache limpo! Redirecionando para a aplicação em <span id="countdown">3</span> segundos...
+        </div>
+    </div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const spinner = document.getElementById('spinner');
+        const btn = document.getElementById('clearBtn');
+        const redirectMsg = document.getElementById('redirectMsg');
+        const countdownSpan = document.getElementById('countdown');
+
+        function log(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `status-line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            statusDiv.appendChild(line);
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        async function clearAllCache() {
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            statusDiv.innerHTML = '';
+            
+            try {
+                // 1. Limpar Service Workers
+                log('1. Limpando Service Workers...', 'info');
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const reg of registrations) {
+                        await reg.unregister();
+                        log(`   ✓ Service Worker desregistrado: ${reg.scope}`, 'success');
+                    }
+                    if (registrations.length === 0) {
+                        log('   ℹ Nenhum Service Worker ativo', 'info');
+                    }
+                }
+
+                // 2. Limpar Cache API
+                log('2. Limpando Cache API...', 'info');
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const name of cacheNames) {
+                        await caches.delete(name);
+                        log(`   ✓ Cache deletado: ${name}`, 'success');
+                    }
+                    if (cacheNames.length === 0) {
+                        log('   ℹ Nenhum cache encontrado', 'info');
+                    }
+                }
+
+                // 3. Limpar LocalStorage
+                log('3. Limpando LocalStorage...', 'info');
+                const keys = Object.keys(localStorage);
+                let cleared = 0;
+                for (const key of keys) {
+                    // Preservar dados de autenticação
+                    if (!key.includes('supabase') && !key.includes('sb-')) {
+                        localStorage.removeItem(key);
+                        cleared++;
+                    }
+                }
+                log(`   ✓ ${cleared} itens removidos do LocalStorage`, 'success');
+
+                // 4. Limpar SessionStorage
+                log('4. Limpando SessionStorage...', 'info');
+                sessionStorage.clear();
+                log('   ✓ SessionStorage limpo', 'success');
+
+                // 5. Limpar IndexedDB
+                log('5. Limpando IndexedDB...', 'info');
+                const databases = await window.indexedDB?.databases?.() || [];
+                for (const db of databases) {
+                    if (db.name) {
+                        await new Promise((resolve) => {
+                            const req = indexedDB.deleteDatabase(db.name);
+                            req.onsuccess = resolve;
+                            req.onerror = resolve;
+                        });
+                        log(`   ✓ IndexedDB deletado: ${db.name}`, 'success');
+                    }
+                }
+
+                // 6. Recarregar sem cache
+                log('6. Forçando recarregamento limpo...', 'info');
+                
+                spinner.style.display = 'none';
+                redirectMsg.style.display = 'block';
+                
+                let countdown = 3;
+                const timer = setInterval(() => {
+                    countdown--;
+                    countdownSpan.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        // Força recarregamento limpo
+                        window.location.href = '/?nocache=' + Date.now();
+                    }
+                }, 1000);
+
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Auto-clear se vier com parâmetro
+        if (window.location.search.includes('autoclear')) {
+            setTimeout(clearAllCache, 500);
+        }
+    </script>
+</body>
+</html>
