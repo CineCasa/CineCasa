@@ -145,10 +145,12 @@ export const NotificationsPage: React.FC = () => {
         console.error('[NotificationsPage] Erro ao buscar filmes:', moviesError);
       }
 
-      // Buscar séries (sem filtro de data pois pode não ter created_at)
+      // Buscar séries das últimas 24h (se tiver created_at)
       const { data: series, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, ano, genero, tmdb_id, descricao')
+        .select('id_n, titulo, banner, capa, ano, genero, tmdb_id, descricao, created_at')
+        .gte('created_at', cutoffDate)
+        .order('created_at', { ascending: false })
         .limit(20);
 
       if (seriesError) {
@@ -175,11 +177,11 @@ export const NotificationsPage: React.FC = () => {
         id: item.id_n?.toString() || item.id?.toString(),
         title: item.titulo,
         type: 'series' as const,
-        poster: undefined,
+        poster: item.banner || item.capa,
         year: item.ano,
-        category: undefined,
+        category: item.genero,
         genero: item.genero,
-        created_at: new Date().toISOString(),
+        created_at: item.created_at || new Date().toISOString(),
         tmdb_id: item.tmdb_id,
         rating: undefined,
         description: item.descricao,
