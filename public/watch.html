@@ -761,7 +761,7 @@
     
     <!-- Wrapper do Vídeo -->
     <div class="video-wrapper">
-      <video id="watch-party-video" controls preload="metadata">
+      <video id="watch-party-video" controls preload="metadata" crossorigin="anonymous">
         <p>Seu navegador não suporta vídeo HTML5.</p>
       </video>
     </div>
@@ -939,9 +939,20 @@
     function setupVideoPlayer() {
       const video = document.getElementById('watch-party-video');
       
-      if (videoUrl) {
-        video.src = decodeURIComponent(videoUrl);
-        console.log('[Watch] URL do vídeo:', video.src);
+      if (!videoUrl) {
+        console.log('[Watch] Sem URL de vídeo - modo apenas chat');
+        document.getElementById('loading-overlay').classList.add('hidden');
+        return;
+      }
+      
+      try {
+        const decodedUrl = decodeURIComponent(videoUrl);
+        video.src = decodedUrl;
+        console.log('[Watch] URL do vídeo:', decodedUrl);
+      } catch (e) {
+        console.error('[Watch] Erro ao decodificar URL:', e);
+        showError('URL do vídeo inválida.');
+        return;
       }
       
       // Eventos do player para UI
@@ -951,8 +962,28 @@
       });
       
       video.addEventListener('error', (e) => {
-        console.error('[Watch] Erro no vídeo:', e);
-        showError('Erro ao carregar o vídeo. Verifique a URL.');
+        const error = video.error;
+        let errorMsg = 'Erro ao carregar o vídeo.';
+        
+        if (error) {
+          switch (error.code) {
+            case 1:
+              errorMsg = 'Vídeo interrompido. Tente recarregar.';
+              break;
+            case 2:
+              errorMsg = 'Erro de rede. Verifique sua conexão.';
+              break;
+            case 3:
+              errorMsg = 'Formato de vídeo não suportado.';
+              break;
+            case 4:
+              errorMsg = 'Vídeo não encontrado ou acesso negado (CORS).';
+              break;
+          }
+          console.error('[Watch] Erro do vídeo:', error.code, error.message);
+        }
+        
+        showError(errorMsg + ' Verifique a URL ou tente outro vídeo.');
       });
     }
     
