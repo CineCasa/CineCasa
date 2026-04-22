@@ -47,13 +47,20 @@ export async function generateVideoToken(
  */
 export function getProxiedUrl(originalUrl: string): string {
   if (!originalUrl) return '';
-  
+
+  // Se a URL já está proxied, retorna ela mesma para evitar dupla codificação
+  if (originalUrl.includes('proxy-cinecasa.paixaoflix-vip.workers.dev')) {
+    console.log('[VideoProxy] URL already proxied, skipping:', originalUrl.substring(0, 50));
+    return originalUrl;
+  }
+
   // Verifica se é URL do Archive.org ou IA
   if (originalUrl.includes('archive.org') || originalUrl.includes('ia.')) {
     const encodedUrl = encodeURIComponent(originalUrl);
+    console.log('[VideoProxy] Encoding archive.org URL:', originalUrl.substring(0, 50));
     return `${PROXY_BASE_URL}${encodedUrl}`;
   }
-  
+
   // Se não for archive.org, retorna URL original
   return originalUrl;
 }
