@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
@@ -40,7 +40,6 @@ const getCountryFlag = (countryCode: string): string => {
 
 const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
   console.log('[HeroBanner] Component mounted, filterCategory:', filterCategory);
-  const [current, setCurrent] = useState(0);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
   const { data: categories, isLoading } = useSupabaseContent();
@@ -51,30 +50,49 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
 
   const normalizedFilter = filterCategory?.toLowerCase().trim();
   
-  // Pegar todos os itens disponíveis sem limitação
-  const allItems = filterCategory 
-    ? categories?.filter(cat => {
-        if (normalizedFilter === "cinema") return cat.id.startsWith("cinema-");
-        if (normalizedFilter === "séries") return cat.id.startsWith("series-");
-        if (normalizedFilter === "filmes infantis") return cat.id === "kids-movies";
-        if (normalizedFilter?.startsWith("séries infant")) return cat.id === "kids-series";
-        return cat.title.toLowerCase().includes(normalizedFilter!);
-      }).flatMap(cat => cat.items) || []
-    : categories?.flatMap(cat => cat.items) || [];
+  // Pegar todos os itens disponíveis sem limitação - memoizado para não recalcular
+  const allItems = useMemo(() => {
+    const items = filterCategory 
+      ? categories?.filter(cat => {
+          if (normalizedFilter === "cinema") return cat.id.startsWith("cinema-");
+          if (normalizedFilter === "séries") return cat.id.startsWith("series-");
+          if (normalizedFilter === "filmes infantis") return cat.id === "kids-movies";
+          if (normalizedFilter?.startsWith("séries infant")) return cat.id === "kids-series";
+          return cat.title.toLowerCase().includes(normalizedFilter!);
+        }).flatMap(cat => cat.items) || []
+      : categories?.flatMap(cat => cat.items) || [];
+    return items;
+  }, [categories, filterCategory, normalizedFilter]);
 
-  // Embaralhar itens aleatoriamente (Fisher-Yates shuffle)
-  const shuffledItems = [...allItems];
-  for (let i = shuffledItems.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledItems[i], shuffledItems[j]] = [shuffledItems[j], shuffledItems[i]];
-  }
+  // Embaralhar itens aleatoriamente (Fisher-Yates shuffle) - memoizado para estabilidade
+  const heroItems = useMemo(() => {
+    if (allItems.length === 0) return [];
+    
+    const shuffled = [...allItems];
+    // Fisher-Yates shuffle para embaralhamento verdadeiramente aleatório
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, [allItems]);
 
-  // Usar todos os itens embaralhados, sem limitação
-  const heroItems = shuffledItems;
+  // Iniciar em posição aleatória para não começar sempre pela mesma capa
+  const [current, setCurrent] = useState(() => {
+    return Math.floor(Math.random() * 1000); // Valor inicial aleatório, será ajustado quando heroItems carregar
+  });
 
   const [currentHeroData, setCurrentHeroData] = useState<any>(null);
   const { isFavorite, toggleFavorite, loading: favLoading } = useFavorites();
   const { isLiked, isDisliked, toggleRating } = useRatings();
+
+  // Ajustar índice atual quando heroItems carregar para garantir posição válida
+  useEffect(() => {
+    if (heroItems.length > 0) {
+      // Normalizar o índice atual para estar dentro dos limites
+      setCurrent(prev => prev % heroItems.length);
+    }
+  }, [heroItems.length]);
 
   useEffect(() => {
     if (heroItems.length === 0) return;
