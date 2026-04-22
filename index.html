@@ -1,8 +1,154 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <meta name="app-version" content="20260421-211951">
+    <meta name="app-version" content="20260422-001200">
     <meta charset="UTF-8" />
+    
+    <!-- WHITE SCREEN RECOVERY - Detecta e corrige tela branca no Android -->
+    <script>
+      (function() {
+        // Configurações
+        const CHECK_INTERVAL = 2000; // Verificar a cada 2 segundos
+        const MAX_WAIT_TIME = 8000;  // Máximo 8 segundos para carregar
+        const RECOVERY_KEY = '__cinecasa_recovery_attempts__';
+        const MAX_RECOVERY_ATTEMPTS = 3;
+        
+        let checkTimer = null;
+        let startTime = Date.now();
+        let recoveryAttempted = false;
+        
+        // Verificar tentativas anteriores
+        const attempts = parseInt(localStorage.getItem(RECOVERY_KEY) || '0');
+        
+        // Função para verificar se a app carregou
+        function checkAppLoaded() {
+          const root = document.getElementById('root');
+          const elapsed = Date.now() - startTime;
+          
+          // Verificar se o root tem conteúdo
+          const hasContent = root && (
+            root.children.length > 0 || 
+            root.innerHTML.length > 100 ||
+            root.textContent.trim().length > 0
+          );
+          
+          // Se carregou, limpar timer e resetar tentativas
+          if (hasContent) {
+            clearInterval(checkTimer);
+            localStorage.removeItem(RECOVERY_KEY);
+            console.log('[WhiteScreenRecovery] App carregou com sucesso em', elapsed, 'ms');
+            return;
+          }
+          
+          // Se passou do tempo máximo e ainda não tentou recovery
+          if (elapsed > MAX_WAIT_TIME && !recoveryAttempted) {
+            recoveryAttempted = true;
+            
+            if (attempts < MAX_RECOVERY_ATTEMPTS) {
+              console.log('[WhiteScreenRecovery] Tela branca detectada! Tentando recovery...');
+              
+              // Incrementar tentativas
+              localStorage.setItem(RECOVERY_KEY, (attempts + 1).toString());
+              
+              // Tentar limpar cache do Service Worker
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                  registrations.forEach(function(registration) {
+                    registration.unregister();
+                    console.log('[WhiteScreenRecovery] Service Worker desregistrado');
+                  });
+                });
+              }
+              
+              // Limpar caches
+              if ('caches' in window) {
+                caches.keys().then(function(cacheNames) {
+                  cacheNames.forEach(function(cacheName) {
+                    caches.delete(cacheName);
+                    console.log('[WhiteScreenRecovery] Cache deletado:', cacheName);
+                  });
+                });
+              }
+              
+              // Recarregar após limpar
+              setTimeout(function() {
+                window.location.reload(true);
+              }, 500);
+              
+            } else {
+              console.error('[WhiteScreenRecovery] Máximo de tentativas atingido. Mostrando página de erro.');
+              showErrorPage();
+            }
+          }
+        }
+        
+        // Página de erro quando recovery falha
+        function showErrorPage() {
+          document.body.innerHTML = `
+            <div style="
+              background: #000;
+              color: #fff;
+              font-family: system-ui, -apple-system, sans-serif;
+              padding: 40px 20px;
+              text-align: center;
+              min-height: 100vh;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+            ">
+              <h1 style="color: #E50914; margin-bottom: 20px;">⚠️ Erro ao Carregar</h1>
+              <p style="margin-bottom: 30px; line-height: 1.6; max-width: 400px;">
+                O CineCasa não conseguiu carregar após várias tentativas.
+              </p>
+              <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
+                <button onclick="window.location.reload(true)" style="
+                  background: #E50914;
+                  color: white;
+                  border: none;
+                  padding: 15px 30px;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  cursor: pointer;
+                  font-weight: bold;
+                ">🔄 Tentar Novamente</button>
+                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.reload(true)" style="
+                  background: transparent;
+                  color: white;
+                  border: 2px solid #E50914;
+                  padding: 15px 30px;
+                  border-radius: 8px;
+                  font-size: 16px;
+              cursor: pointer;
+                ">🧹 Limpar Tudo</button>
+              </div>
+              <p style="margin-top: 40px; font-size: 14px; color: #666;">
+                Se o problema persistir, entre em contato com o suporte.
+              </p>
+            </div>
+          `;
+        }
+        
+        // Iniciar verificação quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+            checkTimer = setInterval(checkAppLoaded, CHECK_INTERVAL);
+          });
+        } else {
+          checkTimer = setInterval(checkAppLoaded, CHECK_INTERVAL);
+        }
+        
+        // Capturar erros globais
+        window.addEventListener('error', function(e) {
+          console.error('[WhiteScreenRecovery] Erro capturado:', e.message, 'em', e.filename, ':', e.lineno);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+          console.error('[WhiteScreenRecovery] Promise rejeitada:', e.reason);
+        });
+      })();
+    </script>
+    
     <script type="text/javascript">
       // Restaurar rota do SPA após redirecionamento do 404.html
       (function(l) {
