@@ -330,151 +330,7 @@ export const NotificationsPage: React.FC = () => {
       {/* Conteúdo Principal */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
         
-        {/* Seção de Alertas Glassmorphism */}
-        {visibleAlerts.length > 0 && (
-          <div className="mb-8 space-y-4">
-            {visibleAlerts.map(alert => (
-              <div
-                key={alert.id}
-                className={`
-                  relative overflow-hidden rounded-2xl backdrop-blur-xl border p-4 sm:p-5
-                  transition-all duration-300 hover:scale-[1.01]
-                  ${alert.type === 'system' 
-                    ? 'bg-gradient-to-r from-[#00E5FF]/10 to-[#00B8D4]/5 border-[#00E5FF]/30 shadow-[0_0_20px_rgba(0,229,255,0.2)]' 
-                    : alert.severity === 'danger'
-                      ? 'bg-gradient-to-r from-red-500/10 to-red-600/5 border-red-500/40 shadow-[0_0_20px_rgba(239,68,68,0.3)]'
-                      : 'bg-gradient-to-r from-yellow-500/10 to-amber-500/5 border-yellow-500/40 shadow-[0_0_20px_rgba(234,179,8,0.25)]'
-                  }
-                `}
-              >
-                {/* Ícone de fundo decorativo */}
-                <div className="absolute right-0 top-0 p-6 opacity-10">
-                  {alert.type === 'system' ? (
-                    <Settings className="w-20 h-20 text-[#00E5FF]" />
-                  ) : (
-                    <CreditCard className="w-20 h-20 text-current" />
-                  )}
-                </div>
-
-                <div className="relative flex items-start gap-4">
-                  {/* Ícone */}
-                  <div className={`
-                    p-3 rounded-xl shrink-0
-                    ${alert.type === 'system' 
-                      ? 'bg-[#00E5FF]/20 text-[#00E5FF]' 
-                      : alert.severity === 'danger'
-                        ? 'bg-red-500/20 text-red-400'
-                        : 'bg-yellow-500/20 text-yellow-400'
-                    }
-                  `}>
-                    {alert.type === 'system' ? (
-                      <Settings className="w-6 h-6" />
-                    ) : alert.severity === 'danger' ? (
-                      <AlertTriangle className="w-6 h-6" />
-                    ) : (
-                      <Clock className="w-6 h-6" />
-                    )}
-                  </div>
-
-                  {/* Conteúdo */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`
-                      font-semibold text-base sm:text-lg mb-1
-                      ${alert.type === 'system' 
-                        ? 'text-[#00E5FF]' 
-                        : alert.severity === 'danger'
-                          ? 'text-red-400'
-                          : 'text-yellow-400'
-                      }
-                    `}>
-                      {alert.title}
-                    </h3>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      {alert.message}
-                    </p>
-                    
-                    {/* Ação */}
-                    {alert.actionUrl && (
-                      <button
-                        onClick={() => navigate(alert.actionUrl!)}
-                        className={`
-                          mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
-                          transition-all duration-300 hover:scale-105
-                          ${alert.severity === 'danger'
-                            ? 'bg-red-500 hover:bg-red-400 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                            : 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)]'
-                          }
-                        `}
-                      >
-                        {alert.actionLabel}
-                        <ExternalLink className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Botão Dispensar */}
-                  <button
-                    onClick={() => dismissAlert(alert.id)}
-                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white shrink-0"
-                    title="Dispensar alerta"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Brilho de borda */}
-                <div className={`
-                  absolute inset-0 rounded-2xl pointer-events-none
-                  ${alert.type === 'system'
-                    ? 'shadow-[inset_0_0_20px_rgba(0,229,255,0.1)]'
-                    : alert.severity === 'danger'
-                      ? 'shadow-[inset_0_0_20px_rgba(239,68,68,0.15)]'
-                      : 'shadow-[inset_0_0_20px_rgba(234,179,8,0.12)]'
-                  }
-                `} />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Filtro de categorias */}
-        {categories.length > 0 && recentContent.length > 0 && (
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className={`
-                px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all duration-300
-                ${!selectedCategory 
-                  ? 'bg-[#00E5FF]/20 text-[#00E5FF] border border-[#00E5FF]/50 shadow-[0_0_10px_rgba(0,229,255,0.3)]' 
-                  : 'bg-white/5 text-gray-300 border border-white/10 hover:border-[#00E5FF]/30 hover:bg-white/10'
-                }
-              `}
-            >
-              Todas ({recentContent.length})
-            </button>
-            {categories.map(cat => {
-              const count = recentContent.filter(item => (item.category || item.genero) === cat).length;
-              if (count === 0) return null;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`
-                    px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all duration-300
-                    ${selectedCategory === cat 
-                      ? 'bg-[#00E5FF]/20 text-[#00E5FF] border border-[#00E5FF]/50 shadow-[0_0_10px_rgba(0,229,255,0.3)]' 
-                      : 'bg-white/5 text-gray-300 border border-white/10 hover:border-[#00E5FF]/30 hover:bg-white/10'
-                    }
-                  `}
-                >
-                  {cat} ({count})
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Grid de Conteúdo - Estilo MovieCard Neon */}
+        {/* Grid de Conteúdo - Capas dos filmes/séries recentes PRIMEIRO */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12 sm:py-16">
             <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-[#00E5FF]" />
@@ -586,6 +442,114 @@ export const NotificationsPage: React.FC = () => {
                   )}
                 </div>
               </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Seção de Alertas - ABAIXO das capas dos conteúdos */}
+        {visibleAlerts.length > 0 && (
+          <div className="mt-12 space-y-4">
+            <h2 className="text-lg font-semibold text-white mb-4">Alertas do Sistema</h2>
+            {visibleAlerts.map(alert => (
+              <div
+                key={alert.id}
+                className={`
+                  relative overflow-hidden rounded-2xl backdrop-blur-xl border p-4 sm:p-5
+                  transition-all duration-300 hover:scale-[1.01]
+                  ${alert.type === 'system' 
+                    ? 'bg-gradient-to-r from-[#00E5FF]/10 to-[#00B8D4]/5 border-[#00E5FF]/30 shadow-[0_0_20px_rgba(0,229,255,0.2)]' 
+                    : alert.severity === 'danger'
+                      ? 'bg-gradient-to-r from-red-500/10 to-red-600/5 border-red-500/40 shadow-[0_0_20px_rgba(239,68,68,0.3)]'
+                      : 'bg-gradient-to-r from-yellow-500/10 to-amber-500/5 border-yellow-500/40 shadow-[0_0_20px_rgba(234,179,8,0.25)]'
+                  }
+                `}
+              >
+                {/* Ícone de fundo decorativo */}
+                <div className="absolute right-0 top-0 p-6 opacity-10">
+                  {alert.type === 'system' ? (
+                    <Settings className="w-20 h-20 text-[#00E5FF]" />
+                  ) : (
+                    <CreditCard className="w-20 h-20 text-current" />
+                  )}
+                </div>
+
+                <div className="relative flex items-start gap-4">
+                  {/* Ícone */}
+                  <div className={`
+                    p-3 rounded-xl shrink-0
+                    ${alert.type === 'system' 
+                      ? 'bg-[#00E5FF]/20 text-[#00E5FF]' 
+                      : alert.severity === 'danger'
+                        ? 'bg-red-500/20 text-red-400'
+                        : 'bg-yellow-500/20 text-yellow-400'
+                    }
+                  `}>
+                    {alert.type === 'system' ? (
+                      <Settings className="w-6 h-6" />
+                    ) : alert.severity === 'danger' ? (
+                      <AlertTriangle className="w-6 h-6" />
+                    ) : (
+                      <Clock className="w-6 h-6" />
+                    )}
+                  </div>
+
+                  {/* Conteúdo */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className={`
+                      font-semibold text-base sm:text-lg mb-1
+                      ${alert.type === 'system' 
+                        ? 'text-[#00E5FF]' 
+                        : alert.severity === 'danger'
+                          ? 'text-red-400'
+                          : 'text-yellow-400'
+                      }
+                    `}>
+                      {alert.title}
+                    </h3>
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {alert.message}
+                    </p>
+                    
+                    {/* Ação */}
+                    {alert.actionUrl && (
+                      <button
+                        onClick={() => navigate(alert.actionUrl!)}
+                        className={`
+                          mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                          transition-all duration-300 hover:scale-105
+                          ${alert.severity === 'danger'
+                            ? 'bg-red-500 hover:bg-red-400 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                            : 'bg-yellow-500 hover:bg-yellow-400 text-black shadow-[0_0_15px_rgba(234,179,8,0.4)]'
+                          }
+                        `}
+                      >
+                        {alert.actionLabel}
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Botão Dispensar */}
+                  <button
+                    onClick={() => dismissAlert(alert.id)}
+                    className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white shrink-0"
+                    title="Dispensar alerta"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Brilho de borda */}
+                <div className={`
+                  absolute inset-0 rounded-2xl pointer-events-none
+                  ${alert.type === 'system'
+                    ? 'shadow-[inset_0_0_20px_rgba(0,229,255,0.1)]'
+                    : alert.severity === 'danger'
+                      ? 'shadow-[inset_0_0_20px_rgba(239,68,68,0.15)]'
+                      : 'shadow-[inset_0_0_20px_rgba(234,179,8,0.12)]'
+                  }
+                `} />
+              </div>
             ))}
           </div>
         )}
