@@ -2,7 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Send, Trash2, Users, MessageCircle, X } from 'lucide-react';
 import { useWatchPartyChat, ChatMessage } from '@/hooks/useWatchPartyChat';
 import { useAuth } from '@/components/AuthProvider';
-import { formatDistanceToNow } from '@/lib/utils';
+// Simple time formatter - returns relative time
+const formatDistanceToNow = (date: Date): string => {
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  
+  if (minutes < 1) return 'agora';
+  if (minutes < 60) return `${minutes} min atrás`;
+  if (hours < 24) return `${hours}h atrás`;
+  if (days < 7) return `${days} dias atrás`;
+  return date.toLocaleDateString();
+};
 
 interface WatchPartyChatProps {
   roomId: string;
@@ -70,7 +83,7 @@ export const WatchPartyChat: React.FC<WatchPartyChatProps> = ({
 
   const formatTime = (date: string) => {
     try {
-      return formatDistanceToNow(new Date(date), { addSuffix: true });
+      return formatDistanceToNow(new Date(date));
     } catch {
       return 'agora';
     }
@@ -79,7 +92,7 @@ export const WatchPartyChat: React.FC<WatchPartyChatProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 h-full w-80 bg-black/95 backdrop-blur-xl border-l border-white/10 flex flex-col z-50 shadow-2xl">
+    <div className="fixed right-0 top-16 sm:top-0 h-[calc(100vh-64px)] sm:h-full w-72 sm:w-80 bg-black/95 backdrop-blur-xl border-l border-white/10 flex flex-col z-50 shadow-2xl max-w-[calc(100vw-60px)] rounded-tl-xl sm:rounded-none">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-[#00E5FF]/10 to-transparent">
         <div className="flex items-center gap-2">
