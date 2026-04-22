@@ -259,9 +259,7 @@ export const useSupabaseContent = () => {
         }
       }
 
-      // 2. Planning logic
-      if (plan === "none") return [];
-
+      // 2. Planning logic - sempre retornar conteúdo, filtrar apenas se necessário
       let finalCinema = cinemaWithData;
       let finalSeries = seriesWithData;
       let finalKidsMovies = kidsMoviesWithData;
