@@ -205,11 +205,23 @@ const ContinueWatchingRow = () => {
     );
   }
 
-  // Não mostrar a seção se não houver itens válidos
+  // Mostrar seção mesmo sem itens, com mensagem informativa
   if (validItems.length === 0) {
-    return null;
-  }
-
+    return (
+      <section className="relative py-8 px-4 md:px-8 lg:px-12">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-2">
+            <h2 className="section-title">CONTINUAR ASSISTINDO</h2>
+            <Clock 
+              size={24} 
+              className="text-[#00E5FF]"
+              style={{ 
+                filter: 'drop-shadow(0 0 8px rgba(0, 229, 255, 0.8))'
+              }}
+            />
+          </div>
+          <div className="flex-1 h-px bg-gradient-to-r from-[#00E5FF]/50 to-transparent" />
+        </div>
   return (
     <section className="relative py-8 px-4 md:px-8 lg:px-12">
       {/* Header com Ícone Neon Relógio */}
