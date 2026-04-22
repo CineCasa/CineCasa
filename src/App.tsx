@@ -171,6 +171,10 @@ const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
+  const isSeriesDetailsPage = location.pathname.startsWith("/series-details/");
+  const isMovieDetailsPage = location.pathname.startsWith("/movie-details/");
+  const isContentPage = location.pathname.startsWith("/content/");
+  const isPlayerPage = isSeriesDetailsPage || isMovieDetailsPage || isContentPage || isPlayerOpen;
   const { user } = useAuth();
   const isLoggedIn = !!user;
   const { isPlayerOpen } = usePlayer();
@@ -188,8 +192,8 @@ const AppContent = () => {
   
   console.log('[AppContent] pathname:', location.pathname, 'isLoginPage:', isLoginPage, 'isPlayerOpen:', isPlayerOpen);
 
-  // Quando player está aberto, esconder ambas as barras de navegação
-  const showNavbars = !isLoginPage && !isPlayerOpen;
+  // Quando player está aberto ou em páginas de detalhes, esconder ambas as barras de navegação
+  const showNavbars = !isLoginPage && !isPlayerPage;
 
   return (
     <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
