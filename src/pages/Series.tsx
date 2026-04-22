@@ -36,7 +36,14 @@ const seriesPageStyles = `
     left: 0;
     right: 0;
     padding: 0 4% 8% 4%;
-    z-index: 10;
+    z-index: 1;
+    pointer-events: auto;
+  }
+  .series-hero-section {
+    pointer-events: none;
+  }
+  .series-hero-section > * {
+    pointer-events: auto;
   }
   .series-category-row {
     margin-bottom: 3rem;
