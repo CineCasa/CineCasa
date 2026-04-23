@@ -163,10 +163,9 @@ export const useDynamicHomeSections = () => {
 
       const getContinueWatching = (): ContentItem[] => {
         if (!user) return [];
-        
+
         return userProgress
           .sort((a, b) => new Date(b.last_watched_at).getTime() - new Date(a.last_watched_at).getTime())
-          .slice(0, 3)
           .map(progress => allContent.find(item => item.id === progress.content_id))
           .filter(item => item !== undefined) as ContentItem[];
       };
@@ -183,12 +182,10 @@ export const useDynamicHomeSections = () => {
         // Encontrar categorias mais vistas
         const topCategories = userPreferences
           .sort((a, b) => b.view_count - a.view_count)
-          .slice(0, 3)
           .map(pref => pref.category);
 
         return filterByConfig(allContent, { categories: topCategories })
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 5);
+          .sort(() => Math.random() - 0.5);
       };
 
       const getTopStreaming = async (): Promise<ContentItem[]> => {
@@ -216,9 +213,9 @@ export const useDynamicHomeSections = () => {
         }
       };
 
-      const getRandomItems = (items: ContentItem[], count: number): ContentItem[] => {
+      const getRandomItems = (items: ContentItem[], count?: number): ContentItem[] => {
         const shuffled = [...items].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, count);
+        return count ? shuffled.slice(0, count) : shuffled;
       };
 
       // 7. Montar seções finais
@@ -250,7 +247,7 @@ export const useDynamicHomeSections = () => {
           finalSections.push({
             id: section.id,
             title: section.title,
-            items: items.slice(0, section.max_items || 5),
+            items: items,
             type: section.type
           });
         }
