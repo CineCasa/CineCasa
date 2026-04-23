@@ -360,10 +360,10 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   
   // Estados do player
   const [isReady, setIsReady] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(100);
+  const [volume, setVolume] = useState(1);
   
   // Definir hasNextEpisode combinando prop e hook
   const hasNextEpisode = propHasNextEpisode || eliteHasNextEpisode || false;
@@ -1038,20 +1038,11 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     setCurrentTime(time);
   }, [duration]);
 
-  // Mini player
-  const toggleMiniPlayer = useCallback(() => {
-    console.log('[VideoJSPlayer] Toggling mini player, current state:', isMiniPlayer);
-    setIsMiniPlayer(prev => {
-      const newState = !prev;
-      console.log('[VideoJSPlayer] Mini player new state:', newState);
-      return newState;
-    });
-  }, []);
-
-  // Monitor mini player state changes
-  useEffect(() => {
-    console.log('[VideoJSPlayer] isMiniPlayer changed:', isMiniPlayer);
-  }, [isMiniPlayer]);
+  // Mini player toggle using context
+  const handleToggleMiniPlayer = useCallback(() => {
+    console.log('[VideoJSPlayer] Toggling mini player via context');
+    contextToggleMiniPlayer();
+  }, [contextToggleMiniPlayer]);
 
   // Audio track selector
   const changeAudioTrack = useCallback((trackId: number) => {
@@ -1587,10 +1578,10 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 onClick={(e) => { 
                   e.stopPropagation(); 
                   e.preventDefault();
-                  console.log('[VideoJSPlayer] Mini player button CLICKED');
-                  toggleMiniPlayer(); 
+                  console.log('[VideoJSPlayer] Mini player button CLICKED, current state:', isMiniPlayer);
+                  handleToggleMiniPlayer(); 
                 }}
-                className={`p-2 rounded-full transition-all pointer-events-auto cursor-pointer ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'hover:bg-white/20'}`}
+                className={`p-2 rounded-full transition-all pointer-events-auto cursor-pointer z-[9999] ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'hover:bg-white/20'}`}
                 title={isMiniPlayer ? 'Sair do Mini Player' : 'Mini Player'}
                 type="button"
                 style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
