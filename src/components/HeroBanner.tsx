@@ -2,8 +2,6 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
-import { useFavorites } from "@/hooks/useFavorites";
-import { useRatings } from "@/hooks/useRatings";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
 import VideoJSPlayer from "./VideoJSPlayer";
 import { useAuth } from "./AuthProvider";
@@ -104,8 +102,6 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
   });
 
   const [currentHeroData, setCurrentHeroData] = useState<any>(null);
-  const { isFavorite, toggleFavorite, loading: favLoading } = useFavorites();
-  const { isLiked, isDisliked, toggleRating } = useRatings();
 
   // Ajustar índice atual quando heroItems carregar para garantir posição válida
   useEffect(() => {
@@ -257,8 +253,6 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
             <p className="text-[10px] sm:text-xs md:text-sm font-bold text-muted-foreground mb-2 flex items-center gap-1.5 sm:gap-2 text-shadow-premium flex-wrap">
               <span className="text-primary">Novo</span>
               <span className="hidden sm:inline">•</span>
-              <span className="truncate max-w-[120px] sm:max-w-none">{hero.genre.slice(0, 2).join(" • ")}</span>
-              <span className="hidden sm:inline">•</span>
               <span>{hero.year}</span>
               <span className="text-[#ffff5c]">{hero.rating}</span>
             </p>
@@ -290,12 +284,6 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
               {hero.year && parseInt(hero.year) > 0 && (
                 <span className="bg-white/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap">
                   {hero.year}
-                </span>
-              )}
-              {/* Primeiro gênero */}
-              {hero.genre && (
-                <span className="bg-white/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded whitespace-nowrap">
-                  {Array.isArray(hero.genre) ? hero.genre[0] : hero.genre}
                 </span>
               )}
               {/* Duração */}
