@@ -656,20 +656,24 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     try {
       const progressPercent = dur > 0 ? (current / dur) * 100 : 0;
       
-      const { error } = await supabase.from('watch_history').upsert({
+      const watchData = {
         profile_id: profile.id,
-        content_id: parseInt(contentId),
+        content_id: contentId,
         content_type: contentType === 'series' ? 'series' : 'movie',
         titulo: title,
         poster: poster || '',
         progress: Math.round(progressPercent),
         duration: Math.round(dur),
-        "current_time": Math.round(current),
+        current_time: Math.round(current),
         last_watched: new Date().toISOString(),
-        episode_id: episodeId ? parseInt(episodeId) : null,
-        season_number: seasonNumber,
-        episode_number: episodeNumber,
-      }, { onConflict: 'profile_id,content_id,content_type,episode_id' });
+        episode_id: episodeId || null,
+        season_number: seasonNumber ?? null,
+        episode_number: episodeNumber ?? null,
+      };
+      
+      const { error } = await (supabase.from('watch_history') as any).upsert(watchData, { 
+        onConflict: 'profile_id,content_id,content_type,episode_id' 
+      });
       
       if (error) {
         console.error('[VideoJSPlayer] Error saving watch history:', error);
@@ -1569,9 +1573,15 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
               {/* Mini Player */}
               <button 
-                onClick={(e) => { e.stopPropagation(); toggleMiniPlayer(); }}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  e.preventDefault();
+                  console.log('[VideoJSPlayer] Mini player button clicked');
+                  toggleMiniPlayer(); 
+                }}
                 className={`p-2 hover:bg-white/20 rounded-full transition-colors ${isMiniPlayer ? 'bg-[#00A8E1]' : ''}`}
                 title="Mini Player"
+                type="button"
               >
                 <PictureInPicture2 size={22} className="text-white" />
               </button>
