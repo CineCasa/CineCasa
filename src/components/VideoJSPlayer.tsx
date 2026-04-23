@@ -1201,7 +1201,9 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         {isYoutubeUrl(videoUrl || '') ? (
           /* YouTube iframe player for trailers */
           <iframe
-            src={videoUrl}
+            src={videoUrl?.includes('?') 
+              ? `${videoUrl}&autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1` 
+              : `${videoUrl}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`}
             className="w-full h-full"
             style={{
               width: '100%',
