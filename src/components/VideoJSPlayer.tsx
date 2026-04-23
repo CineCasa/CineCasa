@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { X, ChevronLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipBack, SkipForward, Settings, Subtitles, Gauge, PictureInPicture2, Cast, Users, MonitorPlay, ChevronRight, RotateCcw, Square, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -1858,7 +1859,8 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     </div>
   );
 
-  return playerContent;
+  // Use Portal to render outside of React tree for proper z-index handling
+  return createPortal(playerContent, document.body);
 };
 
 export default VideoJSPlayer;
