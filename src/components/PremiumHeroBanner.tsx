@@ -59,11 +59,11 @@ const getCountryFlag = (countryCode: string): string => {
 };
 
 interface PremiumHeroBannerProps {
-  contentType?: 'movies' | 'series';
+  contentType?: 'movies' | 'series' | 'all';
 }
 
 const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({ 
-  contentType = 'series'
+  contentType = 'all'
 }) => {
   const [allPosters, setAllPosters] = useState<BannerContent[]>([]);
   const [displayQueue, setDisplayQueue] = useState<BannerContent[]>([]);
@@ -77,8 +77,85 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
     console.log('[PremiumHeroBanner] Iniciando fetchPosters, contentType:', contentType);
     try {
       setIsLoading(true);
-      
-      if (contentType === 'movies') {
+
+      // Helper function to process cinema items
+      const processCinemaItems = (data: any[]): BannerContent[] => {
+        return (data || [])
+          .filter((item: any) => item.poster && item.poster.trim() !== '')
+          .map((item: any) => ({
+            id: `cinema-${item.id?.toString() || Math.random().toString()}`,
+            title: item.titulo || 'Sem título',
+            poster: item.poster,
+            year: item.year?.toString() || '',
+            description: item.description || '',
+            trailer: item.trailer || '',
+            rating: item.rating || '',
+            genre: item.genero || ''
+          }));
+      };
+
+      // Helper function to process series items
+      const processSeriesItems = (data: any[]): BannerContent[] => {
+        return (data || [])
+          .filter((item: any) => item.capa && item.capa.trim() !== '')
+          .map((item: any) => ({
+            id: `series-${item.id_n?.toString() || Math.random().toString()}`,
+            title: item.titulo || 'Sem título',
+            poster: item.capa,
+            year: item.ano?.toString() || '',
+            description: item.descricao || '',
+            trailer: '',
+            rating: '',
+            genre: item.genero || ''
+          }));
+      };
+
+      if (contentType === 'all') {
+        // Buscar filmes e séries simultaneamente
+        console.log('[PremiumHeroBanner] Buscando filmes E séries...');
+        const [cinemaResult, seriesResult] = await Promise.all([
+          supabase
+            .from('cinema')
+            .select('id, titulo, poster, year, description, trailer, rating, genero')
+            .not('poster', 'is', null)
+            .not('poster', 'eq', ''),
+          supabase
+            .from('series')
+            .select('id_n, titulo, capa, ano, descricao, genero')
+            .not('capa', 'is', null)
+            .not('capa', 'eq', '')
+        ]);
+
+        console.log('[PremiumHeroBanner] Resultados:', {
+          cinemaCount: cinemaResult.data?.length,
+          seriesCount: seriesResult.data?.length,
+          cinemaError: cinemaResult.error,
+          seriesError: seriesResult.error
+        });
+
+        if (cinemaResult.error || seriesResult.error) {
+          console.error('Erros:', { cinema: cinemaResult.error, series: seriesResult.error });
+        }
+
+        // Processar ambos os resultados
+        const cinemaItems = processCinemaItems(cinemaResult.data || []);
+        const seriesItems = processSeriesItems(seriesResult.data || []);
+
+        // Combinar todos os itens
+        const allItems = [...cinemaItems, ...seriesItems];
+        console.log('[PremiumHeroBanner] Total combinado:', allItems.length, '(filmes:', cinemaItems.length, 'séries:', seriesItems.length + ')');
+
+        // Embaralhar todos juntos
+        const shuffled = shuffleArray(allItems);
+        setAllPosters(allItems);
+        setDisplayQueue(shuffled);
+        
+        // Iniciar em posição aleatória
+        const randomStartIndex = shuffled.length > 0 ? Math.floor(Math.random() * shuffled.length) : 0;
+        setCurrentIndex(randomStartIndex);
+        console.log('[PremiumHeroBanner] Todos embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
+
+      } else if (contentType === 'movies') {
         // Buscar posters da tabela cinema
         console.log('[PremiumHeroBanner] Buscando filmes da tabela cinema...');
         const { data, error } = await supabase
@@ -95,38 +172,17 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           return;
         }
 
-        // Log antes do filtro
         console.log('[PremiumHeroBanner] Total de filmes recebidos:', data?.length);
-        console.log('[PremiumHeroBanner] Filmes com poster válido:', data?.filter((d: any) => d.poster && d.poster.trim() !== '').length);
-
-        const uniquePosters = (data || [])
-          .filter((item: any) => item.poster && item.poster.trim() !== '') // Garantir que tem poster
-          .filter((item: any, index: number, self: any[]) => 
-            index === self.findIndex((t) => t.poster === item.poster)
-          )
-          .map((item: any) => ({
-            id: item.id?.toString() || Math.random().toString(),
-            title: item.titulo || 'Sem título',
-            poster: item.poster,
-            year: item.year?.toString() || '',
-            description: item.description || '',
-            trailer: item.trailer || '',
-            rating: item.rating || '',
-            genre: item.genero || ''
-          }));
-
-        console.log('[PremiumHeroBanner] Posters únicos processados:', uniquePosters.length);
-
-        setAllPosters(uniquePosters);
-        // Shuffle inicial - todas as capas em ordem aleatória usando Fisher-Yates
-        const shuffled = shuffleArray(uniquePosters);
+        
+        const items = processCinemaItems(data || []);
+        setAllPosters(items);
+        const shuffled = shuffleArray(items);
         setDisplayQueue(shuffled);
-        // Inicia em um índice aleatório para mostrar imagens diferentes a cada carregamento
         const randomStartIndex = shuffled.length > 0 ? Math.floor(Math.random() * shuffled.length) : 0;
         setCurrentIndex(randomStartIndex);
-        console.log('[PremiumHeroBanner] Filmes embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
+        console.log('[PremiumHeroBanner] Filmes embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex);
       } else {
-        // Buscar capas da tabela series (usa 'capa' como o mobile)
+        // Buscar capas da tabela series
         const { data, error } = await supabase
           .from('series')
           .select('id_n, titulo, capa, ano, descricao, genero')
@@ -139,27 +195,13 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           return;
         }
 
-        const uniquePosters = (data || [])
-          .filter((item: any) => item.capa && item.capa.trim() !== '')
-          .filter((item: any, index: number, self: any[]) =>
-            index === self.findIndex((t) => t.capa === item.capa)
-          )
-          .map((item: any) => ({
-            id: item.id_n?.toString() || Math.random().toString(),
-            title: item.titulo || 'Sem título',
-            poster: item.capa,
-            year: item.ano?.toString() || '',
-            description: item.descricao || '',
-            rating: '',
-            genre: item.genero || ''
-          }));
-
-        setAllPosters(uniquePosters);
-        const shuffled = shuffleArray(uniquePosters);
+        const items = processSeriesItems(data || []);
+        setAllPosters(items);
+        const shuffled = shuffleArray(items);
         setDisplayQueue(shuffled);
         const randomStartIndex = shuffled.length > 0 ? Math.floor(Math.random() * shuffled.length) : 0;
         setCurrentIndex(randomStartIndex);
-        console.log('[PremiumHeroBanner] Séries embaralhadas:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
+        console.log('[PremiumHeroBanner] Séries embaralhadas:', shuffled.length, 'iniciando em índice:', randomStartIndex);
       }
       
       setIsLoading(false);

@@ -17,7 +17,7 @@ interface BannerContent {
 }
 
 interface MobileNetflixHeroProps {
-  contentType?: 'movies' | 'series';
+  contentType?: 'movies' | 'series' | 'all';
 }
 
 const shuffleArray = <T,>(array: T[]): T[] => {
@@ -49,82 +49,149 @@ const preloadImages = (urls: string[]): Promise<void[]> => {
   );
 };
 
-export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentType = 'series' }) => {
+export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentType = 'all' }) => {
   console.log('[MobileNetflixHero] Componente montado, contentType:', contentType);
   const [displayQueue, setDisplayQueue] = useState<BannerContent[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { setHeroImagesReady } = useAppLoading();
 
+  // Helper to process cinema items
+  const processCinemaItems = (data: any[]): BannerContent[] => {
+    return data
+      .filter(item => item.poster && item.poster.trim() !== '')
+      .map(item => ({
+        id: `cinema-${item.id?.toString() || Math.random().toString()}`,
+        title: item.titulo || 'Sem título',
+        poster: item.poster,
+        year: item.year?.toString() || '',
+        description: item.description || '',
+        trailer: item.trailer || '',
+        rating: item.rating || '',
+        genre: item.genero || ''
+      }));
+  };
+
+  // Helper to process series items
+  const processSeriesItems = (data: any[]): BannerContent[] => {
+    return data
+      .filter(item => item.capa && item.capa.trim() !== '')
+      .map(item => ({
+        id: `series-${item.id_n?.toString() || Math.random().toString()}`,
+        title: item.titulo || 'Sem título',
+        poster: item.capa,
+        year: item.ano?.toString() || '',
+        description: item.descricao || '',
+        trailer: '',
+        rating: '',
+        genre: item.genero || ''
+      }));
+  };
+
   const fetchPosters = useCallback(async () => {
     try {
       setIsLoading(true);
-      const tableName = contentType === 'movies' ? 'cinema' : 'series';
-      console.log(`[MobileNetflixHero] Buscando dados da tabela: ${tableName}`);
 
-      // Séries usam colunas diferentes (capa, ano, id_n)
-      const isSeries = contentType === 'series';
-      const posterCol = isSeries ? 'capa' : 'poster';
-      const yearCol = isSeries ? 'ano' : 'year';
-      const idCol = isSeries ? 'id_n' : 'id';
+      if (contentType === 'all') {
+        // Buscar filmes e séries simultaneamente
+        console.log('[MobileNetflixHero] Buscando filmes E séries...');
+        const [cinemaResult, seriesResult] = await Promise.all([
+          supabase
+            .from('cinema')
+            .select('id, titulo, poster, year, description, trailer, rating, genero')
+            .not('poster', 'is', null)
+            .not('poster', 'eq', ''),
+          supabase
+            .from('series')
+            .select('id_n, titulo, capa, ano, descricao, genero')
+            .not('capa', 'is', null)
+            .not('capa', 'eq', '')
+        ]);
 
-      // Séries não têm coluna description, apenas filmes
-      const selectCols = isSeries 
-        ? `${idCol}, titulo, ${posterCol}, ${yearCol}, trailer, rating, genero`
-        : `${idCol}, titulo, ${posterCol}, ${yearCol}, description, trailer, rating, genero`;
-      
-      const { data, error } = await supabase
-        .from(tableName)
-        .select(selectCols)
-        .not(posterCol, 'is', null)
-        .not(posterCol, 'eq', '');
-
-      if (error) {
-        console.error('[MobileNetflixHero] Erro Supabase:', error);
-        return;
-      }
-
-      console.log(`[MobileNetflixHero] Dados retornados: ${data?.length || 0} itens`);
-
-      if (data && data.length > 0) {
-        const withPosters = data.filter(item => {
-          const poster = isSeries ? item.capa : item.poster;
-          return poster && poster.trim() !== '';
+        console.log('[MobileNetflixHero] Resultados:', {
+          cinema: cinemaResult.data?.length,
+          series: seriesResult.data?.length
         });
-        console.log(`[MobileNetflixHero] Itens com poster válido: ${withPosters.length}`);
 
-        const transformed: BannerContent[] = withPosters.map((item: any) => ({
-          id: (isSeries ? item.id_n : item.id)?.toString(),
-          title: item.titulo,
-          poster: isSeries ? item.capa : item.poster,
-          year: (isSeries ? item.ano : item.year)?.toString() || '',
-          description: item.description,
-          trailer: item.trailer,
-          rating: item.rating,
-          genre: item.genero
-        }));
+        const cinemaItems = processCinemaItems(cinemaResult.data || []);
+        const seriesItems = processSeriesItems(seriesResult.data || []);
+        const allItems = [...cinemaItems, ...seriesItems];
         
-        // Pegar apenas os primeiros 5 itens para o hero
-        const shuffled = shuffleArray(transformed).slice(0, 5);
+        console.log(`[MobileNetflixHero] Total combinado: ${allItems.length} (filmes: ${cinemaItems.length}, séries: ${seriesItems.length})`);
+
+        // Embaralhar todos juntos - SEM LIMITE
+        const shuffled = shuffleArray(allItems);
         
         // Pré-carregar as imagens antes de mostrar
         console.log('[MobileNetflixHero] Pré-carregando', shuffled.length, 'imagens...');
         const posterUrls = shuffled.map(item => item.poster).filter(url => url && url.trim() !== '');
-        await preloadImages(posterUrls);
+        await preloadImages(posterUrls.slice(0, 10)); // Pré-carregar apenas as primeiras 10 para performance
         console.log('[MobileNetflixHero] Imagens pré-carregadas!');
         
         setDisplayQueue(shuffled);
-        
-        // Notificar que imagens do hero estão prontas
         setHeroImagesReady(true);
       } else {
-        console.warn('[MobileNetflixHero] Nenhum dado retornado do Supabase');
-        // Mesmo sem dados, marcar como pronto para não travar
-        setHeroImagesReady(true);
+        // Buscar apenas um tipo
+        const tableName = contentType === 'movies' ? 'cinema' : 'series';
+        console.log(`[MobileNetflixHero] Buscando dados da tabela: ${tableName}`);
+
+        const isSeries = contentType === 'series';
+        const posterCol = isSeries ? 'capa' : 'poster';
+        const yearCol = isSeries ? 'ano' : 'year';
+        const idCol = isSeries ? 'id_n' : 'id';
+
+        const selectCols = isSeries 
+          ? `${idCol}, titulo, ${posterCol}, ${yearCol}, trailer, rating, genero`
+          : `${idCol}, titulo, ${posterCol}, ${yearCol}, description, trailer, rating, genero`;
+        
+        const { data, error } = await supabase
+          .from(tableName)
+          .select(selectCols)
+          .not(posterCol, 'is', null)
+          .not(posterCol, 'eq', '');
+
+        if (error) {
+          console.error('[MobileNetflixHero] Erro Supabase:', error);
+          return;
+        }
+
+        console.log(`[MobileNetflixHero] Dados retornados: ${data?.length || 0} itens`);
+
+        if (data && data.length > 0) {
+          const withPosters = data.filter(item => {
+            const poster = isSeries ? item.capa : item.poster;
+            return poster && poster.trim() !== '';
+          });
+          console.log(`[MobileNetflixHero] Itens com poster válido: ${withPosters.length}`);
+
+          const transformed: BannerContent[] = withPosters.map((item: any) => ({
+            id: (isSeries ? item.id_n : item.id)?.toString(),
+            title: item.titulo,
+            poster: isSeries ? item.capa : item.poster,
+            year: (isSeries ? item.ano : item.year)?.toString() || '',
+            description: item.description,
+            trailer: item.trailer,
+            rating: item.rating,
+            genre: item.genero
+          }));
+          
+          // SEM LIMITE - mostrar todos os itens embaralhados
+          const shuffled = shuffleArray(transformed);
+          
+          console.log('[MobileNetflixHero] Pré-carregando', shuffled.length, 'imagens...');
+          const posterUrls = shuffled.map(item => item.poster).filter(url => url && url.trim() !== '');
+          await preloadImages(posterUrls.slice(0, 10)); // Pré-carregar apenas as primeiras 10
+          console.log('[MobileNetflixHero] Imagens pré-carregadas!');
+          
+          setDisplayQueue(shuffled);
+          setHeroImagesReady(true);
+        } else {
+          console.warn('[MobileNetflixHero] Nenhum dado retornado do Supabase');
+          setHeroImagesReady(true);
+        }
       }
     } catch (err) {
       console.error('[MobileNetflixHero] Erro:', err);
-      // Marcar como pronto mesmo com erro para não travar
       setHeroImagesReady(true);
     } finally {
       setIsLoading(false);

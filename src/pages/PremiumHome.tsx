@@ -458,11 +458,11 @@ const PremiumHome: React.FC = () => {
       {/* HERO BANNER - Primeiro elemento visível da página */}
       {/* Mobile Banner - hidden on desktop */}
       <div className="md:hidden relative z-[100]">
-        <MobileNetflixHero contentType="movies" />
+        <MobileNetflixHero contentType="all" />
       </div>
       {/* Desktop Banner - hidden on mobile */}
       <div className="hidden md:block relative z-[100]">
-        <PremiumHeroBanner contentType="movies" />
+        <PremiumHeroBanner contentType="all" />
       </div>
 
       {/* LANÇAMENTOS E NOVIDADES - Seção principal, sempre visível */}
