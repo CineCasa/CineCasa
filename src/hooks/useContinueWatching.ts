@@ -18,7 +18,6 @@ export interface ContinueWatchingItem {
   updatedAt: string;
 }
 
-const MAX_ITEMS = 12;
 
 export const useContinueWatching = () => {
   const [items, setItems] = useState<ContinueWatchingItem[]>([]);
@@ -236,14 +235,13 @@ export const useContinueWatching = () => {
 
       console.log('📊 [useContinueWatching] Total de itens formatados:', formattedItems.length);
 
-      // Ordenar por data de atualização e limitar
-      formattedItems.sort((a, b) => 
+      // Ordenar por data de atualização
+      formattedItems.sort((a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
 
-      const finalItems = formattedItems.slice(0, MAX_ITEMS);
-      console.log('✅ [useContinueWatching] Definindo', finalItems.length, 'itens finais');
-      setItems(finalItems);
+      console.log('✅ [useContinueWatching] Definindo', formattedItems.length, 'itens finais');
+      setItems(formattedItems);
     } catch (error) {
       console.error('❌ [useContinueWatching] Erro ao buscar progresso:', error);
     } finally {
@@ -326,7 +324,7 @@ export const useContinueWatching = () => {
           !(item.contentId === contentId && item.contentType === type && 
             (type === 'movie' || item.episodeId === episodeId))
         );
-        const updated = [newItem, ...filtered].slice(0, MAX_ITEMS);
+        const updated = [newItem, ...filtered];
         return updated;
       });
     } catch (error) {
