@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Category } from "@/data/content";
 import ContentCard from "./ContentCard";
 
@@ -180,16 +179,6 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
       ) : (
         // Layout scroll horizontal (original) - sem setas em mobile com infinite scroll
         <div className="relative isolate group/row">
-          {/* Left arrow - apenas quando não é infinite scroll ou quando é desktop */}
-          {canScrollLeft && (!infiniteScroll || !isMobile) && (
-            <button
-              onClick={() => scroll(-1)}
-              className="absolute left-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
-            >
-              <ChevronLeft size={40} className="text-white" />
-            </button>
-          )}
-
           {/* Scrollable row com rolagem horizontal estilo Netflix */}
           <div
             ref={scrollRef}
@@ -231,16 +220,6 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
               </div>
             ))}
           </div>
-
-          {/* Right arrow - apenas quando não é infinite scroll ou quando é desktop */}
-          {canScrollRight && (!infiniteScroll || !isMobile) && (
-            <button
-              onClick={() => scroll(1)}
-              className="absolute right-0 top-0 bottom-0 w-12 md:w-16 z-[70] flex items-center justify-center bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition-opacity"
-            >
-              <ChevronRight size={40} className="text-white" />
-            </button>
-          )}
         </div>
       )}
     </section>
