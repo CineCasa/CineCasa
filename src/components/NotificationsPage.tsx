@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Film, Tv, Clock, RefreshCw, Play, Star, Calendar, X, Settings, CreditCard, AlertTriangle, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
+import { usePlayer } from '@/contexts/PlayerContext';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui';
 
@@ -18,6 +19,7 @@ interface ContentItem {
   tmdb_id?: number;
   rating?: string;
   description?: string;
+  trailer?: string;
 }
 
 interface AlertItem {
@@ -48,6 +50,7 @@ export const NotificationsPage: React.FC = () => {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const { session } = useAuth();
   const navigate = useNavigate();
+  const { openPlayer } = usePlayer();
   
   const isLoggedIn = !!session;
   const userId = session?.user?.id;
@@ -137,7 +140,7 @@ export const NotificationsPage: React.FC = () => {
       // Buscar filmes das últimas 24h
       const { data: movies, error: moviesError } = await supabase
         .from('cinema')
-        .select('id, titulo, poster, year, category, genero, created_at, tmdb_id, rating, description')
+        .select('id, titulo, poster, year, category, genero, created_at, tmdb_id, rating, description, trailer')
         .gte('created_at', cutoffDate)
         .order('created_at', { ascending: false });
 
@@ -148,7 +151,7 @@ export const NotificationsPage: React.FC = () => {
       // Buscar séries das últimas 24h (se tiver created_at)
       const { data: series, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, banner, capa, ano, genero, tmdb_id, descricao, created_at')
+        .select('id_n, titulo, banner, capa, ano, genero, tmdb_id, descricao, created_at, trailer')
         .gte('created_at', cutoffDate)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -170,6 +173,7 @@ export const NotificationsPage: React.FC = () => {
         tmdb_id: item.tmdb_id,
         rating: item.rating,
         description: item.description,
+        trailer: item.trailer,
       }));
 
       // Formatar séries
@@ -185,6 +189,7 @@ export const NotificationsPage: React.FC = () => {
         tmdb_id: item.tmdb_id,
         rating: undefined,
         description: item.descricao,
+        trailer: item.trailer,
       }));
 
       const allContent = [...formattedMovies, ...formattedSeries];
@@ -450,7 +455,18 @@ export const NotificationsPage: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/details/${item.type === 'movie' ? 'cinema' : 'series'}/${item.id}?tab=trailer`);
+                        if (item.trailer) {
+                          openPlayer({
+                            id: item.id,
+                            title: `${item.title} - Trailer`,
+                            type: item.type,
+                            videoUrl: item.trailer,
+                            poster: item.poster,
+                            year: item.year
+                          });
+                        } else {
+                          toast.error('Trailer não disponível para este título');
+                        }
                       }}
                       className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm bg-[#FF0000] text-white hover:bg-[#cc0000] transition-all duration-300 hover:scale-105 shadow-[0_0_15px_rgba(255,0,0,0.4)] flex-shrink-0"
                     >
