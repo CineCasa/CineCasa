@@ -290,16 +290,22 @@ export const NotificationsPage: React.FC = () => {
   };
 
   // Helper to convert YouTube URL to embed format
-  const getYoutubeEmbedUrl = (url: string): string => {
-    if (!url) return '';
+  const getYoutubeEmbedUrl = (url: string): { url: string; valid: boolean; error?: string } => {
+    if (!url) return { url: '', valid: false, error: 'URL do trailer não fornecida' };
+    // Check if it's a search results URL (invalid for embedding)
+    if (url.includes('youtube.com/results')) {
+      return { url: '', valid: false, error: 'URL do trailer é uma página de busca. Configure a URL direta do vídeo no banco de dados.' };
+    }
     // If already embed format, return as is
-    if (url.includes('youtube.com/embed/')) return url;
+    if (url.includes('youtube.com/embed/')) {
+      return { url, valid: true };
+    }
     // Extract video ID from various YouTube URL formats
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/v\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
-      return `https://www.youtube.com/embed/${match[1]}`;
+      return { url: `https://www.youtube.com/embed/${match[1]}`, valid: true };
     }
-    return url;
+    return { url: '', valid: false, error: 'Formato de URL do trailer não reconhecido' };
   };
 
   // Verificar se conteúdo tem menos de 24h
@@ -469,13 +475,17 @@ export const NotificationsPage: React.FC = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (item.trailer) {
-                          const embedUrl = getYoutubeEmbedUrl(item.trailer);
-                          console.log('[NotificationsPage] Opening trailer:', { original: item.trailer, embed: embedUrl });
+                          const result = getYoutubeEmbedUrl(item.trailer);
+                          console.log('[NotificationsPage] Trailer check:', { original: item.trailer, result });
+                          if (!result.valid) {
+                            toast.error(result.error || 'Trailer configurado incorretamente');
+                            return;
+                          }
                           openPlayer({
                             id: item.id,
                             title: `${item.title} - Trailer`,
                             type: item.type,
-                            videoUrl: embedUrl,
+                            videoUrl: result.url,
                             poster: item.poster,
                             year: item.year
                           });
