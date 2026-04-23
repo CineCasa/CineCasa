@@ -33,27 +33,24 @@ export function useNewContentNotifications() {
   const [isLoading, setIsLoading] = useState(true);
   const { sendLocalNotification, permission } = useNotifications();
 
-  // Buscar novos conteúdos das últimas 12 horas
+  // Buscar novos conteúdos das últimas 24 horas APENAS
   const fetchNewContent = useCallback(async () => {
     try {
       setIsLoading(true);
-      const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-      // Buscar novos filmes
+      // Buscar novos filmes das últimas 24h APENAS
       const { data: newMovies, error: moviesError } = await supabase
         .from('cinema')
         .select('id, titulo, poster, year, created_at, tmdb_id')
-        .gte('created_at', twelveHoursAgo)
+        .gte('created_at', twentyFourHoursAgo)
         .order('created_at', { ascending: false });
 
-      // Buscar novas séries (sem filtro de data - tabela series não tem created_at)
-      const { data: newSeries, error: seriesError } = await supabase
-        .from('series')
-        .select('id_n, titulo, ano, tmdb_id')
-        .limit(10);
+      // NÃO buscar séries - a tabela não tem created_at para filtrar corretamente
+      // Séries só aparecerão quando a tabela tiver created_at
+      const newSeries: any[] = [];
 
       if (moviesError) console.error('[NewContent] Erro ao buscar filmes:', moviesError);
-      if (seriesError) console.error('[NewContent] Erro ao buscar séries:', seriesError);
 
       // Combinar e formatar resultados
       const combinedContent: NewContentItem[] = [
@@ -125,26 +122,19 @@ export function useNewContentNotifications() {
         }));
 
       if (newNotifications.length > 0) {
-        // Salvar notificações no banco
+        // Salvar notificações no banco APENAS (não enviar push)
         await supabase
           .from('notifications')
           .insert(newNotifications);
 
-        // Enviar notificações push locais
-        for (const notification of newNotifications) {
-          if (permission === 'granted') {
-            await sendLocalNotification({
-              title: notification.title,
-              body: notification.body,
-              icon: notification.icon,
-              tag: `new-content-${notification.data.contentId}`,
-              data: notification.data,
-              requireInteraction: false,
-            });
-          }
-        }
+        // REMOVIDO: Notificações push locais - agora só aparecem na página de notificações
+        // for (const notification of newNotifications) {
+        //   if (permission === 'granted') {
+        //     await sendLocalNotification({...});
+        //   }
+        // }
 
-        console.log(`[NewContent] ${newNotifications.length} novas notificações geradas`);
+        console.log(`[NewContent] ${newNotifications.length} novas notificações salvas (apenas página)`);
       }
 
     } catch (error) {
@@ -152,17 +142,20 @@ export function useNewContentNotifications() {
     }
   }, [permission, sendLocalNotification]);
 
-  // Buscar notificações do usuário
+  // Buscar notificações do usuário das últimas 24h APENAS
   const fetchNotifications = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .eq('type', 'new_content')
+        .gte('created_at', twentyFourHoursAgo) // APENAS últimas 24h
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -224,7 +217,7 @@ export function useNewContentNotifications() {
 
   // Supabase Realtime - detectar novos conteúdos em tempo real
   useEffect(() => {
-    // Canal para novos filmes (cinema)
+    // Canal para novos filmes (cinema) - verificar se é dentro das últimas 24h
     const cinemaChannel = supabase
       .channel('new-movies-notifications')
       .on(
@@ -237,60 +230,37 @@ export function useNewContentNotifications() {
         async (payload) => {
           console.log('[Realtime] Novo filme detectado:', payload.new);
           const movie = payload.new as any;
+          
+          // Verificar se o filme foi criado nas últimas 24h
+          const movieCreatedAt = new Date(movie.created_at);
+          const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+          
+          if (movieCreatedAt >= twentyFourHoursAgo) {
+            const newItem: NewContentItem = {
+              id: movie.id.toString(),
+              title: movie.titulo,
+              type: 'movie',
+              poster: movie.poster,
+              year: movie.year,
+              created_at: movie.created_at || new Date().toISOString(),
+              tmdb_id: movie.tmdb_id,
+            };
 
-          const newItem: NewContentItem = {
-            id: movie.id.toString(),
-            title: movie.titulo,
-            type: 'movie',
-            poster: movie.poster,
-            year: movie.year,
-            created_at: movie.created_at || new Date().toISOString(),
-            tmdb_id: movie.tmdb_id,
-          };
-
-          // Gerar notificação imediatamente
-          await generateNotifications([newItem]);
-          // Atualizar lista de notificações
-          await fetchNotifications();
+            // Gerar notificação APENAS se for das últimas 24h
+            await generateNotifications([newItem]);
+            await fetchNotifications();
+          } else {
+            console.log('[Realtime] Filme ignorado - mais antigo que 24h');
+          }
         }
       )
       .subscribe();
 
-    // Canal para novas séries
-    const seriesChannel = supabase
-      .channel('new-series-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'series',
-        },
-        async (payload) => {
-          console.log('[Realtime] Nova série detectada:', payload.new);
-          const series = payload.new as any;
-
-          const newItem: NewContentItem = {
-            id: series.id_n?.toString(),
-            title: series.titulo,
-            type: 'series',
-            poster: series.capa || '/api/placeholder/300/450',
-            year: series.ano,
-            created_at: new Date().toISOString(),
-            tmdb_id: series.tmdb_id,
-          };
-
-          // Gerar notificação imediatamente
-          await generateNotifications([newItem]);
-          // Atualizar lista de notificações
-          await fetchNotifications();
-        }
-      )
-      .subscribe();
+    // REMOVIDO: Canal para novas séries - não tem created_at para filtrar
+    // const seriesChannel = supabase...;
 
     return () => {
       supabase.removeChannel(cinemaChannel);
-      supabase.removeChannel(seriesChannel);
     };
   }, [fetchNewContent, fetchNotifications, generateNotifications]);
 
