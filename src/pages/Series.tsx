@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Info, ChevronLeft, ChevronRight, Star, Calendar, Tv } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Calendar, Tv } from 'lucide-react';
 import { useSeriesData, Serie } from '@/hooks/useSeriesData';
-import { usePlayer } from '@/contexts/PlayerContext';
 import { tmdbImageUrl } from '@/services/tmdb';
 
 const seriesPageStyles = `
@@ -266,11 +265,9 @@ function CategoryRow({ genre, series, onSeriesClick }: CategoryRowProps) {
 
 interface HeroSectionProps {
   serie: Serie | null;
-  onPlay: () => void;
-  onMoreInfo: () => void;
 }
 
-function HeroSection({ serie, onPlay, onMoreInfo }: HeroSectionProps) {
+function HeroSection({ serie }: HeroSectionProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   if (!serie) {
@@ -319,19 +316,22 @@ function HeroSection({ serie, onPlay, onMoreInfo }: HeroSectionProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
+          {/* Categoria */}
+          <p className="text-xs md:text-sm font-bold text-muted-foreground mb-2 flex items-center gap-2 text-shadow-premium">
+            <span className="text-primary">Série</span>
+            <span className="hidden sm:inline">•</span>
+            <span>{serie.ano}</span>
+            {serie.classificacao && (
+              <span className="text-[#ffff5c]">{serie.classificacao}</span>
+            )}
+          </p>
+
           <h1 
             className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4"
             style={{ textShadow: '0 2px 20px rgba(0,0,0,0.8)' }}
           >
             {serie.titulo}
           </h1>
-          
-          {serie.ano && (
-            <div className="flex items-center gap-1.5 text-white/80 mb-4 text-sm md:text-base">
-              <Calendar size={16} className="text-cyan-400" />
-              <span>{serie.ano}</span>
-            </div>
-          )}
 
           {serie.descricao && (
             <p 
@@ -349,40 +349,11 @@ function HeroSection({ serie, onPlay, onMoreInfo }: HeroSectionProps) {
 
 export default function SeriesPage() {
   const navigate = useNavigate();
-  const { openPlayer } = usePlayer();
-  const { series, seriesByGenre, heroSerie, isLoading, error, getFirstEpisode, getAllGenres } = useSeriesData();
+  const { series, seriesByGenre, heroSerie, isLoading, error, getAllGenres } = useSeriesData();
 
   const handleSeriesClick = useCallback((serie: Serie) => {
     navigate(`/series-details/${serie.id_n}`);
   }, [navigate]);
-
-  const handlePlayHero = useCallback(async () => {
-    if (!heroSerie) return;
-    
-    const firstEpisode = await getFirstEpisode(heroSerie.id_n);
-    if (firstEpisode && firstEpisode.arquivo) {
-      openPlayer({
-        id: String(heroSerie.id_n),
-        title: `${heroSerie.titulo} - ${firstEpisode.titulo}`,
-        type: 'series',
-        videoUrl: firstEpisode.arquivo,
-        poster: heroSerie.capa || heroSerie.banner || undefined,
-        year: heroSerie.ano || undefined,
-        seriesId: String(heroSerie.id_n),
-        episodeId: String(firstEpisode.id_n),
-        seasonNumber: 1,
-        episodeNumber: firstEpisode.numero_episodio,
-      });
-    } else {
-      navigate(`/series-details/${heroSerie.id_n}`);
-    }
-  }, [heroSerie, getFirstEpisode, openPlayer, navigate]);
-
-  const handleMoreInfoHero = useCallback(() => {
-    if (heroSerie) {
-      navigate(`/series-details/${heroSerie.id_n}`);
-    }
-  }, [heroSerie, navigate]);
 
   const genres = getAllGenres();
 
@@ -409,8 +380,6 @@ export default function SeriesPage() {
       
       <HeroSection
         serie={heroSerie}
-        onPlay={handlePlayHero}
-        onMoreInfo={handleMoreInfoHero}
       />
 
       <div className="relative z-10 bg-black pt-8">
