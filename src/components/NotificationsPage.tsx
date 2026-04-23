@@ -377,10 +377,10 @@ export const NotificationsPage: React.FC = () => {
               <div
                 key={item.id}
                 onClick={() => handlePlay(item)}
-                className="group flex flex-col sm:flex-row bg-[#0f172a]/80 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 transition-all duration-300 hover:border-[#00E5FF]/50 hover:shadow-[0_0_20px_rgba(0,229,255,0.2)] cursor-pointer"
+                className="group flex flex-row bg-[#0f172a]/80 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 transition-all duration-300 hover:border-[#00E5FF]/50 hover:shadow-[0_0_20px_rgba(0,229,255,0.2)] cursor-pointer"
               >
                 {/* Poster - Lado Esquerdo */}
-                <div className="relative w-full sm:w-[140px] md:w-[160px] lg:w-[180px] flex-shrink-0 aspect-[16/9] sm:aspect-[2/3]">
+                <div className="relative w-[100px] sm:w-[140px] md:w-[160px] lg:w-[180px] flex-shrink-0 aspect-[2/3]">
                   {item.poster ? (
                     <img
                       src={item.poster}
@@ -405,10 +405,10 @@ export const NotificationsPage: React.FC = () => {
                 </div>
 
                 {/* Conteúdo - Lado Direito */}
-                <div className="flex-1 p-3 sm:p-4 md:p-5 flex flex-col justify-between min-w-0">
+                <div className="flex-1 p-2 sm:p-4 md:p-5 flex flex-col justify-between min-w-0">
                   <div className="min-w-0">
                     {/* Badge de tipo */}
-                    <div className="mb-1.5 sm:mb-2">
+                    <div className="mb-1 sm:mb-2">
                       <span className={`
                         px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-xs font-medium border inline-block
                         ${item.type === 'movie'
@@ -421,39 +421,39 @@ export const NotificationsPage: React.FC = () => {
                     </div>
 
                     {/* Título */}
-                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-1.5 sm:mb-2 group-hover:text-[#00E5FF] transition-colors line-clamp-2">
+                    <h3 className="text-sm sm:text-lg md:text-xl font-bold text-white mb-1 sm:mb-2 group-hover:text-[#00E5FF] transition-colors line-clamp-2">
                       {item.title}
                     </h3>
 
                     {/* Metadados: Rating, Ano, Categoria */}
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 text-xs sm:text-sm mb-2 sm:mb-3">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 text-xs sm:text-sm mb-1.5 sm:mb-3">
                       {item.rating && (
-                        <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md font-semibold">
+                        <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold text-xs sm:text-sm">
                           <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" />
-                          <span className="text-xs sm:text-sm">{item.rating}</span>
+                          <span>{item.rating}</span>
                         </span>
                       )}
-                      <span className="flex items-center gap-1 text-gray-400">
+                      <span className="flex items-center gap-1 text-gray-400 text-xs sm:text-sm">
                         <Calendar className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        <span className="text-xs sm:text-sm">{item.year || 'N/A'}</span>
+                        <span>{item.year || 'N/A'}</span>
                       </span>
                       {(item.category || item.genero) && (
-                        <span className="bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/30 px-2 py-0.5 rounded-full text-xs font-medium truncate max-w-[120px] sm:max-w-[150px]">
+                        <span className="bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/30 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium truncate max-w-[100px] sm:max-w-[150px]">
                           {item.category || item.genero}
                         </span>
                       )}
                     </div>
 
                     {/* Descrição */}
-                    <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 md:line-clamp-3 max-w-2xl">
+                    <p className="text-gray-400 text-xs sm:text-sm line-clamp-1 sm:line-clamp-2 md:line-clamp-3 max-w-2xl">
                       {item.description || 'Sem descrição disponível.'}
                     </p>
                   </div>
 
                   {/* Botões de ação */}
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-3 sm:mt-4">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2 sm:mt-4">
                     <button className={`
-                      flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm
+                      flex items-center gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm
                       transition-all duration-300 hover:scale-105 flex-shrink-0
                       ${isLoggedIn
                         ? 'bg-[#00E5FF] text-black hover:bg-[#00c5d9] shadow-[0_0_15px_rgba(0,229,255,0.5)]'
@@ -461,8 +461,8 @@ export const NotificationsPage: React.FC = () => {
                       }
                     `}>
                       <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill={isLoggedIn ? "currentColor" : "none"} />
-                      <span className="hidden xs:inline">{isLoggedIn ? 'Assistir' : 'Login'}</span>
-                      <span className="xs:hidden">{isLoggedIn ? 'Play' : 'Login'}</span>
+                      <span className="hidden sm:inline">{isLoggedIn ? 'Assistir' : 'Login'}</span>
+                      <span className="sm:hidden">Play</span>
                     </button>
                     {/* Botão Trailer Vermelho YouTube */}
                     <button
@@ -483,13 +483,12 @@ export const NotificationsPage: React.FC = () => {
                           toast.error('Trailer não disponível para este título');
                         }
                       }}
-                      className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm bg-[#FF0000] text-white hover:bg-[#cc0000] transition-all duration-300 hover:scale-105 shadow-[0_0_15px_rgba(255,0,0,0.4)] flex-shrink-0"
+                      className="flex items-center gap-1.5 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm bg-[#FF0000] text-white hover:bg-[#cc0000] transition-all duration-300 hover:scale-105 shadow-[0_0_15px_rgba(255,0,0,0.4)] flex-shrink-0"
                     >
                       <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                       </svg>
-                      <span className="hidden xs:inline">Trailer</span>
-                      <span className="xs:hidden">Trailer</span>
+                      <span>Trailer</span>
                     </button>
                     <button className="p-1.5 sm:p-2 rounded-lg bg-white/10 hover:bg-[#00E5FF]/20 text-white hover:text-[#00E5FF] transition-all duration-300 border border-white/10 hover:border-[#00E5FF]/50 flex-shrink-0">
                       <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
