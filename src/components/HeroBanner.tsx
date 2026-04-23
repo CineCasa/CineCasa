@@ -174,10 +174,12 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
     return () => clearInterval(timer);
   }, [heroItems.length]);
 
+  // Show skeleton placeholder during loading for faster perceived performance
   if (isLoading || heroItems.length === 0) {
     return (
-      <section className="relative w-full h-[70vh] sm:aspect-video sm:max-h-[85vh] bg-muted animate-pulse flex items-center justify-center">
-        <span className="text-muted-foreground">Carregando...</span>
+      <section className="relative w-full h-[70vh] sm:aspect-video sm:max-h-[85vh] bg-gradient-to-br from-gray-900 to-black animate-pulse">
+        {/* Skeleton shimmer effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_2s_infinite]" />
       </section>
     );
   }
@@ -186,11 +188,11 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
   const safeIndex = current % heroItems.length;
   const hero = heroItems[safeIndex];
 
-  // Additional safety: if hero is undefined, show loading
+  // Additional safety: show skeleton instead of loading text
   if (!hero) {
     return (
-      <section className="relative w-full h-[70vh] sm:aspect-video sm:max-h-[85vh] bg-muted animate-pulse flex items-center justify-center">
-        <span className="text-muted-foreground">Carregando...</span>
+      <section className="relative w-full h-[70vh] sm:aspect-video sm:max-h-[85vh] bg-gradient-to-br from-gray-900 to-black animate-pulse">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-[shimmer_2s_infinite]" />
       </section>
     );
   }

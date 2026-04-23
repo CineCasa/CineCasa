@@ -173,91 +173,71 @@ export const useSupabaseContent = () => {
         trailer: item.url
       });
 
-      // Fetch TMDB data in chunks for all tables
-      const cinemaWithData: ContentItem[] = [];
-      if (cinema && cinema.length > 0) {
-        for (let i = 0; i < cinema.length; i += 50) {
-          const chunkResults = await Promise.all(cinema.slice(i, i + 50).map(async (item: any) => {
-            const base = mapCinema(item);
-            if (!item.tmdb_id) return base;
-            const data = await fetchTmdbDetails(item.tmdb_id, "movie");
-            if (!data) return base;
-            return {
-              ...base,
-              image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : base.image,
-              backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : base.backdrop,
-              year: parseInt(data.release_date?.split("-")[0] || item.year || "0"),
-              rating: data.vote_average?.toFixed(1) || item.rating || "N/A",
-              genre: data.genres?.map((g: any) => g.name) || base.genre,
-              country: data.production_countries?.[0]?.name || data.origin_country?.[0] || ""
-            };
-          }));
-          cinemaWithData.push(...chunkResults);
-        }
-      }
+      // Map data immediately without waiting for TMDB - much faster loading
+      const cinemaWithData: ContentItem[] = cinema?.map(mapCinema) || [];
+      const seriesWithData: ContentItem[] = series?.map(mapSeries) || [];
+      const kidsMoviesWithData: ContentItem[] = filmesKids?.map(mapFilmesKids) || [];
+      const kidsSeriesWithData: ContentItem[] = seriesKids?.map(mapSeriesKids) || [];
 
-      const seriesWithData: ContentItem[] = [];
-      if (series && series.length > 0) {
-        for (let i = 0; i < series.length; i += 40) {
-          const chunkResults = await Promise.all(series.slice(i, i + 40).map(async (s: any) => {
-            if (!s.tmdb_id) return mapSeries(s);
-            const data = await fetchTmdbDetails(s.tmdb_id, "tv");
-            if (!data) return mapSeries(s);
-            return {
-              ...mapSeries(s),
-              image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : tmdbImageUrl(s.banner, "w500"),
-              backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : tmdbImageUrl(s.banner, "original"),
-              year: parseInt(data.first_air_date?.split("-")[0] || "0"),
-              rating: data.vote_average?.toFixed(1) || "N/A",
-              genre: data.genres?.map((g: any) => g.name) || splitGenres(s.genero || s.category),
-              country: data.origin_country?.[0] || data.production_countries?.[0]?.name || ""
-            };
-          }));
-          seriesWithData.push(...chunkResults);
+      // Fetch TMDB data in background (non-blocking) for richer metadata
+      // This happens after initial render for perceived performance
+      const enrichWithTmdbData = async () => {
+        // Enrich cinema data with TMDB in small chunks
+        if (cinema && cinema.length > 0) {
+          for (let i = 0; i < cinema.length; i += 20) {
+            const chunk = cinema.slice(i, i + 20);
+            await Promise.all(chunk.map(async (item: any) => {
+              if (!item.tmdb_id) return;
+              try {
+                const data = await fetchTmdbDetails(item.tmdb_id, "movie");
+                if (data) {
+                  const index = cinemaWithData.findIndex(c => c.id === `cinema-${item.id}`);
+                  if (index !== -1) {
+                    cinemaWithData[index] = {
+                      ...cinemaWithData[index],
+                      image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : cinemaWithData[index].image,
+                      backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : cinemaWithData[index].backdrop,
+                      year: parseInt(data.release_date?.split("-")[0] || item.year || "0"),
+                      rating: data.vote_average?.toFixed(1) || item.rating || "N/A",
+                      genre: data.genres?.map((g: any) => g.name) || cinemaWithData[index].genre,
+                      country: data.production_countries?.[0]?.name || data.origin_country?.[0] || ""
+                    };
+                  }
+                }
+              } catch (e) { /* silent fail for background enrichment */ }
+            }));
+          }
         }
-      }
 
-      const kidsMoviesWithData: ContentItem[] = [];
-      if (filmesKids && filmesKids.length > 0) {
-        for (let i = 0; i < filmesKids.length; i += 50) {
-          const chunkResults = await Promise.all(filmesKids.slice(i, i + 50).map(async (item: any) => {
-            const base = mapFilmesKids(item);
-            if (!item.tmdb_id) return base;
-            const data = await fetchTmdbDetails(item.tmdb_id, "movie");
-            if (!data) return base;
-            return {
-              ...base,
-              image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : base.image,
-              backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : base.backdrop,
-              year: parseInt(data.release_date?.split("-")[0] || item.year || "0"),
-              rating: data.vote_average?.toFixed(1) || item.rating || "L",
-              genre: data.genres?.map((g: any) => g.name) || base.genre
-            };
-          }));
-          kidsMoviesWithData.push(...chunkResults);
+        // Enrich series data with TMDB
+        if (series && series.length > 0) {
+          for (let i = 0; i < series.length; i += 20) {
+            const chunk = series.slice(i, i + 20);
+            await Promise.all(chunk.map(async (s: any) => {
+              if (!s.tmdb_id) return;
+              try {
+                const data = await fetchTmdbDetails(s.tmdb_id, "tv");
+                if (data) {
+                  const index = seriesWithData.findIndex(ser => ser.id === `series-${s.id}`);
+                  if (index !== -1) {
+                    seriesWithData[index] = {
+                      ...seriesWithData[index],
+                      image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : seriesWithData[index].image,
+                      backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : seriesWithData[index].backdrop,
+                      year: parseInt(data.first_air_date?.split("-")[0] || "0"),
+                      rating: data.vote_average?.toFixed(1) || "N/A",
+                      genre: data.genres?.map((g: any) => g.name) || seriesWithData[index].genre
+                    };
+                  }
+                }
+              } catch (e) { /* silent fail */ }
+            }));
+          }
         }
-      }
+      };
 
-      const kidsSeriesWithData: ContentItem[] = [];
-      if (seriesKids && seriesKids.length > 0) {
-        for (let i = 0; i < seriesKids.length; i += 50) {
-          const chunkResults = await Promise.all(seriesKids.slice(i, i + 50).map(async (item: any) => {
-            const base = mapSeriesKids(item);
-            if (!item.tmdb_id) return base;
-            const data = await fetchTmdbDetails(item.tmdb_id, "tv");
-            if (!data) return base;
-            return {
-              ...base,
-              image: data.poster_path ? tmdbImageUrl(data.poster_path, "w500") : base.image,
-              backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, "original") : base.backdrop,
-              year: parseInt(data.first_air_date?.split("-")[0] || item.year || "0"),
-              rating: data.vote_average?.toFixed(1) || item.rating || "L",
-              genre: data.genres?.map((g: any) => g.name) || base.genre
-            };
-          }));
-          kidsSeriesWithData.push(...chunkResults);
-        }
-      }
+      // Start background enrichment (don't await)
+      enrichWithTmdbData().catch(() => {});
 
       // 2. Planning logic - sempre retornar conteúdo, filtrar apenas se necessário
       let finalCinema = cinemaWithData;
