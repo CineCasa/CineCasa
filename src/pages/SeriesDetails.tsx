@@ -407,20 +407,23 @@ const SeriesDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white relative overflow-x-hidden">
       {/* ============================================
-          CAMADA 0: FUNDO - Backdrop claro e nítido com vignette suave
+          CAMADA 0: FUNDO - Backdrop responsivo sem cortar elementos
           ============================================ */}
       <div className="fixed inset-0 z-0">
-        {/* Backdrop Image - clara e nítida com brilho aumentado */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: `url(${backdropUrl})`,
-            filter: 'blur(8px) brightness(1.15) saturate(1.1)',
-            transform: 'scale(1.05)'
-          }}
-        />
+        {/* Backdrop Image - responsiva mantendo proporção sem cortar */}
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src={backdropUrl}
+            alt=""
+            className="w-full h-full object-cover object-center lg:object-top"
+            style={{
+              filter: 'blur(8px) brightness(1.15) saturate(1.1)',
+              transform: 'scale(1.02)'
+            }}
+          />
+        </div>
         {/* Vignette suave nas bordas - mantém foco no centro */}
-        <div 
+        <div
           className="absolute inset-0"
           style={{
             background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.65) 100%)'
