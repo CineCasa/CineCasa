@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNotifications, type MovieNotification } from '@/hooks/useNotifications';
+import { useNotifications, type MovieNotification } from '@/hooks/useNotifications.tsx';
 import { supabase } from '@/lib/supabase';
 import { Play, X, Film } from 'lucide-react';
 
