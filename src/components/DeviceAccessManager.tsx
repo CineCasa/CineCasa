@@ -7,10 +7,10 @@ interface DeviceAccessProps {
   children: React.ReactNode;
 }
 
-// Função para gerar hash MD5 de uma string
-const md5Hash = async (message: string): Promise<string> => {
+// Função para gerar hash SHA-256 de uma string (MD5 não é suportado em todos os navegadores)
+const sha256Hash = async (message: string): Promise<string> => {
   const msgUint8 = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('MD5', msgUint8);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
@@ -109,9 +109,9 @@ const DeviceAccessManager = ({ children }: DeviceAccessProps) => {
       canvas: canvas ? canvas.toDataURL() : '',
     };
     
-    // Gerar hash MD5 do fingerprint (32 caracteres) ao invés de base64 completo
+    // Gerar hash SHA-256 do fingerprint (64 caracteres hex)
     const fingerprintString = JSON.stringify(fingerprint);
-    return await md5Hash(fingerprintString);
+    return await sha256Hash(fingerprintString);
   };
 
   const getUserIP = async () => {
