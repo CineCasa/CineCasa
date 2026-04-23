@@ -71,20 +71,20 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
       ]);
 
       const allResults: SearchResult[] = [
-        ...(cinemaResults.data || []).map(item => ({
-          id: item.id.toString(),
-          title: item.titulo || item.title,
+        ...(cinemaResults.data || []).map((item: any) => ({
+          id: item.id?.toString(),
+          title: item.titulo || item.title || '',
           poster: item.poster || '/api/placeholder/300/450',
           type: 'movie' as const,
-          year: item.ano?.toString(),
-          rating: item.nota?.toString(),
+          year: item.ano?.toString() || item.year,
+          rating: item.nota?.toString() || item.rating,
           category: item.category,
-          description: item.description || item.sinopse,
+          description: item.description || item.sinopse || '',
           table: 'cinema' as const
         })),
-        ...(seriesResults.data || []).map(item => ({
-          id: item.id_n?.toString() || item.id?.toString(),
-          title: item.titulo || item.title,
+        ...(seriesResults.data || []).map((item: any) => ({
+          id: item.id_n?.toString() || item.id?.toString() || '',
+          title: item.titulo || item.title || '',
           poster: item.capa || item.poster || '/api/placeholder/300/450',
           type: 'series' as const,
           year: item.ano?.toString(),

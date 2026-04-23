@@ -178,10 +178,10 @@ const DeviceAccessManager = ({ children }: DeviceAccessProps) => {
       const { data: sessions } = await supabase
         .rpc('get_user_devices', { user_id_param: user?.id });
 
-      const currentSession = sessions?.find((s: any) => s.device_fingerprint === fingerprint);
+      const currentSession = (sessions as any[])?.find((s: any) => s.device_fingerprint === fingerprint);
       
       if (currentSession) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .rpc('update_device_activity', { session_id_param: currentSession.id });
 
         if (error) {
