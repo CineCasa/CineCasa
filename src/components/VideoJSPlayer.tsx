@@ -1244,8 +1244,11 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         </div>
       )}
 
-      {/* Video Element - forçar tela cheia */}
-      <div className="absolute inset-0 flex items-center justify-center z-10" style={{ width: '100vw', height: '100vh' }}>
+      {/* Video Element */}
+      <div className="absolute inset-0 flex items-center justify-center z-10" style={{ 
+        width: isMiniPlayer ? '100%' : '100vw', 
+        height: isMiniPlayer ? '100%' : '100vh' 
+      }}>
         {isYoutubeUrl(videoUrl || '') ? (
           /* YouTube iframe player for trailers */
           <iframe
