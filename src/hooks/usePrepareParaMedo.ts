@@ -33,8 +33,7 @@ export const usePrepareParaMedo = () => {
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
         .or('genero.ilike.%terror%,genero.ilike.%horror%,genero.ilike.%medo%,category.ilike.%terror%,category.ilike.%horror%,category.ilike.%medo%')
-        .not('poster', 'is', null)
-        .limit(100);
+        .not('poster', 'is', null);
 
       if (error) {
         console.error('[PrepareParaMedo] Erro:', error);
@@ -81,13 +80,10 @@ export const usePrepareParaMedo = () => {
         }
       }
 
-      // Selecionar apenas 5 filmes aleatórios
-      const selected = shuffled.slice(0, 5);
+      console.log('[PrepareParaMedo] Total:', shuffled.length, 'filmes');
+      console.log('[PrepareParaMedo] Títulos:', shuffled.map(m => m.title).join(', '));
 
-      console.log('[PrepareParaMedo] Selecionados:', selected.length, 'filmes');
-      console.log('[PrepareParaMedo] Títulos:', selected.map(m => m.title).join(', '));
-
-      setContent(selected);
+      setContent(shuffled);
     } catch (err) {
       console.error('[PrepareParaMedo] Erro ao buscar conteúdo:', err);
       setContent([]);

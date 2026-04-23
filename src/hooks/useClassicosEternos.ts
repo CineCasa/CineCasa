@@ -34,8 +34,7 @@ export const useClassicosEternos = () => {
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
         .or('genero.ilike.%clássico%,genero.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%,genero.ilike.%faroeste%,category.ilike.%faroeste%')
-        .not('poster', 'is', null)
-        .limit(100);
+        .not('poster', 'is', null);
 
       if (error) {
         console.error('[ClassicosEternos] Erro:', error);
@@ -82,13 +81,10 @@ export const useClassicosEternos = () => {
         }
       }
 
-      // Selecionar apenas 5 filmes aleatórios
-      const selected = shuffled.slice(0, 5);
+      console.log('[ClassicosEternos] Total:', shuffled.length, 'filmes');
+      console.log('[ClassicosEternos] Títulos:', shuffled.map(m => m.title).join(', '));
 
-      console.log('[ClassicosEternos] Selecionados:', selected.length, 'filmes');
-      console.log('[ClassicosEternos] Títulos:', selected.map(m => m.title).join(', '));
-
-      setContent(selected);
+      setContent(shuffled);
     } catch (err) {
       console.error('[ClassicosEternos] Erro ao buscar conteúdo:', err);
       setContent([]);

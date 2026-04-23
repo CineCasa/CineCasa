@@ -33,8 +33,7 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
       const cinemaResult = await supabase
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%finanças%,genero.ilike.%financas%,genero.ilike.%finance%,category.ilike.%finanças%,category.ilike.%financas%,category.ilike.%finance%')
-        .limit(15);
+        .or('genero.ilike.%finanças%,genero.ilike.%financas%,genero.ilike.%finance%,category.ilike.%finanças%,category.ilike.%financas%,category.ilike.%finance%');
 
       console.log('[useFinancas] Cinema result:', cinemaResult.data?.length || 0, 'itens');
       console.log('[useFinancas] Erro:', cinemaResult.error);
@@ -75,8 +74,7 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
         const { data: fallbackData } = await supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating')
-          .not('poster', 'is', null)
-          .limit(20);
+          .not('poster', 'is', null);
         
         const fallbackFinancas = (fallbackData || [])
           .filter(isNotCollection)
@@ -97,9 +95,9 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
       const shuffled = shuffleArray(uniqueFinancas);
       console.log('[useFinancas] Total combinado:', allFinancas.length);
       console.log('[useFinancas] Únicos após filtro:', uniqueFinancas.length);
-      console.log('[useFinancas] Selecionados:', shuffled.slice(0, 5).length);
+      console.log('[useFinancas] Total:', shuffled.length);
 
-      setFinancas(shuffled.slice(0, 5));
+      setFinancas(shuffled);
     } catch (err) {
       console.error('[useFinancas] Erro ao buscar finanças:', err);
       setFinancas([]);
