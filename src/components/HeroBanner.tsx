@@ -203,8 +203,14 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
     title: hero.title,
     backdrop: hero.backdrop,
     image: hero.image,
+    poster: hero.poster,
     currentHeroData: currentHeroData?.backdrop_path
   });
+
+  // Ensure we have a valid image source
+  const imageSource = currentHeroData?.backdrop_path 
+    ? tmdbImageUrl(currentHeroData.backdrop_path, "original") 
+    : (hero.backdrop || hero.image || hero.poster || "");
   
   const goTo = (dir: number) =>
     setCurrent((prev) => (prev + dir + heroItems.length) % heroItems.length);
@@ -240,17 +246,29 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
               />
             </div>
           ) : (
-            <img
-              src={currentHeroData?.backdrop_path ? tmdbImageUrl(currentHeroData.backdrop_path, "original") : (hero.backdrop || hero.image)}
-              alt={hero.title}
-              className="w-full h-full object-cover object-center"
-              style={{ 
-                objectPosition: 'center center',
-                maxWidth: '100%',
-                maxHeight: '100%'
-              }}
-              loading="eager"
-            />
+            <>
+              {imageSource ? (
+                <img
+                  src={imageSource}
+                  alt={hero.title}
+                  className="w-full h-full object-cover object-center"
+                  style={{ 
+                    objectPosition: 'center center',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
+                  }}
+                  loading="eager"
+                  onError={(e) => {
+                    console.error('[HeroBanner] Image failed to load:', imageSource);
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+                  <span className="text-gray-600 text-lg">{hero.title}</span>
+                </div>
+              )}
+            </>
           )}
         </motion.div>
       </AnimatePresence>
