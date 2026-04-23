@@ -83,33 +83,40 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
     return items;
   }, [categories, filterCategory, normalizedFilter]);
 
-  // Embaralhar itens aleatoriamente (Fisher-Yates shuffle) - memoizado para estabilidade
-  const heroItems = useMemo(() => {
-    if (allItems.length === 0) return [];
-    
-    const shuffled = [...allItems];
+  // Estado para armazenar itens embaralhados - recalculado a cada montagem do componente
+  const [heroItems, setHeroItems] = useState<any[]>([]);
+
+  // Embaralhar itens aleatoriamente sempre que allItems mudar ou componente montar
+  useEffect(() => {
+    if (allItems.length === 0) {
+      setHeroItems([]);
+      return;
+    }
+
     // Fisher-Yates shuffle para embaralhamento verdadeiramente aleatório
+    const shuffled = [...allItems];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return shuffled;
+    setHeroItems(shuffled);
+    console.log('[HeroBanner] Items shuffled randomly:', shuffled.length, 'items');
   }, [allItems]);
 
   // Iniciar em posição aleatória para não começar sempre pela mesma capa
-  const [current, setCurrent] = useState(() => {
-    return Math.floor(Math.random() * 1000); // Valor inicial aleatório, será ajustado quando heroItems carregar
-  });
+  const [current, setCurrent] = useState(0);
+
+  // Definir posição inicial aleatória quando heroItems carregar
+  useEffect(() => {
+    if (heroItems.length > 0) {
+      const randomStart = Math.floor(Math.random() * heroItems.length);
+      setCurrent(randomStart);
+      console.log('[HeroBanner] Starting at random position:', randomStart, 'of', heroItems.length);
+    }
+  }, [heroItems.length]);
 
   const [currentHeroData, setCurrentHeroData] = useState<any>(null);
 
-  // Ajustar índice atual quando heroItems carregar para garantir posição válida
-  useEffect(() => {
-    if (heroItems.length > 0) {
-      // Normalizar o índice atual para estar dentro dos limites
-      setCurrent(prev => prev % heroItems.length);
-    }
-  }, [heroItems.length]);
 
   useEffect(() => {
     if (heroItems.length === 0) return;
