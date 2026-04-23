@@ -1,6 +1,7 @@
 import { Home, Film, Tv, Heart, Bell } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const navItems = [
   { label: "Início", path: "/", icon: Home },
@@ -12,6 +13,12 @@ const navItems = [
 
 const MobileBottomNav = () => {
   const location = useLocation();
+  const { unreadCount } = useNotifications();
+  
+  // Check if user is on notifications page
+  const isOnNotificationsPage = location.pathname === '/notifications';
+  // Check if there are unread notifications
+  const hasUnreadNotifications = unreadCount > 0 && !isOnNotificationsPage;
 
   if (location.pathname.startsWith("/content/")) return null;
 
@@ -22,15 +29,26 @@ const MobileBottomNav = () => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path;
 
+          // Special styling for notification bell with unread messages
+          const isNotificationItem = item.path === '/notifications';
+          const showRedBlinking = isNotificationItem && hasUnreadNotifications;
+          
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center gap-0.5 py-1 px-1 no-underline ${
-                isActive ? "text-[#00A8E1]" : "text-white/60"
+              className={`relative flex flex-col items-center justify-center gap-0.5 py-1 px-1 no-underline ${
+                isActive ? "text-[#00A8E1]" : showRedBlinking ? "text-red-500" : "text-white/60"
               }`}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+              <Icon 
+                size={20} 
+                strokeWidth={isActive ? 2.5 : 2} 
+                className={showRedBlinking ? 'animate-bell-pulse' : ''}
+              />
+              {showRedBlinking && (
+                <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-red-600 rounded-full animate-pulse" />
+              )}
               <span className="text-[9px] font-medium">{item.label}</span>
             </Link>
           );

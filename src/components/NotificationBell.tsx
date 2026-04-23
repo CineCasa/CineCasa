@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Bell, X, Check, Settings, Play, Tv, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface Notification {
   id: string;
@@ -33,6 +33,10 @@ export function NotificationBell() {
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const panelRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if user is on notifications page
+  const isOnNotificationsPage = location.pathname === '/notifications';
 
   // Carregar notificações quando abrir o painel
   useEffect(() => {
@@ -128,10 +132,16 @@ export function NotificationBell() {
         className="relative p-2 rounded-full hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
         aria-label="Notificações"
       >
-        <Bell className="w-5 h-5 md:w-6 md:h-6 text-white" />
+        <Bell 
+          className={`w-5 h-5 md:w-6 md:h-6 transition-colors duration-300 ${
+            unreadCount > 0 && !isOnNotificationsPage
+              ? 'text-red-500 animate-bell-pulse' 
+              : 'text-white'
+          }`} 
+        />
         
         {/* Badge de não lidas */}
-        {unreadCount > 0 && (
+        {unreadCount > 0 && !isOnNotificationsPage && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
