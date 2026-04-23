@@ -167,24 +167,25 @@ const Search = () => {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white pt-[70px] px-4 md:px-8 lg:px-12 pb-20">
-      {/* Campo de busca fixo no topo */}
-      <div className="sticky top-[70px] z-30 bg-black/95 backdrop-blur-md py-6 border-b border-white/10">
+    <main className="h-screen flex flex-col bg-black text-white overflow-hidden">
+      {/* Header fixo com busca - Ocupa espaço fixo no topo */}
+      <div className="flex-shrink-0 z-30 bg-black/95 backdrop-blur-md px-4 py-4 md:px-8 lg:px-12 border-b border-white/10">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
             <Input
               type="text"
               value={searchQuery}
               onChange={handleInputChange}
               placeholder="Buscar filmes, séries, gêneros..."
-              className="w-full pl-12 pr-12 py-6 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500 focus:ring-cyan-500/20 text-lg"
+              className="w-full pl-12 pr-12 py-4 md:py-6 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-cyan-500 focus:ring-cyan-500/20 text-base md:text-lg"
               autoFocus
             />
             {searchQuery && (
               <button
                 onClick={clearSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"
+                aria-label="Limpar pesquisa"
               >
                 <X size={20} />
               </button>
@@ -193,15 +194,15 @@ const Search = () => {
           
           {/* Contador de resultados */}
           {!isLoading && searchQuery && (
-            <p className="mt-3 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-gray-400 truncate">
               {results.length} {results.length === 1 ? 'resultado' : 'resultados'} para "{searchQuery}"
             </p>
           )}
         </div>
       </div>
 
-      {/* Área de resultados */}
-      <div className="max-w-7xl mx-auto mt-8">
+      {/* Área de resultados - Scrollável */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-8 lg:px-12 py-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
