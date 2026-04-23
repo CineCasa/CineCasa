@@ -38,6 +38,11 @@ export function NotificationBell() {
   // Check if user is on notifications page
   const isOnNotificationsPage = location.pathname === '/notifications';
 
+  // DEBUG: Log notification state
+  useEffect(() => {
+    console.log('[NotificationBell] unreadCount:', unreadCount, 'notifications:', notifications.length);
+  }, [unreadCount, notifications]);
+
   // Carregar notificações quando abrir o painel
   useEffect(() => {
     if (isOpen) {

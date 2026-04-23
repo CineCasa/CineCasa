@@ -48,16 +48,30 @@ const Search = () => {
         console.error('Erro ao buscar filmes:', moviesError);
       }
 
-      // Buscar em séries - busca parcial em título e gênero (description não existe na tabela)
+      // Buscar em séries - busca parcial em título, descrição e gênero
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, capa, banner, ano, rating, genero, sinopse')
-        .or(`titulo.ilike.%${searchLower}%,sinopse.ilike.%${searchLower}%,genero.ilike.%${searchLower}%`)
+        .select('id_n, titulo, capa, banner, ano, genero, descricao')
+        .or(`titulo.ilike.%${searchLower}%,descricao.ilike.%${searchLower}%,genero.ilike.%${searchLower}%`)
         .limit(20);
 
       if (seriesError) {
         console.error('Erro ao buscar séries:', seriesError);
       }
+
+      console.log('[Search] Filmes encontrados:', moviesData?.length || 0);
+      console.log('[Search] Séries encontradas do Supabase:', seriesData?.length || 0);
+      console.log('[Search] Primeiras séries brutas:', seriesData?.slice(0, 3));
+
+      // Processar séries - aceitar qualquer ID válido (número ou string)
+      const processedSeries = (seriesData || []).map((item, idx) => {
+        const hasId = item.id_n !== null && item.id_n !== undefined;
+        console.log(`[Search] Série ${idx}:`, { titulo: item.titulo, id_n: item.id_n, hasId });
+        return {
+          ...item,
+          _hasId: hasId
+        };
+      });
 
       const allResults: SearchResult[] = [
         ...(moviesData || []).map(item => ({
@@ -70,17 +84,21 @@ const Search = () => {
           genre: item.category,
           description: item.description
         })),
-        ...(seriesData || []).map(item => ({
-          id: item.id_n?.toString() || '',
-          title: item.titulo || 'Sem título',
-          poster: item.capa || item.banner || '/placeholder-series.jpg',
-          type: 'series' as const,
-          year: item.ano?.toString(),
-          rating: item.rating?.toString(),
-          genre: item.genero,
-          description: item.sinopse
-        }))
+        ...processedSeries
+          .filter(item => item._hasId) // Filtrar apenas séries com ID válido
+          .map(item => ({
+            id: String(item.id_n),
+            title: item.titulo || 'Sem título',
+            poster: item.capa || item.banner || '/placeholder-series.jpg',
+            type: 'series' as const,
+            year: item.ano?.toString(),
+            genre: item.genero,
+            description: item.descricao
+          }))
       ];
+
+      console.log('[Search] Total resultados:', allResults.length);
+      console.log('[Search] Séries no resultado:', allResults.filter(r => r.type === 'series').length);
 
       // Ordenar por relevância (títulos que começam com a busca primeiro)
       const sortedResults = allResults.sort((a, b) => {

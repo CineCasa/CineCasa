@@ -159,8 +159,8 @@ class WatchPartyClient {
     this.showToast('Assistir Juntos ativado em modo solo. Compartilhe o link para convidar amigos!');
     
     // Esconde erro de conexão se visível
-    const errorEl = document.getElementById('wp-error');
-    if (errorEl) errorEl.style.display = 'none';
+    const errorEl = document.getElementById('error-overlay');
+    if (errorEl) errorEl.classList.add('hidden');
   }
   
   /**
@@ -229,8 +229,8 @@ class WatchPartyClient {
           this.showToast('Assistir Juntos ativo! Compartilhe o link.');
           
           // Esconde erro
-          const errorEl = document.getElementById('wp-error');
-          if (errorEl) errorEl.style.display = 'none';
+          const errorEl = document.getElementById('error-overlay');
+          if (errorEl) errorEl.classList.add('hidden');
           
           // Configura eventos do player
           this.setupVideoEvents();
@@ -688,14 +688,20 @@ class WatchPartyClient {
   showError(message) {
     console.error('[WatchParty] Erro:', message);
     
-    const errorElement = document.getElementById('watch-party-error');
-    if (errorElement) {
-      errorElement.textContent = message;
-      errorElement.style.display = 'block';
-    }
+    // Procura os elementos de erro da página
+    const errorOverlay = document.getElementById('error-overlay');
+    const errorMessage = document.getElementById('error-message');
     
-    // Também mostra em alert se não houver elemento
-    if (!errorElement) {
+    if (errorOverlay && errorMessage) {
+      errorMessage.textContent = message;
+      errorOverlay.classList.remove('hidden');
+      // Esconde outros overlays
+      const loadingOverlay = document.getElementById('loading-overlay');
+      const noRoomOverlay = document.getElementById('no-room-overlay');
+      if (loadingOverlay) loadingOverlay.classList.add('hidden');
+      if (noRoomOverlay) noRoomOverlay.classList.add('hidden');
+    } else {
+      // Fallback: alert se não encontrar elementos
       alert(message);
     }
   }

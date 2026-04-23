@@ -43,6 +43,11 @@
   <meta name="twitter:description" content="Assista filmes e séries juntos com amigos em tempo real" />
   <meta name="twitter:image" content="/icons/icon-512x512.png" />
   
+  <!-- Cache Control - Força recarregamento sempre -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <!-- Socket.IO Client -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   
@@ -59,11 +64,29 @@
   
   <!-- Cache Busting e Service Worker cleanup -->
   <script>
-    // Força recarregamento sem cache
-    if (location.search.indexOf('nocache') === -1) {
-      // Não redireciona, apenas loga
-      console.log('[Watch] Versão v2 - Cache control ativo');
+    // Versão atual da página - alterar para forçar reload
+    const PAGE_VERSION = 'v4-2026-04-23-fix';
+    const STORED_VERSION = localStorage.getItem('watch-page-version');
+    
+    // Se versão mudou, limpa cache e recarrega
+    if (STORED_VERSION !== PAGE_VERSION) {
+      console.log('[Watch] Nova versão detectada:', PAGE_VERSION, 'limpo cache antigo:', STORED_VERSION);
+      localStorage.setItem('watch-page-version', PAGE_VERSION);
+      
+      // Limpa todo cache da aplicação
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          names.forEach(name => caches.delete(name));
+        });
+      }
+      
+      // Força recarregamento sem cache
+      if (!location.search.includes('v=' + PAGE_VERSION)) {
+        window.location.href = location.pathname + '?v=' + PAGE_VERSION;
+      }
     }
+    
+    console.log('[Watch] Versão', PAGE_VERSION, '- Cache control ativo');
     
     // Limpa cache antigo do Service Worker para watch-party.js
     if ('caches' in window) {
@@ -87,7 +110,7 @@
   <!-- Scripts do Watch Party - com timestamp para evitar cache -->
   <script>
     (function() {
-      var scriptTimestamp = Date.now();
+      var scriptTimestamp = PAGE_VERSION + '-' + Date.now();
       
       function loadScript(src) {
         return new Promise(function(resolve, reject) {
@@ -115,7 +138,7 @@
   
   <style>
     /* ============================================
-       RESET E CONFIGURAÇÕES GLOBAIS
+       CINECASA PREMIUM - RESET E GLOBAIS
        ============================================ */
     * {
       margin: 0;
@@ -123,53 +146,69 @@
       box-sizing: border-box;
     }
     
+    :root {
+      --neon-cyan: #00E5FF;
+      --neon-cyan-glow: rgba(0, 229, 255, 0.5);
+      --bg-black: #000000;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #000000;
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-black);
       color: #ffffff;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
     
     /* ============================================
-       HEADER
+       HEADER MINIMALISTA
        ============================================ */
     .watch-header {
-      background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-      padding: 20px 30px;
-      position: absolute;
+      background: linear-gradient(180deg, rgba(0,0,0,0.95) 0%, transparent 100%);
+      padding: 16px 24px;
+      position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      z-index: 100;
+      z-index: 1000;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      backdrop-filter: blur(8px);
     }
     
     .watch-logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #e50914;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--neon-cyan);
       text-decoration: none;
+      letter-spacing: 1px;
+      text-shadow: 0 0 20px var(--neon-cyan-glow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     
     .watch-status {
       display: flex;
       align-items: center;
-      gap: 15px;
-      font-size: 14px;
-      color: rgba(255,255,255,0.8);
+      gap: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
     }
     
     .status-indicator {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       padding: 6px 12px;
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
       border-radius: 20px;
+      border: 1px solid var(--glass-border);
     }
     
     .status-dot {
@@ -177,41 +216,55 @@
       height: 8px;
       background: #22c55e;
       border-radius: 50%;
+      box-shadow: 0 0 8px #22c55e;
       animation: pulse 2s infinite;
     }
     
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px #22c55e; }
+      50% { opacity: 0.6; box-shadow: 0 0 16px #22c55e; }
     }
     
     .user-count {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
     }
     
     /* ============================================
-       ÁREA PRINCIPAL DO PLAYER
+       ÁREA PRINCIPAL - PLAYER MAXIMIZADO
        ============================================ */
     .watch-container {
       flex: 1;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 80px 20px 20px;
-      background: #000000;
+      flex-direction: row;
+      background: var(--bg-black);
       min-height: 100vh;
+      padding-top: 60px;
+    }
+    
+    .player-area {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      min-height: calc(100vh - 60px);
     }
     
     .video-wrapper {
       position: relative;
       width: 100%;
-      max-width: 1200px;
-      background: #000000;
-      border-radius: 8px;
+      max-width: 100%;
+      background: var(--bg-black);
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.15), inset 0 0 60px rgba(0, 0, 0, 0.5);
     }
     
     /* Aspect ratio 16:9 */
@@ -228,197 +281,11 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      background: #000000;
+      background: var(--bg-black);
     }
     
     /* ============================================
-       CONTROLES CUSTOMIZADOS
-       ============================================ */
-    .video-controls {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 20px;
-      background: linear-gradient(transparent, rgba(0,0,0,0.9));
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    
-    .video-wrapper:hover .video-controls {
-      opacity: 1;
-    }
-    
-    .controls-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-    }
-    
-    .control-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 50%;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .control-btn:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    
-    .control-btn svg {
-      width: 24px;
-      height: 24px;
-      fill: currentColor;
-    }
-    
-    .time-display {
-      font-size: 14px;
-      color: rgba(255,255,255,0.9);
-      font-variant-numeric: tabular-nums;
-    }
-    
-    /* ============================================
-       BARRA DE PROGRESSO
-       ============================================ */
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.3);
-      border-radius: 2px;
-      cursor: pointer;
-      margin-bottom: 10px;
-      position: relative;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: #e50914;
-      border-radius: 2px;
-      transition: width 0.1s;
-    }
-    
-    .progress-handle {
-      position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: 12px;
-      height: 12px;
-      background: #e50914;
-      border-radius: 50%;
-      opacity: 0;
-      transition: opacity 0.2s, transform 0.2s;
-    }
-    
-    .progress-bar:hover .progress-handle {
-      opacity: 1;
-    }
-    
-    /* ============================================
-       PAINEL DE INFORMAÇÕES
-       ============================================ */
-    .info-panel {
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      width: 300px;
-      background: rgba(20, 20, 20, 0.95);
-      border-radius: 12px;
-      padding: 20px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,0.1);
-      z-index: 50;
-    }
-    
-    .info-panel h3 {
-      font-size: 16px;
-      margin-bottom: 15px;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .info-panel h3 svg {
-      width: 20px;
-      height: 20px;
-      fill: #e50914;
-    }
-    
-    .room-id {
-      background: rgba(255,255,255,0.1);
-      padding: 10px 15px;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 14px;
-      word-break: break-all;
-      margin-bottom: 15px;
-      color: #22c55e;
-    }
-    
-    .share-section {
-      margin-top: 15px;
-    }
-    
-    .share-link {
-      width: 100%;
-      padding: 10px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 6px;
-      color: #fff;
-      font-size: 12px;
-      word-break: break-all;
-      margin-bottom: 10px;
-    }
-    
-    .btn-primary {
-      width: 100%;
-      padding: 12px;
-      background: #e50914;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    
-    .btn-primary:hover {
-      background: #f40612;
-    }
-    
-    .btn-secondary {
-      width: 100%;
-      padding: 10px;
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-      margin-top: 8px;
-      transition: background 0.2s;
-    }
-    
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.2);
-    }
-    
-    /* ============================================
-       MENSAGENS E ESTADOS
+       MENSAGENS E ESTADOS (CLEAN)
        ============================================ */
     .message-overlay {
       position: fixed;
@@ -426,150 +293,202 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.95);
+      background: rgba(0,0,0,0.98);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 1000;
-      padding: 20px;
+      z-index: 9999;
+      padding: 24px;
     }
     
     .message-overlay.hidden {
-      display: none;
+      display: none !important;
     }
     
     .message-icon {
-      width: 80px;
-      height: 80px;
-      margin-bottom: 20px;
+      width: 64px;
+      height: 64px;
+      margin-bottom: 24px;
+      color: var(--neon-cyan);
     }
     
     .message-icon svg {
       width: 100%;
       height: 100%;
+      fill: currentColor;
+      filter: drop-shadow(0 0 20px var(--neon-cyan-glow));
     }
     
     .message-title {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 10px;
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 12px;
       text-align: center;
+      color: #fff;
     }
     
     .message-text {
-      font-size: 16px;
-      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
       text-align: center;
-      max-width: 400px;
+      max-width: 320px;
       line-height: 1.5;
     }
     
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(255,255,255,0.1);
-      border-top-color: #e50914;
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(0, 229, 255, 0.1);
+      border-top-color: var(--neon-cyan);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 20px var(--neon-cyan-glow);
     }
     
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
     
-    /* =========================================
-       TOAST NOTIFICATIONS
-       ========================================= */
-    .toast {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(20, 20, 20, 0.95);
-      color: #fff;
-      padding: 12px 24px;
+    .btn-primary {
+      padding: 12px 32px;
+      background: transparent;
+      color: var(--neon-cyan);
+      border: 1px solid var(--neon-cyan);
       border-radius: 8px;
+      cursor: pointer;
       font-size: 14px;
-      z-index: 2000;
-      opacity: 0;
-      transition: opacity 0.3s, transform 0.3s;
-      pointer-events: none;
-      border: 1px solid rgba(255,255,255,0.1);
+      font-weight: 500;
+      transition: all 0.3s ease;
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-primary:hover {
+      background: var(--neon-cyan);
+      color: #000;
+      box-shadow: 0 0 30px var(--neon-cyan-glow);
     }
     
     /* =========================================
-       CHAT PANEL - BATE-PAPO
+       TOAST NOTIFICATIONS (NEON)
+       ========================================= */
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: var(--neon-cyan);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      border: 1px solid var(--neon-cyan);
+      box-shadow: 0 0 20px var(--neon-cyan-glow);
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    
+    /* =========================================
+       CHAT PANEL - GLASSMORPHISM PREMIUM
        ========================================= */
     .chat-panel {
       position: fixed;
       right: 0;
-      top: 0;
-      width: 320px;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      backdrop-filter: blur(10px);
-      border-left: 1px solid rgba(255,255,255,0.1);
+      top: 60px;
+      width: 340px;
+      height: calc(100% - 60px);
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-left: 1px solid var(--glass-border);
       display: flex;
       flex-direction: column;
       z-index: 100;
     }
     
     .chat-header {
-      padding: 15px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 20px;
+      border-bottom: 1px solid var(--glass-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(90deg, rgba(0,229,255,0.1) 0%, transparent 100%);
+      background: linear-gradient(90deg, rgba(0,229,255,0.15) 0%, transparent 100%);
     }
     
     .chat-title {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       font-weight: 600;
-      color: #00E5FF;
+      color: var(--neon-cyan);
+      font-size: 16px;
+      text-shadow: 0 0 10px var(--neon-cyan-glow);
+      letter-spacing: 0.5px;
+    }
+    
+    .chat-title svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      filter: drop-shadow(0 0 5px var(--neon-cyan-glow));
     }
     
     .chat-status {
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 12px;
-      color: #666;
+      gap: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
     }
     
     .chat-status .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
     }
     
     .chat-status .status-dot.offline {
       background: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
     }
     
     .chat-messages {
       flex: 1;
       overflow-y: auto;
-      padding: 15px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     
     .chat-welcome {
       text-align: center;
       padding: 40px 20px;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255,255,255,0.4);
+    }
+    
+    .chat-welcome svg {
+      width: 48px;
+      height: 48px;
+      fill: rgba(255,255,255,0.2);
+      margin-bottom: 12px;
     }
     
     .chat-welcome p {
-      margin-top: 15px;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.5;
     }
     
@@ -577,6 +496,12 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      animation: messageSlide 0.3s ease;
+    }
+    
+    @keyframes messageSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     
     .chat-message.own {
@@ -587,148 +512,263 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 12px;
+      font-size: 11px;
     }
     
     .chat-message-author {
-      color: #00E5FF;
-      font-weight: 600;
+      color: var(--neon-cyan);
+      font-weight: 500;
     }
     
     .chat-message-time {
-      color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.3);
     }
     
     .chat-message-content {
-      background: rgba(255,255,255,0.1);
+      background: var(--glass-bg);
       padding: 10px 14px;
-      border-radius: 12px;
+      border-radius: 14px;
       border-bottom-left-radius: 4px;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.4;
-      max-width: 85%;
+      max-width: 90%;
       word-wrap: break-word;
+      border: 1px solid var(--glass-border);
     }
     
     .chat-message.own .chat-message-content {
-      background: #00E5FF;
+      background: var(--neon-cyan);
       color: #000;
-      border-bottom-left-radius: 12px;
+      border-bottom-left-radius: 14px;
       border-bottom-right-radius: 4px;
+      border: none;
+      font-weight: 500;
     }
     
     .chat-message.own .chat-message-author {
-      color: #00E5FF;
+      color: var(--neon-cyan);
     }
     
+    /* =========================================
+       CAMPO DE CONVITE NO CHAT
+       ========================================= */
+    .invite-section {
+      padding: 16px;
+      border-top: 1px solid var(--glass-border);
+      background: rgba(0, 229, 255, 0.05);
+    }
+    
+    .invite-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .invite-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .invite-link {
+      flex: 1;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--neon-cyan);
+      font-size: 11px;
+      font-family: monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .btn-copy {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid var(--neon-cyan);
+      color: var(--neon-cyan);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+    
+    .btn-copy:hover {
+      background: var(--neon-cyan);
+      color: #000;
+      box-shadow: 0 0 15px var(--neon-cyan-glow);
+    }
+    
+    .btn-copy svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .btn-copy.copied {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #fff;
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+    }
+    
+    /* =========================================
+       INPUT DE MENSAGEM
+       ========================================= */
     .chat-input-form {
-      padding: 15px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 16px;
+      border-top: 1px solid var(--glass-border);
       display: flex;
       gap: 10px;
+      background: rgba(0, 0, 0, 0.3);
     }
     
     .chat-input {
       flex: 1;
       background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 20px;
-      padding: 10px 15px;
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      padding: 10px 14px;
       color: #fff;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.3s ease;
     }
     
     .chat-input:focus {
-      border-color: #00E5FF;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
     }
     
     .chat-input::placeholder {
-      color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.3);
     }
     
     .chat-send-btn {
       width: 40px;
       height: 40px;
-      border-radius: 50%;
-      background: #00E5FF;
+      border-radius: 10px;
+      background: var(--neon-cyan);
       border: none;
       color: #000;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.2s, background 0.2s;
+      transition: all 0.3s ease;
     }
     
     .chat-send-btn:hover {
       transform: scale(1.05);
-      background: #00ffff;
+      box-shadow: 0 0 20px var(--neon-cyan-glow);
     }
     
     .chat-send-btn:active {
       transform: scale(0.95);
     }
     
-    /* Responsividade - esconder chat em telas pequenas */
-    @media (max-width: 1024px) {
-      .chat-panel {
-        width: 100%;
-        position: fixed;
-        bottom: 0;
-        top: auto;
-        height: 50%;
-        border-left: none;
-        border-top: 1px solid rgba(255,255,255,0.1);
-      }
-    }
-    
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+    .chat-send-btn svg {
+      width: 18px;
+      height: 18px;
     }
     
     /* =========================================
-       RESPONSIVIDADE
+       RESPONSIVIDADE MOBILE-FIRST
        ========================================= */
-    @media (max-width: 768px) {
-      .watch-header {
-        padding: 15px 20px;
-      }
-      
-      .watch-logo {
-        font-size: 20px;
-      }
-      
-      .info-panel {
-        position: static;
-        width: 100%;
-        max-width: 100%;
-        margin: 20px;
-        border-radius: 12px;
-      }
-      
+    @media (max-width: 1024px) {
       .watch-container {
         flex-direction: column;
-        padding: 70px 0 0;
+        padding-top: 60px;
+        padding-bottom: 0;
+      }
+      
+      .player-area {
+        min-height: 50vh;
+        padding: 12px;
       }
       
       .video-wrapper {
-        border-radius: 0;
+        border-radius: 8px;
+      }
+      
+      .chat-panel {
+        position: relative;
+        width: 100%;
+        height: auto;
+        min-height: 300px;
+        top: 0;
+        border-left: none;
+        border-top: 1px solid var(--glass-border);
+      }
+      
+      .chat-messages {
+        max-height: 250px;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .watch-header {
+        padding: 12px 16px;
+      }
+      
+      .watch-logo {
+        font-size: 18px;
+      }
+      
+      .watch-status {
+        gap: 8px;
+        font-size: 12px;
+      }
+      
+      .status-indicator, .user-count {
+        padding: 4px 8px;
+      }
+      
+      .player-area {
+        padding: 8px;
+        min-height: 40vh;
+      }
+      
+      .video-wrapper {
+        border-radius: 6px;
+      }
+      
+      .chat-panel {
+        min-height: 280px;
+      }
+      
+      .chat-header {
+        padding: 14px 16px;
+      }
+      
+      .chat-messages {
+        max-height: 200px;
+        padding: 12px;
+      }
+      
+      .invite-section {
+        padding: 12px;
+      }
+      
+      .chat-input-form {
+        padding: 12px;
       }
     }
     
     /* =========================================
        UTILITÁRIOS
        ========================================= */
-    .hidden {
-      display: none !important;
-    }
-    
+    .hidden { display: none !important; }
     .text-success { color: #22c55e; }
     .text-error { color: #ef4444; }
-    .text-warning { color: #f59e0b; }
   </style>
 </head>
 <body>
@@ -759,48 +799,15 @@
        ============================================ -->
   <main class="watch-container">
     
-    <!-- Wrapper do Vídeo -->
-    <div class="video-wrapper">
-      <video id="watch-party-video" controls preload="metadata">
-        <p>Seu navegador não suporta vídeo HTML5.</p>
-      </video>
-    </div>
-    
-    <!-- Painel de Informações -->
-    <aside class="info-panel" id="info-panel">
-      <h3>
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-        Sala de Assistir Juntos
-      </h3>
-      
-      <div class="room-id" id="room-id-display">Carregando...</div>
-      
-      <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 15px;">
-        Compartilhe este link com amigos para assistirem juntos sincronizados.
-      </p>
-      
-      <div class="share-section">
-        <div class="share-link" id="share-link">Gerando link...</div>
-        
-        <button class="btn-primary" onclick="copiarLink()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
-          </svg>
-          Copiar Link
-        </button>
-        
-        <button class="btn-primary" onclick="enviarConvite()" style="background: #22c55e; margin-top: 8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-          </svg>
-          Enviar Convite
-        </button>
-        
-        <button class="btn-secondary" onclick="criarNovaSala()">
-          Criar Nova Sala
-        </button>
+    <!-- Área do Player -->
+    <div class="player-area">
+      <!-- Wrapper do Vídeo -->
+      <div class="video-wrapper">
+        <video id="watch-party-video" controls preload="metadata">
+          <p>Seu navegador não suporta vídeo HTML5.</p>
+        </video>
       </div>
-    </aside>
+    </div>
     
   </main>
   
@@ -811,37 +818,41 @@
   <!-- Loading -->
   <div class="message-overlay" id="loading-overlay">
     <div class="spinner"></div>
-    <h2 class="message-title">Conectando à sala...</h2>
-    <p class="message-text">Aguarde enquanto nos conectamos aos outros participantes.</p>
+    <h2 class="message-title">Conectando...</h2>
+    <p class="message-text">Entrando na sala</p>
   </div>
   
   <!-- Sem Room ID -->
   <div class="message-overlay hidden" id="no-room-overlay">
     <div class="message-icon">
-      <svg viewBox="0 0 24 24" fill="#f59e0b">
-        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
       </svg>
     </div>
-    <h2 class="message-title">Nenhuma Sala Encontrada</h2>
-    <p class="message-text">Você precisa de um ID de sala para participar. Crie uma nova sala ou use um link de convite.</p>
-    <br>
-    <button class="btn-primary" onclick="criarNovaSala()" style="max-width: 300px;">
-      Criar Nova Sala
+    <h2 class="message-title">Sala não encontrada</h2>
+    <p class="message-text">Crie uma nova sala para começar</p>
+    <button class="btn-primary" onclick="criarNovaSala()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      </svg>
+      Nova Sala
     </button>
   </div>
   
   <!-- Erro -->
   <div class="message-overlay hidden" id="error-overlay">
     <div class="message-icon">
-      <svg viewBox="0 0 24 24" fill="#ef4444">
+      <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
       </svg>
     </div>
     <h2 class="message-title">Erro de Conexão</h2>
-    <p class="message-text" id="error-message">Não foi possível conectar à sala. Verifique sua conexão e tente novamente.</p>
-    <br>
-    <button class="btn-primary" onclick="location.reload()" style="max-width: 300px;">
-      Tentar Novamente
+    <p class="message-text" id="error-message">Tente novamente</p>
+    <button class="btn-primary" onclick="location.reload()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+      </svg>
+      Recarregar
     </button>
   </div>
   
@@ -849,15 +860,15 @@
   <div class="toast" id="toast"></div>
   
   <!-- ============================================
-       CHAT PANEL - BATE-PAPO
+       CHAT PANEL - BATE-PAPO PREMIUM
        ============================================ -->
   <div class="chat-panel" id="chat-panel">
     <div class="chat-header">
       <div class="chat-title">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
         </svg>
-        <span>Bate-papo</span>
+        <span>Sala - CineCasa</span>
       </div>
       <div class="chat-status" id="chat-status">
         <span class="status-dot offline"></span>
@@ -867,10 +878,28 @@
     
     <div class="chat-messages" id="chat-messages">
       <div class="chat-welcome">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="rgba(255,255,255,0.3)">
+        <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
         </svg>
-        <p>Nenhuma mensagem ainda.<br>Seja o primeiro a conversar!</p>
+        <p>Sem mensagens ainda</p>
+      </div>
+    </div>
+    
+    <!-- Campo de Convite Minimalista -->
+    <div class="invite-section">
+      <div class="invite-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
+        Link da Sala
+      </div>
+      <div class="invite-row">
+        <div class="invite-link" id="invite-link">Gerando...</div>
+        <button class="btn-copy" id="btn-copy" onclick="copiarLinkCompacto()" title="Copiar link">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+          </svg>
+        </button>
       </div>
     </div>
     
@@ -879,12 +908,12 @@
         type="text" 
         class="chat-input" 
         id="chat-input" 
-        placeholder="Digite sua mensagem..." 
+        placeholder="Mensagem..." 
         maxlength="500"
         autocomplete="off"
       />
       <button type="submit" class="chat-send-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
         </svg>
       </button>
@@ -919,11 +948,8 @@
         return;
       }
       
-      // Atualiza UI com roomId
-      document.getElementById('room-id-display').textContent = roomId;
-      
       // Gera link de compartilhamento
-      updateShareLink();
+      updateInviteLink();
       
       // Configura o player de vídeo
       setupVideoPlayer();
@@ -1035,61 +1061,44 @@
       document.getElementById('user-count').textContent = count;
     }
     
-    function updateShareLink() {
+    function updateInviteLink() {
       const link = window.location.href;
-      document.getElementById('share-link').textContent = link;
-    }
-    
-    function copiarLink() {
-      if (window.watchParty && window.watchParty.copyShareLink) {
-        window.watchParty.copyShareLink().then(success => {
-          if (success) {
-            showToast('Link copiado para a área de transferência!');
-          } else {
-            showToast('Erro ao copiar link');
-          }
-        });
-      } else {
-        // Fallback
-        const link = window.location.href;
-        navigator.clipboard.writeText(link).then(() => {
-          showToast('Link copiado!');
-        }).catch(() => {
-          showToast('Erro ao copiar');
-        });
+      const inviteEl = document.getElementById('invite-link');
+      if (inviteEl) {
+        // Mostra versão curta do link
+        const shortLink = link.length > 35 ? link.substring(0, 32) + '...' : link;
+        inviteEl.textContent = shortLink;
+        inviteEl.title = link; // Tooltip com link completo
       }
     }
     
-    async function enviarConvite() {
+    async function copiarLinkCompacto() {
       const link = window.location.href;
-      const text = `🎬 Assistir Juntos no CineCasa!\n\nJunte-se a mim para assistir este vídeo sincronizado:\n${link}`;
+      const btn = document.getElementById('btn-copy');
       
-      // Tenta usar a API nativa de compartilhamento (mobile/desktop modernos)
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: 'Assistir Juntos - CineCasa',
-            text: 'Junte-se a mim para assistir este vídeo sincronizado!',
-            url: link
-          });
-          showToast('Convite enviado!');
-        } catch (err) {
-          // Usuário cancelou ou erro
-          if (err.name !== 'AbortError') {
-            console.error('[Watch] Erro ao compartilhar:', err);
-            // Fallback para clipboard
-            copiarLink();
-          }
-        }
-      } else {
-        // Fallback: copiar para área de transferência
-        navigator.clipboard.writeText(text).then(() => {
-          showToast('Link copiado! Cole onde desejar enviar.');
-        }).catch(() => {
-          showToast('Erro ao copiar link');
-        });
+      try {
+        await navigator.clipboard.writeText(link);
+        
+        // Feedback visual no botão
+        btn.classList.add('copied');
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+        
+        showToast('Link copiado!');
+        
+        // Restaura após 2 segundos
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = originalIcon;
+        }, 2000);
+      } catch (err) {
+        showToast('Erro ao copiar');
       }
     }
+    
+    // Compatibilidade com funções antigas
+    function copiarLink() { copiarLinkCompacto(); }
+    function updateShareLink() { updateInviteLink(); }
     
     async function criarNovaSala() {
       showToast('Criando nova sala...');

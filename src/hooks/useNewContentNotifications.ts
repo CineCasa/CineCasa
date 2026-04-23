@@ -222,6 +222,78 @@ export function useNewContentNotifications() {
     return () => clearInterval(interval);
   }, [fetchNewContent, fetchNotifications]);
 
+  // Supabase Realtime - detectar novos conteúdos em tempo real
+  useEffect(() => {
+    // Canal para novos filmes (cinema)
+    const cinemaChannel = supabase
+      .channel('new-movies-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'cinema',
+        },
+        async (payload) => {
+          console.log('[Realtime] Novo filme detectado:', payload.new);
+          const movie = payload.new as any;
+
+          const newItem: NewContentItem = {
+            id: movie.id.toString(),
+            title: movie.titulo,
+            type: 'movie',
+            poster: movie.poster,
+            year: movie.year,
+            created_at: movie.created_at || new Date().toISOString(),
+            tmdb_id: movie.tmdb_id,
+          };
+
+          // Gerar notificação imediatamente
+          await generateNotifications([newItem]);
+          // Atualizar lista de notificações
+          await fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    // Canal para novas séries
+    const seriesChannel = supabase
+      .channel('new-series-notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'series',
+        },
+        async (payload) => {
+          console.log('[Realtime] Nova série detectada:', payload.new);
+          const series = payload.new as any;
+
+          const newItem: NewContentItem = {
+            id: series.id_n?.toString(),
+            title: series.titulo,
+            type: 'series',
+            poster: series.capa || '/api/placeholder/300/450',
+            year: series.ano,
+            created_at: new Date().toISOString(),
+            tmdb_id: series.tmdb_id,
+          };
+
+          // Gerar notificação imediatamente
+          await generateNotifications([newItem]);
+          // Atualizar lista de notificações
+          await fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(cinemaChannel);
+      supabase.removeChannel(seriesChannel);
+    };
+  }, [fetchNewContent, fetchNotifications, generateNotifications]);
+
   // Contador de notificações não lidas
   const unreadCount = notifications.filter(n => !n.read).length;
 

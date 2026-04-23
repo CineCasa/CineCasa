@@ -51,6 +51,49 @@ export function useNotifications() {
     loadPreferences();
   }, []);
 
+  // Buscar notificações ao montar e periodicamente
+  useEffect(() => {
+    fetchNotifications();
+
+    // Verificar a cada 30 segundos
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 30 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Supabase Realtime - detectar novas notificações em tempo real
+  useEffect(() => {
+    const setupRealtime = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const channel = supabase
+        .channel('notifications-realtime')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            console.log('[Notifications] Nova notificação recebida via Realtime');
+            fetchNotifications();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+
+    setupRealtime();
+  }, []);
+
   // Registrar Service Worker
   const registerServiceWorker = async () => {
     try {

@@ -148,13 +148,15 @@ export const NotificationsPage: React.FC = () => {
         console.error('[NotificationsPage] Erro ao buscar filmes:', moviesError);
       }
 
-      // Buscar séries das últimas 24h (se tiver created_at)
+      // Buscar séries recentes (últimos 50 cadastrados - ordenar por id_n descendente para pegar mais recentes)
       const { data: series, error: seriesError } = await supabase
         .from('series')
         .select('id_n, titulo, banner, capa, ano, genero, tmdb_id, descricao, created_at, trailer')
-        .gte('created_at', cutoffDate)
-        .order('created_at', { ascending: false })
-        .limit(20);
+        .order('id_n', { ascending: false })
+        .limit(50);
+
+      console.log('[NotificationsPage] Séries encontradas (últimos 50 por ID):', series?.length || 0, series);
+      console.log('[NotificationsPage] Séries com created_at válido:', series?.filter(s => s.created_at)?.length || 0);
 
       if (seriesError) {
         console.error('[NotificationsPage] Erro ao buscar séries:', seriesError);
@@ -316,8 +318,15 @@ export const NotificationsPage: React.FC = () => {
     return diffInHours < 24;
   };
 
-  // Filtrar apenas conteúdo das últimas 24h
-  const recentContent = content.filter(item => isWithin24Hours(item.created_at));
+  // Filtrar conteúdo: filmes apenas últimas 24h, séries dos últimos 50 cadastrados
+  const recentContent = content.filter(item => {
+    if (item.type === 'series') {
+      // Séries: mostrar todas as 50 mais recentes do banco
+      return true;
+    }
+    // Filmes: apenas últimas 24h
+    return isWithin24Hours(item.created_at);
+  });
 
   // Alertas visíveis (não dispensados)
   const visibleAlerts = alerts.filter(alert => !dismissedAlerts.includes(alert.id));

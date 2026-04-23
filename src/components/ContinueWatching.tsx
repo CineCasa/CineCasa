@@ -25,8 +25,8 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({
   items, 
   onRemove 
 }) => {
-  // Limitar a apenas 3 capas
-  const limitedItems = items.slice(0, 3);
+  // Limitar a apenas 4 capas
+  const limitedItems = items.slice(0, 4);
   
   if (limitedItems.length === 0) return null;
 
@@ -37,7 +37,7 @@ export const ContinueWatching: React.FC<ContinueWatchingProps> = ({
           Continuar Assistindo
         </h2>
         
-        <div className="grid grid-cols-3 gap-4 max-w-3xl">
+        <div className="grid grid-cols-4 gap-4 max-w-4xl">
           {limitedItems.map((item, index) => (
             <motion.div
               key={item.id}

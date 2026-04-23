@@ -408,6 +408,14 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const isInitializedRef = useRef(false);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
+  // Para URLs do YouTube, setar isReady imediatamente já que usamos iframe nativo
+  useEffect(() => {
+    if (videoUrl && isYoutubeUrl(videoUrl)) {
+      console.log('[VideoJSPlayer] YouTube URL detectada, setando isReady=true imediatamente');
+      setIsReady(true);
+    }
+  }, [videoUrl]);
+
   // Load Video.js from CDN
   useEffect(() => {
     const loadVideoJS = async () => {
@@ -507,8 +515,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         const audioTrackList = player.audioTracks();
         const tracks: Array<{id: number; label: string; language: string}> = [];
         
+        console.log(`[VideoJSPlayer] Found ${audioTrackList.length} audio tracks`);
+        
         for (let i = 0; i < audioTrackList.length; i++) {
           const track = audioTrackList[i];
+          console.log(`[VideoJSPlayer] Audio track ${i}:`, {
+            label: track.label,
+            language: track.language,
+            enabled: track.enabled,
+            kind: track.kind
+          });
           tracks.push({
             id: i,
             label: track.label || `Faixa ${i + 1}`,
@@ -517,15 +533,19 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         }
         
         if (tracks.length > 0) {
+          console.log('[VideoJSPlayer] Setting audio tracks:', tracks);
           setAudioTracks(tracks);
           // Find current enabled track
           for (let i = 0; i < audioTrackList.length; i++) {
             if (audioTrackList[i].enabled) {
+              console.log('[VideoJSPlayer] Current enabled track:', i);
               setCurrentAudioTrack(i);
               break;
             }
           }
         }
+      } else {
+        console.log('[VideoJSPlayer] No audio tracks available');
       }
     });
 
@@ -1015,17 +1035,25 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
   // Mini player
   const toggleMiniPlayer = useCallback(() => {
+    console.log('[VideoJSPlayer] Toggling mini player, current state:', isMiniPlayer);
     setIsMiniPlayer(!isMiniPlayer);
+    console.log('[VideoJSPlayer] Mini player toggled to:', !isMiniPlayer);
   }, [isMiniPlayer]);
 
   // Audio track selector
   const changeAudioTrack = useCallback((trackId: number) => {
+    console.log('[VideoJSPlayer] Changing audio track to:', trackId);
     if (playerRef.current && playerRef.current.audioTracks) {
       const tracks = playerRef.current.audioTracks();
+      console.log('[VideoJSPlayer] Available tracks:', tracks.length);
       for (let i = 0; i < tracks.length; i++) {
+        const wasEnabled = tracks[i].enabled;
         tracks[i].enabled = (i === trackId);
+        console.log(`[VideoJSPlayer] Track ${i} (${tracks[i].label}): ${wasEnabled} -> ${tracks[i].enabled}`);
       }
       setCurrentAudioTrack(trackId);
+    } else {
+      console.warn('[VideoJSPlayer] Cannot change audio track - player or audioTracks not available');
     }
     setShowAudioMenu(false);
   }, []);
@@ -1157,17 +1185,30 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   }, []);
 
   const playerContent = (
-    <div 
+    <div
       ref={playerContainerRef}
-      className="fixed inset-0 bg-black z-[9999] overflow-hidden"
-      style={{ 
+      className={`fixed bg-black overflow-hidden transition-all duration-300 ${
+        isMiniPlayer
+          ? 'z-[9999] rounded-lg shadow-2xl border border-white/20'
+          : 'inset-0 z-[9999]'
+      }`}
+      style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh'
+        ...(isMiniPlayer ? {
+          bottom: '20px',
+          right: '20px',
+          width: '320px',
+          height: '180px',
+          top: 'auto',
+          left: 'auto',
+        } : {
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100vh',
+        })
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -1679,31 +1720,74 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         </div>
       )}
 
-      {/* Next Episode Dialog */}
+      {/* Next Episode Dialog - Netflix Style */}
       {showNextEpisodeDialog && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
-          <div className="bg-[#141414] border border-white/10 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl text-center">
-            <div className="w-16 h-16 bg-[#00A8E1]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <ChevronRight size={32} className="text-[#00A8E1]" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-50">
+          <div className="relative max-w-2xl w-full mx-8">
+            {/* Logo CineCasa */}
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/logo.png" 
+                alt="CineCasa" 
+                className="h-12 w-auto object-contain opacity-80"
+              />
             </div>
-            <h3 className="text-white text-xl font-bold mb-2">Próximo episódio em...</h3>
-            <p className="text-4xl font-bold text-[#00A8E1] mb-6">{nextEpisodeCountdown}s</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  cancelNextEpisode();
-                  if (onNextEpisode) onNextEpisode();
-                }}
-                className="flex-1 bg-[#00A8E1] hover:bg-[#00A8E1]/80 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-              >
-                Assistir agora
-              </button>
-              <button
-                onClick={cancelNextEpisode}
-                className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-              >
-                Cancelar
-              </button>
+            
+            {/* Countdown Circle */}
+            <div className="flex flex-col items-center">
+              <div className="relative w-24 h-24 mb-6">
+                {/* Background circle */}
+                <svg className="w-24 h-24 transform -rotate-90">
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    stroke="rgba(255,255,255,0.2)"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    stroke="#E50914"
+                    strokeWidth="4"
+                    fill="none"
+                    strokeDasharray={251}
+                    strokeDashoffset={251 * (nextEpisodeCountdown / 10)}
+                    className="transition-all duration-1000 ease-linear"
+                  />
+                </svg>
+                {/* Countdown number */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-3xl font-bold text-white">{nextEpisodeCountdown}</span>
+                </div>
+              </div>
+              
+              <h3 className="text-white text-2xl font-semibold mb-2">
+                Próximo episódio em {nextEpisodeCountdown}s
+              </h3>
+              <p className="text-gray-400 mb-8">
+                Prepare-se para continuar assistindo
+              </p>
+              
+              <div className="flex gap-4">
+                <button
+                  onClick={cancelNextEpisode}
+                  className="px-8 py-3 bg-transparent border-2 border-white/30 hover:border-white text-white font-medium rounded transition-all duration-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    cancelNextEpisode();
+                    if (onNextEpisode) onNextEpisode();
+                  }}
+                  className="px-8 py-3 bg-[#E50914] hover:bg-[#B20710] text-white font-medium rounded transition-all duration-300"
+                >
+                  Assistir Agora
+                </button>
+              </div>
             </div>
           </div>
         </div>

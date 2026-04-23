@@ -72,6 +72,37 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
   const [userRating, setUserRating] = useState<'like' | 'dislike' | null>(null);
   const supabase = getSupabaseClient();
 
+  // Buscar TODOS os registros com paginação (bypass do limite 1000)
+  const fetchAllRecords = async (table: string, select: string, notNullCol: string) => {
+    let allData: any[] = [];
+    let from = 0;
+    const limit = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from(table)
+        .select(select)
+        .not(notNullCol, 'is', null)
+        .not(notNullCol, 'eq', '')
+        .range(from, from + limit - 1);
+
+      if (error) {
+        console.error(`[PremiumHeroBanner] Erro ao buscar ${table}:`, error);
+        break;
+      }
+
+      if (data && data.length > 0) {
+        allData = [...allData, ...data];
+        from += limit;
+        hasMore = data.length === limit;
+      } else {
+        hasMore = false;
+      }
+    }
+    return allData;
+  };
+
   // Buscar posters da tabela correta baseado no contentType
   const fetchPosters = useCallback(async () => {
     console.log('[PremiumHeroBanner] Iniciando fetchPosters, contentType:', contentType);
@@ -96,50 +127,37 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
 
       // Helper function to process series items
       const processSeriesItems = (data: any[]): BannerContent[] => {
-        return (data || [])
-          .filter((item: any) => item.capa && item.capa.trim() !== '')
-          .map((item: any) => ({
-            id: `series-${item.id_n?.toString() || Math.random().toString()}`,
-            title: item.titulo || 'Sem título',
-            poster: item.capa,
-            year: item.ano?.toString() || '',
-            description: item.descricao || '',
-            trailer: '',
-            rating: '',
-            genre: item.genero || ''
-          }));
+        const rawCount = data?.length || 0;
+        const withCapa = (data || []).filter((item: any) => item.capa && item.capa.trim() !== '');
+        console.log(`[PremiumHeroBanner] Processando séries: ${rawCount} brutas, ${withCapa.length} com capa válida`);
+        return withCapa.map((item: any) => ({
+          id: `series-${item.id_n?.toString() || Math.random().toString()}`,
+          title: item.titulo || 'Sem título',
+          poster: item.capa,
+          year: item.ano?.toString() || '',
+          description: item.descricao || '',
+          trailer: '',
+          rating: '',
+          genre: item.genero || ''
+        }));
       };
 
       if (contentType === 'all') {
-        // Buscar filmes e séries simultaneamente
-        console.log('[PremiumHeroBanner] Buscando filmes E séries...');
-        const [cinemaResult, seriesResult] = await Promise.all([
-          supabase
-            .from('cinema')
-            .select('id, titulo, poster, year, description, trailer, rating, genero')
-            .not('poster', 'is', null)
-            .not('poster', 'eq', ''),
-          supabase
-            .from('series')
-            .select('id_n, titulo, capa, ano, descricao, genero')
-            .not('capa', 'is', null)
-            .not('capa', 'eq', '')
+        // Buscar filmes e séries simultaneamente com paginação (SEM LIMITE)
+        console.log('[PremiumHeroBanner] Buscando filmes E séries (SEM LIMITE)...');
+        const [cinemaData, seriesData] = await Promise.all([
+          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster'),
+          fetchAllRecords('series', 'id_n, titulo, capa, ano, descricao, genero', 'capa')
         ]);
 
-        console.log('[PremiumHeroBanner] Resultados:', {
-          cinemaCount: cinemaResult.data?.length,
-          seriesCount: seriesResult.data?.length,
-          cinemaError: cinemaResult.error,
-          seriesError: seriesResult.error
+        console.log('[PremiumHeroBanner] Resultados (SEM LIMITE):', {
+          cinemaCount: cinemaData?.length,
+          seriesCount: seriesData?.length
         });
 
-        if (cinemaResult.error || seriesResult.error) {
-          console.error('Erros:', { cinema: cinemaResult.error, series: seriesResult.error });
-        }
-
         // Processar ambos os resultados
-        const cinemaItems = processCinemaItems(cinemaResult.data || []);
-        const seriesItems = processSeriesItems(seriesResult.data || []);
+        const cinemaItems = processCinemaItems(cinemaData || []);
+        const seriesItems = processSeriesItems(seriesData || []);
 
         // Combinar todos os itens
         const allItems = [...cinemaItems, ...seriesItems];
@@ -156,25 +174,13 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         console.log('[PremiumHeroBanner] Todos embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
 
       } else if (contentType === 'movies') {
-        // Buscar posters da tabela cinema
-        console.log('[PremiumHeroBanner] Buscando filmes da tabela cinema...');
-        const { data, error } = await supabase
-          .from('cinema')
-          .select('id, titulo, poster, year, description, trailer, rating, genero')
-          .not('poster', 'is', null)
-          .not('poster', 'eq', '');
+        // Buscar TODOS os filmes (SEM LIMITE)
+        console.log('[PremiumHeroBanner] Buscando filmes da tabela cinema (SEM LIMITE)...');
+        const cinemaData = await fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster');
 
-        console.log('[PremiumHeroBanner] Resultado cinema - dados brutos:', { dataLength: data?.length, error, primeiroItem: data?.[0], samplePosters: data?.slice(0, 3).map((d: any) => ({ id: d.id, titulo: d.titulo, poster: d.poster ? 'tem poster' : 'sem poster' })) });
+        console.log('[PremiumHeroBanner] Total de filmes recebidos:', cinemaData?.length);
 
-        if (error) {
-          console.error('Erro ao buscar posters de filmes:', error);
-          setIsLoading(false);
-          return;
-        }
-
-        console.log('[PremiumHeroBanner] Total de filmes recebidos:', data?.length);
-        
-        const items = processCinemaItems(data || []);
+        const items = processCinemaItems(cinemaData || []);
         setAllPosters(items);
         const shuffled = shuffleArray(items);
         setDisplayQueue(shuffled);
@@ -182,20 +188,13 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         setCurrentIndex(randomStartIndex);
         console.log('[PremiumHeroBanner] Filmes embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex);
       } else {
-        // Buscar capas da tabela series
-        const { data, error } = await supabase
-          .from('series')
-          .select('id_n, titulo, capa, ano, descricao, genero')
-          .not('capa', 'is', null)
-          .not('capa', 'eq', '');
+        // Buscar TODAS as séries (SEM LIMITE)
+        console.log('[PremiumHeroBanner] Buscando séries (SEM LIMITE)...');
+        const seriesData = await fetchAllRecords('series', 'id_n, titulo, capa, ano, descricao, genero', 'capa');
 
-        if (error) {
-          console.error('Erro ao buscar capas:', error);
-          setIsLoading(false);
-          return;
-        }
+        console.log('[PremiumHeroBanner] Total de séries recebidas:', seriesData?.length);
 
-        const items = processSeriesItems(data || []);
+        const items = processSeriesItems(seriesData || []);
         setAllPosters(items);
         const shuffled = shuffleArray(items);
         setDisplayQueue(shuffled);

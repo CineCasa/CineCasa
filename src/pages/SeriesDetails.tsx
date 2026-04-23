@@ -301,17 +301,19 @@ const SeriesDetails: React.FC = () => {
   };
 
   const handlePlayTrailer = () => {
-    if (series?.trailer) {
-      openPlayer({
-        id: series.id_n,
-        title: series.titulo,
-        type: 'series',
-        videoUrl: series.trailer,
-        poster: series.banner || series.capa,
-        year: series.ano,
-        seriesId: series.id_n
-      });
+    if (!series?.trailer) {
+      alert('Trailer não disponível para esta série.');
+      return;
     }
+    openPlayer({
+      id: series.id_n,
+      title: series.titulo,
+      type: 'series',
+      videoUrl: series.trailer,
+      poster: series.banner || series.capa,
+      year: series.ano,
+      seriesId: series.id_n
+    });
   };
 
   const handleToggleFavorite = async () => {
@@ -510,15 +512,13 @@ const SeriesDetails: React.FC = () => {
                   )}
                 </button>
                 
-                {series.trailer && (
-                  <button
-                    onClick={handlePlayTrailer}
-                    className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white font-medium py-3 px-4 rounded-[20px] transition-all duration-300"
-                  >
-                    <Play size={18} fill="white" />
-                    <span>Trailer</span>
-                  </button>
-                )}
+                <button
+                  onClick={handlePlayTrailer}
+                  className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white font-medium py-3 px-4 rounded-[20px] transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#FF0000]/30"
+                >
+                  <Play size={18} fill="white" />
+                  <span>Trailer</span>
+                </button>
               </motion.div>
             </div>
 

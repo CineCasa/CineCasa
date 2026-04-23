@@ -522,22 +522,27 @@ const Details = () => {
                 </button>
 
                 {/* Botão Trailer - Estilo YouTube Vermelho */}
-                {trailerUrl && (
-                  <button
-                    onClick={() => { setIsTrailerMode(true); setIsPlayerOpen(true); }}
-                    className="relative flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base bg-[#FF0000] text-white hover:bg-[#CC0000] hover:scale-105 transition-all duration-300 group overflow-hidden shadow-lg shadow-red-500/30"
-                  >
-                    {/* Subtle gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
-                    {/* Glow effect on hover */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[inset_0_0_20px_rgba(255,255,255,0.2)]" />
-                    {/* Content */}
-                    <span className="relative z-10 flex items-center gap-2 md:gap-3">
-                      <Play size={20} className="md:w-6 md:h-6" fill="white" />
-                      Trailer
-                    </span>
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    if (!trailerUrl) {
+                      alert('Trailer não disponível para este conteúdo.');
+                      return;
+                    }
+                    setIsTrailerMode(true);
+                    setIsPlayerOpen(true);
+                  }}
+                  className="relative flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base bg-[#FF0000] text-white hover:bg-[#CC0000] hover:scale-105 transition-all duration-300 group overflow-hidden shadow-lg shadow-red-500/30"
+                >
+                  {/* Subtle gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+                  {/* Glow effect on hover */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[inset_0_0_20px_rgba(255,255,255,0.2)]" />
+                  {/* Content */}
+                  <span className="relative z-10 flex items-center gap-2 md:gap-3">
+                    <Play size={20} className="md:w-6 md:h-6" fill="white" />
+                    Trailer
+                  </span>
+                </button>
 
                 {data && (
                   <FavoriteButton

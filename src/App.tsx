@@ -38,6 +38,7 @@ import { NotificationPermissionPrompt } from "@/components/NotificationPermissio
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useSilentUpdate } from "@/hooks/useSilentUpdate";
 import { useForceUpdate } from "@/hooks/useForceUpdate";
+import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
 import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
 const queryClient = new QueryClient();
@@ -178,8 +179,12 @@ const AppContent = () => {
   const isSeriesDetailsPage = location.pathname.startsWith("/series-details/");
   const isMovieDetailsPage = location.pathname.startsWith("/movie-details/");
   const isContentPage = location.pathname.startsWith("/content/");
-  const isPlayerPage = isSeriesDetailsPage || isMovieDetailsPage || isContentPage || isPlayerOpen;
+  const isDetailsPage = location.pathname.startsWith("/details/");
+  const isPlayerPage = isSeriesDetailsPage || isMovieDetailsPage || isContentPage || isDetailsPage || isPlayerOpen;
   const isLoggedIn = !!user;
+  
+  // Inicializar limpeza automática de cache - garante atualizações sempre
+  useAutoCacheCleanup();
   
   // Inicializar sistema de force update automático
   useForceUpdate();

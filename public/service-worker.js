@@ -1,10 +1,23 @@
-const CACHE_NAME = 'cinecasa-notifications-v2-black-bg';
+const CACHE_NAME = 'cinecasa-notifications-v3-auto-cleanup';
+const APP_VERSION = '2026.04.23-v1';
 
 // Evento de instalação
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Instalando...');
-  // REMOVED: self.skipWaiting() - prevents aggressive reloads
-  // Let the user control when to update via SKIP_WAITING message
+  console.log('[Service Worker] Instalando versão:', APP_VERSION);
+  
+  // Limpar caches antigos imediatamente
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[Service Worker] Deletando cache antigo:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 });
 
 // Evento de ativação
@@ -18,6 +31,45 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+  
+  // Notificar todos os clients sobre nova versão
+  if (event.data && event.data.type === 'CHECK_VERSION') {
+    event.source.postMessage({
+      type: 'VERSION_INFO',
+      version: APP_VERSION
+    });
+  }
+});
+
+// Interceptar fetch para evitar cache de versões antigas
+self.addEventListener('fetch', (event) => {
+  // Só interceptar requisições GET
+  if (event.request.method !== 'GET') return;
+  
+  // Ignorar requisições de API e Supabase
+  if (event.request.url.includes('supabase.co') || 
+      event.request.url.includes('/api/')) {
+    return;
+  }
+  
+  // Estratégia: Network First com fallback para cache
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Se resposta ok, atualiza cache e retorna
+        if (response && response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Se falhar, tenta do cache
+        return caches.match(event.request);
+      })
+  );
 });
 
 // Receber notificações push

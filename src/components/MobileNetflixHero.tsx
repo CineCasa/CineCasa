@@ -88,33 +88,56 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
       }));
   };
 
+  // Buscar TODOS os registros com paginação (bypass do limite 1000)
+  const fetchAllRecords = async (table: 'cinema' | 'series', select: string, notNullCol: string) => {
+    let allData: any[] = [];
+    let from = 0;
+    const limit = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from(table)
+        .select(select)
+        .not(notNullCol, 'is', null)
+        .not(notNullCol, 'eq', '')
+        .range(from, from + limit - 1);
+
+      if (error) {
+        console.error(`[MobileNetflixHero] Erro ao buscar ${table}:`, error);
+        break;
+      }
+
+      if (data && data.length > 0) {
+        allData = [...allData, ...data];
+        from += limit;
+        hasMore = data.length === limit;
+      } else {
+        hasMore = false;
+      }
+    }
+    return allData;
+  };
+
   const fetchPosters = useCallback(async () => {
     try {
       setIsLoading(true);
 
       if (contentType === 'all') {
-        // Buscar filmes e séries simultaneamente
-        console.log('[MobileNetflixHero] Buscando filmes E séries...');
-        const [cinemaResult, seriesResult] = await Promise.all([
-          supabase
-            .from('cinema')
-            .select('id, titulo, poster, year, description, trailer, rating, genero')
-            .not('poster', 'is', null)
-            .not('poster', 'eq', ''),
-          supabase
-            .from('series')
-            .select('id_n, titulo, capa, ano, descricao, genero')
-            .not('capa', 'is', null)
-            .not('capa', 'eq', '')
+        // Buscar filmes e séries simultaneamente (SEM LIMITE)
+        console.log('[MobileNetflixHero] Buscando filmes E séries (SEM LIMITE)...');
+        const [cinemaData, seriesData] = await Promise.all([
+          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster'),
+          fetchAllRecords('series', 'id_n, titulo, capa, ano, descricao, genero', 'capa')
         ]);
 
-        console.log('[MobileNetflixHero] Resultados:', {
-          cinema: cinemaResult.data?.length,
-          series: seriesResult.data?.length
+        console.log('[MobileNetflixHero] Resultados (SEM LIMITE):', {
+          cinema: cinemaData?.length,
+          series: seriesData?.length
         });
 
-        const cinemaItems = processCinemaItems(cinemaResult.data || []);
-        const seriesItems = processSeriesItems(seriesResult.data || []);
+        const cinemaItems = processCinemaItems(cinemaData || []);
+        const seriesItems = processSeriesItems(seriesData || []);
         const allItems = [...cinemaItems, ...seriesItems];
         
         console.log(`[MobileNetflixHero] Total combinado: ${allItems.length} (filmes: ${cinemaItems.length}, séries: ${seriesItems.length})`);
@@ -131,9 +154,9 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
         setDisplayQueue(shuffled);
         setHeroImagesReady(true);
       } else {
-        // Buscar apenas um tipo
+        // Buscar apenas um tipo (SEM LIMITE)
         const tableName = contentType === 'movies' ? 'cinema' : 'series';
-        console.log(`[MobileNetflixHero] Buscando dados da tabela: ${tableName}`);
+        console.log(`[MobileNetflixHero] Buscando dados da tabela: ${tableName} (SEM LIMITE)`);
 
         const isSeries = contentType === 'series';
         const posterCol = isSeries ? 'capa' : 'poster';
@@ -144,21 +167,12 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
           ? `${idCol}, titulo, ${posterCol}, ${yearCol}, trailer, rating, genero`
           : `${idCol}, titulo, ${posterCol}, ${yearCol}, description, trailer, rating, genero`;
         
-        const { data, error } = await supabase
-          .from(tableName)
-          .select(selectCols)
-          .not(posterCol, 'is', null)
-          .not(posterCol, 'eq', '');
-
-        if (error) {
-          console.error('[MobileNetflixHero] Erro Supabase:', error);
-          return;
-        }
+        const data = await fetchAllRecords(tableName, selectCols, posterCol);
 
         console.log(`[MobileNetflixHero] Dados retornados: ${data?.length || 0} itens`);
 
         if (data && data.length > 0) {
-          const withPosters = data.filter(item => {
+          const withPosters = data.filter((item: any) => {
             const poster = isSeries ? item.capa : item.poster;
             return poster && poster.trim() !== '';
           });
@@ -233,13 +247,32 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
             transition={{ duration: 0.8 }}
             className="absolute inset-0"
           >
-            <div className="w-full h-full bg-neutral-800">
+            <div className="w-full h-full bg-gradient-to-b from-neutral-800 to-black flex items-center justify-center">
               <img
                 src={currentBanner.poster}
                 alt={currentBanner.title}
                 className="w-full h-full object-cover"
-                style={{ objectPosition: 'top center' }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                style={{ objectPosition: 'center 20%' }}
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'block';
+                  // Remove fallback se existir
+                  const parent = img.parentElement;
+                  const fallback = parent?.querySelector('.poster-fallback');
+                  if (fallback) fallback.remove();
+                }}
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                  // Mostrar placeholder com inicial do título
+                  const parent = img.parentElement;
+                  if (parent && !parent.querySelector('.poster-fallback')) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'poster-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-neutral-800 to-black';
+                    fallback.innerHTML = `<span class="text-6xl font-bold text-white/30">${currentBanner.title.charAt(0).toUpperCase()}</span>`;
+                    parent.appendChild(fallback);
+                  }
+                }}
               />
             </div>
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black" />
