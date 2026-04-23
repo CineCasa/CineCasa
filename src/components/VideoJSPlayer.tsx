@@ -7,6 +7,12 @@ import { CastButton } from './CastButton';
 import { useElitePlayer } from '@/hooks/useElitePlayer';
 import { isArchiveOrgUrl } from '@/utils/videoProxy';
 
+// Helper to detect YouTube URLs
+const isYoutubeUrl = (url: string): boolean => {
+  if (!url) return false;
+  return url.includes('youtube.com/embed/') || url.includes('youtube.com/watch') || url.includes('youtu.be/');
+};
+
 interface VideoJSPlayerProps {
   url: string;
   title: string;
@@ -1192,22 +1198,39 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
       {/* Video Element - forçar tela cheia */}
       <div className="absolute inset-0 flex items-center justify-center z-10" style={{ width: '100vw', height: '100vh' }}>
-        <video
-          ref={videoRef}
-          className="video-js vjs-fluid vjs-big-play-centered"
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            maxHeight: '100vh',
-            maxWidth: '100vw',
-            objectFit: 'cover'
-          }}
-          poster={poster}
-          preload="auto"
-          crossOrigin="anonymous"
-        >
-          <source src={videoUrl} type={isArchiveOrgUrl(videoUrl) ? 'video/mp4' : 'application/x-mpegURL'} />
-        </video>
+        {isYoutubeUrl(videoUrl || '') ? (
+          /* YouTube iframe player for trailers */
+          <iframe
+            src={videoUrl}
+            className="w-full h-full"
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none'
+            }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            title={title}
+          />
+        ) : (
+          /* Video.js player for regular videos */
+          <video
+            ref={videoRef}
+            className="video-js vjs-fluid vjs-big-play-centered"
+            style={{
+              width: '100%',
+              height: '100%',
+              maxHeight: '100vh',
+              maxWidth: '100vw',
+              objectFit: 'cover'
+            }}
+            poster={poster}
+            preload="auto"
+            crossOrigin="anonymous"
+          >
+            <source src={videoUrl} type={isArchiveOrgUrl(videoUrl) ? 'video/mp4' : 'application/x-mpegURL'} />
+          </video>
+        )}
       </div>
 
       {/* Interaction Layer - captura clicks/toque sempre */}
