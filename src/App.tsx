@@ -29,7 +29,7 @@ import NotificationSettings from "./pages/NotificationSettings";
 import Search from "./pages/Search";
 import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
-import NotificationProvider from "./components/NotificationProvider";
+import { NotificationProvider } from "@/hooks/useNotifications.tsx";
 import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
 import PublicNotifications from "./pages/PublicNotifications";
