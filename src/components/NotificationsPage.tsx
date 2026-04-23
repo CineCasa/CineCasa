@@ -445,6 +445,19 @@ export const NotificationsPage: React.FC = () => {
                       <Play className="w-4 h-4" fill={isLoggedIn ? "currentColor" : "none"} />
                       {isLoggedIn ? 'Assistir' : 'Login'}
                     </button>
+                    {/* Botão Trailer Vermelho YouTube */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/details/${item.type === 'movie' ? 'cinema' : 'series'}/${item.id}?tab=trailer`);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm bg-[#FF0000] text-white hover:bg-[#cc0000] transition-all duration-300 hover:scale-105 shadow-[0_0_15px_rgba(255,0,0,0.4)]"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                      </svg>
+                      Trailer
+                    </button>
                     <button className="p-2 rounded-lg bg-white/10 hover:bg-[#00E5FF]/20 text-white hover:text-[#00E5FF] transition-all duration-300 border border-white/10 hover:border-[#00E5FF]/50">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
