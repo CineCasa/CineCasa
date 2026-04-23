@@ -246,13 +246,16 @@ export const useSupabaseContent = () => {
       let finalKidsSeries = kidsSeriesWithData;
       let finalTv = tvAoVivo;
 
-      if (plan === "basic") {
-        finalCinema = cinemaWithData.filter(c => c.year < 2025);
-        finalSeries = seriesWithData.filter(s => s.year <= 2023);
-        finalKidsMovies = kidsMoviesWithData;
-        finalKidsSeries = kidsSeriesWithData;
-        finalTv = [];
-      }
+      // Plan-based filtering removed - show all content regardless of plan
+      console.log('[useSupabaseContent] Plan:', plan, '- Showing all content without restrictions');
+      console.log('[useSupabaseContent] Cinema items by year:', {
+        total: finalCinema.length,
+        year2026: finalCinema.filter(c => c.year === 2026).length,
+        year2025: finalCinema.filter(c => c.year === 2025).length,
+        year2024: finalCinema.filter(c => c.year === 2024).length,
+        year2023: finalCinema.filter(c => c.year === 2023).length,
+        other: finalCinema.filter(c => c.year < 2023 || c.year > 2026).length
+      });
 
       // 3. Criar categorias EXATAS conforme movieCategories
       const categories: Category[] = [];
@@ -277,6 +280,11 @@ export const useSupabaseContent = () => {
           } else if (item.year === 2025 && grouped["Lançamento 2025"]) {
             grouped["Lançamento 2025"].push(item);
             allocated = true;
+          }
+          
+          // Debug logging for Lançamento 2025
+          if (item.year === 2025) {
+            console.log('[useSupabaseContent] Found 2025 movie:', item.title, 'allocated:', allocated);
           }
 
           // Se não foi alocado como lançamento, procurar categoria exata
