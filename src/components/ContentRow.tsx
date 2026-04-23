@@ -10,14 +10,14 @@ interface ContentRowProps {
   layout?: 'scroll' | 'grid';
 }
 
-const ContentRow = ({ category, showProgress = false, infiniteScroll = false, maxItems = 5, layout = 'scroll' }: ContentRowProps) => {
+const ContentRow = ({ category, showProgress = false, infiniteScroll = false, maxItems, layout = 'scroll' }: ContentRowProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Limitar a 5 itens
-  const limitedItems = category.items.slice(0, maxItems);
+  // Show all items - no limit unless explicitly specified
+  const limitedItems = maxItems ? category.items.slice(0, maxItems) : category.items;
 
   const checkScroll = () => {
     const el = scrollRef.current;

@@ -37,8 +37,9 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
   const handleNavigateToDetails = () => {
     if (item.isComingSoon) return;
     const typePath = item.id.includes("series") ? "series" : "cinema";
-    // Usar o ID do banco de dados (prioridade) em vez do tmdbId
-    const id = item.id || item.tmdbId;
+    // Extract numeric ID from prefixed IDs like "cinema-123" or "series-456"
+    const numericId = parseInt(item.id.split('-').pop() || '');
+    const id = numericId || item.tmdbId || item.id;
     navigate(`/details/${typePath}/${id}`);
   };
 

@@ -32,13 +32,11 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%negritude%,category.ilike.%negritude%')
-          .limit(50),
+          .or('genero.ilike.%negritude%,category.ilike.%negritude%'),
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, ano, genero, banner')
           .or('genero.ilike.%negritude%')
-          .limit(50)
       ]);
 
       // REMOVER COLEÇÕES dos filmes de negritude
@@ -91,8 +89,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
         const { data: fallbackData } = await supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating')
-          .not('poster', 'is', null)
-          .limit(20);
+          .not('poster', 'is', null);
         
         const fallbackContent = (fallbackData || [])
           .filter((item: any) => !uniqueNegritude.find(n => n.id === item.id.toString()))
@@ -110,7 +107,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
       }
 
       const shuffled = shuffleArray(uniqueNegritude);
-      setNegritude(shuffled.slice(0, 10));
+      setNegritude(shuffled);
     } catch (err) {
       console.error('Erro ao buscar negritude:', err);
       setNegritude([]);
