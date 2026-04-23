@@ -151,12 +151,11 @@ export const NotificationsPage: React.FC = () => {
       // Buscar séries recentes (últimos 50 cadastrados - ordenar por id_n descendente para pegar mais recentes)
       const { data: series, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, banner, capa, ano, genero, tmdb_id, descricao, created_at, trailer')
+        .select('id_n, titulo, banner, capa, ano, genero, tmdb_id, descricao, trailer')
         .order('id_n', { ascending: false })
         .limit(50);
 
       console.log('[NotificationsPage] Séries encontradas (últimos 50 por ID):', series?.length || 0, series);
-      console.log('[NotificationsPage] Séries com created_at válido:', series?.filter(s => s.created_at)?.length || 0);
 
       if (seriesError) {
         console.error('[NotificationsPage] Erro ao buscar séries:', seriesError);
