@@ -7,6 +7,19 @@ import { usePlayer } from '../contexts/PlayerContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { fetchTmdbMovie, tmdbImageUrl } from '../services/tmdb';
 
+// Helper to convert YouTube URL to embed format
+const getYoutubeEmbedUrl = (url: string): string => {
+  if (!url) return '';
+  // If already embed format, return as is
+  if (url.includes('youtube.com/embed/')) return url;
+  // Extract video ID from various YouTube URL formats
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/v\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    return `https://www.youtube.com/embed/${match[1]}`;
+  }
+  return url;
+};
+
 interface Movie {
   id: number;
   titulo: string;
@@ -157,11 +170,13 @@ const MovieDetails: React.FC = () => {
       alert('Trailer não disponível.');
       return;
     }
+    const embedUrl = getYoutubeEmbedUrl(movie.trailer);
+    console.log('[MovieDetails] Opening trailer:', { original: movie.trailer, embed: embedUrl });
     openPlayer({
       id: String(movie.id),
       title: movie.titulo,
       type: 'movie',
-      videoUrl: movie.trailer,
+      videoUrl: embedUrl,
       poster: movie.poster,
       year: movie.ano
     });
