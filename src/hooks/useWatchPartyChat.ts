@@ -26,6 +26,7 @@ interface UseWatchPartyChatReturn {
   sendMessage: (message: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   isConnected: boolean;
+  reconnect: () => void;
 }
 
 export const useWatchPartyChat = ({
@@ -38,7 +39,10 @@ export const useWatchPartyChat = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
   const subscriptionRef = useRef<any>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
 
   // Buscar mensagens históricas
   const fetchMessages = useCallback(async () => {
@@ -125,16 +129,24 @@ export const useWatchPartyChat = ({
     }
   }, [userId]);
 
-  // Setup realtime subscription
-  useEffect(() => {
+  // Setup realtime subscription com reconexão automática
+  const setupSubscription = useCallback(() => {
     if (!roomId) return;
 
-    // Buscar mensagens iniciais
-    fetchMessages();
+    console.log('[useWatchPartyChat] Setting up subscription, attempt:', reconnectAttempt);
+
+    // Limpar subscription anterior
+    if (subscriptionRef.current) {
+      supabase.removeChannel(subscriptionRef.current);
+    }
 
     // Configurar subscription realtime
     const channel = supabase
-      .channel(`watch_party_chat:${roomId}`)
+      .channel(`watch_party_chat:${roomId}`, {
+        config: {
+          broadcast: { self: true },
+        }
+      })
       .on(
         'postgres_changes',
         {
@@ -144,6 +156,7 @@ export const useWatchPartyChat = ({
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
+          console.log('[useWatchPartyChat] New message received:', payload);
           const newMessage: ChatMessage = {
             ...payload.new as ChatMessage,
             isCurrentUser: payload.new.user_id === userId
@@ -165,22 +178,70 @@ export const useWatchPartyChat = ({
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
+          console.log('[useWatchPartyChat] Message deleted:', payload);
           setMessages(prev => prev.filter(m => m.id !== payload.old.id));
         }
       )
       .subscribe((status) => {
         console.log('[useWatchPartyChat] Subscription status:', status);
-        setIsConnected(status === 'SUBSCRIBED');
+        
+        if (status === 'SUBSCRIBED') {
+          setIsConnected(true);
+          setError(null);
+          setReconnectAttempt(0); // Reset retry counter on success
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          setIsConnected(false);
+          setError('Conexão perdida. Tentando reconectar...');
+          
+          // Tentar reconectar após delay exponencial
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 30000);
+          console.log(`[useWatchPartyChat] Reconnecting in ${delay}ms...`);
+          
+          if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current);
+          }
+          
+          reconnectTimeoutRef.current = setTimeout(() => {
+            setReconnectAttempt(prev => prev + 1);
+          }, delay);
+        }
       });
 
     subscriptionRef.current = channel;
+  }, [roomId, userId, reconnectAttempt]);
+
+  // Reconexão manual
+  const reconnect = useCallback(() => {
+    console.log('[useWatchPartyChat] Manual reconnect triggered');
+    setReconnectAttempt(prev => prev + 1);
+  }, []);
+
+  // Setup subscription quando roomId muda ou tentativa de reconexão
+  useEffect(() => {
+    if (!roomId) return;
+
+    fetchMessages();
+    setupSubscription();
+
+    // Heartbeat para manter conexão viva
+    heartbeatRef.current = setInterval(() => {
+      if (subscriptionRef.current && isConnected) {
+        console.log('[useWatchPartyChat] Heartbeat check');
+      }
+    }, 30000);
 
     return () => {
       if (subscriptionRef.current) {
         supabase.removeChannel(subscriptionRef.current);
       }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+      }
     };
-  }, [roomId, userId, fetchMessages]);
+  }, [roomId, setupSubscription, fetchMessages, isConnected]);
 
   return {
     messages,
@@ -188,7 +249,8 @@ export const useWatchPartyChat = ({
     error,
     sendMessage,
     deleteMessage,
-    isConnected
+    isConnected,
+    reconnect
   };
 };
 

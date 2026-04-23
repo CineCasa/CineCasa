@@ -39,7 +39,8 @@ export const WatchPartyChat: React.FC<WatchPartyChatProps> = ({
     error,
     sendMessage,
     deleteMessage,
-    isConnected
+    isConnected,
+    reconnect
   } = useWatchPartyChat({
     roomId,
     userId: session?.user?.id,
@@ -115,6 +116,16 @@ export const WatchPartyChat: React.FC<WatchPartyChatProps> = ({
             }`}
             title={isConnected ? 'Conectado' : 'Desconectado'}
           />
+          {/* Botão reconectar quando offline */}
+          {!isConnected && (
+            <button
+              onClick={reconnect}
+              className="p-1.5 rounded-lg bg-[#00A8E1]/20 hover:bg-[#00A8E1]/40 transition-colors text-[#00A8E1] text-xs font-medium"
+              title="Tentar reconectar"
+            >
+              Reconectar
+            </button>
+          )}
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/10 transition-colors"
