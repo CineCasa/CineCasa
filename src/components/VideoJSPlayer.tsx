@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { CastButton } from './CastButton';
 import { useElitePlayer } from '@/hooks/useElitePlayer';
 import { isArchiveOrgUrl } from '@/utils/videoProxy';
+import { usePlayer } from '@/contexts/PlayerContext';
 
 // Helper to detect YouTube URLs
 const isYoutubeUrl = (url: string): boolean => {
@@ -379,11 +380,13 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const [buffered, setBuffered] = useState(0);
   
   // Estados avançados
+  // Mini Player state from global context
+  const { isMiniPlayer, toggleMiniPlayer: contextToggleMiniPlayer } = usePlayer();
+  
   const [showResumeDialog, setShowResumeDialog] = useState(false);
   const [resumeTime, setResumeTime] = useState(0);
   const [showNextEpisodeDialog, setShowNextEpisodeDialog] = useState(false);
   const [nextEpisodeCountdown, setNextEpisodeCountdown] = useState(10);
-  const [isMiniPlayer, setIsMiniPlayer] = useState(false);
   const [showThumbnail, setShowThumbnail] = useState(false);
   const [thumbnailTime, setThumbnailTime] = useState(0);
   const [thumbnailPosition, setThumbnailPosition] = useState(0);
@@ -1038,11 +1041,11 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     setCurrentTime(time);
   }, [duration]);
 
-  // Mini player toggle using context
+  // Mini player toggle
   const handleToggleMiniPlayer = useCallback(() => {
-    console.log('[VideoJSPlayer] Toggling mini player via context');
+    console.log('[VideoJSPlayer] Toggling mini player, current state:', isMiniPlayer);
     contextToggleMiniPlayer();
-  }, [contextToggleMiniPlayer]);
+  }, [isMiniPlayer, contextToggleMiniPlayer]);
 
   // Audio track selector
   const changeAudioTrack = useCallback((trackId: number) => {
