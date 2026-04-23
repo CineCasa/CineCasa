@@ -332,7 +332,7 @@ export const NotificationsPage: React.FC = () => {
       {/* Conteúdo Principal */}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
         
-        {/* Grid de Conteúdo - Capas dos filmes/séries recentes PRIMEIRO */}
+        {/* Lista de Conteúdo - Cards horizontais */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12 sm:py-16">
             <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-[#00E5FF]" />
@@ -351,20 +351,18 @@ export const NotificationsPage: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+          <div className="space-y-4">
             {(selectedCategory 
               ? recentContent.filter(item => (item.category || item.genero) === selectedCategory)
               : recentContent
             ).map((item) => (
-              <Card
+              <div
                 key={item.id}
-                variant="outlined"
-                size="sm"
-                interactive
                 onClick={() => handlePlay(item)}
-                className="relative overflow-hidden group rounded-xl border border-white/10 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_20px_rgba(0,229,255,0.5)] hover:border-[#00E5FF] bg-black/40 backdrop-blur-sm"
+                className="group flex flex-row bg-[#0f172a]/80 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 transition-all duration-300 hover:border-[#00E5FF]/50 hover:shadow-[0_0_20px_rgba(0,229,255,0.2)] cursor-pointer"
               >
-                <div className="aspect-[2/3] relative">
+                {/* Poster - Lado Esquerdo */}
+                <div className="relative w-[140px] sm:w-[180px] flex-shrink-0 aspect-[2/3]">
                   {item.poster ? (
                     <img
                       src={item.poster}
@@ -375,75 +373,86 @@ export const NotificationsPage: React.FC = () => {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
                       {item.type === 'movie' ? (
-                        <Film className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600" />
+                        <Film className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600" />
                       ) : (
-                        <Tv className="w-12 h-12 sm:w-16 sm:h-16 text-gray-600" />
+                        <Tv className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600" />
                       )}
                     </div>
                   )}
-                  
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-                  
-                  {/* Hover play button */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  {/* Badge de tempo sobre o poster */}
+                  <div className="absolute top-2 left-2 bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg text-xs text-white flex items-center gap-1 border border-white/10">
+                    <Clock className="w-3 h-3 text-[#00E5FF]" />
+                    {formatTimeAgo(item.created_at)}
+                  </div>
+                </div>
+
+                {/* Conteúdo - Lado Direito */}
+                <div className="flex-1 p-4 sm:p-5 flex flex-col justify-between">
+                  <div>
+                    {/* Badge de tipo */}
+                    <div className="mb-2">
+                      <span className={`
+                        px-2.5 py-1 rounded-md text-xs font-medium border
+                        ${item.type === 'movie'
+                          ? 'bg-[#00E5FF]/20 text-[#00E5FF] border-[#00E5FF]/30'
+                          : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                        }
+                      `}>
+                        {item.type === 'movie' ? 'Filme' : 'Série'}
+                      </span>
+                    </div>
+
+                    {/* Título */}
+                    <h3 className="text-lg sm:text-xl font-bold text-white mb-2 group-hover:text-[#00E5FF] transition-colors">
+                      {item.title}
+                    </h3>
+
+                    {/* Metadados: Rating, Ano, Categoria */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm mb-3">
+                      {item.rating && (
+                        <span className="flex items-center gap-1 bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-md font-semibold">
+                          <Star className="w-3.5 h-3.5" fill="currentColor" />
+                          {item.rating}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1 text-gray-400">
+                        <Calendar className="w-3.5 h-3.5" />
+                        {item.year || 'N/A'}
+                      </span>
+                      {(item.category || item.genero) && (
+                        <span className="bg-[#00E5FF]/10 text-[#00E5FF] border border-[#00E5FF]/30 px-2.5 py-1 rounded-full text-xs font-medium">
+                          {item.category || item.genero}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Descrição */}
+                    <p className="text-gray-400 text-sm line-clamp-2 max-w-2xl">
+                      {item.description || 'Sem descrição disponível.'}
+                    </p>
+                  </div>
+
+                  {/* Botões de ação */}
+                  <div className="flex items-center gap-3 mt-4">
                     <button className={`
-                      w-14 h-14 rounded-full flex items-center justify-center
-                      transition-all duration-300 hover:scale-110
-                      ${isLoggedIn 
-                        ? 'bg-[#00E5FF] shadow-[0_0_20px_rgba(0,229,255,0.6)]' 
-                        : 'bg-gray-600'
+                      flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm
+                      transition-all duration-300 hover:scale-105
+                      ${isLoggedIn
+                        ? 'bg-[#00E5FF] text-black hover:bg-[#00c5d9] shadow-[0_0_15px_rgba(0,229,255,0.5)]'
+                        : 'bg-gray-600 text-gray-300'
                       }
                     `}>
-                      {isLoggedIn ? (
-                        <Play className="w-6 h-6 text-black ml-1" fill="currentColor" />
-                      ) : (
-                        <span className="text-xs text-white font-medium">Login</span>
-                      )}
+                      <Play className="w-4 h-4" fill={isLoggedIn ? "currentColor" : "none"} />
+                      {isLoggedIn ? 'Assistir' : 'Login'}
+                    </button>
+                    <button className="p-2 rounded-lg bg-white/10 hover:bg-[#00E5FF]/20 text-white hover:text-[#00E5FF] transition-all duration-300 border border-white/10 hover:border-[#00E5FF]/50">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
                     </button>
                   </div>
-
-                  {/* Badges */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
-                    {/* Badge de tempo */}
-                    <div className="bg-black/70 backdrop-blur-md px-2 py-1 rounded-lg text-xs text-white flex items-center gap-1 border border-white/10">
-                      <Clock className="w-3 h-3 text-[#00E5FF]" />
-                      {formatTimeAgo(item.created_at)}
-                    </div>
-                    {/* Badge de tipo */}
-                    <div className={`
-                      px-2 py-1 rounded-lg text-xs font-medium border
-                      ${item.type === 'movie' 
-                        ? 'bg-[#00E5FF]/20 text-[#00E5FF] border-[#00E5FF]/30' 
-                        : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                      }
-                    `}>
-                      {item.type === 'movie' ? 'Filme' : 'Série'}
-                    </div>
-                  </div>
-
-                  {/* Badge de rating */}
-                  {item.rating && (
-                    <div className="absolute bottom-2 right-2 bg-green-500/90 backdrop-blur-sm text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1 border border-green-400/30 shadow-[0_0_10px_rgba(34,197,94,0.3)]">
-                      <Star className="w-3 h-3" fill="currentColor" />
-                      {item.rating}
-                    </div>
-                  )}
                 </div>
-
-                {/* Info section */}
-                <div className="p-3 backdrop-blur-md bg-black/60 border-t border-white/5">
-                  <h3 className="text-white text-sm font-semibold line-clamp-2 group-hover:text-[#00E5FF] transition-colors duration-300">
-                    {item.title}
-                  </h3>
-                  {item.year && (
-                    <p className="text-gray-400 text-xs flex items-center gap-1 mt-1">
-                      <Calendar className="w-3 h-3" />
-                      {item.year}
-                    </p>
-                  )}
-                </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
