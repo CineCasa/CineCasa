@@ -374,10 +374,15 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
   };
 
   // Limpar pesquisa
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
+    console.log('[GlobalSearch] Limpando pesquisa');
     setQuery('');
     setResults([]);
-  };
+    // Focar no input após limpar
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  }, []);
 
   // Focar no input quando abrir
   useEffect(() => {
@@ -394,45 +399,63 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="relative max-w-4xl mx-auto mt-20 mx-4"
+        className="relative max-w-4xl mx-auto mt-20 px-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="glass-navbar rounded-2xl border border-white/10 overflow-hidden">
-          {/* Campo de Pesquisa */}
-          <div className="p-4 border-b border-white/10">
-            <div className="flex items-center space-x-3">
-              <Search size={20} className="text-secondary" />
+        <div className="glass-navbar rounded-2xl border border-white/10 overflow-hidden flex flex-col max-h-[80vh]">
+          {/* Campo de Pesquisa - Fixo no topo */}
+          <div className="p-4 border-b border-white/10 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              {/* Ícone de Pesquisa - Alinhado à esquerda */}
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+                <Search size={20} className="text-secondary" />
+              </div>
+              
+              {/* Input de pesquisa - Ocupa espaço restante */}
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    onClose();
+                  } else if (e.key === 'Enter' && results.length > 0) {
+                    handleResultClick(results[0]);
+                  }
+                }}
                 placeholder="Buscar filmes, séries, atores..."
-                className="flex-1 bg-transparent text-primary placeholder-secondary focus:outline-none"
+                className="flex-1 min-w-0 bg-transparent text-primary placeholder-secondary focus:outline-none text-base py-2"
               />
               
-              {/* Botão de Voz */}
+              {/* Botão de Voz - Tamanho fixo para touch */}
               <button
                 onClick={toggleVoiceSearch}
-                className={`p-2 rounded-full transition-all duration-300 ${
+                className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
                   isListening 
                     ? 'bg-red-500 text-white animate-pulse' 
                     : 'hover:bg-white/10 text-secondary'
                 }`}
                 title="Pesquisar por voz"
+                tabIndex={0}
               >
-                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                {isListening ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
 
-              {/* Botão Limpar */}
-              {query && (
-                <button
-                  onClick={clearSearch}
-                  className="p-1 rounded-full hover:bg-white/10 text-secondary transition-all duration-300"
-                >
-                  <X size={18} />
-                </button>
-              )}
+              {/* Botão Limpar - Sempre visível quando há texto, tamanho fixo */}
+              <button
+                onClick={clearSearch}
+                disabled={!query}
+                className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
+                  query 
+                    ? 'hover:bg-white/10 text-secondary opacity-100' 
+                    : 'text-secondary opacity-0 pointer-events-none'
+                }`}
+                title="Limpar pesquisa"
+                tabIndex={0}
+              >
+                <X size={20} />
+              </button>
             </div>
 
             {/* Indicador de gravação */}
@@ -444,8 +467,8 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* Resultados da Pesquisa */}
-          <div className="max-h-96 overflow-y-auto">
+          {/* Resultados da Pesquisa - Área rolável */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
             {loading && (
               <div className="p-8 text-center text-secondary">
                 <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4" />
@@ -467,13 +490,20 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
                 </p>
                 
                 <div className="space-y-3">
-                  {results.map((result) => (
+                  {results.map((result, index) => (
                     <motion.div
                       key={`${result.table}-${result.id}`}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center space-x-4 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-all duration-300"
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-all duration-300 focus:bg-white/5 focus:outline-none"
                       onClick={() => handleResultClick(result)}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleResultClick(result);
+                        }
+                      }}
                     >
                       {/* Poster */}
                       <img
