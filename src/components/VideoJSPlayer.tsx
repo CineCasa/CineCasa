@@ -1041,8 +1041,16 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   // Mini player
   const toggleMiniPlayer = useCallback(() => {
     console.log('[VideoJSPlayer] Toggling mini player, current state:', isMiniPlayer);
-    setIsMiniPlayer(!isMiniPlayer);
-    console.log('[VideoJSPlayer] Mini player toggled to:', !isMiniPlayer);
+    setIsMiniPlayer(prev => {
+      const newState = !prev;
+      console.log('[VideoJSPlayer] Mini player new state:', newState);
+      return newState;
+    });
+  }, []);
+
+  // Monitor mini player state changes
+  useEffect(() => {
+    console.log('[VideoJSPlayer] isMiniPlayer changed:', isMiniPlayer);
   }, [isMiniPlayer]);
 
   // Audio track selector
@@ -1579,12 +1587,13 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 onClick={(e) => { 
                   e.stopPropagation(); 
                   e.preventDefault();
-                  console.log('[VideoJSPlayer] Mini player button clicked');
+                  console.log('[VideoJSPlayer] Mini player button CLICKED');
                   toggleMiniPlayer(); 
                 }}
-                className={`p-2 hover:bg-white/20 rounded-full transition-colors ${isMiniPlayer ? 'bg-[#00A8E1]' : ''}`}
-                title="Mini Player"
+                className={`p-2 rounded-full transition-all pointer-events-auto cursor-pointer ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'hover:bg-white/20'}`}
+                title={isMiniPlayer ? 'Sair do Mini Player' : 'Mini Player'}
                 type="button"
+                style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
               >
                 <PictureInPicture2 size={22} className="text-white" />
               </button>
