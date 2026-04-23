@@ -1187,20 +1187,22 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const playerContent = (
     <div
       ref={playerContainerRef}
-      className={`fixed bg-black overflow-hidden transition-all duration-300 ${
+      className={`fixed bg-black overflow-hidden ${
         isMiniPlayer
-          ? 'z-[9999] rounded-lg shadow-2xl border border-white/20'
+          ? 'z-[2147483647] rounded-xl shadow-2xl border-2 border-white/30 mini-player-active'
           : 'inset-0 z-[9999]'
       }`}
       style={{
         position: 'fixed',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         ...(isMiniPlayer ? {
-          bottom: '20px',
+          bottom: '80px',
           right: '20px',
-          width: '320px',
-          height: '180px',
+          width: '360px',
+          height: '202px',
           top: 'auto',
           left: 'auto',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
         } : {
           top: 0,
           left: 0,
