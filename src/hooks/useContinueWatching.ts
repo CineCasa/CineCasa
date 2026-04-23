@@ -240,8 +240,11 @@ export const useContinueWatching = () => {
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
 
-      console.log('✅ [useContinueWatching] Definindo', formattedItems.length, 'itens finais');
-      setItems(formattedItems);
+      // Limitar a 4 itens mais recentes
+      const limitedItems = formattedItems.slice(0, 4);
+
+      console.log('✅ [useContinueWatching] Definindo', limitedItems.length, 'itens finais (máx 4)');
+      setItems(limitedItems);
     } catch (error) {
       console.error('❌ [useContinueWatching] Erro ao buscar progresso:', error);
     } finally {
@@ -260,6 +263,8 @@ export const useContinueWatching = () => {
   }, [fetchProgress, userId]);
 
   // Salvar progresso em tempo real no Supabase
+  // APENAS salva se: progresso > 0% E < 95% (iniciado mas não terminado)
+  // Limite máximo: 4 itens (mais recentes)
   const updateProgress = useCallback(async (
     contentId: string,
     title: string,
@@ -274,9 +279,13 @@ export const useContinueWatching = () => {
 
     const progress = Math.min(100, Math.round((currentTime / (totalDuration || 1)) * 100));
 
-    // Se progresso >= 95%, marcar como concluído e remover
-    if (progress >= 95) {
-      await removeItem(contentId, type, episodeId);
+    // NÃO salvar se progresso = 0% (nunca iniciou) ou >= 95% (já terminou)
+    if (progress === 0 || progress >= 95) {
+      console.log(`[ContinueWatching] Ignorando - progresso ${progress}% (não salvar se 0% ou >=95%)`);
+      // Se >= 95%, remover se existir
+      if (progress >= 95) {
+        await removeItem(contentId, type, episodeId);
+      }
       return;
     }
 
@@ -303,7 +312,7 @@ export const useContinueWatching = () => {
           onConflict: 'user_id,content_id,content_type,episode_id',
         });
 
-      // Atualizar estado local
+      // Atualizar estado local - manter apenas 4 itens mais recentes
       const newItem: ContinueWatchingItem = {
         id: `${userId}-${contentId}${episodeId ? '-' + episodeId : ''}`,
         contentId,
@@ -324,7 +333,8 @@ export const useContinueWatching = () => {
           !(item.contentId === contentId && item.contentType === type && 
             (type === 'movie' || item.episodeId === episodeId))
         );
-        const updated = [newItem, ...filtered];
+        // Adicionar novo item no início e limitar a 4 itens
+        const updated = [newItem, ...filtered].slice(0, 4);
         return updated;
       });
     } catch (error) {

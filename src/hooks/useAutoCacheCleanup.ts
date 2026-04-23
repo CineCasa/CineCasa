@@ -145,42 +145,24 @@ export function useAutoCacheCleanup() {
     }
   }, [clearAllCaches, clearLocalStorage, clearSessionStorage, clearIndexedDB, updateServiceWorker]);
 
-  // Verifica se precisa fazer limpeza baseado na versão
+  // DESATIVADO: Limpeza automática desabilitada para reduzir erros
+  // O sistema está online, cache local não é necessário
   const checkVersionAndCleanup = useCallback(async (): Promise<boolean> => {
+    // Apenas registrar versão atual, sem limpeza agressiva
     const storedVersion = localStorage.getItem(VERSION_KEY);
-
     if (storedVersion !== APP_VERSION) {
-      console.log('[CacheCleanup] Nova versão detectada:', APP_VERSION, '(anterior:', storedVersion, ')');
-      
-      // Salva nova versão antes da limpeza (para não loopar)
+      console.log('[CacheCleanup] Nova versão:', APP_VERSION);
       localStorage.setItem(VERSION_KEY, APP_VERSION);
-      localStorage.setItem(`cinecasa-version-${APP_VERSION}`, new Date().toISOString());
-
-      // Executa limpeza preservando auth
-      await performCleanup({ force: false, preserveAuth: true });
-
-      return true; // Indica que houve limpeza
     }
+    return false;
+  }, []);
 
-    return false; // Sem limpeza necessária
-  }, [performCleanup]);
-
-  // Limpeza periódica (a cada 24 horas)
+  // DESATIVADO: Limpeza periódica desabilitada
+  // O sistema está online, não precisa limpar cache periodicamente
   const schedulePeriodicCleanup = useCallback(() => {
-    const lastCleanup = localStorage.getItem(LAST_CLEANUP_KEY);
-    
-    if (lastCleanup) {
-      const lastDate = new Date(lastCleanup);
-      const now = new Date();
-      const hoursSinceLastCleanup = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
-
-      // Se passou mais de 24 horas, faz limpeza leve
-      if (hoursSinceLastCleanup > 24) {
-        console.log('[CacheCleanup] Limpeza periódica (24h)');
-        performCleanup({ force: false, preserveAuth: true });
-      }
-    }
-  }, [performCleanup]);
+    // Limpeza automática desabilitada - sistema online
+    console.log('[CacheCleanup] Limpeza automática desabilitada - sistema online');
+  }, []);
 
   // Effect: verifica versão ao montar
   useEffect(() => {
