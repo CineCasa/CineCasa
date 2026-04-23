@@ -175,8 +175,19 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
     );
   }
 
-  const hero = heroItems[current];
-  
+  // Safety check: ensure current index is valid
+  const safeIndex = current % heroItems.length;
+  const hero = heroItems[safeIndex];
+
+  // Additional safety: if hero is undefined, show loading
+  if (!hero) {
+    return (
+      <section className="relative w-full h-[70vh] sm:aspect-video sm:max-h-[85vh] bg-muted animate-pulse flex items-center justify-center">
+        <span className="text-muted-foreground">Carregando...</span>
+      </section>
+    );
+  }
+
   // Debug logging
   console.log('[HeroBanner] Current hero:', {
     id: hero.id,
