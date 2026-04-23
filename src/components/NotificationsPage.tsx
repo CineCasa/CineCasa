@@ -282,11 +282,24 @@ export const NotificationsPage: React.FC = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Agora há pouco';
     if (diffInHours === 1) return 'Há 1 hora';
     if (diffInHours < 24) return `Há ${diffInHours} horas`;
     return `Há ${Math.floor(diffInHours / 24)} dias`;
+  };
+
+  // Helper to convert YouTube URL to embed format
+  const getYoutubeEmbedUrl = (url: string): string => {
+    if (!url) return '';
+    // If already embed format, return as is
+    if (url.includes('youtube.com/embed/')) return url;
+    // Extract video ID from various YouTube URL formats
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/v\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://www.youtube.com/embed/${match[1]}`;
+    }
+    return url;
   };
 
   // Verificar se conteúdo tem menos de 24h
@@ -456,11 +469,13 @@ export const NotificationsPage: React.FC = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         if (item.trailer) {
+                          const embedUrl = getYoutubeEmbedUrl(item.trailer);
+                          console.log('[NotificationsPage] Opening trailer:', { original: item.trailer, embed: embedUrl });
                           openPlayer({
                             id: item.id,
                             title: `${item.title} - Trailer`,
                             type: item.type,
-                            videoUrl: item.trailer,
+                            videoUrl: embedUrl,
                             poster: item.poster,
                             year: item.year
                           });
