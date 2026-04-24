@@ -76,7 +76,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   const navItems = [
     { icon: Home, label: 'Início', href: '/' },
     { icon: Film, label: 'Filmes', href: '/cinema' },
-    { icon: Tv, label: 'Séries', href: '/series-categorias' },
+    { icon: Tv, label: 'Séries', href: '/series' },
     { icon: Sparkles, label: 'Favoritos', href: '/favorites' },
   ];
 
