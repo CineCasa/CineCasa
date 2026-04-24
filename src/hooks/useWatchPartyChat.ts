@@ -26,6 +26,8 @@ interface UseWatchPartyChatReturn {
   sendMessage: (message: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   isConnected: boolean;
+  isConnecting: boolean;
+  showOnlineStatus: boolean;
   reconnect: () => void;
 }
 
@@ -39,12 +41,14 @@ export const useWatchPartyChat = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [reconnectAttempt, setReconnectAttempt] = useState(0);
+  const [isConnecting, setIsConnecting] = useState(true);
+  const [showOnlineStatus, setShowOnlineStatus] = useState(false);
   const subscriptionRef = useRef<any>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const heartbeatRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef(true);
 
-  // Buscar mensagens históricas
+  // Buscar mensagens históricas (primeiro, antes do realtime)
   const fetchMessages = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -55,7 +59,7 @@ export const useWatchPartyChat = ({
         .select('*')
         .eq('room_id', roomId)
         .order('created_at', { ascending: true })
-        .limit(100);
+        .limit(50);
 
       if (fetchError) {
         console.error('[useWatchPartyChat] Erro ao buscar mensagens:', fetchError);
@@ -68,12 +72,18 @@ export const useWatchPartyChat = ({
         isCurrentUser: msg.user_id === userId
       }));
 
-      setMessages(formattedMessages);
+      if (isMountedRef.current) {
+        setMessages(formattedMessages);
+      }
     } catch (err) {
       console.error('[useWatchPartyChat] Erro:', err);
-      setError('Erro ao carregar mensagens');
+      if (isMountedRef.current) {
+        setError('Erro ao carregar mensagens');
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [roomId, userId]);
 
@@ -129,15 +139,16 @@ export const useWatchPartyChat = ({
     }
   }, [userId]);
 
-  // Setup realtime subscription com reconexão automática
+  // Setup realtime subscription com reconexão automática de 3 segundos
   const setupSubscription = useCallback(() => {
-    if (!roomId) return;
+    if (!roomId || !isMountedRef.current) return;
 
-    console.log('[useWatchPartyChat] Setting up subscription, attempt:', reconnectAttempt);
+    console.log('[useWatchPartyChat] Setting up subscription');
 
     // Limpar subscription anterior
     if (subscriptionRef.current) {
       supabase.removeChannel(subscriptionRef.current);
+      subscriptionRef.current = null;
     }
 
     // Configurar subscription realtime
@@ -157,6 +168,8 @@ export const useWatchPartyChat = ({
         },
         (payload) => {
           console.log('[useWatchPartyChat] New message received:', payload);
+          if (!isMountedRef.current) return;
+          
           const newMessage: ChatMessage = {
             ...payload.new as ChatMessage,
             isCurrentUser: payload.new.user_id === userId
@@ -179,69 +192,97 @@ export const useWatchPartyChat = ({
         },
         (payload) => {
           console.log('[useWatchPartyChat] Message deleted:', payload);
+          if (!isMountedRef.current) return;
           setMessages(prev => prev.filter(m => m.id !== payload.old.id));
         }
       )
       .subscribe((status) => {
         console.log('[useWatchPartyChat] Subscription status:', status);
         
+        if (!isMountedRef.current) return;
+        
         if (status === 'SUBSCRIBED') {
+          console.log('Conectado ao Chat CineCasa!');
           setIsConnected(true);
+          setIsConnecting(false);
+          setShowOnlineStatus(true);
           setError(null);
-          setReconnectAttempt(0); // Reset retry counter on success
+          
+          // Esconder "Online" após 2 segundos
+          setTimeout(() => {
+            if (isMountedRef.current) {
+              setShowOnlineStatus(false);
+            }
+          }, 2000);
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           setIsConnected(false);
+          setIsConnecting(true);
           setError('Conexão perdida. Tentando reconectar...');
           
-          // Tentar reconectar após delay exponencial
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 30000);
-          console.log(`[useWatchPartyChat] Reconnecting in ${delay}ms...`);
+          // Reconectar após 3 segundos (fixo)
+          console.log('[useWatchPartyChat] Reconnecting in 3000ms...');
           
           if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current);
           }
           
           reconnectTimeoutRef.current = setTimeout(() => {
-            setReconnectAttempt(prev => prev + 1);
-          }, delay);
+            if (isMountedRef.current) {
+              setupSubscription();
+            }
+          }, 3000);
         }
       });
 
     subscriptionRef.current = channel;
-  }, [roomId, userId, reconnectAttempt]);
+  }, [roomId, userId]);
 
   // Reconexão manual
   const reconnect = useCallback(() => {
     console.log('[useWatchPartyChat] Manual reconnect triggered');
-    setReconnectAttempt(prev => prev + 1);
-  }, []);
+    setIsConnecting(true);
+    setupSubscription();
+  }, [setupSubscription]);
 
-  // Setup subscription quando roomId muda ou tentativa de reconexão
+  // Setup subscription quando roomId muda
   useEffect(() => {
     if (!roomId) return;
-
-    fetchMessages();
-    setupSubscription();
+    
+    isMountedRef.current = true;
+    setIsConnecting(true);
+    
+    // Carregar histórico primeiro, depois iniciar realtime
+    fetchMessages().then(() => {
+      if (isMountedRef.current) {
+        setupSubscription();
+      }
+    });
 
     // Heartbeat para manter conexão viva
     heartbeatRef.current = setInterval(() => {
-      if (subscriptionRef.current && isConnected) {
+      if (subscriptionRef.current && isConnected && isMountedRef.current) {
         console.log('[useWatchPartyChat] Heartbeat check');
       }
     }, 30000);
 
+    // Cleanup ao desmontar
     return () => {
+      isMountedRef.current = false;
+      
       if (subscriptionRef.current) {
         supabase.removeChannel(subscriptionRef.current);
+        subscriptionRef.current = null;
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       if (heartbeatRef.current) {
         clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
       }
     };
-  }, [roomId, setupSubscription, fetchMessages, isConnected]);
+  }, [roomId, setupSubscription, fetchMessages]);
 
   return {
     messages,
@@ -250,6 +291,8 @@ export const useWatchPartyChat = ({
     sendMessage,
     deleteMessage,
     isConnected,
+    isConnecting,
+    showOnlineStatus,
     reconnect
   };
 };

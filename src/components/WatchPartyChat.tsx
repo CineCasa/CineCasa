@@ -40,6 +40,8 @@ export const WatchPartyChat: React.FC<WatchPartyChatProps> = ({
     sendMessage,
     deleteMessage,
     isConnected,
+    isConnecting,
+    showOnlineStatus,
     reconnect
   } = useWatchPartyChat({
     roomId,
@@ -94,7 +96,7 @@ export const WatchPartyChat: React.FC<WatchPartyChatProps> = ({
 
   return (
     <div className="fixed right-0 top-16 sm:top-0 h-[calc(100vh-64px)] sm:h-full w-72 sm:w-80 bg-black/95 backdrop-blur-xl border-l border-white/10 flex flex-col z-50 shadow-2xl max-w-[calc(100vw-60px)] rounded-tl-xl sm:rounded-none">
-      {/* Header */}
+      {/* Header com indicador de conexão premium */}
       <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-[#00E5FF]/10 to-transparent">
         <div className="flex items-center gap-2">
           <div className="p-2 rounded-lg bg-[#00E5FF]/20">
@@ -109,23 +111,47 @@ export const WatchPartyChat: React.FC<WatchPartyChatProps> = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Indicador de conexão */}
-          <div 
-            className={`w-2 h-2 rounded-full ${
-              isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'
-            }`}
-            title={isConnected ? 'Conectado' : 'Desconectado'}
-          />
+          {/* Indicador de conexão premium Ciano Neon */}
+          {isConnecting && (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-[#00E5FF]/10 border border-[#00E5FF]/30">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00E5FF] animate-pulse" />
+              <span className="text-xs text-[#00E5FF] font-medium">Conectando...</span>
+            </div>
+          )}
+          
+          {showOnlineStatus && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-500/10 border border-green-500/30"
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-green-500" style={{ boxShadow: '0 0 8px rgba(34, 197, 94, 0.8)' }} />
+              <span className="text-xs text-green-400 font-medium">Online</span>
+            </motion.div>
+          )}
+          
+          {/* Indicador discreto quando conectado */}
+          {!isConnecting && !showOnlineStatus && isConnected && (
+            <div 
+              className="w-2 h-2 rounded-full bg-green-500"
+              style={{ boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)' }}
+              title="Conectado"
+            />
+          )}
+          
           {/* Botão reconectar quando offline */}
-          {!isConnected && (
+          {!isConnected && !isConnecting && (
             <button
               onClick={reconnect}
-              className="p-1.5 rounded-lg bg-[#00A8E1]/20 hover:bg-[#00A8E1]/40 transition-colors text-[#00A8E1] text-xs font-medium"
+              className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/10 hover:bg-red-500/20 transition-colors border border-red-500/30"
               title="Tentar reconectar"
             >
-              Reconectar
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <span className="text-xs text-red-400 font-medium">Offline</span>
             </button>
           )}
+          
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/10 transition-colors"
