@@ -110,15 +110,21 @@ export function HeroBannerTV() {
           transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
           className="absolute inset-0"
         >
-          <motion.img
-            src={backdropUrl}
-            alt={currentItem.title}
-            className="w-full h-full object-contain bg-black"
-            style={{ objectPosition: 'center center' }}
-            initial={{ scale: 1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 7, ease: 'linear' }}
-          />
+          <motion.div
+            className="w-full h-full flex items-center justify-center"
+            style={{ 
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+            }}
+          >
+            <motion.img
+              src={backdropUrl}
+              alt={currentItem.title}
+              className="max-w-full max-h-full object-contain"
+              initial={{ scale: 1 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 10, ease: 'linear' }}
+            />
+          </motion.div>
         </motion.div>
       </AnimatePresence>
 
