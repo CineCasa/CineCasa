@@ -264,13 +264,46 @@ function CategoryRow({ genre, series, onSeriesClick }: CategoryRowProps) {
 }
 
 interface HeroSectionProps {
-  serie: Serie | null;
+  series: Serie[];
+  isLoading: boolean;
 }
 
-function HeroSection({ serie }: HeroSectionProps) {
+function HeroSection({ series, isLoading }: HeroSectionProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  if (!serie) {
+  // Inicializar com série aleatória quando os dados carregarem
+  useEffect(() => {
+    if (series.length > 0) {
+      const randomIndex = Math.floor(Math.random() * series.length);
+      setCurrentIndex(randomIndex);
+    }
+  }, [series.length]);
+
+  // Alternar série a cada 7 segundos aleatoriamente
+  useEffect(() => {
+    if (series.length <= 1) return;
+
+    intervalRef.current = setInterval(() => {
+      setCurrentIndex((prevIndex) => {
+        let newIndex;
+        do {
+          newIndex = Math.floor(Math.random() * series.length);
+        } while (newIndex === prevIndex && series.length > 1);
+        return newIndex;
+      });
+      setImageLoaded(false);
+    }, 7000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [series.length]);
+
+  if (isLoading || series.length === 0) {
     return (
       <div className="series-hero-section bg-black flex items-center justify-center">
         <div className="animate-pulse text-gray-600">Carregando...</div>
@@ -278,11 +311,10 @@ function HeroSection({ serie }: HeroSectionProps) {
     );
   }
 
+  const serie = series[currentIndex];
   const backdropUrl = serie.backdrop_tmdb || serie.banner || serie.capa
     ? tmdbImageUrl(serie.backdrop_tmdb || serie.banner || serie.capa || '', 'original')
     : null;
-
-  const rating = serie.classificacao || serie.rating_tmdb || 'N/A';
 
   return (
     <div className="series-hero-section">
@@ -312,6 +344,7 @@ function HeroSection({ serie }: HeroSectionProps) {
       
       <div className="series-hero-content">
         <motion.div
+          key={serie.id_n} // Forçar re-render quando mudar de série
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -379,7 +412,8 @@ export default function SeriesPage() {
       <style>{seriesPageStyles}</style>
       
       <HeroSection
-        serie={heroSerie}
+        series={series}
+        isLoading={isLoading}
       />
 
       <div className="relative z-10 bg-black pt-8">
