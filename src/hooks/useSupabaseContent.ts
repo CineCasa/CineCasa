@@ -75,12 +75,15 @@ export const useSupabaseContent = () => {
         const genres = splitGenres(item.category || item.genero);
         const category = item.category || item.genero || "Ação"; // Categoria principal
         
+        // Verificar ambos capa e poster para compatibilidade
+        const imagePath = item.capa || item.poster;
+        
         return {
           id: `cinema-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: item.capa ? tmdbImageUrl(item.capa, "w500") : "",
-          backdrop: item.capa ? tmdbImageUrl(item.capa, "original") : "",
+          image: imagePath ? tmdbImageUrl(imagePath, "w500") : "",
+          backdrop: imagePath ? tmdbImageUrl(imagePath, "original") : "",
           year: parseInt(item.year || "0"),
           rating: item.rating || "N/A",
           duration: "",
