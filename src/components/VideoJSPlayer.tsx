@@ -364,7 +364,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
+  const [volume, setVolume] = useState(100);
   
   // Definir hasNextEpisode combinando prop e hook
   const hasNextEpisode = propHasNextEpisode || eliteHasNextEpisode || false;
@@ -1483,29 +1483,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 <SkipForward size={24} className="text-white" />
               </button>
 
-              {/* Volume */}
-              <div className="flex items-center gap-2 group">
-                <button
-                  onClick={(e) => { e.stopPropagation(); toggleMute(); }}
-                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                >
-                  {isMuted || volume === 0 ? (
-                    <VolumeX size={22} className="text-white" />
-                  ) : (
-                    <Volume2 size={22} className="text-white" />
-                  )}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={(e) => { e.stopPropagation(); handleVolumeChange(e); }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-0 group-hover:w-24 h-1 bg-white/30 rounded-full appearance-none cursor-pointer transition-all duration-300 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full"
-                />
-              </div>
-
               {/* Quality Selector */}
               {qualities.length > 0 && (
                 <div className="relative">
@@ -1718,6 +1695,36 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       >
         <PictureInPicture2 size={24} className="text-white" />
       </button>
+
+      {/* Volume Control - Outside controls overlay */}
+      <div 
+        className="fixed bottom-20 left-4 md:bottom-24 md:left-6 flex items-center gap-2 z-[9999]"
+        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+      >
+        <button
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleMute(); }}
+          className={`p-3 rounded-full transition-all cursor-pointer shadow-lg ${isMuted || volume === 0 ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'}`}
+          title={isMuted ? 'Ativar Som' : 'Mudo'}
+          type="button"
+        >
+          {isMuted || volume === 0 ? (
+            <VolumeX size={24} className="text-white" />
+          ) : (
+            <Volume2 size={24} className="text-white" />
+          )}
+        </button>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={volume}
+          onChange={(e) => { e.stopPropagation(); handleVolumeChange(e); }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-24 h-2 bg-white/30 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-[#00A8E1] [&::-webkit-slider-thumb]:rounded-full"
+          style={{ pointerEvents: 'auto' }}
+        />
+        <span className="text-white text-sm font-medium bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{volume}%</span>
+      </div>
 
       {/* Resume Dialog */}
       {showResumeDialog && (
