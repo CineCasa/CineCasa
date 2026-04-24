@@ -476,6 +476,8 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         },
       },
       autoplay: true,
+      muted: false,
+      volume: 1.0,
       controls: false, // Custom controls
       fluid: true,
       preload: 'metadata', // Performance: preload metadata only
@@ -487,6 +489,10 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         },
       ],
     });
+    
+    // Garantir que o áudio está ativado
+    player.muted(false);
+    player.volume(1.0);
 
     playerRef.current = player;
 
@@ -1255,8 +1261,8 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           /* YouTube iframe player for trailers */
           <iframe
             src={videoUrl?.includes('?') 
-              ? `${videoUrl}&autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1` 
-              : `${videoUrl}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`}
+              ? `${videoUrl}&autoplay=1&playsinline=1&rel=0&modestbranding=1` 
+              : `${videoUrl}?autoplay=1&playsinline=1&rel=0&modestbranding=1`}
             className="w-full h-full"
             style={{
               width: '100%',
