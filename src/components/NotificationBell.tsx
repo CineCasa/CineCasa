@@ -131,27 +131,37 @@ export function NotificationBell() {
 
   return (
     <div className="relative" ref={panelRef}>
-      {/* Botão do Sino */}
+      {/* Botão do Sino - Estilo Neon */}
       <button
         onClick={handleBellClick}
-        className="relative p-2 rounded-full hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+        className={`relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
+          isOpen || unreadCount > 0
+            ? 'text-[#00E5FF] bg-[#00E5FF]/10 shadow-[0_0_15px_rgba(0,229,255,0.3)]' 
+            : 'text-gray-400 hover:text-[#00E5FF] hover:bg-white/5 hover:shadow-[0_0_10px_rgba(0,229,255,0.2)]'
+        }`}
         aria-label="Notificações"
       >
         <Bell 
-          className={`w-5 h-5 md:w-6 md:h-6 transition-colors duration-300 ${
+          size={18}
+          className={`transition-all duration-300 ${
             unreadCount > 0 && !isOnNotificationsPage
-              ? 'text-red-500 animate-bell-pulse' 
-              : 'text-white'
+              ? 'drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]' 
+              : ''
           }`} 
+          strokeWidth={unreadCount > 0 ? 2.5 : 2}
         />
         
-        {/* Badge de não lidas */}
+        {/* Badge de não lidas - Vermelho Neon Pulsante */}
         {unreadCount > 0 && !isOnNotificationsPage && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+          <span 
+            className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse"
+            style={{
+              boxShadow: '0 0 8px rgba(239, 68, 68, 0.8), 0 0 16px rgba(239, 68, 68, 0.4)',
+            }}
+          >
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
-
       </button>
 
       {/* Painel de Notificações */}
@@ -162,7 +172,14 @@ export function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 top-full mt-2 w-96 bg-[#141414] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            className="absolute right-0 top-full mt-3 w-96 rounded-xl overflow-hidden z-50"
+            style={{
+              background: 'rgba(15, 23, 30, 0.98)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(0, 229, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 229, 255, 0.1)',
+            }}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -171,7 +188,7 @@ export function NotificationBell() {
                 {unreadCount > 0 && (
                   <button
                     onClick={clearAllNotifications}
-                    className="text-xs text-gray-400 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/10"
+                    className="text-xs text-gray-400 hover:text-[#00E5FF] transition-colors px-2 py-1 rounded hover:bg-[#00E5FF]/10"
                     title="Marcar todas como lidas"
                   >
                     <Check className="w-4 h-4" />
@@ -181,7 +198,7 @@ export function NotificationBell() {
                   onClick={() => setIsOpen(false)}
                   className="p-1 rounded hover:bg-white/10 transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-400" />
+                  <X className="w-5 h-5 text-gray-400 hover:text-[#00E5FF]" />
                 </button>
               </div>
             </div>
@@ -192,7 +209,7 @@ export function NotificationBell() {
                 onClick={() => setActiveTab('all')}
                 className={`flex-1 py-2 text-sm font-medium transition-colors ${
                   activeTab === 'all' 
-                    ? 'text-white border-b-2 border-red-600' 
+                    ? 'text-[#00E5FF] border-b-2 border-[#00E5FF]' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -202,7 +219,7 @@ export function NotificationBell() {
                 onClick={() => setActiveTab('unread')}
                 className={`flex-1 py-2 text-sm font-medium transition-colors ${
                   activeTab === 'unread' 
-                    ? 'text-white border-b-2 border-red-600' 
+                    ? 'text-[#00E5FF] border-b-2 border-[#00E5FF]' 
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -289,7 +306,7 @@ export function NotificationBell() {
                   navigate('/settings/notifications');
                   setIsOpen(false);
                 }}
-                className="flex items-center justify-center gap-2 w-full py-2 text-sm text-gray-400 hover:text-white transition-colors rounded-lg hover:bg-white/10"
+                className="flex items-center justify-center gap-2 w-full py-2 text-sm text-gray-400 hover:text-[#00E5FF] transition-colors rounded-lg hover:bg-[#00E5FF]/10"
               >
                 <Settings className="w-4 h-4" />
                 Configurações de Notificações
