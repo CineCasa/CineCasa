@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Star, Calendar, Tv } from 'lucide-react';
 import { useSeriesData, Serie } from '@/hooks/useSeriesData';
 import { tmdbImageUrl } from '@/services/tmdb';
+import { SeriesHeroBanner } from '@/components/SeriesHeroBanner';
 
 const seriesPageStyles = `
   .series-page-container {
@@ -411,10 +412,16 @@ export default function SeriesPage() {
     <div className="series-page-container bg-black min-h-screen">
       <style>{seriesPageStyles}</style>
       
-      <HeroSection
-        series={series}
-        isLoading={isLoading}
-      />
+      {/* SeriesHeroBanner para telas grandes (TV/4K) */}
+      <SeriesHeroBanner />
+
+      {/* HeroSection para mobile - fallback */}
+      <div className="lg:hidden">
+        <HeroSection
+          series={series}
+          isLoading={isLoading}
+        />
+      </div>
 
       <div className="relative z-10 bg-black pt-8">
         {isLoading ? (
