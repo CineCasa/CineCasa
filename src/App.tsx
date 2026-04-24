@@ -39,6 +39,7 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useSilentUpdate } from "@/hooks/useSilentUpdate";
 import { useForceUpdate } from "@/hooks/useForceUpdate";
 import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
+import { useAutoUpdate } from "@/hooks/useAutoUpdate";
 import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
 const queryClient = new QueryClient();
@@ -185,10 +186,13 @@ const AppContent = () => {
   
   // Inicializar limpeza automática de cache - garante atualizações sempre
   useAutoCacheCleanup();
-  
+
   // Inicializar sistema de force update automático
   useForceUpdate();
-  
+
+  // Auto-update com versionamento - verifica a cada 30 segundos
+  useAutoUpdate(30000);
+
   // Atualização silenciosa do PWA - verifica a cada 5 minutos
   useSilentUpdate({
     checkInterval: 5 * 60 * 1000, // 5 minutos

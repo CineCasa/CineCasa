@@ -19,9 +19,11 @@ interface SearchResult {
 interface GlobalSearchProps {
   isOpen: boolean;
   onClose: () => void;
+  variant?: 'modal' | 'dropdown';
+  navbarHeight?: number;
 }
 
-const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
+const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, variant = 'dropdown', navbarHeight = 64 }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -393,8 +395,172 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  // Render dropdown variant (below navbar)
+  if (variant === 'dropdown') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.2 }}
+        className="fixed left-0 right-0 z-[115] bg-[#0f171e]/95 backdrop-blur-md border-b border-white/10 shadow-2xl"
+        style={{ top: `${navbarHeight}px` }}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Campo de Pesquisa */}
+          <div className="p-4 border-b border-white/10">
+            <div className="flex items-center gap-3 max-w-4xl mx-auto">
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+                <Search size={20} className="text-secondary" />
+              </div>
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    onClose();
+                  } else if (e.key === 'Enter' && results.length > 0) {
+                    handleResultClick(results[0]);
+                  }
+                }}
+                placeholder="Buscar filmes, séries, atores..."
+                className="flex-1 bg-transparent text-primary placeholder-secondary focus:outline-none text-lg py-2"
+              />
+              <button
+                onClick={toggleVoiceSearch}
+                className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
+                  isListening
+                    ? 'bg-red-500 text-white animate-pulse'
+                    : 'hover:bg-white/10 text-secondary'
+                }`}
+                title="Pesquisar por voz"
+              >
+                {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+              </button>
+              <button
+                onClick={clearSearch}
+                disabled={!query}
+                className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 ${
+                  query
+                    ? 'hover:bg-white/10 text-secondary opacity-100'
+                    : 'text-secondary opacity-0 pointer-events-none'
+                }`}
+                title="Limpar pesquisa"
+              >
+                <X size={20} />
+              </button>
+              <button
+                onClick={onClose}
+                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-secondary transition-all duration-300"
+                title="Fechar"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            {isListening && (
+              <div className="mt-2 flex items-center justify-center space-x-2 text-red-400">
+                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                <span className="text-sm">Ouvindo...</span>
+              </div>
+            )}
+          </div>
+
+          {/* Resultados da Pesquisa */}
+          <div className="max-h-[60vh] overflow-y-auto">
+            {loading && (
+              <div className="p-8 text-center text-secondary">
+                <div className="animate-spin w-8 h-8 border-2 border-accent border-t-transparent rounded-full mx-auto mb-4" />
+                <p>Pesquisando...</p>
+              </div>
+            )}
+
+            {!loading && query && results.length === 0 && (
+              <div className="p-8 text-center text-secondary">
+                <Search size={48} className="mx-auto mb-4 opacity-50" />
+                <p>Nenhum resultado encontrado para "{query}"</p>
+              </div>
+            )}
+
+            {!loading && results.length > 0 && (
+              <div className="p-4 max-w-4xl mx-auto">
+                <p className="text-sm text-secondary mb-4">
+                  {results.length} resultado{results.length !== 1 ? 's' : ''} encontrado{results.length !== 1 ? 's' : ''}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {results.map((result, index) => (
+                    <motion.div
+                      key={`${result.table}-${result.id}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-all duration-300"
+                      onClick={() => handleResultClick(result)}
+                    >
+                      <img
+                        src={result.poster}
+                        alt={result.title}
+                        className="w-14 h-20 object-cover rounded-lg"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/api/placeholder/300/450';
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          {result.type === 'movie' ? (
+                            <Film size={14} className="text-accent" />
+                          ) : (
+                            <PlaySquare size={14} className="text-accent" />
+                          )}
+                          <h3 className="text-primary font-medium truncate text-sm">{result.title}</h3>
+                        </div>
+                        <div className="flex items-center space-x-3 text-xs text-secondary">
+                          {result.year && <span>{result.year}</span>}
+                          {result.rating && (
+                            <span className="flex items-center space-x-1">
+                              <Star size={10} className="text-yellow-500 fill-current" />
+                              <span>{result.rating}</span>
+                            </span>
+                          )}
+                        </div>
+                        {result.category && (
+                          <p className="text-xs text-secondary/70 truncate mt-1">{result.category}</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Histórico de Pesquisa */}
+            {!query && !loading && searchHistory.length > 0 && (
+              <div className="p-4 max-w-4xl mx-auto border-t border-white/10">
+                <p className="text-sm text-secondary mb-3">Pesquisas recentes</p>
+                <div className="flex flex-wrap gap-2">
+                  {searchHistory.map((item, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setQuery(item)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-300 text-sm text-secondary"
+                    >
+                      <Search size={14} />
+                      <span>{item}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Modal variant (original centered)
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[120] bg-black/80 backdrop-blur-sm" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

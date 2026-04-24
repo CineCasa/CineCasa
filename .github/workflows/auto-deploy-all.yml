@@ -1,0 +1,208 @@
+name: Auto Deploy - Todos os Ambientes
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Ambiente para deploy'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - vercel
+          - cloudflare
+          - github-pages
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # ========================================
+  # BUILD E CACHE BUSTING
+  # ========================================
+  build:
+    name: Build com Versionamento
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build_hash: ${{ steps.version.outputs.build_hash }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate Version
+        id: version
+        run: |
+          VERSION=$(date +'%Y%m%d-%H%M%S')-${GITHUB_SHA::7}
+          BUILD_HASH=$(echo -n "$VERSION" | sha256sum | cut -d' ' -f1 | head -c 16)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_hash=$BUILD_HASH" >> $GITHUB_OUTPUT
+          echo "📦 Build version: $VERSION"
+          echo "🔑 Build hash: $BUILD_HASH"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create version file
+        run: |
+          echo "{\"version\": \"${{ steps.version.outputs.version }}\", \"hash\": \"${{ steps.version.outputs.build_hash }}\", \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > public/version.json
+          echo "✅ Version file created"
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_BUILD_VERSION: ${{ steps.version.outputs.version }}
+          VITE_BUILD_HASH: ${{ steps.version.outputs.build_hash }}
+
+      - name: Add cache busting headers
+        run: |
+          # Criar arquivo _headers para Cloudflare Pages
+          cat > dist/_headers << 'EOF'
+          /*
+            X-Build-Version: ${{ steps.version.outputs.version }}
+            X-Build-Hash: ${{ steps.version.outputs.build_hash }}
+            Cache-Control: public, max-age=0, must-revalidate
+
+          /assets/*
+            Cache-Control: public, max-age=31536000, immutable
+            X-Build-Version: ${{ steps.version.outputs.version }}
+
+          *.js
+            Cache-Control: public, max-age=300, must-revalidate
+
+          *.css
+            Cache-Control: public, max-age=300, must-revalidate
+          EOF
+
+          # Criar arquivo .nojekyll para GitHub Pages
+          touch dist/.nojekyll
+
+          echo "✅ Cache busting headers created"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+          retention-days: 1
+
+  # ========================================
+  # DEPLOY VERCEL (cinecasa.vercel.app)
+  # ========================================
+  deploy-vercel:
+    name: Deploy Vercel
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.environment == 'all' || github.event.inputs.environment == 'vercel' || github.event.inputs.environment == null
+    environment: production
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --yes'
+          working-directory: ./dist
+
+      - name: Purge Vercel Cache
+        run: |
+          curl -X POST "https://api.vercel.com/v3/projects/${{ secrets.VERCEL_PROJECT_ID }}/cache" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"action": "revalidate"}' || true
+
+      - name: Verify Deploy
+        run: |
+          sleep 5
+          curl -I -f "https://cinecasa.vercel.app" || exit 1
+          echo "✅ Vercel deploy verified"
+
+  # ========================================
+  # DEPLOY CLOUDFLARE WORKERS
+  # ========================================
+  deploy-cloudflare:
+    name: Deploy Cloudflare
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event.inputs.environment == 'all' || github.event.inputs.environment == 'cloudflare' || github.event.inputs.environment == null
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=cinecasa --branch=main
+
+      - name: Purge Cloudflare Cache
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' || true
+          echo "✅ Cloudflare cache purged"
+
+  # ========================================
+  # NOTIFICAÇÃO E STATUS
+  # ========================================
+  notify:
+    name: Notify Deploy Status
+    runs-on: ubuntu-latest
+    needs: [build, deploy-vercel, deploy-cloudflare]
+    if: always()
+    steps:
+      - name: Deploy Summary
+        run: |
+          echo "🚀 DEPLOY SUMMARY"
+          echo "=================="
+          echo "Build: ${{ needs.build.result }}"
+          echo "Vercel: ${{ needs.deploy-vercel.result }}"
+          echo "Cloudflare: ${{ needs.deploy-cloudflare.result }}"
+          echo ""
+          echo "URLs:"
+          echo "- Vercel: https://cinecasa.vercel.app"
+          echo "- Cloudflare: https://cinecasa.paixaoflix.vip"
+
+      - name: Update deployment status
+        if: success()
+        run: |
+          echo "✅ Deploy automático concluído com sucesso!"
+          echo "🌐 URL Vercel: https://cinecasa.vercel.app"

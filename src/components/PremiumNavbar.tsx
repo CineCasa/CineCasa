@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart, Bell, Users, MonitorPlay } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, User, Home, PlaySquare, Monitor, Film, LogOut, Heart, Bell, Users, MonitorPlay, X, Mic, MicOff } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GlobalSearch from './GlobalSearch';
 import { NotificationBell } from './NotificationBell';
 import { useNotifications } from "@/hooks/useNotifications";
 import { useCinemaMode } from "@/hooks/useCinemaMode";
@@ -15,7 +14,11 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { permission } = useNotifications();
@@ -72,6 +75,96 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
     { icon: Heart, label: 'Favoritos', href: '/favorites' },
   ];
 
+  // Focar input quando abrir pesquisa
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
+  // Handler de submit da pesquisa
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  // Configurar reconhecimento de voz
+  useEffect(() => {
+    const SpeechRecognition = (window as any).webkitSpeechRecognition ||
+                             (window as any).SpeechRecognition ||
+                             (window as any).mozSpeechRecognition ||
+                             (window as any).msSpeechRecognition;
+
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'pt-BR';
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setSearchQuery(transcript);
+        setIsListening(false);
+        // Auto-submit após receber voz
+        setTimeout(() => {
+          if (transcript.trim()) {
+            navigate(`/search?q=${encodeURIComponent(transcript.trim())}`);
+            setIsSearchOpen(false);
+            setSearchQuery('');
+          }
+        }, 500);
+      };
+
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [navigate]);
+
+  // Toggle reconhecimento de voz
+  const toggleVoiceSearch = () => {
+    if (!recognitionRef.current) {
+      alert('Seu navegador não suporta pesquisa por voz. Use Chrome ou Edge.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+      } catch (err) {
+        console.error('Erro ao iniciar reconhecimento:', err);
+      }
+    }
+  };
+
+  // Fechar pesquisa ao pressionar ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSearchOpen) {
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [isSearchOpen]);
+
   return (
     <>
       <motion.nav
@@ -113,13 +206,15 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
 
           {/* Direita - Pesquisa e Perfil */}
           <div className="flex items-center space-x-4">
-            {/* Botão de Pesquisa */}
+            {/* Botão de Pesquisa - Toggle */}
             <button
-              onClick={() => navigate('/search')}
-              className="p-2 rounded-full hover:bg-white/10 transition-all duration-300 text-secondary hover:text-accent"
-              title="Pesquisar"
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className={`p-2 rounded-full hover:bg-white/10 transition-all duration-300 ${
+                isSearchOpen ? 'text-accent bg-white/10' : 'text-secondary hover:text-accent'
+              }`}
+              title={isSearchOpen ? 'Fechar pesquisa' : 'Pesquisar'}
             >
-              <Search size={20} />
+              {isSearchOpen ? <X size={20} /> : <Search size={20} />}
             </button>
 
             {/* Botão de Notificações - Oculto em mobile */}
@@ -201,8 +296,68 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
         </div>
       </motion.nav>
 
-      {/* Pesquisa Global */}
-      <GlobalSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      {/* Barra de Pesquisa - Integrada abaixo da navbar */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="fixed left-0 right-0 z-[105] bg-[#0f171e]/95 backdrop-blur-md border-b border-white/10 shadow-lg"
+            style={{ top: '56px' }}
+          >
+            <form onSubmit={handleSearchSubmit} className="max-w-7xl mx-auto px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center text-secondary">
+                  <Search size={20} />
+                </div>
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar filmes, séries..."
+                  className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none text-lg py-2"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 text-secondary transition-all"
+                  >
+                    <X size={18} />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={toggleVoiceSearch}
+                  className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-all ${
+                    isListening
+                      ? 'bg-red-500 text-white animate-pulse'
+                      : 'hover:bg-white/10 text-secondary'
+                  }`}
+                  title="Pesquisar por voz"
+                >
+                  {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                </button>
+                <button
+                  type="submit"
+                  className="flex-shrink-0 px-6 py-2 bg-accent hover:bg-accent/80 text-white rounded-full font-medium transition-all"
+                >
+                  Buscar
+                </button>
+              </div>
+              {isListening && (
+                <div className="mt-2 flex items-center justify-center gap-2 text-red-400 text-sm">
+                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                  <span>Ouvindo...</span>
+                </div>
+              )}
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Atalho de Teclado */}
       <div className="hidden">
