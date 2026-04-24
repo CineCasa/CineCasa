@@ -15,7 +15,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "HOME", path: "/", icon: Home },
   { label: "FILMES", path: "/cinema", icon: Clapperboard },
-  { label: "SÉRIES", path: "/series-categorias", icon: PlaySquare, isCenter: true },
+  { label: "SÉRIES", path: "/series", icon: PlaySquare, isCenter: true },
   { label: "FAVORITOS", path: "/favorites", icon: Heart },
   { label: "NOVIDADES", path: "/notifications", icon: Bell },
 ];
