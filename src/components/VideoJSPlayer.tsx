@@ -1683,23 +1683,27 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 )}
               </div>
 
-              {/* Fullscreen */}
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-              >
-                {isFullscreen ? (
-                  <Minimize size={22} className="text-white" />
-                ) : (
-                  <Maximize size={22} className="text-white" />
-                )}
-              </button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mini Player Button - Outside controls overlay to ensure it's always clickable */}
+      {/* Fullscreen Button - Outside controls overlay */}
+      <button
+        onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleFullscreen(); }}
+        className={`fixed bottom-20 right-20 md:bottom-24 md:right-24 p-3 rounded-full transition-all cursor-pointer z-[9999] shadow-lg ${isFullscreen ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'}`}
+        title={isFullscreen ? 'Sair da Tela Cheia' : 'Tela Cheia'}
+        type="button"
+        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+      >
+        {isFullscreen ? (
+          <Minimize size={24} className="text-white" />
+        ) : (
+          <Maximize size={24} className="text-white" />
+        )}
+      </button>
+
+      {/* Mini Player Button - Outside controls overlay */}
       <button 
         onClick={(e) => { 
           e.stopPropagation(); 
@@ -1707,7 +1711,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           console.log('[VideoJSPlayer] Mini player button CLICKED, current state:', isMiniPlayer);
           handleToggleMiniPlayer(); 
         }}
-        className={`absolute bottom-20 right-4 md:bottom-24 md:right-6 p-3 rounded-full transition-all cursor-pointer z-[100] ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'}`}
+        className={`fixed bottom-20 right-4 md:bottom-24 md:right-6 p-3 rounded-full transition-all cursor-pointer z-[9999] shadow-lg ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'}`}
         title={isMiniPlayer ? 'Sair do Mini Player' : 'Mini Player'}
         type="button"
         style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
