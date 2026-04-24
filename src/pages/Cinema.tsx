@@ -1,5 +1,6 @@
 import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
+import { CinemaHeroBanner } from "@/components/CinemaHeroBanner";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 
 const Cinema = () => {
@@ -11,8 +12,15 @@ const Cinema = () => {
 
   return (
     <main className="min-h-screen bg-background pb-20">
-        <HeroBanner filterCategory="Cinema" />
-        <div className="relative pt-16 -mt-10 pointer-events-none">
+        {/* CinemaHeroBanner para telas grandes (TV/4K) */}
+        <CinemaHeroBanner />
+        
+        {/* HeroBanner padrão para mobile */}
+        <div className="lg:hidden">
+          <HeroBanner filterCategory="Cinema" />
+        </div>
+        
+        <div className="relative pt-16 -mt-10 pointer-events-none lg:pt-0 lg:mt-0">
           {isLoading ? (
             <div className="flex items-center justify-center p-20 text-muted-foreground">
               Carregando produções de cinema...
