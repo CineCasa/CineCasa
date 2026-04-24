@@ -40,6 +40,7 @@ import { useSilentUpdate } from "@/hooks/useSilentUpdate";
 import { useForceUpdate } from "@/hooks/useForceUpdate";
 import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
 import { useAutoUpdate } from "@/hooks/useAutoUpdate";
+import { useMobileViewportHeight } from "@/hooks/useMobileViewportHeight";
 import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
 const queryClient = new QueryClient();
@@ -189,6 +190,9 @@ const AppContent = () => {
 
   // Inicializar sistema de force update automático
   useForceUpdate();
+
+  // Hook para corrigir viewport em dispositivos móveis
+  useMobileViewportHeight();
 
   // Auto-update com versionamento - verifica a cada 30 segundos
   useAutoUpdate(30000);
