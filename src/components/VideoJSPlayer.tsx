@@ -967,12 +967,56 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     setShowQuality(false);
   }, []);
 
-  const openWatchParty = useCallback(() => {
+  const openWatchParty = useCallback(async () => {
     const roomId = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
     const videoUrlParam = encodeURIComponent(videoUrl || originalUrl);
+    
+    // Criar sala no Supabase antes de abrir
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const userId = user?.id || 'anonymous';
+      const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'Anônimo';
+      
+      // Inserir sala no Supabase
+      const { error: roomError } = await supabase
+        .from('watch_party_rooms')
+        .insert({
+          id: roomId,
+          name: `${title} - Watch Party`,
+          content_id: contentId || 'unknown',
+          content_type: contentType || 'movie',
+          host_id: userId,
+          host_name: userName,
+          is_active: true,
+          video_time: 0,
+          is_playing: false,
+          duration: duration || 0,
+          participant_count: 1
+        });
+      
+      if (roomError) {
+        console.error('[WatchParty] Erro ao criar sala:', roomError);
+      } else {
+        console.log('[WatchParty] Sala criada com sucesso:', roomId);
+      }
+      
+      // Adicionar host como participante
+      await supabase
+        .from('watch_party_participants')
+        .insert({
+          room_id: roomId,
+          user_id: userId,
+          user_name: userName,
+          is_host: true
+        });
+      
+    } catch (error) {
+      console.error('[WatchParty] Erro ao criar sala no Supabase:', error);
+    }
+    
     const watchUrl = `/watch.html?room=${roomId}&video=${videoUrlParam}`;
     window.open(watchUrl, '_blank');
-  }, [videoUrl, originalUrl]);
+  }, [videoUrl, originalUrl, contentId, contentType, title, duration]);
 
   // Resume - continuar assistindo
   const handleResume = useCallback(() => {
