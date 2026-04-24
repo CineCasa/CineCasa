@@ -1582,21 +1582,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 </button>
               )}
 
-              {/* Mini Player */}
-              <button 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  e.preventDefault();
-                  console.log('[VideoJSPlayer] Mini player button CLICKED, current state:', isMiniPlayer);
-                  handleToggleMiniPlayer(); 
-                }}
-                className={`p-2 rounded-full transition-all pointer-events-auto cursor-pointer z-[9999] ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'hover:bg-white/20'}`}
-                title={isMiniPlayer ? 'Sair do Mini Player' : 'Mini Player'}
-                type="button"
-                style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
-              >
-                <PictureInPicture2 size={22} className="text-white" />
-              </button>
 
               {/* Audio Track Selector - Mobile Optimized */}
               {audioTracks.length > 1 && (
@@ -1713,6 +1698,22 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Mini Player Button - Outside controls overlay to ensure it's always clickable */}
+      <button 
+        onClick={(e) => { 
+          e.stopPropagation(); 
+          e.preventDefault();
+          console.log('[VideoJSPlayer] Mini player button CLICKED, current state:', isMiniPlayer);
+          handleToggleMiniPlayer(); 
+        }}
+        className={`absolute bottom-20 right-4 md:bottom-24 md:right-6 p-3 rounded-full transition-all cursor-pointer z-[100] ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'}`}
+        title={isMiniPlayer ? 'Sair do Mini Player' : 'Mini Player'}
+        type="button"
+        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+      >
+        <PictureInPicture2 size={24} className="text-white" />
+      </button>
 
       {/* Resume Dialog */}
       {showResumeDialog && (
