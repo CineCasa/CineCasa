@@ -1436,108 +1436,95 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
           {/* Control Buttons */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Play/Pause */}
               <button
                 onClick={(e) => { e.stopPropagation(); togglePlayPause(); }}
-                className="p-3 hover:bg-white/20 rounded-full transition-colors"
+                className="p-2 sm:p-3 hover:bg-white/20 rounded-full transition-colors"
               >
                 {isPlaying ? (
-                  <Pause size={28} className="text-white" fill="white" />
+                  <Pause size={24} className="text-white sm:w-7 sm:h-7" fill="white" />
                 ) : (
-                  <Play size={28} className="text-white" fill="white" />
+                  <Play size={24} className="text-white sm:w-7 sm:h-7" fill="white" />
                 )}
               </button>
 
-              {/* Stop */}
-              <button
-                onClick={(e) => { e.stopPropagation(); handleStop(); }}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                title="Parar"
-              >
-                <Square size={24} className="text-white" fill="white" />
-              </button>
-
-              {/* Skip Backward */}
+              {/* Skip Backward - Hidden on very small screens */}
               <button
                 onClick={(e) => { e.stopPropagation(); skip(-10); }}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="hidden sm:flex p-2 hover:bg-white/20 rounded-full transition-colors"
               >
-                <SkipBack size={24} className="text-white" />
+                <SkipBack size={22} className="text-white" />
               </button>
 
-              {/* Skip Forward */}
+              {/* Skip Forward - Hidden on very small screens */}
               <button
                 onClick={(e) => { e.stopPropagation(); skip(10); }}
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="hidden sm:flex p-2 hover:bg-white/20 rounded-full transition-colors"
               >
-                <SkipForward size={24} className="text-white" />
+                <SkipForward size={22} className="text-white" />
               </button>
 
-              {/* Quality Selector */}
-              {qualities.length > 0 && (
-                <div className="relative">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowQuality(!showQuality); setShowSettings(false); }}
-                    className="px-3 py-1.5 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    {currentQuality === 'auto' ? 'Auto' : qualities.find(q => q.value === currentQuality)?.label || currentQuality}
-                  </button>
-                  
-                  {showQuality && (
-                    <div 
-                      className="absolute bottom-full left-0 mb-2 bg-black/95 backdrop-blur rounded-lg p-2 min-w-[100px] shadow-2xl border border-white/10"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {qualities.map((quality) => (
-                        <button
-                          key={quality.value}
-                          onClick={() => changeQuality(quality.value)}
-                          className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                            currentQuality === quality.value ? 'bg-[#00A8E1] text-white font-medium' : 'text-white hover:bg-white/10'
-                          }`}
-                        >
-                          {quality.label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Playback Rate */}
+              {/* Settings Menu (combina Playback Rate + Quality) */}
               <div className="relative">
                 <button
                   onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); setShowQuality(false); }}
-                  className="p-2 hover:bg-white/20 rounded-full transition-colors relative"
+                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                  title="Configurações"
                 >
-                  <Gauge size={22} className="text-white" />
-                  <span className="absolute -top-1 -right-1 text-[9px] bg-[#00A8E1] rounded-full w-4 h-4 flex items-center justify-center text-white font-bold">
-                    {playbackRate}x
-                  </span>
+                  <Settings size={20} className="text-white" />
                 </button>
                 
                 {showSettings && (
                   <div 
-                    className="absolute bottom-full right-0 mb-2 bg-black/95 backdrop-blur rounded-lg p-2 min-w-[100px] shadow-2xl border border-white/10"
+                    className="absolute bottom-full left-0 mb-2 bg-black/95 backdrop-blur rounded-lg p-3 min-w-[140px] shadow-2xl border border-white/10"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
-                      <button
-                        key={rate}
-                        onClick={() => changePlaybackRate(rate)}
-                        className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
-                          playbackRate === rate ? 'bg-[#00A8E1] text-white font-medium' : 'text-white hover:bg-white/10'
-                        }`}
-                      >
-                        {rate === 1 ? 'Normal' : `${rate}x`}
-                      </button>
-                    ))}
+                    {/* Playback Rate Section */}
+                    <div className="text-xs text-gray-400 px-2 py-1 border-b border-white/10 mb-2">
+                      Velocidade: {playbackRate}x
+                    </div>
+                    <div className="flex gap-1 mb-3">
+                      {[0.5, 1, 1.5, 2].map((rate) => (
+                        <button
+                          key={rate}
+                          onClick={() => changePlaybackRate(rate)}
+                          className={`px-2 py-1 text-xs rounded transition-colors ${
+                            playbackRate === rate ? 'bg-[#00A8E1] text-white' : 'text-white hover:bg-white/10'
+                          }`}
+                        >
+                          {rate}x
+                        </button>
+                      ))}
+                    </div>
+                    
+                    {/* Quality Section */}
+                    {qualities.length > 0 && (
+                      <>
+                        <div className="text-xs text-gray-400 px-2 py-1 border-b border-white/10 mb-2">
+                          Qualidade
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          {qualities.map((quality) => (
+                            <button
+                              key={quality.value}
+                              onClick={() => changeQuality(quality.value)}
+                              className={`text-left px-2 py-1 text-xs rounded transition-colors ${
+                                currentQuality === quality.value ? 'bg-[#00A8E1] text-white' : 'text-white hover:bg-white/10'
+                              }`}
+                            >
+                              {quality.label}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="flex items-center gap-2 sm:gap-3">
 
               {/* Next Episode */}
               {hasNextEpisode && (

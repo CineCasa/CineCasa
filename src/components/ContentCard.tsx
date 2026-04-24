@@ -263,10 +263,15 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
         className={`w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300 ${isHovered ? "opacity-0" : "opacity-100"} ${!item.isComingSoon && 'cursor-pointer hover:brightness-110'}`}>
         {isVisible ? (
           <img
-            src={item.image}
+            src={item.image || `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`}
             alt={item.title}
             className="w-full h-full object-cover animate-in fade-in duration-500"
             loading="lazy"
+            onError={(e) => {
+              // Fallback se a imagem falhar ao carregar
+              const target = e.target as HTMLImageElement;
+              target.src = `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`;
+            }}
           />
         ) : (
           <div className="w-full h-full bg-secondary animate-pulse" />
