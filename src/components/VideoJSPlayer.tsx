@@ -1361,15 +1361,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
               </button>
               <h2 className="text-white text-lg font-medium truncate max-w-md">{title}</h2>
             </div>
-            
-            {/* Assistir Juntos Button */}
-            <button
-              onClick={(e) => { e.stopPropagation(); openWatchParty(); }}
-              className="flex items-center gap-2 px-4 py-2 bg-[#00A8E1] hover:bg-[#00A8E1]/80 rounded-full transition-colors text-white text-sm font-medium"
-            >
-              <Users size={18} />
-              <span>Assistir Juntos</span>
-            </button>
           </div>
         </div>
 
@@ -1725,6 +1716,18 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
         />
         <span className="text-white text-sm font-medium bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{volume}%</span>
       </div>
+
+      {/* Assistir Juntos Button - Outside controls overlay */}
+      <button
+        onClick={(e) => { e.stopPropagation(); e.preventDefault(); openWatchParty(); }}
+        className="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 px-4 py-2 bg-[#00A8E1] hover:bg-[#00A8E1]/80 rounded-full transition-all cursor-pointer z-[9999] shadow-lg text-white text-sm font-medium"
+        title="Assistir Juntos"
+        type="button"
+        style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
+      >
+        <Users size={18} />
+        <span>Assistir Juntos</span>
+      </button>
 
       {/* Resume Dialog */}
       {showResumeDialog && (
