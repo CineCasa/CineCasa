@@ -113,9 +113,10 @@ export function HeroBannerTV() {
           <motion.img
             src={backdropUrl}
             alt={currentItem.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-black"
+            style={{ objectPosition: 'center center' }}
             initial={{ scale: 1 }}
-            animate={{ scale: 1.05 }}
+            animate={{ scale: 1 }}
             transition={{ duration: 7, ease: 'linear' }}
           />
         </motion.div>
