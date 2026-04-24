@@ -255,17 +255,21 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
                   style={{ 
                     objectPosition: 'center center',
                     maxWidth: '100%',
-                    maxHeight: '100%'
+                    maxHeight: '100%',
+                    minHeight: '100%'
                   }}
                   loading="eager"
                   onError={(e) => {
                     console.error('[HeroBanner] Image failed to load:', imageSource);
-                    (e.target as HTMLImageElement).style.display = 'none';
+                    // Mostrar um placeholder gradient ao invés de esconder completamente
+                    const target = e.target as HTMLImageElement;
+                    target.style.opacity = '0.3';
+                    target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100"%3E%3Crect width="100" height="100" fill="%23222"/%3E%3C/svg%3E';
                   }}
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                  <span className="text-gray-600 text-lg">{hero.title}</span>
+                  <span className="text-gray-400 text-xl font-semibold">{hero.title}</span>
                 </div>
               )}
             </>
