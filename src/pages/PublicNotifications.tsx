@@ -38,24 +38,29 @@ export default function PublicNotifications() {
     ? content.filter(i => (i.category || i.genero) === selectedCategory)
     : content;
 
-  // Buscar conteúdo popular (melhor avaliado)
+  // Constante para timestamp de 24 horas atrás
+  const vinteQuatroHorasAtras = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  // Buscar conteúdo popular (melhor avaliado) - apenas últimas 24h
   useEffect(() => {
     const fetchPopularContent = async () => {
       try {
         setLoadingPopular(true);
         
-        // Buscar filmes melhor avaliados
+        // Buscar filmes melhor avaliados das últimas 24h
         const { data: movies } = await supabase
           .from('cinema')
           .select('id, titulo, capa, year, rating, category, genero, created_at')
+          .gte('created_at', vinteQuatroHorasAtras)
           .not('rating', 'is', null)
           .order('rating', { ascending: false })
           .limit(10);
 
-        // Buscar séries melhor avaliadas
+        // Buscar séries melhor avaliadas das últimas 24h
         const { data: series } = await supabase
           .from('series')
           .select('id_n, titulo, capa, ano, genero, created_at')
+          .gte('created_at', vinteQuatroHorasAtras)
           .not('rating', 'is', null)
           .order('rating', { ascending: false })
           .limit(10);
@@ -94,7 +99,7 @@ export default function PublicNotifications() {
     fetchPopularContent();
   }, []);
 
-  // Buscar filmes em destaque (mais recentes com poster)
+  // Buscar filmes em destaque (mais recentes com poster) - apenas últimas 24h
   useEffect(() => {
     const fetchFeaturedContent = async () => {
       try {
@@ -103,6 +108,7 @@ export default function PublicNotifications() {
         const { data: movies } = await supabase
           .from('cinema')
           .select('id, titulo, capa, year, rating, category, genero, created_at')
+          .gte('created_at', vinteQuatroHorasAtras)
           .not('capa', 'is', null)
           .order('created_at', { ascending: false })
           .limit(8);
@@ -327,13 +333,13 @@ export default function PublicNotifications() {
               </div>
             </div>
           ) : filteredContent.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4">
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 max-w-md text-center shadow-2xl">
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-[#00E5FF]/20 to-[#00E5FF]/5 flex items-center justify-center border border-[#00E5FF]/30">
-                  <Bell className="w-6 h-6 text-[#00E5FF]" />
+            <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-8 max-w-md text-center shadow-2xl">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#00E5FF]/20 to-[#00E5FF]/5 flex items-center justify-center border border-[#00E5FF]/30">
+                  <Bell className="w-8 h-8 text-[#00E5FF]" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-1">Nenhuma novidade recente</h3>
-                <p className="text-gray-400 text-sm">Mas confira os lançamentos populares acima!</p>
+                <h3 className="text-xl font-semibold text-white mb-2">Nenhum lançamento nas últimas 24h. Volte logo!</h3>
+                <p className="text-gray-400 text-sm">Estamos sempre atualizando o catálogo com novidades.</p>
               </div>
             </div>
           ) : (
