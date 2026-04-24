@@ -63,12 +63,12 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, variant = 
         supabase
           .from('cinema')
           .select('*')
-          .ilike('titulo', searchQuery + '%')
+          .ilike('titulo', '%' + searchQuery + '%')
           .limit(10),
         supabase
           .from('series')
           .select('*')
-          .ilike('titulo', searchQuery + '%')
+          .ilike('titulo', '%' + searchQuery + '%')
           .limit(10)
       ]);
 
