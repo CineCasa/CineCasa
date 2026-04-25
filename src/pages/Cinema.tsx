@@ -12,10 +12,8 @@ const Cinema = () => {
 
   return (
     <main className="min-h-screen bg-background pb-20">
-        {/* CinemaHeroBanner para telas grandes (TV/4K) - escondido em mobile */}
-        <div className="hidden lg:block">
-          <CinemaHeroBanner />
-        </div>
+        {/* CinemaHeroBanner para telas grandes (TV/4K) */}
+        <CinemaHeroBanner />
         
         {/* HeroBanner padrão para mobile */}
         <div className="lg:hidden">
