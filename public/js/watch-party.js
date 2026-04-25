@@ -176,13 +176,28 @@ class WatchPartyClient {
         await this.loadSupabaseScript();
       }
       
-      this.userId = 'user_' + Math.random().toString(36).substring(2, 9);
+      // Gera ID único persistente na sessão
+      if (!this.userId) {
+        this.userId = 'user_' + Math.random().toString(36).substring(2, 9);
+        sessionStorage.setItem('watchparty_userid', this.userId);
+      }
+      
+      // Limpar canal anterior se existir
+      if (this.supabaseChannel) {
+        console.log('[WatchParty] Limpando canal anterior...');
+        window.supabase.removeChannel(this.supabaseChannel);
+        this.supabaseChannel = null;
+      }
+      
+      // Parar heartbeats anteriores
+      this.stopHeartbeat();
       
       // Criar canal para a sala
       const channel = window.supabase
         .channel('watch_party:' + this.roomId, {
           config: {
-            broadcast: { self: false },
+            broadcast: { self: true },
+            presence: { key: this.userId },
           },
         })
         .on('broadcast', { event: 'party_message' }, (payload) => {
@@ -190,40 +205,72 @@ class WatchPartyClient {
         })
         .on('presence', { event: 'sync' }, () => {
           const state = channel.presenceState();
-          const count = Object.keys(state).length;
+          const users = Object.values(state).flat();
+          const count = users.length;
           this.userCount = count;
+          console.log('[WatchParty] Presence sync - usuários:', count, users);
           this.updateUI(`Sala: ${this.roomId} | ${count} usuário(s)`);
         })
-        .on('presence', { event: 'join' }, () => {
-          this.showToast('Novo participante entrou!');
+        .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+          console.log('[WatchParty] Usuário entrou:', key, newPresences);
+          if (key !== this.userId) {
+            this.showToast('Novo participante entrou!');
+          }
         })
-        .on('presence', { event: 'leave' }, () => {
-          this.showToast('Um participante saiu');
+        .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+          console.log('[WatchParty] Usuário saiu:', key, leftPresences);
+          if (key !== this.userId) {
+            this.showToast('Um participante saiu');
+          }
         });
       
-      // Inscrever no canal
+      // Inscrever no canal com timeout
+      console.log('[WatchParty] Subscrevendo no canal...');
+      
+      const subscribeTimeout = setTimeout(() => {
+        console.error('[WatchParty] Timeout na subscrição do canal');
+        if (!this.supabaseChannel) {
+          this.showError('Timeout ao conectar. Tentando reconectar...');
+          this.scheduleReconnect();
+        }
+      }, 10000);
+      
       const status = await channel.subscribe(async (status) => {
+        clearTimeout(subscribeTimeout);
+        console.log('[WatchParty] Status da subscrição:', status);
+        
         if (status === 'SUBSCRIBED') {
           console.log('[WatchParty] Conectado ao Supabase!');
           this.supabaseChannel = channel;
+          this.reconnectAttempts = 0; // Reset contador de reconexão
           
           // Entrar com presence
-          await channel.track({
-            userId: this.userId,
-            joinedAt: new Date().toISOString(),
-          });
+          try {
+            await channel.track({
+              userId: this.userId,
+              joinedAt: new Date().toISOString(),
+              online_at: new Date().toISOString(),
+            });
+            console.log('[WatchParty] Presence track enviado');
+          } catch (trackError) {
+            console.error('[WatchParty] Erro ao fazer track:', trackError);
+          }
           
           // Enviar mensagem de entrada
-          await channel.send({
-            type: 'broadcast',
-            event: 'party_message',
-            payload: {
-              type: 'join',
-              userId: this.userId,
-              roomId: this.roomId,
-              timestamp: Date.now(),
-            },
-          });
+          try {
+            await channel.send({
+              type: 'broadcast',
+              event: 'party_message',
+              payload: {
+                type: 'join',
+                userId: this.userId,
+                roomId: this.roomId,
+                timestamp: Date.now(),
+              },
+            });
+          } catch (sendError) {
+            console.error('[WatchParty] Erro ao enviar join:', sendError);
+          }
           
           this.updateUI(`Sala: ${this.roomId} | Conectado`);
           this.showToast('Assistir Juntos ativo! Compartilhe o link.');
@@ -234,14 +281,90 @@ class WatchPartyClient {
           
           // Configura eventos do player
           this.setupVideoEvents();
+          
+          // Inicia heartbeat para manter presença
+          this.startHeartbeat();
+          
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          console.error('[WatchParty] Canal fechou ou erro:', status);
+          this.handleDisconnect();
         }
       });
       
     } catch (error) {
       console.error('[WatchParty] Erro Supabase:', error);
-      // Fallback para modo solo
-      this.activateSoloMode();
+      this.handleDisconnect();
     }
+  }
+  
+  /**
+   * Inicia heartbeat para manter presença ativa
+   */
+  startHeartbeat() {
+    this.stopHeartbeat();
+    console.log('[WatchParty] Iniciando heartbeat (a cada 15s)');
+    
+    this.heartbeatInterval = setInterval(async () => {
+      if (this.supabaseChannel) {
+        try {
+          // Atualiza presence para manter usuário "vivo"
+          await this.supabaseChannel.track({
+            userId: this.userId,
+            joinedAt: new Date().toISOString(),
+            online_at: new Date().toISOString(),
+            heartbeat: true,
+          });
+          console.log('[WatchParty] Heartbeat enviado');
+        } catch (err) {
+          console.error('[WatchParty] Erro no heartbeat:', err);
+        }
+      }
+    }, 15000); // A cada 15 segundos
+  }
+  
+  /**
+   * Para heartbeat
+   */
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+      console.log('[WatchParty] Heartbeat parado');
+    }
+  }
+  
+  /**
+   * Agenda reconexão com backoff exponencial
+   */
+  scheduleReconnect() {
+    if (this.reconnectAttempts >= 5) {
+      console.error('[WatchParty] Máximo de tentativas de reconexão atingido');
+      this.showError('Não foi possível conectar. Recarregue a página para tentar novamente.');
+      return;
+    }
+    
+    this.reconnectAttempts = (this.reconnectAttempts || 0) + 1;
+    const delay = Math.min(3000 * Math.pow(2, this.reconnectAttempts - 1), 30000);
+    
+    console.log(`[WatchParty] Agendando reconexão em ${delay}ms (tentativa ${this.reconnectAttempts})`);
+    
+    setTimeout(() => {
+      if (!this.supabaseChannel) {
+        console.log('[WatchParty] Tentando reconectar...');
+        this.connectSupabase();
+      }
+    }, delay);
+  }
+  
+  /**
+   * Handle disconnect
+   */
+  handleDisconnect() {
+    console.log('[WatchParty] Desconectado, limpando estado...');
+    this.supabaseChannel = null;
+    this.stopHeartbeat();
+    this.updateUI('Desconectado');
+    this.scheduleReconnect();
   }
   
   /**
@@ -767,10 +890,16 @@ class WatchPartyClient {
    */
   disconnect() {
     this.stopPeriodicSync();
+    this.stopHeartbeat();
     
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
+    }
+    
+    if (this.supabaseChannel) {
+      window.supabase.removeChannel(this.supabaseChannel);
+      this.supabaseChannel = null;
     }
     
     console.log('[WatchParty] Cliente desconectado');
@@ -795,5 +924,21 @@ if (document.readyState === 'loading') {
 // Expõe instância globalmente para debug e acesso externo
 window.watchParty = watchPartyClient;
 window.WatchPartyClient = WatchPartyClient;
+
+// Handler para reconectar quando a aba volta ao foco
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && window.watchParty && !window.watchParty.supabaseChannel) {
+    console.log('[WatchParty] Aba voltou ao foco, tentando reconectar...');
+    window.watchParty.connectSupabase();
+  }
+});
+
+// Handler para reconectar quando a conexão de rede volta
+window.addEventListener('online', () => {
+  console.log('[WatchParty] Conexão de rede restaurada');
+  if (window.watchParty && !window.watchParty.supabaseChannel) {
+    window.watchParty.connectSupabase();
+  }
+});
 
 console.log('[WatchParty] Cliente carregado e pronto');
