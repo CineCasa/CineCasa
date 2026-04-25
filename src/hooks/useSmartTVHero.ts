@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchTmdbDetailsWithBackdrop, tmdbImageUrl } from '@/services/tmdb';
 
 interface SmartTVHeroItem {
   id: string;
@@ -35,7 +36,7 @@ export function useSmartTVHero(): UseSmartTVHeroReturn {
   const [nextItem, setNextItem] = useState<SmartTVHeroItem | null>(null);
   const preloadedImages = useRef<Set<string>>(new Set());
 
-  // Buscar conteúdo aleatório (filmes + séries)
+  // Buscar conteúdo aleatório (filmes + séries) com backdrops do TMDB
   useEffect(() => {
     const fetchContent = async () => {
       setIsLoading(true);
@@ -54,39 +55,63 @@ export function useSmartTVHero(): UseSmartTVHeroReturn {
             .limit(50)
         ]);
 
-        const movies: SmartTVHeroItem[] = (moviesRes.data || [])
-          .filter(m => m.capa || m.poster)
-          .map(m => ({
-            id: `movie-${m.id}`,
-            tmdbId: m.tmdb_id,
-            title: m.titulo,
-            backdrop: m.capa || m.poster,
-            poster: m.capa || m.poster,
-            year: parseInt(m.year) || 0,
-            rating: m.rating || 'N/A',
-            description: m.description || '',
-            type: 'movie',
-            genre: m.category ? m.category.split(',').map(g => g.trim()) : 
-                   m.genero ? m.genero.split(',').map(g => g.trim()) : [],
-          }));
+        // Enriquecer filmes com backdrops do TMDB
+        const moviesRaw = (moviesRes.data || []) as any[];
+        const moviesWithBackdrops = await Promise.all(
+          moviesRaw
+            .filter(m => m.tmdb_id)
+            .slice(0, 20) // Limitar para não sobrecarregar a API
+            .map(async (m: any) => {
+              const tmdbData = await fetchTmdbDetailsWithBackdrop(m.tmdb_id, 'movie');
+              const backdropPath = tmdbData?.backdrop_path;
+              
+              return {
+                id: `movie-${m.id}`,
+                tmdbId: m.tmdb_id,
+                title: m.titulo,
+                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : (m.capa || m.poster),
+                poster: m.capa || m.poster,
+                year: parseInt(m.year) || 0,
+                rating: m.rating || 'N/A',
+                description: m.description || '',
+                country: tmdbData?.origin_country?.[0] || tmdbData?.production_countries?.[0]?.iso_3166_1,
+                contentRating: tmdbData?.content_rating,
+                type: 'movie' as const,
+                genre: m.category ? m.category.split(',').map((g: string) => g.trim()) : 
+                       m.genero ? m.genero.split(',').map((g: string) => g.trim()) : [],
+              };
+            })
+        );
 
-        const series: SmartTVHeroItem[] = (seriesRes.data || [])
-          .filter(s => s.banner)
-          .map(s => ({
-            id: `series-${s.id}`,
-            tmdbId: s.tmdb_id,
-            title: s.titulo,
-            backdrop: s.banner,
-            poster: s.banner,
-            year: parseInt(s.ano) || 0,
-            rating: s.rating || 'N/A',
-            description: s.descricao || '',
-            type: 'series',
-            genre: s.genero ? s.genero.split(',').map(g => g.trim()) : [],
-          }));
+        // Enriquecer séries com backdrops do TMDB
+        const seriesRaw = (seriesRes.data || []) as any[];
+        const seriesWithBackdrops = await Promise.all(
+          seriesRaw
+            .filter(s => s.tmdb_id)
+            .slice(0, 20) // Limitar para não sobrecarregar a API
+            .map(async (s: any) => {
+              const tmdbData = await fetchTmdbDetailsWithBackdrop(s.tmdb_id, 'tv');
+              const backdropPath = tmdbData?.backdrop_path;
+              
+              return {
+                id: `series-${s.id}`,
+                tmdbId: s.tmdb_id,
+                title: s.titulo,
+                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : s.banner,
+                poster: s.banner,
+                year: parseInt(s.ano) || 0,
+                rating: s.rating || 'N/A',
+                description: s.descricao || '',
+                country: tmdbData?.origin_country?.[0],
+                contentRating: tmdbData?.content_rating,
+                type: 'series' as const,
+                genre: s.genero ? s.genero.split(',').map((g: string) => g.trim()) : [],
+              };
+            })
+        );
 
         // Combinar e embaralhar (Fisher-Yates)
-        const combined = [...movies, ...series];
+        const combined = [...moviesWithBackdrops, ...seriesWithBackdrops];
         for (let i = combined.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [combined[i], combined[j]] = [combined[j], combined[i]];

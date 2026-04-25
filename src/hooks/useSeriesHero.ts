@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchTmdbDetailsWithBackdrop, tmdbImageUrl } from '@/services/tmdb';
 
 interface SeriesHeroItem {
   id: string;
@@ -34,7 +35,7 @@ export function useSeriesHero(): UseSeriesHeroReturn {
   const [nextItem, setNextItem] = useState<SeriesHeroItem | null>(null);
   const preloadedImages = useRef<Set<string>>(new Set());
 
-  // Buscar séries aleatórias
+  // Buscar séries aleatórias com backdrops do TMDB
   useEffect(() => {
     const fetchSeries = async () => {
       setIsLoading(true);
@@ -42,7 +43,7 @@ export function useSeriesHero(): UseSeriesHeroReturn {
         const { data: series, error } = await supabase
           .from('series')
           .select('id, tmdb_id, titulo, banner, ano, rating, descricao, genero, temporadas, episodios')
-          .not('banner', 'is', null)
+          .not('tmdb_id', 'is', null)
           .limit(30);
 
         if (error) {
@@ -51,23 +52,34 @@ export function useSeriesHero(): UseSeriesHeroReturn {
           return;
         }
 
-        const formattedSeries: SeriesHeroItem[] = (series as any[] || [])
-          .filter(s => s.banner)
-          .map((s: any) => ({
-            id: `series-${s.id}`,
-            tmdbId: s.tmdb_id,
-            title: s.titulo,
-            backdrop: s.banner,
-            poster: s.banner,
-            year: parseInt(s.ano) || 0,
-            rating: s.rating || 'N/A',
-            seasons: s.temporadas || 1,
-            episodes: s.episodios,
-            description: s.descricao || '',
-            country: '',
-            contentRating: '',
-            genre: s.genero ? s.genero.split(',').map((g: string) => g.trim()) : [],
-          }));
+        // Enriquecer com backdrops do TMDB
+        const seriesWithBackdrops = await Promise.all(
+          (series as any[] || [])
+            .filter(s => s.tmdb_id)
+            .slice(0, 20)
+            .map(async (s: any) => {
+              const tmdbData = await fetchTmdbDetailsWithBackdrop(s.tmdb_id, 'tv');
+              const backdropPath = tmdbData?.backdrop_path;
+              
+              return {
+                id: `series-${s.id}`,
+                tmdbId: s.tmdb_id,
+                title: s.titulo,
+                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : s.banner,
+                poster: s.banner,
+                year: parseInt(s.ano) || 0,
+                rating: s.rating || 'N/A',
+                seasons: s.temporadas || tmdbData?.number_of_seasons || 1,
+                episodes: s.episodios || tmdbData?.number_of_episodes,
+                description: s.descricao || tmdbData?.overview || '',
+                country: tmdbData?.origin_country?.[0] || '',
+                contentRating: tmdbData?.content_rating || '',
+                genre: s.genero ? s.genero.split(',').map((g: string) => g.trim()) : [],
+              };
+            })
+        );
+
+        const formattedSeries: SeriesHeroItem[] = seriesWithBackdrops;
 
         // Fisher-Yates shuffle
         for (let i = formattedSeries.length - 1; i > 0; i--) {

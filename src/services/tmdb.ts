@@ -78,3 +78,54 @@ export const getTmdbTrailerUrl = (videos: any) => {
   if (trailer) return `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&loop=1&playlist=${trailer.key}`;
   return null;
 };
+
+// Buscar imagens (backdrops) para hero banners
+export const fetchTmdbImages = async (tmdbId: string, type: "movie" | "tv") => {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE_URL}/${type}/${tmdbId}/images?api_key=${TMDB_API_KEY}`
+    );
+    if (!res.ok) return null;
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching TMDB images:", error);
+    return null;
+  }
+};
+
+// Buscar backdrop específico - retorna o path do melhor backdrop disponível
+export const getTmdbBackdropPath = async (tmdbId: string, type: "movie" | "tv") => {
+  const data = await fetchTmdbImages(tmdbId, type);
+  if (!data?.backdrops?.length) return null;
+  
+  // Ordenar por vote_average e pegar o melhor
+  const sorted = data.backdrops.sort((a: any, b: any) => (b.vote_average || 0) - (a.vote_average || 0));
+  return sorted[0]?.file_path || null;
+};
+
+// Buscar detalhes completos com backdrop
+export const fetchTmdbDetailsWithBackdrop = async (tmdbId: string, type: "movie" | "tv") => {
+  try {
+    // Buscar detalhes + imagens em uma chamada
+    const res = await fetch(
+      `${TMDB_BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=images,videos,credits`
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    
+    // Retornar backdrop_path preferencialmente, senão pegar da lista de backdrops
+    let backdropPath = data.backdrop_path;
+    if (!backdropPath && data.images?.backdrops?.length > 0) {
+      const sorted = data.images.backdrops.sort((a: any, b: any) => (b.vote_average || 0) - (a.vote_average || 0));
+      backdropPath = sorted[0]?.file_path;
+    }
+    
+    return {
+      ...data,
+      backdrop_path: backdropPath
+    };
+  } catch (error) {
+    console.error("Error fetching TMDB details with backdrop:", error);
+    return null;
+  }
+};

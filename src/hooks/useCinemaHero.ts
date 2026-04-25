@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchTmdbDetailsWithBackdrop, tmdbImageUrl } from '@/services/tmdb';
 
 interface CinemaHeroItem {
   id: string;
@@ -33,7 +34,7 @@ export function useCinemaHero(): UseCinemaHeroReturn {
   const [nextItem, setNextItem] = useState<CinemaHeroItem | null>(null);
   const preloadedImages = useRef<Set<string>>(new Set());
 
-  // Buscar filmes aleatórios
+  // Buscar filmes aleatórios com backdrops do TMDB
   useEffect(() => {
     const fetchMovies = async () => {
       setIsLoading(true);
@@ -41,7 +42,7 @@ export function useCinemaHero(): UseCinemaHeroReturn {
         const { data: movies, error } = await supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, capa, poster, year, rating, description, category, genero')
-          .not('capa', 'is', null)
+          .not('tmdb_id', 'is', null)
           .limit(30);
 
         if (error) {
@@ -50,23 +51,34 @@ export function useCinemaHero(): UseCinemaHeroReturn {
           return;
         }
 
-        const formattedMovies: CinemaHeroItem[] = (movies as any[] || [])
-          .filter(m => m.capa || m.poster)
-          .map((m: any) => ({
-            id: `cinema-${m.id}`,
-            tmdbId: m.tmdb_id,
-            title: m.titulo,
-            backdrop: m.capa || m.poster,
-            poster: m.capa || m.poster,
-            year: parseInt(m.year) || 0,
-            rating: m.rating || 'N/A',
-            duration: '',
-            description: m.description || '',
-            country: '',
-            contentRating: '',
-            genre: m.category ? m.category.split(',').map((g: string) => g.trim()) : 
-                   m.genero ? m.genero.split(',').map((g: string) => g.trim()) : [],
-          }));
+        // Enriquecer com backdrops do TMDB
+        const moviesWithBackdrops = await Promise.all(
+          (movies as any[] || [])
+            .filter(m => m.tmdb_id)
+            .slice(0, 20)
+            .map(async (m: any) => {
+              const tmdbData = await fetchTmdbDetailsWithBackdrop(m.tmdb_id, 'movie');
+              const backdropPath = tmdbData?.backdrop_path;
+              
+              return {
+                id: `cinema-${m.id}`,
+                tmdbId: m.tmdb_id,
+                title: m.titulo,
+                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : (m.capa || m.poster),
+                poster: m.capa || m.poster,
+                year: parseInt(m.year) || 0,
+                rating: m.rating || 'N/A',
+                duration: tmdbData?.runtime ? `${Math.floor(tmdbData.runtime / 60)}h ${tmdbData.runtime % 60}min` : '',
+                description: m.description || tmdbData?.overview || '',
+                country: tmdbData?.origin_country?.[0] || tmdbData?.production_countries?.[0]?.iso_3166_1 || '',
+                contentRating: tmdbData?.content_rating || '',
+                genre: m.category ? m.category.split(',').map((g: string) => g.trim()) : 
+                       m.genero ? m.genero.split(',').map((g: string) => g.trim()) : [],
+              };
+            })
+        );
+
+        const formattedMovies: CinemaHeroItem[] = moviesWithBackdrops;
 
         // Fisher-Yates shuffle
         for (let i = formattedMovies.length - 1; i > 0; i--) {
