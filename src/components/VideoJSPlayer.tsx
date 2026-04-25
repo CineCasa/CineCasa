@@ -557,6 +557,43 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       } else {
         console.log('[VideoJSPlayer] No audio tracks available');
       }
+      
+      // Extract text tracks (SUBTITLES)
+      if (player.textTracks && player.textTracks()) {
+        const textTrackList = player.textTracks();
+        const tracks: TextTrack[] = [];
+        
+        console.log(`[VideoJSPlayer] Found ${textTrackList.length} text tracks`);
+        
+        for (let i = 0; i < textTrackList.length; i++) {
+          const track = textTrackList[i];
+          console.log(`[VideoJSPlayer] Text track ${i}:`, {
+            label: track.label,
+            language: track.language,
+            kind: track.kind,
+            mode: track.mode
+          });
+          if (track.kind === 'subtitles' || track.kind === 'captions') {
+            tracks.push(track);
+          }
+        }
+        
+        if (tracks.length > 0) {
+          console.log('[VideoJSPlayer] Setting subtitle tracks:', tracks);
+          setSubtitleTracks(tracks);
+          // Find current showing track
+          for (let i = 0; i < textTrackList.length; i++) {
+            if (textTrackList[i].mode === 'showing') {
+              console.log('[VideoJSPlayer] Current showing subtitle track:', i);
+              setCurrentSubtitleTrack(i);
+              setSubtitlesEnabled(true);
+              break;
+            }
+          }
+        }
+      } else {
+        console.log('[VideoJSPlayer] No text tracks available');
+      }
     });
 
     player.on('play', () => setIsPlaying(true));
@@ -793,15 +830,34 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     }
   }, [isMuted]);
 
-  const toggleFullscreen = useCallback(() => {
-    if (playerRef.current) {
-      if (isFullscreen) {
-        playerRef.current.exitFullscreen();
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        // Enter fullscreen on the player container
+        const container = playerContainerRef.current || document.documentElement;
+        if (container.requestFullscreen) {
+          await container.requestFullscreen();
+        } else if ((container as any).webkitRequestFullscreen) {
+          await (container as any).webkitRequestFullscreen();
+        } else if ((container as any).msRequestFullscreen) {
+          await (container as any).msRequestFullscreen();
+        }
+        setIsFullscreen(true);
       } else {
-        playerRef.current.requestFullscreen();
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        setIsFullscreen(false);
       }
+    } catch (err) {
+      console.error('[VideoJSPlayer] Fullscreen error:', err);
     }
-  }, [isFullscreen]);
+  }, []);
 
   const skip = useCallback((seconds: number) => {
     if (playerRef.current) {
@@ -886,6 +942,24 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
             e.preventDefault();
             onNextEpisode();
           }
+          break;
+        case 's':
+        case 'S':
+          e.preventDefault();
+          if (playerRef.current) {
+            playerRef.current.pause();
+            playerRef.current.currentTime(0);
+            setIsPlaying(false);
+            setCurrentTime(0);
+          }
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          skip(-10);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          skip(10);
           break;
         case '0':
         case '1':
@@ -1493,20 +1567,39 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 )}
               </button>
 
-              {/* Skip Backward - Hidden on very small screens */}
+              {/* Skip Backward - 10s */}
               <button
                 onClick={(e) => { e.stopPropagation(); skip(-10); }}
-                className="hidden sm:flex p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="flex p-2 hover:bg-white/20 rounded-full transition-colors"
+                title="Voltar 10s (←)"
               >
                 <SkipBack size={22} className="text-white" />
               </button>
 
-              {/* Skip Forward - Hidden on very small screens */}
+              {/* Skip Forward - 10s */}
               <button
                 onClick={(e) => { e.stopPropagation(); skip(10); }}
-                className="hidden sm:flex p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="flex p-2 hover:bg-white/20 rounded-full transition-colors"
+                title="Avançar 10s (→)"
               >
                 <SkipForward size={22} className="text-white" />
+              </button>
+
+              {/* Stop Button */}
+              <button
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  if (playerRef.current) {
+                    playerRef.current.pause();
+                    playerRef.current.currentTime(0);
+                    setIsPlaying(false);
+                    setCurrentTime(0);
+                  }
+                }}
+                className="flex p-2 hover:bg-white/20 rounded-full transition-colors"
+                title="Parar (S)"
+              >
+                <Square size={22} className="text-white" fill="white" />
               </button>
 
               {/* Settings Menu (combina Playback Rate + Quality) */}
@@ -1631,20 +1724,6 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
                 </div>
               )}
 
-              {/* Chromecast */}
-              <CastButton
-                mediaInfo={{
-                  contentId: videoUrl || originalUrl,
-                  contentType: 'video/mp4',
-                  title: title,
-                  poster: poster,
-                  currentTime: currentTime,
-                  duration: duration,
-                }}
-                size="md"
-                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-              />
-
               {/* Subtitles */}
               <div className="relative">
                 <button 
@@ -1685,6 +1764,22 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Cast Button - Center of Screen */}
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9998]">
+        <CastButton
+          mediaInfo={{
+            contentId: videoUrl || originalUrl,
+            contentType: 'video/mp4',
+            title: title,
+            poster: poster,
+            currentTime: currentTime,
+            duration: duration,
+          }}
+          size="lg"
+          className="p-4 bg-black/70 hover:bg-black/90 backdrop-blur-md rounded-full shadow-2xl transition-all hover:scale-110"
+        />
       </div>
 
       {/* Fullscreen Button - Outside controls overlay */}
