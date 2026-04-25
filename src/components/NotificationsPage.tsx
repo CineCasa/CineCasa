@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Film, Tv, Clock, RefreshCw, Play, Star, Calendar, X, Settings, CreditCard, AlertTriangle, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,6 +51,7 @@ export const NotificationsPage: React.FC = () => {
   const { session } = useAuth();
   const navigate = useNavigate();
   const { openPlayer } = usePlayer();
+  const firstCardRef = useRef<HTMLDivElement>(null);
   
   const isLoggedIn = !!session;
   const userId = session?.user?.id;
@@ -221,6 +222,31 @@ export const NotificationsPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [fetchRecentContent, fetchSubscriptionStatus]);
 
+  // Focar no primeiro card quando a página carregar e dados estiverem prontos
+  useEffect(() => {
+    if (!isLoading && recentContent.length > 0 && firstCardRef.current) {
+      // Aguardar DOM estar pronto
+      setTimeout(() => {
+        const navbarHeight = 94; // Altura da navbar fixa
+        const elementPosition = firstCardRef.current!.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - navbarHeight;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+        
+        // Adicionar destaque visual temporário no primeiro card
+        firstCardRef.current!.classList.add('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
+        
+        // Remover o destaque após 2 segundos
+        setTimeout(() => {
+          firstCardRef.current?.classList.remove('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
+        }, 2000);
+      }, 100);
+    }
+  }, [isLoading, recentContent.length]);
+
   // Gerar alertas quando subscription mudar
   useEffect(() => {
     generateAlerts();
@@ -387,9 +413,10 @@ export const NotificationsPage: React.FC = () => {
             {(selectedCategory 
               ? recentContent.filter(item => (item.category || item.genero) === selectedCategory)
               : recentContent
-            ).map((item) => (
+            ).map((item, index) => (
               <div
                 key={item.id}
+                ref={index === 0 ? firstCardRef : null}
                 onClick={() => handlePlay(item)}
                 className="group flex flex-row bg-[#0f172a]/80 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 transition-all duration-300 hover:border-[#00E5FF]/50 hover:shadow-[0_0_20px_rgba(0,229,255,0.2)] cursor-pointer"
               >
