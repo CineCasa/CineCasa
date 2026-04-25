@@ -490,10 +490,6 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                   <button
                     type="submit"
                     disabled={!searchQuery.trim()}
-                    onClick={() => {
-                      console.log('[Search] Button clicked');
-                      handleSearchSubmit();
-                    }}
                     className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
                       searchQuery.trim()
                         ? 'bg-[#00E5FF]/20 text-[#00E5FF] hover:bg-[#00E5FF]/30'
