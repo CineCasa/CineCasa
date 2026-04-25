@@ -59,24 +59,6 @@ export function MovieCard({
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          <div className="absolute bottom-2 left-2 right-2">
-            <h3 className="text-white text-sm font-semibold line-clamp-2 mb-1">
-              {movie.title}
-            </h3>
-            <div className="flex items-center gap-2 text-white text-xs">
-              {movie.rating && (
-                <Badge size="xs" variant="default">
-                  <Star className="w-3 h-3 mr-1" />
-                  {movie.rating.toFixed(1)}
-                </Badge>
-              )}
-              {movie.year && (
-                <span>{formatYear(movie.year)}</span>
-              )}
-            </div>
-          </div>
         </div>
       </Card>
     );
