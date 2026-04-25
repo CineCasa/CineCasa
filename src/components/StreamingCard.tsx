@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Play, Plus, ThumbsUp, Volume2, Info } from 'lucide-react';
 
 interface StreamingCardProps {
   title: string;
@@ -50,38 +49,18 @@ const StreamingCard: React.FC<StreamingCardProps> = ({
           loading="lazy"
         />
         
-        {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
         {/* Quality Badge */}
         {quality && (
           <div className="absolute top-2 right-2 streaming-badge">
             {quality}
           </div>
         )}
-        
-        {/* Play Button Overlay */}
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-          initial={{ scale: 0.8 }}
-          whileHover={{ scale: 1 }}
-          transition={{ duration: 0.2 }}
-        >
-          <motion.button
-            onClick={onPlay}
-            className="w-16 h-16 rounded-full bg-netflix-red/90 hover:bg-netflix-red flex items-center justify-center transition-colors duration-200"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <Play className="w-8 h-8 text-white ml-1" fill="white" />
-          </motion.button>
-        </motion.div>
       </div>
 
       {/* Card Content */}
       <div className="p-4">
         {/* Title */}
-        <h3 className="text-white font-semibold text-sm sm:text-base md:text-lg lg:text-xl line-clamp-2 group-hover:text-netflix-red transition-colors duration-200">
+        <h3 className="text-white font-semibold text-sm sm:text-base md:text-lg lg:text-xl line-clamp-2">
           {title}
         </h3>
 

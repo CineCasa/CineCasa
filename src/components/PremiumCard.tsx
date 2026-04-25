@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Play, Info, Clock } from 'lucide-react';
 
 interface PremiumCardProps {
   id: string;
@@ -81,23 +80,7 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
           }}
         />
 
-        {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-        {/* Botão Info/Mais - Estilo Glassmorphism */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick?.();
-            }}
-            className="px-4 py-2 bg-white/10 backdrop-blur-md border border-white/30 rounded-lg text-white text-sm font-medium hover:bg-white/20 hover:border-[#00E5FF]/50 hover:shadow-[0_0_15px_rgba(0,229,255,0.4)] transition-all duration-300 transform hover:scale-105"
-          >
-            Info/Mais
-          </button>
-        </div>
-
-        {/* Tags */}
+        {/* Tags - sempre visíveis, não apenas no hover */}
         {isNew && !isComingSoon && (
           <div className="content-tag">
             {year || 'NOVO'}

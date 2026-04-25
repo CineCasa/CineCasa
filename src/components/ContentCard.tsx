@@ -18,13 +18,7 @@ interface ContentCardProps {
 }
 
 const ContentCard = ({ item, index, isLast = false, showProgress = false, rowIndex, colIndex }: ContentCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [trailerUrl, setTrailerUrl] = useState<string | null>(item.trailer || null);
-  const [metadata, setMetadata] = useState<{ duration: string; rating: string } | null>(null);
-  const [showTrailer, setShowTrailer] = useState(false);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
-  const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
-  const trailerLoadTimeout = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   
   // Hooks do Supabase
@@ -72,20 +66,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
   }, [item.tmdbId, item.id, item.trailer]);
 
 
-  const handleMouseEnter = () => {
-    hoverTimeout.current = setTimeout(() => {
-      setIsHovered(true);
-      // Trailer delay reduzido para resposta mais rápida
-      trailerLoadTimeout.current = setTimeout(() => setShowTrailer(true), 300);
-    }, 100);
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
-    if (trailerLoadTimeout.current) clearTimeout(trailerLoadTimeout.current);
-    setIsHovered(false);
-    setShowTrailer(false);
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -188,22 +168,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
       }
     }
 
-    if (e.key === "Escape") {
-      setIsHovered(false);
-    }
-  };
-
-  const getTransformOrigin = () => {
-    const el = containerRef.current;
-    if (!el) return "left center"; 
-    
-    const rect = el.getBoundingClientRect();
-    const windowWidth = window.innerWidth;
-    
-    if (rect.right > windowWidth - 150) return "right center";
-    return "left center";
-  };
-
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -228,24 +193,12 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
       data-focusable="true"
       data-row={rowIndex}
       data-col={colIndex}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onFocus={(e) => {
-        setIsHovered(true);
-        // Scroll into view when focused (for keyboard navigation)
-        e.currentTarget.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'center', 
-          inline: 'center' 
-        });
-      }}
-      onBlur={() => setIsHovered(false)}
       onKeyDown={handleKeyDown}
       onClick={handleNavigateToDetails}
       tabIndex={0}
       role="button"
       aria-label={`${item.title} - ${item.type === 'movie' ? 'Filme' : 'Série'}`}
-      className={`content-card relative flex-shrink-0 
+      className="content-card relative flex-shrink-0 
         w-[calc(50vw-12px)] 
         sm:w-[calc((100vw-32px-16px)/3)] 
         md:w-[calc((100vw-64px-48px)/4)] 
@@ -254,13 +207,14 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
         aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5FF] focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-xl cursor-pointer scroll-m-4
         hover:scale-105 hover:shadow-[0_0_25px_rgba(0,229,255,0.3),0_10px_40px_rgba(0,0,0,0.5)]
         border border-white/5 hover:border-[#00E5FF]/30
-        ${isHovered ? "z-[99999]" : "z-0"}
-      `}
+        z-0
+      "
     >
       {/* BASE PORTRAIT IMAGE */}
       <div 
         onClick={handleNavigateToDetails}
-        className={`w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300 ${isHovered ? "opacity-0" : "opacity-100"} ${!item.isComingSoon && 'cursor-pointer hover:brightness-110'}`}>
+        className={`w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300 ${!item.isComingSoon && 'cursor-pointer hover:brightness-110'}`}>
+    >
         {isVisible ? (
           <img
             src={item.image || `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`}
@@ -314,83 +268,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
            </div>
         )}
       </div>
-
-      {/* EXPANDED STATE */}
-      <AnimatePresence>
-        {isHovered && (
-          <motion.div
-            initial={{ scale: 1, opacity: 0, y: 0 }}
-            animate={{ 
-              scale: 1.25,
-              opacity: 1,
-              y: -10,
-              width: "160%",
-              height: "auto"
-            }}
-            exit={{ scale: 1, opacity: 0, y: 0, width: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            style={{ 
-              transformOrigin: getTransformOrigin(),
-              zIndex: 100000,
-            }}
-            className="absolute top-0 left-0 glass-card shadow-[0_20px_40px_rgba(0,0,0,0.9)] overflow-hidden ring-1 ring-[#00E5FF]/30 w-[160%] h-auto"
-          >
-            {/* TOP: MEDIA SECTION (VIDEO OR PHOTO) */}
-            <div className={`relative w-full aspect-video overflow-hidden bg-black`}>
-              {showTrailer && trailerUrl ? (
-                <iframe
-                  src={trailerUrl.includes("?") 
-                    ? `${trailerUrl}&autoplay=1&mute=0&controls=1&loop=1&playsinline=1&origin=${window.location.origin}&widget_referrer=${window.location.href}&volume=100` 
-                    : `${trailerUrl}?autoplay=1&mute=0&controls=1&loop=1&playsinline=1&origin=${window.location.origin}&widget_referrer=${window.location.href}&volume=100`}
-                  className="absolute inset-0 w-full h-full object-cover scale-[1.05]"
-                  allow="autoplay; fullscreen; encrypted-media; picture-in-picture; web-share"
-                  allowFullScreen
-                  title={item.title}
-                  frameBorder="0"
-                  loading="eager"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-presentation"
-                />
-              ) : (
-                <>
-                  <img
-                    src={item.backdrop || item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                    loading="eager"
-                  />
-                  <div className="absolute bottom-4 left-4 z-10 right-4">
-                    <h3 className="text-white font-black text-[24px] sm:text-[30px] drop-shadow-lg text-shadow-premium break-words whitespace-normal leading-tight line-clamp-2">
-                      {item.title}
-                    </h3>
-                  </div>
-                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#141414] to-transparent" />
-                </>
-              )}
-            </div>
-
-            {/* BOTTOM: METADATA */}
-            <div className="p-4 flex flex-col gap-3 bg-[#1b1b1b] border-t border-white/5">
-              <div className="flex items-center gap-3">
-                <span className="text-[#ffff5c] font-black text-xs">
-                  {metadata?.rating || item.rating} Relevante
-                </span>
-                <span className="text-white/60 text-xs font-bold">{item.year}</span>
-                <span className="text-white/40 text-[10px] px-1.5 py-0.5 border border-white/20 rounded leading-none uppercase">
-                  {item.rating}
-                </span>
-                {metadata?.duration && (
-                  <span className="text-white/60 text-xs">{metadata.duration}</span>
-                )}
-              </div>
-
-              <p className="text-white/80 text-[10px] sm:text-xs line-clamp-2 leading-relaxed">
-                {item.description}
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {isPlayerOpen && item && (
         <VideoJSPlayer 
