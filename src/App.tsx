@@ -37,6 +37,8 @@ import PublicNotifications from "./pages/PublicNotifications";
 import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import { useGlobalBackHandler } from "./hooks/useGlobalBackHandler";
+import { ExitConfirmationModal } from "./components/ExitConfirmationModal";
 import { useSilentUpdate } from "@/hooks/useSilentUpdate";
 import { useForceUpdate } from "@/hooks/useForceUpdate";
 import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
@@ -176,7 +178,7 @@ const PlayerContainer = () => {
 const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const location = useLocation();
-  const { isPlayerOpen } = usePlayer();
+  const { isPlayerOpen, closePlayer } = usePlayer();
   const { user } = useAuth();
   const isLoginPage = location.pathname === "/login";
   const isSeriesDetailsPage = location.pathname.startsWith("/series-details/");
@@ -185,6 +187,16 @@ const AppContent = () => {
   const isDetailsPage = location.pathname.startsWith("/details/");
   const isPlayerPage = isSeriesDetailsPage || isMovieDetailsPage || isContentPage || isDetailsPage || isPlayerOpen;
   const isLoggedIn = !!user;
+  
+  // Global Back Handler - navegação TV/Controle Remoto
+  const { showExitConfirmation, confirmExit, cancelExit } = useGlobalBackHandler({
+    isPlayerOpen,
+    onClosePlayer: closePlayer,
+    onExitApp: () => {
+      // Tentar fechar o app ou redirecionar para uma página de agradecimento
+      window.location.href = '/logout';
+    },
+  });
   
   // Inicializar limpeza automática de cache - garante atualizações sempre
   useAutoCacheCleanup();
@@ -229,6 +241,13 @@ const AppContent = () => {
       </NotificationProvider>
       {showNavbars && <MobileBottomNav />}
       <PWAInstallPrompt />
+      
+      {/* Modal de Confirmação de Saída - Global Back Handler */}
+      <ExitConfirmationModal
+        isOpen={showExitConfirmation}
+        onConfirm={confirmExit}
+        onCancel={cancelExit}
+      />
     </div>
   );
 };
