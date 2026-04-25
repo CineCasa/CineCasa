@@ -68,27 +68,6 @@ const ContinueWatchingCard = ({ item, onRemove, onPlay }: ContinueWatchingCardPr
           {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-          {/* Botão Remover (X) */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(item.id);
-            }}
-            className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 hover:bg-red-500/80 text-white/70 hover:text-white transition-all duration-200 opacity-0 group-hover:opacity-100 z-20 backdrop-blur-sm"
-          >
-            <X size={14} />
-          </button>
-
-          {/* Botão Play Flutuante - Estilo Branco Sólido */}
-          <button
-            onClick={() => onPlay(item)}
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-          >
-            <div className="w-14 h-14 rounded-full bg-white hover:bg-gray-100 flex items-center justify-center shadow-lg transform hover:scale-110 transition-all duration-200">
-              <Play size={24} className="text-black ml-0.5" fill="black" />
-            </div>
-          </button>
-
           {/* Barra de Progresso Neon na Base */}
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
             <div 

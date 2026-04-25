@@ -349,22 +349,14 @@ function PersonalizedRecommendationCard({
         </div>
       </div>
 
-      {/* Imagem */}
+        {/* Imagem */}
       <div className="aspect-video relative">
         <img
           src={item.coverImage || '/placeholder-movie.jpg'}
           alt={item.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Play button overlay */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="bg-primary/80 rounded-full p-3 transform scale-90 group-hover:scale-100 transition-transform duration-300">
-            <Play className="w-6 h-6 text-white" />
-          </div>
-        </div>
       </div>
 
       {/* Conteúdo */}
