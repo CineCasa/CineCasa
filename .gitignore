@@ -7,10 +7,29 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Cache
+.cache
+*.cache
+.eslintcache
+.parcel-cache
+.next
+.nuxt
+.cache-loader
+*.tmp
+*.temp
+
+# Build outputs
 dist
 dist-ssr
+build
+out
+.output
+
+# Local env files
 *.local
+.env
+.env.local
+.env.*.local
 
 # Bun lockfiles (project uses npm/pnpm)
 bun.lock
@@ -26,3 +45,13 @@ bun.lockb
 *.njsproj
 *.sln
 *.sw?
+
+# OS files
+Thumbs.db
+*.pem
+
+# Deploy artifacts
+.deploy-timestamp
+build.log
+vercel.json.bak
+wrangler.toml.bak
