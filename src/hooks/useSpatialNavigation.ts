@@ -7,10 +7,16 @@ const isTVOrDesktop = (): boolean => {
   const isTVDevice = /smart-tv|smarttv|tizen|webos|playstation|xbox|roku|firetv|android tv/i.test(userAgent);
   const isLargeScreen = window.innerWidth >= 1024;
   const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
-  const isAndroidTV = /android.*tv|aftb|aftt|aftm/i.test(userAgent);
+  const isAndroidTV = /android.*tv|aftb|aftt|aftm|tcl|google tv/i.test(userAgent);
   const isTizen = 'tizen' in window || /tizen/i.test(userAgent);
   const isWebOS = 'webOS' in window || 'PalmSystem' in window;
-  return isTVDevice || isLargeScreen || isAndroidTV || isTizen || isWebOS || hasFinePointer;
+  const isTV = isTVDevice || isAndroidTV || isTizen || isWebOS || isLargeScreen || hasFinePointer;
+  
+  if (isTV) {
+    console.log('[SpatialNavigation] TV/Desktop detectado:', { isAndroidTV, isTizen, isWebOS, isLargeScreen });
+  }
+  
+  return isTV;
 };
 
 export function useSpatialNavigation(containerRef: React.RefObject<HTMLElement>, selector = '[data-navigable="true"]') {

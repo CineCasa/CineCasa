@@ -104,21 +104,70 @@ export const useSmartTVNavigation = (options: NavigationOptions = {}) => {
     window.addEventListener('select', handleRemoteControl);
     window.addEventListener('back', handleRemoteControl);
 
-    // Inicializar suporte a Smart TV (Tizen, webOS)
+    // Inicializar suporte a Smart TV (Tizen, webOS, Android TV)
     if (typeof window !== 'undefined') {
+      const userAgent = navigator.userAgent.toLowerCase();
+      
+      // Detectar Android TV (TCL e outros)
+      const isAndroidTV = /android.*tv|aftb|aftt|aftm|tcl|roku|firetv|google tv/i.test(userAgent);
+      if (isAndroidTV) {
+        console.log('[SmartTV] Android TV detectado');
+        document.body.classList.add('android-tv');
+        
+        // Tentar registrar teclas específicas do Android TV
+        try {
+          // @ts-ignore
+          if (window.android && window.android.registerKeys) {
+            // @ts-ignore
+            window.android.registerKeys(['DPAD_UP', 'DPAD_DOWN', 'DPAD_LEFT', 'DPAD_RIGHT', 'DPAD_CENTER', 'BACK']);
+          }
+        } catch (e) {
+          console.log('[SmartTV] Android TV key registration not available');
+        }
+      }
+      
       // Tizen
       if ('tizen' in window) {
         try {
           // @ts-ignore
           window.tizen.tvinputdevice.registerKeyBatch(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Back']);
+          console.log('[SmartTV] Tizen registrado com sucesso');
         } catch (e) {
-          console.log('Tizen registration failed:', e);
+          console.log('[SmartTV] Tizen registration failed:', e);
         }
       }
       
-      // webOS
+      // webOS (LG)
       if ('webOS' in window || 'PalmSystem' in window) {
+        console.log('[SmartTV] webOS (LG) detectado');
         document.body.classList.add('webos-tv');
+        
+        // Tentar usar API do webOS
+        try {
+          // @ts-ignore
+          if (window.webOS && window.webOS.keyboard) {
+            // @ts-ignore
+            window.webOS.keyboard.register({
+              keys: ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Back']
+            });
+          }
+        } catch (e) {
+          console.log('[SmartTV] webOS key registration not available');
+        }
+      }
+      
+      // Ativar modo TV se detectado
+      if (isAndroidTV || 'tizen' in window || 'webOS' in window || 'PalmSystem' in window) {
+        document.body.classList.add('tv-mode');
+        
+        // Focar primeiro elemento focável automaticamente
+        setTimeout(() => {
+          const firstFocusable = document.querySelector('[data-navigable="true"], button, a, [tabindex]:not([tabindex="-1"])') as HTMLElement;
+          if (firstFocusable) {
+            firstFocusable.focus();
+            console.log('[SmartTV] Foco automático ativado no primeiro elemento');
+          }
+        }, 500);
       }
     }
 
