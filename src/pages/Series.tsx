@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Star, Calendar, Tv } from 'lucide-react';
+import { Star, Calendar, Tv } from 'lucide-react';
 import { useSeriesData, Serie } from '@/hooks/useSeriesData';
 import { tmdbImageUrl } from '@/services/tmdb';
 import { SeriesHeroBanner } from '@/components/SeriesHeroBanner';
@@ -236,13 +236,6 @@ function CategoryRow({ genre, series, onSeriesClick }: CategoryRowProps) {
     <div className="series-category-row">
       <h2 className="series-category-title">{genre}</h2>
       <div className="series-slider-container">
-        <button
-          className="series-slider-button left"
-          onClick={() => scroll('left')}
-          aria-label="Scroll left"
-        >
-          <ChevronLeft className="w-8 h-8 text-white" />
-        </button>
         <div className="series-slider" ref={sliderRef}>
           {series.map((serie) => (
             <SeriesCard
@@ -252,13 +245,6 @@ function CategoryRow({ genre, series, onSeriesClick }: CategoryRowProps) {
             />
           ))}
         </div>
-        <button
-          className="series-slider-button right"
-          onClick={() => scroll('right')}
-          aria-label="Scroll right"
-        >
-          <ChevronRight className="w-8 h-8 text-white" />
-        </button>
       </div>
     </div>
   );

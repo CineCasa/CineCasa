@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import getSupabaseClient from '@/lib/supabase';
 import PremiumCard from '@/components/PremiumCard';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SeriesItem {
   id: number;
@@ -138,47 +137,10 @@ const SeriesPorCategoria: React.FC = () => {
         <div className="flex items-center justify-between px-4 lg:px-12 mb-4">
           <h2 className="text-xl lg:text-2xl font-bold text-white">{category}</h2>
           
-          {/* Setas de navegação - apenas desktop */}
-          {!isMobile && (
-            <div className="flex gap-2">
-              <button 
-                onClick={() => scroll(-1)}
-                disabled={!canScrollLeft}
-                className={`p-2 rounded-full transition-all duration-300 ${
-                  canScrollLeft 
-                    ? 'bg-white/20 hover:bg-white/40 text-white' 
-                    : 'bg-white/5 text-white/30 cursor-not-allowed'
-                }`}
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <button 
-                onClick={() => scroll(1)}
-                disabled={!canScrollRight}
-                className={`p-2 rounded-full transition-all duration-300 ${
-                  canScrollRight 
-                    ? 'bg-white/20 hover:bg-white/40 text-white' 
-                    : 'bg-white/5 text-white/30 cursor-not-allowed'
-                }`}
-              >
-                <ChevronRight size={24} />
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Layout horizontal com rolagem infinita - 5 capas visíveis */}
         <div className="relative px-4 lg:px-12">
-          {/* Fade esquerdo */}
-          {canScrollLeft && (
-            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-          )}
-          
-          {/* Fade direito */}
-          {canScrollRight && (
-            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-          )}
-
           <div 
             ref={scrollRef}
             onScroll={checkScroll}

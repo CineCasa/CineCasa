@@ -5,7 +5,7 @@ import PremiumNavbar from '@/components/PremiumNavbar';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
 import { MobileNetflixHero } from '@/components/MobileNetflixHero';
 import { MOVIE_CATEGORIES, CATEGORY_MAPPING } from '@/data/movieCategories';
-import { ChevronLeft, ChevronRight, Play, Info } from 'lucide-react';
+import { Play, Info } from 'lucide-react';
 import { cleanTitle } from '@/lib/utils';
 
 interface Movie {
@@ -203,16 +203,6 @@ const FilmesESeries = () => {
 
                 {/* Row com scroll horizontal infinito */}
                 <div className="relative group">
-                  {/* Botão scroll esquerdo */}
-                  {scrollPositions[category.id] > 0 && (
-                    <button
-                      onClick={() => scroll(category.id, 'left')}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/70 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/90"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </button>
-                  )}
-
                   {/* Container de filmes */}
                   <div
                     id={`scroll-${category.id}`}
@@ -267,14 +257,6 @@ const FilmesESeries = () => {
                       </div>
                     ))}
                   </div>
-
-                  {/* Botão scroll direito */}
-                  <button
-                    onClick={() => scroll(category.id, 'right')}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-black/70 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/90"
-                  >
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
                 </div>
               </div>
             ))

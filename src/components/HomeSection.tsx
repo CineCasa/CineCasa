@@ -1,6 +1,5 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import ContentCard from './ContentCard';
 import ContinueWatchingCard from './ContinueWatchingCard';
 import HomeContentCard from './HomeContentCard';
@@ -24,21 +23,6 @@ const HomeSection: React.FC<HomeSectionProps> = ({
   onMoreInfo
 }) => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-
-  const scroll = (direction: 'left' | 'right') => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const scrollAmount = 300;
-    const newScrollLeft = direction === 'left' 
-      ? container.scrollLeft - scrollAmount 
-      : container.scrollLeft + scrollAmount;
-
-    container.scrollTo({
-      left: newScrollLeft,
-      behavior: 'smooth'
-    });
-  };
 
   // Simular progresso para continuar assistindo
   const getProgress = (item: ContentItem) => {
@@ -64,22 +48,8 @@ const HomeSection: React.FC<HomeSectionProps> = ({
   return (
     <div className="mb-8 md:mb-12">
       {/* Mobile: Título separado das capas */}
-      <div className="flex items-center justify-between mb-6 md:mb-4 px-4 md:px-0">
+      <div className="flex items-center mb-6 md:mb-4 px-4 md:px-0">
         <h2 className="text-lg md:text-[30px] font-bold text-white">{title}</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => scroll('left')}
-            className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => scroll('right')}
-            className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
       </div>
 
       <div
