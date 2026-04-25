@@ -25,8 +25,7 @@ interface UseSeriesHeroReturn {
   queue: string[];
 }
 
-const SERIES_HERO_SHOWN_KEY = 'series_hero_shown_ids';
-const SERIES_LAST_START_KEY = 'series_hero_last_start';
+// Removido: Não usar mais sessionStorage para tracking - causa repetição
 
 export function useSeriesHero(): UseSeriesHeroReturn {
   const [items, setItems] = useState<SeriesHeroItem[]>([]);
@@ -43,8 +42,7 @@ export function useSeriesHero(): UseSeriesHeroReturn {
         const { data: series, error } = await supabase
           .from('series')
           .select('id, tmdb_id, titulo, banner, ano, rating, descricao, genero, temporadas, episodios')
-          .not('tmdb_id', 'is', null)
-          .limit(30);
+          .not('tmdb_id', 'is', null);
 
         if (error) {
           console.error('[useSeriesHero] Error:', error);
@@ -52,11 +50,10 @@ export function useSeriesHero(): UseSeriesHeroReturn {
           return;
         }
 
-        // Enriquecer com backdrops do TMDB
+        // Enriquecer com backdrops do TMDB - usar TODAS as séries
         const seriesWithBackdrops = await Promise.all(
           (series as any[] || [])
             .filter(s => s.tmdb_id)
-            .slice(0, 20)
             .map(async (s: any) => {
               const tmdbData = await fetchTmdbDetailsWithBackdrop(s.tmdb_id, 'tv');
               const backdropPath = tmdbData?.backdrop_path;
@@ -81,46 +78,24 @@ export function useSeriesHero(): UseSeriesHeroReturn {
 
         const formattedSeries: SeriesHeroItem[] = seriesWithBackdrops;
 
-        // Fisher-Yates shuffle
+        // Fisher-Yates shuffle completo - sem limitações
         for (let i = formattedSeries.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [formattedSeries[i], formattedSeries[j]] = [formattedSeries[j], formattedSeries[i]];
         }
 
-        // Recuperar histórico
-        const shownIds = JSON.parse(sessionStorage.getItem(SERIES_HERO_SHOWN_KEY) || '[]');
-        const lastStart = sessionStorage.getItem(SERIES_LAST_START_KEY);
+        // Início verdadeiramente aleatório - sem histórico que causa repetição
+        const startIndex = formattedSeries.length > 0 
+          ? Math.floor(Math.random() * formattedSeries.length) 
+          : 0;
 
-        let availableItems = formattedSeries;
-        if (shownIds.length > 0 && shownIds.length < formattedSeries.length) {
-          availableItems = formattedSeries.filter(item => !shownIds.includes(item.id));
-        }
-
-        if (availableItems.length === 0) {
-          availableItems = formattedSeries;
-          sessionStorage.removeItem(SERIES_HERO_SHOWN_KEY);
-        }
-
-        // Início diferente do último
-        let startIndex = 0;
-        if (lastStart && availableItems.length > 1) {
-          const lastIndex = availableItems.findIndex(i => i.id === lastStart);
-          if (lastIndex !== -1) {
-            startIndex = (lastIndex + 1) % availableItems.length;
-          }
-        }
-
-        if (availableItems[startIndex]) {
-          sessionStorage.setItem(SERIES_LAST_START_KEY, availableItems[startIndex].id);
-        }
-
-        setItems(availableItems);
+        setItems(formattedSeries);
         setCurrentIndex(startIndex);
 
         // Pre-carregar próxima imagem
-        if (availableItems[startIndex + 1]) {
-          preloadImage(availableItems[startIndex + 1].backdrop);
-          setNextItem(availableItems[startIndex + 1]);
+        if (formattedSeries[startIndex + 1]) {
+          preloadImage(formattedSeries[startIndex + 1].backdrop);
+          setNextItem(formattedSeries[startIndex + 1]);
         }
 
       } catch (error) {
@@ -140,22 +115,18 @@ export function useSeriesHero(): UseSeriesHeroReturn {
     img.onload = () => preloadedImages.current.add(url);
   };
 
-  // Rotação automática a cada 7 segundos
+  // Rotação automática a cada 7 segundos - aleatória verdadeira
   useEffect(() => {
     if (items.length === 0) return;
 
     const interval = setInterval(() => {
       setCurrentIndex(prev => {
-        const nextIndex = (prev + 1) % items.length;
-        const currentItem = items[prev];
+        // Selecionar próxima série aleatoriamente (evitando repetir a atual)
+        let nextIndex;
+        do {
+          nextIndex = Math.floor(Math.random() * items.length);
+        } while (nextIndex === prev && items.length > 1);
         
-        // Salvar ID exibido
-        const shownIds = JSON.parse(sessionStorage.getItem(SERIES_HERO_SHOWN_KEY) || '[]');
-        if (!shownIds.includes(currentItem.id)) {
-          shownIds.push(currentItem.id);
-          sessionStorage.setItem(SERIES_HERO_SHOWN_KEY, JSON.stringify(shownIds));
-        }
-
         // Pre-carregar próxima
         const nextNextIndex = (nextIndex + 1) % items.length;
         if (items[nextNextIndex]) {
