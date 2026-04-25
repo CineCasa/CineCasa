@@ -30,6 +30,7 @@ import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
 import CineNoiteSection from '../components/CineNoiteSection';
 import MaesInesqueciveisSection from '../components/MaesInesqueciveisSection';
+import HeroisDaVidaRealSection from '../components/HeroisDaVidaRealSection';
 
 // Mock data para demonstração
 const mockHeroContent = {
@@ -500,6 +501,9 @@ const PremiumHome: React.FC = () => {
           )}
         </div>
       ) : null}
+
+      {/* HERÓIS DA VIDA REAL - Seção especial Dia dos Pais (mês de agosto) */}
+      <HeroisDaVidaRealSection onCardClick={handleCardClick} />
 
       {/* MÃES INESQUECÍVEIS - Seção especial Dia das Mães (mês de maio) */}
       <MaesInesqueciveisSection onCardClick={handleCardClick} />
