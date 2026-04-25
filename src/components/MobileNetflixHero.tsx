@@ -251,8 +251,8 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
               <img
                 src={currentBanner.poster}
                 alt={currentBanner.title}
-                className="w-full h-full object-cover"
-                style={{ objectPosition: 'center 20%' }}
+                className="w-full h-full object-cover sm:object-cover object-contain sm:object-center object-top"
+                style={{ objectPosition: 'center top' }}
                 onLoad={(e) => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = 'block';

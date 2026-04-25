@@ -267,12 +267,12 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
           transition={{ duration: 1 }}
           className="absolute inset-0"
         >
-          {/* Imagem do Poster - sempre 16:9 cover */}
+          {/* Imagem do Poster - responsivo para mobile */}
           <img
             src={currentBanner.poster}
             alt={currentBanner.title}
-            className="w-full h-full object-cover object-center"
-            style={{ objectPosition: 'center 20%' }}
+            className="w-full h-full object-cover sm:object-cover object-contain sm:object-center object-top"
+            style={{ objectPosition: 'center top' }}
             onError={(e) => {
               console.error('[PremiumHeroBanner] Erro ao carregar poster:', currentBanner.poster);
               (e.target as HTMLImageElement).style.display = 'none';

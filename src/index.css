@@ -909,3 +909,53 @@ html, body {
   border-color: rgba(0, 229, 255, 0.8) !important;
   box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
 }
+
+/* ============================================
+   RESPONSIVIDADE DOS BANNERS - CAPAS
+   ============================================ */
+
+/* Mobile: Ajustar banners para não cortar capas */
+@media (max-width: 768px) {
+  /* HeroBanner - usar aspect ratio mais alto em mobile */
+  .hero-banner {
+    aspect-ratio: 2/3 !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+  
+  /* Imagens nos banners - mostrar completa sem cortar */
+  .hero-banner img,
+  .cinema-hero-banner img {
+    object-fit: contain !important;
+    object-position: center top !important;
+  }
+  
+  /* Ajustar altura do banner para comportar a imagem completa */
+  .hero-banner section,
+  section.hero-banner {
+    min-height: 60vh !important;
+    max-height: none !important;
+  }
+}
+
+/* Tablet: Ajuste intermediário */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .hero-banner {
+    aspect-ratio: 16/9 !important;
+  }
+  
+  .hero-banner img,
+  .cinema-hero-banner img {
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+}
+
+/* Desktop: Manter comportamento atual */
+@media (min-width: 1025px) {
+  .hero-banner img,
+  .cinema-hero-banner img {
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+}

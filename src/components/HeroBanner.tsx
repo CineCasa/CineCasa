@@ -251,9 +251,9 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
                 <img
                   src={imageSource}
                   alt={hero.title}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover sm:object-cover object-contain sm:object-center object-top"
                   style={{ 
-                    objectPosition: 'center center',
+                    objectPosition: 'center top',
                     maxWidth: '100%',
                     maxHeight: '100%',
                     minHeight: '100%'

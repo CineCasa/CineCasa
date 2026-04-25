@@ -65,7 +65,8 @@ export function CinemaHeroBanner() {
           <motion.img
             src={backdropUrl}
             alt={currentItem.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover lg:object-cover object-contain lg:object-center object-top"
+            style={{ objectPosition: 'center top' }}
             initial={{ scale: 1 }}
             animate={{ scale: 1.05 }}
             transition={{ duration: 7, ease: 'linear' }}
