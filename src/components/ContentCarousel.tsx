@@ -14,6 +14,7 @@ interface ContentItem {
   rating?: string;
   isNew?: boolean;
   isComingSoon?: boolean;
+  trailer?: string;
 }
 
 interface ContentCarouselProps {

@@ -12,6 +12,7 @@ interface LazyCardProps {
   rating?: string;
   isNew?: boolean;
   isComingSoon?: boolean;
+  trailer?: string;
   onClick?: () => void;
   index: number;
 }
@@ -65,6 +66,7 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
           <div className="lazy-card-content">
             <PremiumCard
               id={cardProps.id}
+              title={cardProps.title}
               poster={cardProps.poster}
               type={cardProps.type}
               progress={cardProps.progress}
@@ -72,6 +74,7 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
               rating={cardProps.rating}
               isNew={cardProps.isNew}
               isComingSoon={cardProps.isComingSoon}
+              trailer={cardProps.trailer}
               onClick={cardProps.onClick}
             />
           </div>
