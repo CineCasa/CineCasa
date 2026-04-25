@@ -39,6 +39,7 @@ import { NewContentNotificationToast } from "./components/NewContentNotification
 import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useGlobalBackHandler } from "./hooks/useGlobalBackHandler";
+import { useGlobalTVNavigation } from "./hooks/useGlobalTVNavigation";
 import { ExitConfirmationModal } from "./components/ExitConfirmationModal";
 import { useProjectionMode } from "./hooks/useProjectionMode";
 import { useSilentUpdate } from "@/hooks/useSilentUpdate";
@@ -207,6 +208,9 @@ const AppContent = () => {
       window.location.href = '/logout';
     },
   });
+  
+  // Inicializar navegação global por controle remoto (Android TV, webOS, etc)
+  useGlobalTVNavigation();
   
   // Inicializar limpeza automática de cache - garante atualizações sempre
   useAutoCacheCleanup();
