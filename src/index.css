@@ -676,3 +676,166 @@ html, body {
     transform: none !important;
   }
 }
+
+/* ============================================
+   CINEMA PROJECTION - 200" / 4K SUPPORT
+   ============================================ */
+
+/* 1. ESCALONAMENTO 4K NATIVO */
+@media (min-width: 2560px) {
+  :root {
+    font-size: 18px; /* Base maior para telas 4K+ */
+  }
+}
+
+@media (min-width: 3840px) {
+  :root {
+    font-size: 22px; /* Ultra-wide 4K/8K */
+  }
+}
+
+/* 2. SAFE ZONES E LAYOUT EXPANSIVO */
+.projection-mode .container,
+.projection-mode [class*="container"] {
+  max-width: none !important;
+  width: 100%;
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+.projection-mode .carousel-container {
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+/* 3. FUNDO PRETO PURO E TEXTO OFF-WHITE */
+.projection-mode {
+  background-color: #000000 !important;
+}
+
+.projection-mode body,
+.projection-mode #root,
+.projection-mode [class*="bg-black"] {
+  background-color: #000000 !important;
+}
+
+/* Texto Off-White para sinopses e conteúdo longo */
+.projection-mode .synopsis-text,
+.projection-mode [class*="synopsis"],
+.projection-mode .description-text,
+.projection-mode p[class*="text-gray"],
+.projection-mode .text-gray-300,
+.projection-mode .text-gray-400 {
+  color: #E0E0E0 !important;
+}
+
+/* 4. TIPOGRAFIA CINEMATOGRÁFICA */
+@media (min-width: 2560px) {
+  .projection-mode h1,
+  .projection-mode h2,
+  .projection-mode .section-title {
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  
+  .projection-mode .metadata,
+  .projection-mode [class*="year"],
+  .projection-mode [class*="duration"],
+  .projection-mode [class*="rating"] {
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* 5. NEON GLOW EXPANSIVO PARA PROJEÇÃO */
+@media (min-width: 2560px) {
+  .projection-mode .spatial-focus:focus,
+  .projection-mode .spatial-focus.spatial-focus-active {
+    box-shadow: 
+      0 0 40px rgba(0, 229, 255, 0.8),
+      0 0 80px rgba(0, 229, 255, 0.5),
+      0 0 120px rgba(0, 229, 255, 0.3) !important;
+    outline-width: 4px;
+    outline-offset: 6px;
+  }
+  
+  .projection-mode .premium-card.spatial-focus:focus {
+    transform: scale(1.2);
+    box-shadow: 
+      0 0 60px rgba(0, 229, 255, 0.9),
+      0 0 100px rgba(0, 229, 255, 0.6),
+      0 0 140px rgba(0, 229, 255, 0.3) !important;
+  }
+  
+  @keyframes projection-pulse {
+    0%, 100% { 
+      box-shadow: 0 0 40px rgba(0, 229, 255, 0.8), 0 0 80px rgba(0, 229, 255, 0.5); 
+    }
+    50% { 
+      box-shadow: 0 0 50px rgba(0, 229, 255, 1), 0 0 100px rgba(0, 229, 255, 0.7); 
+    }
+  }
+  
+  .projection-mode .spatial-focus:focus {
+    animation: projection-pulse 2s ease-in-out infinite;
+  }
+}
+
+/* 6. BACKDROP BLUR PARA MENUS EM PROJEÇÃO */
+.projection-mode .modal-overlay,
+.projection-mode [class*="modal"][class*="overlay"],
+.projection-mode .dropdown-menu,
+.projection-mode [class*="popover"],
+.projection-mode [class*="tooltip"] {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* 7. ANIMAÇÕES OTIMIZADAS 60FPS */
+.projection-mode .content-card,
+.projection-mode .premium-card,
+.projection-mode [class*="card"],
+.projection-mode [class*="poster"] {
+  will-change: transform;
+  transform: translateZ(0); /* Força GPU acceleration */
+  backface-visibility: hidden;
+}
+
+.projection-mode * {
+  transition-duration: 0.2s; /* Transições mais rápidas para 60fps */
+}
+
+/* 8. IMAGENS EM ALTA RESOLUÇÃO */
+.projection-mode img,
+.projection-mode [class*="poster"] img,
+.projection-mode [class*="backdrop"] {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* 9. CONTRASTE E LUMINOSIDADE OTIMIZADOS */
+@media (min-width: 2560px) {
+  .projection-mode {
+    filter: contrast(1.05) brightness(1.02);
+  }
+  
+  /* Textos mais luminosos para projeção */
+  .projection-mode h1,
+  .projection-mode h2,
+  .projection-mode h3,
+  .projection-mode .title {
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* 10. SCROLLBAR EXPANDIDA PARA PROJEÇÃO */
+@media (min-width: 2560px) {
+  .projection-mode ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  .projection-mode ::-webkit-scrollbar-thumb {
+    border-width: 3px;
+  }
+}

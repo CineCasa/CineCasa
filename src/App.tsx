@@ -39,6 +39,7 @@ import { NotificationPermissionPrompt } from "@/components/NotificationPermissio
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useGlobalBackHandler } from "./hooks/useGlobalBackHandler";
 import { ExitConfirmationModal } from "./components/ExitConfirmationModal";
+import { useProjectionMode } from "./hooks/useProjectionMode";
 import { useSilentUpdate } from "@/hooks/useSilentUpdate";
 import { useForceUpdate } from "@/hooks/useForceUpdate";
 import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
@@ -180,6 +181,11 @@ const AppContent = () => {
   const location = useLocation();
   const { isPlayerOpen, closePlayer } = usePlayer();
   const { user } = useAuth();
+  
+  // Modo Projeção Cinema - telas 4K/200 polegadas
+  const { isProjectionMode, isLargeScreen } = useProjectionMode();
+  
+  console.log('[AppContent] Projection Mode:', isProjectionMode, 'Large Screen:', isLargeScreen);
   const isLoginPage = location.pathname === "/login";
   const isSeriesDetailsPage = location.pathname.startsWith("/series-details/");
   const isMovieDetailsPage = location.pathname.startsWith("/movie-details/");
