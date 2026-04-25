@@ -91,20 +91,25 @@ const Favorites = () => {
   // Focar no primeiro card quando a página carregar e dados estiverem prontos
   useEffect(() => {
     if (!isLoading && favorites.length > 0 && firstCardRef.current) {
-      // Scroll suave para o primeiro card
-      firstCardRef.current.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center' 
-      });
-      
-      // Adicionar destaque visual temporário no primeiro card
-      const firstCard = firstCardRef.current;
-      firstCard.classList.add('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
-      
-      // Remover o destaque após 2 segundos
+      // Aguardar DOM estar pronto
       setTimeout(() => {
-        firstCard.classList.remove('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
-      }, 2000);
+        const navbarHeight = 94; // Altura da navbar fixa
+        const elementPosition = firstCardRef.current!.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - navbarHeight;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+        
+        // Adicionar destaque visual temporário no primeiro card
+        firstCardRef.current!.classList.add('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
+        
+        // Remover o destaque após 2 segundos
+        setTimeout(() => {
+          firstCardRef.current?.classList.remove('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
+        }, 2000);
+      }, 100);
     }
   }, [isLoading, favorites.length]);
 
