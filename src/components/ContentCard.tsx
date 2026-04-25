@@ -1,11 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Plus, ThumbsUp, Heart, Volume2, VolumeX, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ContentItem } from "@/data/content";
-import { motion, AnimatePresence } from "framer-motion";
-import { fetchTmdbDetails, getTmdbTrailerUrl } from "@/services/tmdb";
 import VideoJSPlayer from "./VideoJSPlayer";
-import { FavoriteButtonSimple } from "./FavoriteButton";
 import { useAuth } from "@/components/AuthProvider";
 
 interface ContentCardProps {
@@ -20,13 +16,8 @@ interface ContentCardProps {
 const ContentCard = ({ item, index, isLast = false, showProgress = false, rowIndex, colIndex }: ContentCardProps) => {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const navigate = useNavigate();
-  
-  // Hooks do Supabase
-  const { user } = useAuth();
-  
-  // Determinar tipo de conteúdo e ID
-  const contentType = item.id.includes("series") ? "series" : "movie";
-  const contentId = parseInt(item.id) || item.tmdbId || 0;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   const handleNavigateToDetails = () => {
     if (item.isComingSoon) return;
@@ -36,36 +27,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
     const id = numericId || item.tmdbId || item.id;
     navigate(`/details/${typePath}/${id}`);
   };
-
-  useEffect(() => {
-    // Carregar trailer e metadados imediatamente quando disponível
-    if (item.tmdbId && !metadata) {
-      const type = item.id.includes("series") ? "tv" : "movie";
-      fetchTmdbDetails(item.tmdbId, type).then((data) => {
-        if (data) {
-          const duration = type === "movie" 
-            ? `${Math.floor(data.runtime / 60)}h ${data.runtime % 60}min`
-            : `${data.numberOf_seasons} Temporadas`;
-          setMetadata({
-            duration,
-            rating: data.vote_average?.toFixed(1) || item.rating
-          });
-          // Sempre tentar carregar trailer
-          const trailer = getTmdbTrailerUrl(data.videos);
-          if (trailer) {
-            setTrailerUrl(trailer);
-          }
-        }
-      });
-    }
-    
-    // Se já tem trailer no item, usar imediatamente
-    if (item.trailer && !trailerUrl) {
-      setTrailerUrl(item.trailer);
-    }
-  }, [item.tmdbId, item.id, item.trailer]);
-
-
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -168,10 +129,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
       }
     }
 
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -214,7 +171,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
       <div 
         onClick={handleNavigateToDetails}
         className={`w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300 ${!item.isComingSoon && 'cursor-pointer hover:brightness-110'}`}>
-    >
         {isVisible ? (
           <img
             src={item.image || `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`}
@@ -229,27 +185,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
           />
         ) : (
           <div className="w-full h-full bg-secondary animate-pulse" />
-        )}
-        {item.isComingSoon && (
-           <div className="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-black uppercase px-2 py-1 rounded shadow-lg z-30">
-             Em Breve
-           </div>
-        )}
-        {!item.isComingSoon && (
-          <FavoriteButtonSimple 
-            item={{
-              contentId: (item.tmdbId ? parseInt(String(item.tmdbId)) : null) || parseInt(item.id) || 0,
-              contentType: item.id.includes("series") ? 'series' : 'movie',
-              titulo: item.title,
-              poster: item.poster,
-              banner: item.banner,
-              rating: item.rating,
-              year: item.year?.toString(),
-              genero: item.genre?.[0],
-            }}
-            userId={user?.id}
-            className="top-2 right-2"
-          />
         )}
         {showProgress && item.progress && item.progress > 0 && item.progress < 100 && (
            <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 z-20">
@@ -271,21 +206,14 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
 
       {isPlayerOpen && item && (
         <VideoJSPlayer 
-          url={(() => {
-            const videoUrl = item.type === "series" 
-              ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : item.identificadorArchive ? `https://archive.org/embed/${item.identificadorArchive}` : null)
-              : (item.url || trailerUrl || null);
-            console.log('[ContentCard] VideoJSPlayer URL:', videoUrl);
-            return videoUrl || "";
-          })()} 
+          url={item.type === "series" 
+            ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : item.identificadorArchive ? `https://archive.org/embed/${item.identificadorArchive}` : null)
+            : (item.url || null)} 
           title={item.title || "Sem título"}
           poster={item.poster || ""}
           contentType={(item.type as 'movie' | 'series') || 'movie'}
           contentId={item.id || ""}
-          onClose={() => {
-            console.log('[ContentCard] Fechando player');
-            setIsPlayerOpen(false);
-          }} 
+          onClose={() => setIsPlayerOpen(false)} 
         />
       )}
     </div>

@@ -135,21 +135,6 @@ export const VerticalMovieRow: React.FC<VerticalMovieRowProps> = ({
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
                 />
-                
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                  <h3 className="text-white font-semibold text-sm truncate">{item.title}</h3>
-                  {item.year && (
-                    <span className="text-gray-300 text-xs">{item.year}</span>
-                  )}
-                </div>
-                
-                {/* Rating Badge */}
-                {item.rating && (
-                  <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                    {item.rating}
-                  </div>
-                )}
               </motion.div>
             ))}
           </motion.div>

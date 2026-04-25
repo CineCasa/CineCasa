@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
 
 interface PremiumCardProps {
   id: string;
@@ -194,34 +195,6 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
           </div>
         )}
 
-        {/* Overlay de gradiente para melhorar legibilidade das tags */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-
-        {/* Tags - sempre visíveis */}
-        {isNew && !isComingSoon && (
-          <div className="absolute top-2 left-2 z-20 content-tag">
-            {year || 'NOVO'}
-          </div>
-        )}
-
-        {isComingSoon && (
-          <div className="absolute top-2 left-2 z-20 coming-soon-tag">
-            EM BREVE
-          </div>
-        )}
-
-        {/* Barra de Progresso Neon */}
-        {progress > 0 && !isComingSoon && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-20">
-            <div 
-              className="h-full bg-[#00E5FF] transition-all duration-500"
-              style={{ 
-                width: `${progress}%`,
-                boxShadow: '0 0 10px rgba(0, 229, 255, 0.8), 0 0 20px rgba(0, 229, 255, 0.4)'
-              }}
-            />
-          </div>
-        )}
       </div>
     </motion.div>
   );

@@ -613,6 +613,61 @@ html, body {
   box-shadow: 0 0 30px rgba(0, 229, 255, 0.8);
 }
 
+/* ============================================
+   TV MODE - CURSOR HIDING
+   ============================================ */
+
+/* Esconder cursor por padrão em TVs/Desktop (navegação por controle) */
+@media (min-width: 1024px) {
+  html, body {
+    cursor: none;
+  }
+  
+  /* Mostrar cursor apenas em elementos interativos quando em uso desktop */
+  body.has-mouse a,
+  body.has-mouse button,
+  body.has-mouse [data-navigable="true"] {
+    cursor: pointer;
+  }
+  
+  /* Quando mouse estiver ativo, mostrar cursor em tudo */
+  body.has-mouse {
+    cursor: auto;
+  }
+}
+
+/* Classes específicas para controle de cursor */
+.tv-mode {
+  cursor: none !important;
+}
+
+.tv-mode * {
+  cursor: none !important;
+}
+
+.tv-mode.has-mouse,
+.tv-mode.has-mouse * {
+  cursor: auto !important;
+}
+
+/* Indicador visual de navegação (para quando cursor está oculto) */
+.tv-cursor-indicator {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background: #00E5FF;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 999999;
+  box-shadow: 0 0 10px #00E5FF, 0 0 20px #00E5FF;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tv-mode .tv-cursor-indicator {
+  opacity: 1;
+}
+
 @media (max-width: 1023px) {
   .spatial-focus:focus,
   .spatial-focus.spatial-focus-active {
