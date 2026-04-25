@@ -396,9 +396,6 @@ const SeriesEpisodes = ({ seriesId, tmdbId, seriesTitle, seriesPoster, seriesBac
                         <Play className="w-8 h-8 text-[#00A8E1]" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/40 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Play className="w-8 h-8 text-white" />
-                    </div>
                   </div>
 
                   {/* Informações do Episódio */}

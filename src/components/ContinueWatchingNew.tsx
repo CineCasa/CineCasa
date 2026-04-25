@@ -247,26 +247,6 @@ const ContinueWatchingCard: React.FC<ContinueWatchingCardProps> = ({
           {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-          {/* Botão Remover (X) */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onRemove(item.id);
-            }}
-            className="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 hover:bg-red-500/80 text-white/70 hover:text-white transition-all duration-200 opacity-0 group-hover:opacity-100 z-20"
-          >
-            <X size={14} />
-          </button>
-
-          {/* Botão Play Flutuante */}
-          <button
-            onClick={() => onPlay(item)}
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"
-          >
-            <div className="w-16 h-16 rounded-full bg-[#00E5FF]/90 hover:bg-[#00E5FF] flex items-center justify-center shadow-lg shadow-[#00E5FF]/50 transform hover:scale-110 transition-all duration-200">
-              <Play size={28} className="text-black ml-1" fill="black" />
-            </div>
-          </button>
         </div>
 
         {/* Info Section */}
