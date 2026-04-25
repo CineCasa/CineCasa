@@ -42,7 +42,7 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
       </div>
 
       {/* Container do Carrossel */}
-      <div className="relative">
+      <div className="relative" data-nav-region="carousel">
         <div
           ref={carouselRef}
           className="carousel-container px-2 sm:px-4 md:px-6"

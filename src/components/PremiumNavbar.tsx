@@ -194,6 +194,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
     <>
       <motion.nav
         className="fixed top-0 left-0 right-0 z-[110] transition-all duration-500 ease-out"
+        data-nav-region="navbar"
         style={{
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -236,6 +237,8 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                   key={index}
                   onClick={() => navigate(item.href)}
                   className="relative group px-4 py-2"
+                  data-navigable="true"
+                  data-nav-index={index}
                 >
                   <div className={`flex items-center space-x-2 transition-all duration-300 ${
                     isActive ? 'text-[#00E5FF]' : 'text-gray-400'

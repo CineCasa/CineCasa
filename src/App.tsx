@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./components/AuthProvider";
 import LoadingScreen from "./components/LoadingScreen";
 import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
+import { SpatialNavigationProvider } from "./components/SpatialNavigationProvider";
 import MobileBottomNav from "./components/MobileBottomNav";
 import PremiumNavbar from "./components/PremiumNavbar";
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
@@ -220,7 +221,9 @@ const AppContent = () => {
         )}
         <KeyboardNavigation>
           {showNavbars && <PremiumNavbar />}
-          <AppRoutes />
+          <SpatialNavigationProvider>
+            <AppRoutes />
+          </SpatialNavigationProvider>
         </KeyboardNavigation>
         <PlayerContainer />
       </NotificationProvider>

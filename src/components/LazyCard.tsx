@@ -61,7 +61,11 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
         delay: isVisible ? index * 0.1 : 0 
       }}
     >
-      <div className="w-[calc(50vw-12px)] sm:w-40 md:w-48 lg:w-56 xl:w-64 2xl:w-72">
+      <div 
+        className="w-[calc(50vw-12px)] sm:w-40 md:w-48 lg:w-56 xl:w-64 2xl:w-72"
+        data-navigable="true"
+        data-nav-index={index}
+      >
         {isVisible ? (
           <div className="lazy-card-content">
             <PremiumCard

@@ -549,3 +549,75 @@ html, body {
 .animate-bell-pulse {
   animation: bell-pulse 1s ease-in-out infinite;
 }
+
+/* ============================================
+   SPATIAL NAVIGATION - TV/KEYBOARD SUPPORT
+   ============================================ */
+
+.spatial-navigation-container {
+  outline: none;
+}
+
+.spatial-focus {
+  outline: none;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .spatial-focus:focus,
+  .spatial-focus.spatial-focus-active {
+    outline: 3px solid #00E5FF;
+    outline-offset: 4px;
+    border-radius: 8px;
+    box-shadow: 
+      0 0 20px rgba(0, 229, 255, 0.6),
+      0 0 40px rgba(0, 229, 255, 0.3);
+    transform: scale(1.08);
+    z-index: 100;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .premium-card.spatial-focus:focus {
+    transform: scale(1.15);
+  }
+  
+  @keyframes spatial-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.6), 0 0 40px rgba(0, 229, 255, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(0, 229, 255, 0.8), 0 0 50px rgba(0, 229, 255, 0.4); }
+  }
+  
+  .spatial-focus:focus {
+    animation: spatial-pulse 2s ease-in-out infinite;
+  }
+}
+
+[data-navigable="true"] {
+  outline: none;
+  cursor: pointer;
+}
+
+[data-navigable="true"]:focus {
+  outline: none;
+}
+
+[data-nav-region="navbar"] .spatial-focus:focus {
+  background: rgba(0, 229, 255, 0.15);
+  border-radius: 8px;
+}
+
+.tv-tizen .spatial-focus:focus {
+  outline-width: 4px;
+}
+
+.tv-webos .spatial-focus:focus {
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.8);
+}
+
+@media (max-width: 1023px) {
+  .spatial-focus:focus,
+  .spatial-focus.spatial-focus-active {
+    outline: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+}
