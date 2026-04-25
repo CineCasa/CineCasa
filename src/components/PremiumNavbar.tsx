@@ -453,6 +453,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                       type="button"
                       onClick={() => setSearchQuery('')}
                       className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 text-gray-400 transition-all"
+                      title="Limpar"
                     >
                       <X size={16} />
                     </button>
@@ -468,6 +469,19 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                     title="Pesquisar por voz"
                   >
                     {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
+                  {/* Botão de Pesquisar - Submit */}
+                  <button
+                    type="submit"
+                    disabled={!searchQuery.trim()}
+                    className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                      searchQuery.trim()
+                        ? 'bg-[#00E5FF]/20 text-[#00E5FF] hover:bg-[#00E5FF]/30'
+                        : 'bg-white/5 text-gray-500 cursor-not-allowed'
+                    }`}
+                    title="Pesquisar"
+                  >
+                    <Search size={16} />
                   </button>
                 </div>
               </div>

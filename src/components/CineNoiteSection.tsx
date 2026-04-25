@@ -161,6 +161,7 @@ const CineNoiteSection: React.FC<CineNoiteSectionProps> = ({ onCardClick }) => {
                     type={item.type}
                     year={item.year}
                     rating={item.rating}
+                    isAdult={true}
                     index={index}
                     onClick={() => onCardClick?.(item)}
                   />

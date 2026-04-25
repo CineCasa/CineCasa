@@ -680,6 +680,43 @@
       height: 18px;
     }
     
+    /* Botão fechar sala */
+    .btn-close {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    
+    .btn-close:hover {
+      background: rgba(239, 68, 68, 0.4);
+      transform: scale(1.05);
+    }
+    
+    .btn-close:active {
+      transform: scale(0.95);
+    }
+    
+    @media (max-width: 640px) {
+      .btn-close {
+        width: 28px;
+        height: 28px;
+      }
+      
+      .btn-close svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+    
     /* =========================================
        RESPONSIVIDADE MOBILE-FIRST
        ========================================= */
@@ -688,14 +725,19 @@
         flex-direction: column;
         padding-top: 60px;
         padding-bottom: 0;
+        min-height: auto;
+        height: auto;
       }
       
       .player-area {
-        min-height: 50vh;
-        padding: 12px;
+        min-height: auto;
+        height: auto;
+        padding: 8px;
+        flex: none;
       }
       
       .video-wrapper {
+        max-height: 50vh;
         border-radius: 8px;
       }
       
@@ -733,12 +775,14 @@
       }
       
       .player-area {
-        padding: 8px;
-        min-height: 40vh;
+        padding: 4px;
+        min-height: auto;
+        height: auto;
       }
       
       .video-wrapper {
-        border-radius: 6px;
+        border-radius: 4px;
+        max-height: 40vh;
       }
       
       .chat-panel {
@@ -791,6 +835,12 @@
         </svg>
         <span id="user-count">1</span>
       </div>
+      
+      <button class="btn-close" id="btn-close" onclick="fecharSala()" title="Sair da sala">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
     </div>
   </header>
   
@@ -957,6 +1007,9 @@
       // O cliente WatchParty se conecta automaticamente via watch-party.js
       // Aguarda conexão bem-sucedida
       setupWatchPartyCallbacks();
+      
+      // Inicializar chat
+      initChat();
     });
     
     // ============================================
@@ -1129,9 +1182,21 @@
     async function initChat() {
       if (!roomId) return;
       
-      // Buscar usuário atual
+      // Buscar usuário atual ou criar anon
       const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user;
+      if (user) {
+        currentUser = user;
+      } else {
+        // Usuário anônimo - gera ID único
+        const anonId = sessionStorage.getItem('watchparty_anon_id') || 'anon_' + Math.random().toString(36).substring(2, 15);
+        sessionStorage.setItem('watchparty_anon_id', anonId);
+        currentUser = {
+          id: anonId,
+          email: null,
+          isAnonymous: true
+        };
+      }
+      console.log('[Chat] Usuário:', currentUser.id, currentUser.isAnonymous ? '(anônimo)' : '(logado)');
       
       // Carregar mensagens existentes
       await loadChatMessages();
@@ -1207,17 +1272,21 @@
       
       if (!message) return;
       if (!currentUser) {
-        showToast('Faça login para enviar mensagens');
+        showToast('Erro: usuário não identificado');
         return;
       }
       
       try {
+        const username = currentUser.email 
+          ? currentUser.email.split('@')[0] 
+          : (currentUser.isAnonymous ? 'Convidado' : 'Anônimo');
+          
         const { error } = await supabase
           .from('watch_party_messages')
           .insert({
             room_id: roomId,
             user_id: currentUser.id,
-            username: currentUser.email?.split('@')[0] || 'Anônimo',
+            username: username,
             message: message
           });
         
@@ -1284,6 +1353,35 @@
       document.getElementById('no-room-overlay').classList.add('hidden');
       document.getElementById('error-overlay').classList.remove('hidden');
     }
+    
+    // Fechar sala e voltar ao sistema
+    function fecharSala() {
+      // Limpar recursos
+      if (chatSubscription) {
+        supabase.removeChannel(chatSubscription);
+        chatSubscription = null;
+      }
+      
+      // Desconectar do watch party
+      if (window.watchParty) {
+        window.watchParty.disconnect();
+      }
+      
+      // Limpar session storage da sala
+      sessionStorage.removeItem('watchparty_current_room');
+      
+      // Redirecionar para home
+      window.location.href = '/';
+    }
+    
+    // ============================================
+    // LIMPAR AO SAIR DA PÁGINA
+    // ============================================
+    window.addEventListener('beforeunload', () => {
+      if (chatSubscription) {
+        supabase.removeChannel(chatSubscription);
+      }
+    });
     
     // ============================================
     // ATALHOS DE TECLADO

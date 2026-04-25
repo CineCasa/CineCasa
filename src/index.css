@@ -839,3 +839,73 @@ html, body {
     border-width: 3px;
   }
 }
+
+/* ============================================
+   FILTRO DE DESFOQUE - CINE NOITE (18+)
+   ============================================ */
+
+/* Container com overflow hidden para evitar vazamento do blur */
+.capa-masked {
+  overflow: hidden !important;
+  position: relative;
+}
+
+/* Overlay escuro translúcido sobre a imagem */
+.capa-masked .adult-overlay {
+  background: rgba(0, 0, 0, 0.3) !important;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Filtro de desfoque aplicado apenas na imagem do poster */
+.capa-masked .adult-poster {
+  filter: blur(8px);
+  transition: filter 0.5s ease, transform 0.5s ease;
+  transform: scale(1.05);
+  will-change: filter, transform;
+}
+
+/* Hover/Foco: Reduzir desfoque para permitir identificação */
+.capa-masked:hover .adult-poster,
+.capa-masked:focus-within .adult-poster {
+  filter: blur(2px);
+  transform: scale(1.02);
+}
+
+/* Garantir que o blur não vaze das bordas arredondadas */
+.capa-masked img {
+  border-radius: inherit;
+}
+
+/* Efeito de vidro fosco adicional no container */
+.capa-masked::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.capa-masked:hover::before,
+.capa-masked:focus-within::before {
+  opacity: 0.3;
+}
+
+/* Borda ciano neon destacada para cards adultos */
+.capa-masked {
+  border-color: rgba(0, 229, 255, 0.4) !important;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+}
+
+.capa-masked:hover {
+  border-color: rgba(0, 229, 255, 0.8) !important;
+  box-shadow: 0 0 25px rgba(0, 229, 255, 0.4);
+}

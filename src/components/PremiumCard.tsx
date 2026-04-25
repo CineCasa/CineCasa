@@ -14,6 +14,7 @@ interface PremiumCardProps {
   isComingSoon?: boolean;
   trailer?: string;
   onClick?: () => void;
+  isAdult?: boolean;
   'data-navigable'?: string;
   'data-nav-row'?: string;
   'data-nav-col'?: string;
@@ -61,6 +62,7 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
   isComingSoon = false,
   trailer,
   onClick,
+  isAdult = false,
   'data-navigable': dataNavigable,
   'data-nav-row': dataNavRow,
   'data-nav-col': dataNavCol,
@@ -134,6 +136,7 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
           relative aspect-[2/3] sm:aspect-[3/4] overflow-hidden rounded-xl 
           border border-white/5 transition-all duration-300 
           group-hover:border-[#00E5FF]/50 group-hover:shadow-[0_0_25px_rgba(0,229,255,0.3)]
+          ${isAdult ? 'capa-masked' : ''}
           
           /* Efeitos de expansão apenas em telas grandes (lg: = 1024px+) */
           lg:group-hover:scale-[1.2]
@@ -146,6 +149,11 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
           transformOrigin: 'center center',
         }}
       >
+        {/* Overlay escuro para conteúdo adulto */}
+        {isAdult && (
+          <div className="absolute inset-0 bg-black/30 z-[5] pointer-events-none adult-overlay" />
+        )}
+        
         {/* Imagem do Poster - visível quando não há trailer */}
         <div 
           className={`
@@ -156,7 +164,7 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
           <img
             src={validPoster}
             alt={title}
-            className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+            className={`w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${isAdult ? 'adult-poster' : ''}`}
             loading="lazy"
             onError={(e) => {
               console.log('❌ Erro ao carregar poster:', poster);

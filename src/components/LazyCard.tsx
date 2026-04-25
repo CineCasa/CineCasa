@@ -4,6 +4,7 @@ import PremiumCard from './PremiumCard';
 
 interface LazyCardProps {
   id: string;
+  tmdbId?: string;
   title: string;
   poster: string;
   type: 'movie' | 'series';
@@ -12,6 +13,7 @@ interface LazyCardProps {
   rating?: string;
   isNew?: boolean;
   isComingSoon?: boolean;
+  isAdult?: boolean;
   trailer?: string;
   onClick?: () => void;
   index: number;
@@ -78,6 +80,7 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
               rating={cardProps.rating}
               isNew={cardProps.isNew}
               isComingSoon={cardProps.isComingSoon}
+              isAdult={cardProps.isAdult}
               trailer={cardProps.trailer}
               onClick={cardProps.onClick}
             />
