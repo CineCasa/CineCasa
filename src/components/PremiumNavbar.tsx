@@ -91,13 +91,20 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   const handleSearchSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
-    console.log('[Search] Submit triggered, query:', searchQuery);
-    if (searchQuery.trim()) {
-      const searchUrl = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+    
+    // Pegar valor atual do input ref se disponível, senão usar estado
+    const currentQuery = searchInputRef.current?.value || searchQuery;
+    console.log('[Search] Submit triggered, query:', currentQuery);
+    
+    if (currentQuery.trim()) {
+      const searchUrl = `/search?q=${encodeURIComponent(currentQuery.trim())}`;
       console.log('[Search] Navigating to:', searchUrl);
       navigate(searchUrl);
       setIsSearchOpen(false);
       setSearchQuery('');
+      if (searchInputRef.current) {
+        searchInputRef.current.value = '';
+      }
     } else {
       console.log('[Search] Query empty, not navigating');
     }
@@ -107,6 +114,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      e.stopPropagation();
       console.log('[Search] Enter pressed, submitting');
       handleSearchSubmit();
     }
