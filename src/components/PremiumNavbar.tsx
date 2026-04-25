@@ -88,12 +88,27 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
   }, [isSearchOpen]);
 
   // Handler de submit da pesquisa
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    console.log('[Search] Submit triggered, query:', searchQuery);
     if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const searchUrl = `/search?q=${encodeURIComponent(searchQuery.trim())}`;
+      console.log('[Search] Navigating to:', searchUrl);
+      navigate(searchUrl);
       setIsSearchOpen(false);
       setSearchQuery('');
+    } else {
+      console.log('[Search] Query empty, not navigating');
+    }
+  };
+  
+  // Handler para Enter no input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      console.log('[Search] Enter pressed, submitting');
+      handleSearchSubmit();
     }
   };
 
@@ -441,6 +456,7 @@ const PremiumNavbar: React.FC<PremiumNavbarProps> = ({ onSearch, user }) => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   placeholder="Buscar filmes, séries, atores..."
                   className="w-full bg-white/5 text-white placeholder-gray-500 pl-12 pr-24 py-3.5 rounded-full border border-white/10 focus:border-[#00E5FF] focus:outline-none transition-all duration-300 text-base"
                   style={{
