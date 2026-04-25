@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Star, Calendar, Play, Trash2, Film, Tv, ArrowRight } from 'lucide-react';
 import { useFavorites, FavoriteItem } from "@/hooks/useFavorites";
@@ -25,6 +25,7 @@ const Favorites = () => {
   const { favorites: rawFavorites, loading, fetchFavorites, removeFromFavorites } = useFavorites();
   const [favorites, setFavorites] = useState<HydratedFavorite[]>([]);
   const [hydrating, setHydrating] = useState(false);
+  const firstCardRef = useRef<HTMLDivElement>(null);
 
   // Hydrate favorites with TMDB data
   const hydrateFavorites = useCallback(async (items: FavoriteItem[]) => {
@@ -86,6 +87,26 @@ const Favorites = () => {
       setFavorites(rawFavorites);
     }
   }, [user, rawFavorites, hydrateFavorites]);
+
+  // Focar no primeiro card quando a página carregar e dados estiverem prontos
+  useEffect(() => {
+    if (!isLoading && favorites.length > 0 && firstCardRef.current) {
+      // Scroll suave para o primeiro card
+      firstCardRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      
+      // Adicionar destaque visual temporário no primeiro card
+      const firstCard = firstCardRef.current;
+      firstCard.classList.add('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
+      
+      // Remover o destaque após 2 segundos
+      setTimeout(() => {
+        firstCard.classList.remove('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
+      }, 2000);
+    }
+  }, [isLoading, favorites.length]);
 
   // Optimistic removal with animation
   const handleRemove = async (item: HydratedFavorite) => {
@@ -238,6 +259,7 @@ const Favorites = () => {
                 {favorites.map((item, index) => (
                   <motion.div
                     key={item.id}
+                    ref={index === 0 ? firstCardRef : null}
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ 
