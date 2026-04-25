@@ -398,8 +398,10 @@ export default function SeriesPage() {
     <div className="series-page-container bg-black min-h-screen">
       <style>{seriesPageStyles}</style>
       
-      {/* SeriesHeroBanner para telas grandes (TV/4K) */}
-      <SeriesHeroBanner />
+      {/* SeriesHeroBanner para telas grandes (TV/4K) - escondido em mobile */}
+      <div className="hidden lg:block">
+        <SeriesHeroBanner />
+      </div>
 
       {/* HeroSection para mobile - fallback */}
       <div className="lg:hidden">
