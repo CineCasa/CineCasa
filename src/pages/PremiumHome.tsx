@@ -29,6 +29,7 @@ import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
 import CineNoiteSection from '../components/CineNoiteSection';
+import MaesInesqueciveisSection from '../components/MaesInesqueciveisSection';
 
 // Mock data para demonstração
 const mockHeroContent = {
@@ -499,6 +500,9 @@ const PremiumHome: React.FC = () => {
           )}
         </div>
       ) : null}
+
+      {/* MÃES INESQUECÍVEIS - Seção especial Dia das Mães (mês de maio) */}
+      <MaesInesqueciveisSection onCardClick={handleCardClick} />
 
       {/* LANÇAMENTOS E NOVIDADES - Seção principal, sempre visível */}
       <div className="relative z-30 my-6">
