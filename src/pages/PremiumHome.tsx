@@ -28,6 +28,7 @@ import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
+import CineNoiteSection from '../components/CineNoiteSection';
 
 // Mock data para demonstração
 const mockHeroContent = {
@@ -801,7 +802,7 @@ const PremiumHome: React.FC = () => {
           onCardClick={handleCardClick}
         />
 
-        {/* Travesseiro e Edredon - Inteligente: 5 capas de conteúdos relaxantes/calmos - ÚLTIMA SEÇÃO */}
+        {/* Travesseiro e Edredon - Inteligente: 5 capas de conteúdos relaxantes/calmos */}
         <ContentCarousel
           title="Travesseiro e Edredon 🌙"
           items={!isLoadingTravesseiro ? filterUniqueItems((travesseiroContent || []).map(item => ({
@@ -815,6 +816,9 @@ const PremiumHome: React.FC = () => {
           })), 5) : []}
           onCardClick={handleCardClick}
         />
+
+        {/* Cine Noite - Seção 18+ (23:58 - 05:59) - ÚLTIMA SEÇÃO */}
+        <CineNoiteSection onCardClick={handleCardClick} />
       </div>
     </div>
   );
