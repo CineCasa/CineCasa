@@ -94,8 +94,8 @@ const Favorites = () => {
       // Aguardar DOM estar pronto
       setTimeout(() => {
         const navbarHeight = 94; // Altura da navbar fixa
-        const elementPosition = firstCardRef.current!.getBoundingClientRect().top + window.scrollY;
-        const offsetPosition = elementPosition - navbarHeight;
+        const elementPosition = firstCardRef.current!.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - navbarHeight - 8; // 8px de margem extra
         
         window.scrollTo({
           top: offsetPosition,
