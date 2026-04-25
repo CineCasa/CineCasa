@@ -224,18 +224,24 @@ class WatchPartyClient {
           }
         });
       
-      // Inscrever no canal com timeout
+      // Inscrever no canal com timeout aumentado
       console.log('[WatchParty] Subscrevendo no canal...');
       
       const subscribeTimeout = setTimeout(() => {
         console.error('[WatchParty] Timeout na subscrição do canal');
         if (!this.supabaseChannel) {
           this.showError('Timeout ao conectar. Tentando reconectar...');
-          this.scheduleReconnect();
+          // Retry imediato na primeira falha
+          if (this.reconnectAttempts === 0) {
+            console.log('[WatchParty] Primeira tentativa falhou, retry imediato...');
+            setTimeout(() => this.connectSupabase(), 1000);
+          } else {
+            this.scheduleReconnect();
+          }
         }
-      }, 10000);
+      }, 20000);
       
-      const status = await channel.subscribe(async (status) => {
+      channel.subscribe((status, err) => {
         clearTimeout(subscribeTimeout);
         console.log('[WatchParty] Status da subscrição:', status);
         
@@ -244,56 +250,32 @@ class WatchPartyClient {
           this.supabaseChannel = channel;
           this.reconnectAttempts = 0; // Reset contador de reconexão
           
-          // Entrar com presence
-          try {
-            await channel.track({
-              userId: this.userId,
-              joinedAt: new Date().toISOString(),
-              online_at: new Date().toISOString(),
-            });
-            console.log('[WatchParty] Presence track enviado');
-          } catch (trackError) {
-            console.error('[WatchParty] Erro ao fazer track:', trackError);
-          }
-          
-          // Enviar mensagem de entrada
-          try {
-            await channel.send({
-              type: 'broadcast',
-              event: 'party_message',
-              payload: {
-                type: 'join',
-                userId: this.userId,
-                roomId: this.roomId,
-                timestamp: Date.now(),
-              },
-            });
-          } catch (sendError) {
-            console.error('[WatchParty] Erro ao enviar join:', sendError);
-          }
-          
-          this.updateUI(`Sala: ${this.roomId} | Conectado`);
-          this.showToast('Assistir Juntos ativo! Compartilhe o link.');
-          
-          // Esconde erro
-          const errorEl = document.getElementById('error-overlay');
-          if (errorEl) errorEl.classList.add('hidden');
-          
-          // Configura eventos do player
-          this.setupVideoEvents();
-          
-          // Inicia heartbeat para manter presença
           this.startHeartbeat();
           
+          // Entra na sala
+          this.joinRoomSupabase();
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-          console.error('[WatchParty] Canal fechou ou erro:', status);
-          this.handleDisconnect();
+          clearTimeout(timeout);
+          console.error('[WatchParty] Erro na conexão:', status, err);
+          // Retry imediato na primeira falha
+          if (this.reconnectAttempts === 0) {
+            console.log('[WatchParty] Primeira tentativa falhou, retry imediato...');
+            setTimeout(() => this.connectSupabase(), 1000);
+          } else {
+            this.scheduleReconnect();
+          }
         }
       });
       
     } catch (error) {
-      console.error('[WatchParty] Erro Supabase:', error);
-      this.handleDisconnect();
+      console.error('[WatchParty] Erro ao conectar:', error);
+      // Retry imediato na primeira falha
+      if (this.reconnectAttempts === 0) {
+        console.log('[WatchParty] Primeira tentativa falhou (erro), retry imediato...');
+        setTimeout(() => this.connectSupabase(), 1000);
+      } else {
+        this.scheduleReconnect();
+      }
     }
   }
   
