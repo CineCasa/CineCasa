@@ -11,6 +11,7 @@ import KeyboardNavigation from "./components/KeyboardNavigation";
 import { SpatialNavigationProvider } from "./components/SpatialNavigationProvider";
 import MobileBottomNav from "./components/MobileBottomNav";
 import PremiumNavbar from "./components/PremiumNavbar";
+import ScrollToTop from "./components/ScrollToTop";
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
 import VideoJSPlayer from "./components/VideoJSPlayer";
 import PremiumHome from "./pages/PremiumHome";
@@ -114,8 +115,10 @@ const AppRoutes = () => {
   console.log('[AppRoutes] Rota atual:', location.pathname, 'Usuário logado:', !!user);
   
   return (
-    <Routes>
-      {/* Rota pública - Login (redireciona para home se já logado) */}
+    <>
+      <ScrollToTop />
+      <Routes>
+        {/* Rota pública - Login (redireciona para home se já logado) */}
       <Route 
         path="/login" 
         element={
@@ -151,7 +154,8 @@ const AppRoutes = () => {
       
       {/* Rota padrão - redireciona para login */}
       <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 };
 
