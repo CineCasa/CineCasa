@@ -26,6 +26,11 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState(query);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Sincronizar estado com URL quando mudar
+  useEffect(() => {
+    setSearchQuery(query);
+  }, [query]);
+
   // Busca em tempo real no Supabase
   const performSearch = useCallback(async (searchTerm: string) => {
     if (!searchTerm.trim()) {
@@ -129,20 +134,29 @@ const Search = () => {
 
   // Debounce para busca em tempo real
   useEffect(() => {
+    // Limpar timeout anterior
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
+      debounceRef.current = null;
     }
 
-    debounceRef.current = setTimeout(() => {
-      performSearch(searchQuery);
-    }, 300);
+    // Só buscar se tiver termo
+    if (searchQuery.trim()) {
+      debounceRef.current = setTimeout(() => {
+        performSearch(searchQuery);
+      }, 300);
+    } else {
+      setResults([]);
+      setIsLoading(false);
+    }
 
     return () => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
+        debounceRef.current = null;
       }
     };
-  }, [searchQuery, performSearch]);
+  }, [searchQuery]);
 
   // Atualizar URL quando digitar
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,9 +181,9 @@ const Search = () => {
   };
 
   return (
-    <main className="h-screen flex flex-col bg-black text-white overflow-hidden">
+    <main className="h-screen flex flex-col bg-black text-white overflow-hidden pt-[56px]">
       {/* Header fixo com busca - Ocupa espaço fixo no topo */}
-      <div className="flex-shrink-0 z-30 bg-black/95 backdrop-blur-md px-4 py-4 md:px-8 lg:px-12 border-b border-white/10">
+      <div className="fixed top-[56px] left-0 right-0 z-40 bg-black/95 backdrop-blur-md px-4 py-4 md:px-8 lg:px-12 border-b border-white/10">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
@@ -202,7 +216,7 @@ const Search = () => {
       </div>
 
       {/* Área de resultados - Scrollável */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-8 lg:px-12 py-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-8 lg:px-12 py-4 mt-[100px]">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-10 h-10 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />

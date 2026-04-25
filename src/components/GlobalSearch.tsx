@@ -50,59 +50,25 @@ const GlobalSearch: React.FC<GlobalSearchProps> = ({ isOpen, onClose, variant = 
     localStorage.setItem('searchHistory', JSON.stringify(newHistory));
   };
 
-  // Pesquisa em tempo real
+  // Navegar para página de pesquisa ao digitar
+  const navigateToSearch = useCallback((searchTerm: string) => {
+    if (searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+      onClose();
+    }
+  }, [navigate, onClose]);
+
+  // Pesquisa em tempo real (apenas para histórico)
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
       return;
     }
 
-    setLoading(true);
-    try {
-      const [cinemaResults, seriesResults] = await Promise.all([
-        supabase
-          .from('cinema')
-          .select('*')
-          .ilike('titulo', '%' + searchQuery + '%')
-          .limit(10),
-        supabase
-          .from('series')
-          .select('*')
-          .ilike('titulo', '%' + searchQuery + '%')
-          .limit(10)
-      ]);
-
-      const allResults: SearchResult[] = [
-        ...(cinemaResults.data || []).map((item: any) => ({
-          id: item.id?.toString(),
-          title: item.titulo || item.title || '',
-          poster: item.poster || '/api/placeholder/300/450',
-          type: 'movie' as const,
-          year: item.ano?.toString() || item.year,
-          rating: item.nota?.toString() || item.rating,
-          category: item.category,
-          description: item.description || item.sinopse || '',
-          table: 'cinema' as const
-        })),
-        ...(seriesResults.data || []).map((item: any) => ({
-          id: item.id_n?.toString() || item.id?.toString() || '',
-          title: item.titulo || item.title || '',
-          poster: item.capa || item.poster || '/api/placeholder/300/450',
-          type: 'series' as const,
-          year: item.ano?.toString(),
-          rating: item.rating?.toString() || item.nota?.toString(),
-          category: item.genero || item.category,
-          description: item.sinopse || item.description,
-          table: 'series' as const
-        }))
-      ];
-
-      setResults(allResults);
-    } catch (error) {
-      console.error('Erro na pesquisa:', error);
-    } finally {
-      setLoading(false);
-    }
+    // Não buscar em tempo real, apenas navegar
+    // O componente Search.tsx fará a busca real
+    setLoading(false);
+    setResults([]);
   }, []);
 
   // Debounce para pesquisa em tempo real
