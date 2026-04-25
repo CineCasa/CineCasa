@@ -152,8 +152,8 @@ const AppRoutes = () => {
       {/* Home - Protegida, redireciona para login se não autenticado */}
       <Route path="/" element={<ProtectedRoute><PremiumHome /></ProtectedRoute>} />
       
-      {/* Rota padrão - redireciona para login */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      {/* Rota padrão - sempre redireciona para Home (que trata autenticação) */}
+      <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
