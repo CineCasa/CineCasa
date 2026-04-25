@@ -178,7 +178,39 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      backdrop-filter: blur(8px);
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .btn-sair-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.1) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      border-radius: 8px;
+      color: #ef4444;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+    }
+    
+    .btn-sair-header:hover {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(239, 68, 68, 0.2) 100%);
+      border-color: rgba(239, 68, 68, 0.8);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+      transform: translateY(-1px);
+    }
+    
+    .btn-sair-header svg {
+      fill: currentColor;
     }
     
     .watch-logo {
@@ -272,6 +304,55 @@
       content: '';
       display: block;
       padding-top: 56.25%;
+    }
+    
+    /* ============================================
+       RESPONSIVO - MOBILE
+       ============================================ */
+    @media (max-width: 768px) {
+      .watch-container {
+        padding-top: 50px;
+        min-height: 100vh;
+        height: 100vh;
+        overflow: hidden;
+      }
+      
+      .player-area {
+        padding: 0;
+        min-height: calc(100vh - 50px);
+        height: calc(100vh - 50px);
+        align-items: flex-start;
+      }
+      
+      .video-wrapper {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        max-height: calc(100vh - 50px);
+      }
+      
+      .video-wrapper::before {
+        padding-top: 56.25%;
+      }
+      
+      #watch-party-video {
+        max-height: calc(100vh - 50px);
+      }
+      
+      /* Header mais compacto em mobile */
+      .watch-header {
+        padding: 12px 16px;
+        min-height: 50px;
+      }
+      
+      .watch-logo {
+        font-size: 18px;
+      }
+      
+      /* Esconder chat em mobile por padrão (se houver) */
+      .chat-panel {
+        display: none;
+      }
     }
     
     #watch-party-video {
@@ -821,7 +902,15 @@
        HEADER
        ============================================ -->
   <header class="watch-header">
-    <a href="/" class="watch-logo">🎬 CineCasa</a>
+    <div class="header-left">
+      <a href="/" class="watch-logo">🎬 CineCasa</a>
+      <button class="btn-sair-header" onclick="fecharSala()" title="Sair da sala">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+        </svg>
+        <span>Sair</span>
+      </button>
+    </div>
     
     <div class="watch-status">
       <div class="status-indicator" id="connection-status">
@@ -1201,31 +1290,67 @@
       // Carregar mensagens existentes
       await loadChatMessages();
       
-      // Subscrever a novas mensagens
-      chatSubscription = supabase
-        .channel(`chat:${roomId}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'watch_party_messages',
-          filter: `room_id=eq.${roomId}`
-        }, payload => {
-          displayChatMessage(payload.new);
-        })
-        .subscribe(status => {
-          console.log('[Chat] Status:', status);
-          const statusEl = document.getElementById('chat-status');
-          const dotEl = statusEl.querySelector('.status-dot');
-          const textEl = statusEl.querySelector('.status-text');
-          
-          if (status === 'SUBSCRIBED') {
-            dotEl.classList.remove('offline');
-            textEl.textContent = 'Online';
-          } else {
-            dotEl.classList.add('offline');
-            textEl.textContent = 'Offline';
-          }
-        });
+      // Função para criar subscription com retry
+      const createChatSubscription = () => {
+        // Remover subscription anterior se existir
+        if (chatSubscription) {
+          chatSubscription.unsubscribe();
+        }
+        
+        chatSubscription = supabase
+          .channel(`chat:${roomId}:${Date.now()}`, {
+            config: {
+              broadcast: { self: true },
+              presence: { key: currentUser.id }
+            }
+          })
+          .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'watch_party_messages',
+            filter: `room_id=eq.${roomId}`
+          }, payload => {
+            console.log('[Chat] Nova mensagem recebida:', payload.new);
+            displayChatMessage(payload.new);
+          })
+          .on('presence', { event: 'sync' }, () => {
+            console.log('[Chat] Presence sync');
+          })
+          .subscribe((status, err) => {
+            console.log('[Chat] Status:', status, err || '');
+            const statusEl = document.getElementById('chat-status');
+            if (!statusEl) return;
+            
+            const dotEl = statusEl.querySelector('.status-dot');
+            const textEl = statusEl.querySelector('.status-text');
+            
+            if (status === 'SUBSCRIBED') {
+              dotEl.classList.remove('offline');
+              textEl.textContent = 'Online';
+              console.log('[Chat] Conectado com sucesso!');
+            } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              dotEl.classList.add('offline');
+              textEl.textContent = 'Offline';
+              console.log('[Chat] Erro na conexão, tentando reconectar em 3s...');
+              // Retry automático após 3 segundos
+              setTimeout(createChatSubscription, 3000);
+            } else {
+              dotEl.classList.add('offline');
+              textEl.textContent = 'Conectando...';
+            }
+          });
+      };
+      
+      // Iniciar subscription
+      createChatSubscription();
+      
+      // Verificar status periodicamente
+      setInterval(() => {
+        if (!chatSubscription) {
+          console.log('[Chat] Reconectando...');
+          createChatSubscription();
+        }
+      }, 10000);
     }
     
     // Carregar mensagens do chat
