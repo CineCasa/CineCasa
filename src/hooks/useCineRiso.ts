@@ -19,13 +19,13 @@ interface UseCineRisoReturn {
 
 export const useCineRiso = () => {
   const [content, setContent] = useState<CineRisoContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[CineRiso] Buscando conteúdo de comédia...');
       
       // Buscar filmes e séries de comédia
@@ -104,13 +104,15 @@ export const useCineRiso = () => {
       console.log('[CineRiso] Séries:', finalSelection.filter(i => i.type === 'series').length);
 
       setContent(finalSelection);
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[CineRiso] Erro ao buscar conteúdo:', err);
+      console.error('[CineRiso] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();

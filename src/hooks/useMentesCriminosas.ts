@@ -19,13 +19,13 @@ interface UseMentesCriminosasReturn {
 
 export const useMentesCriminosas = () => {
   const [content, setContent] = useState<MentesCriminosasContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[MentesCriminosas] Buscando conteúdo de crime e policial...');
       
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
@@ -82,19 +82,17 @@ export const useMentesCriminosas = () => {
       }
 
       // Selecionar apenas 5 filmes aleatórios
-      const selected = shuffled.slice(0, 5);
-
-      console.log('[MentesCriminosas] Selecionados:', selected.length, 'filmes');
-      console.log('[MentesCriminosas] Títulos:', selected.map(m => m.title).join(', '));
-
-      setContent(selected);
+      setContent(shuffled.slice(0, 10));
+      console.log('[MentesCriminosas] Selecionados:', shuffled.slice(0, 10).length, 'filmes');
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[MentesCriminosas] Erro ao buscar conteúdo:', err);
+      console.error('[MentesCriminosas] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();
