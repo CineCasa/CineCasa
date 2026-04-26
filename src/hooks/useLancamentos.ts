@@ -31,11 +31,12 @@ const LANCAMENTOS_TIMESTAMP_KEY = 'cinecasa_lancamentos_timestamp';
 
 export const useLancamentos = (userId?: string): UseLancamentosReturn => {
   const [lancamentos, setLancamentos] = useState<Lancamento[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Não começar como loading
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const previousUserId = useRef<string | undefined>(userId);
   const isInitialized = useRef(false);
+  const hasCacheLoaded = useRef(false);
 
   const fetchLancamentos = useCallback(async (forceRefresh = true) => {
     // Forçar atualização sempre em localhost para garantir conteúdo fresco
@@ -62,14 +63,17 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
     }
 
     try {
-      setIsLoading(true);
+      // Não setar loading true imediatamente - carregar em background
+      // apenas mostrar loading se demorar mais de 500ms
+      const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
       setError(null);
 
-      // Buscar TODOS os filmes da tabela cinema
+      // Buscar apenas filmes de lançamento (otimizado)
       const { data: allMovies, error } = await supabase
         .from('cinema')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('id, id_n, tmdb_id, titulo, capa, poster, year, ano, rating, category, genero, description, duration, banner, backdrop')
+        .or('year.eq.2026,year.eq.2025,category.ilike.%Lançamento 2026%,category.ilike.%Lançamento 2025%,genero.ilike.%Lançamento 2026%,genero.ilike.%Lançamento 2025%')
+        .limit(50); // Limitar a 50 filmes de lançamento
 
       if (error) throw error;
 
@@ -207,10 +211,12 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       
       setLancamentos(combined);
       setLastUpdated(new Date().toISOString());
+      clearTimeout(loadingTimeout);
     } catch (err: any) {
       setError('Erro ao carregar lançamentos');
       console.error('Error loading lançamentos:', err);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
   }, [userId]);
@@ -219,14 +225,21 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
     await fetchLancamentos(true);
   }, [fetchLancamentos]);
 
-  // Carregar na montagem - sempre buscar quando componente montar
+  // Carregar na montagem - mas não bloquear UI
   useEffect(() => {
     if (!isInitialized.current) {
       isInitialized.current = true;
-      console.log('[useLancamentos] Inicializando carregamento...');
+      // Verificar cache primeiro (síncrono, não bloqueia)
+      const cacheKey = `${LANCAMENTOS_CACHE_KEY}_${userId || 'guest'}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached && !hasCacheLoaded.current) {
+        hasCacheLoaded.current = true;
+        setLancamentos(JSON.parse(cached));
+      }
+      // Carregar dados frescos em background
       fetchLancamentos();
     }
-  }, [fetchLancamentos]);
+  }, [fetchLancamentos, userId]);
 
   // Recarregar quando o usuário mudar
   useEffect(() => {

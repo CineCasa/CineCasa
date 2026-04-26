@@ -20,23 +20,25 @@ interface UseNegritudeReturn {
 
 export const useNegritude = (userId?: string): UseNegritudeReturn => {
   const [negritude, setNegritude] = useState<Negritude[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchNegritude = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
-      // Busca TODOS os itens de negritude (sem limite)
+      // Busca otimizada de itens de negritude
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%negritude%,category.ilike.%negritude%'),
+          .or('genero.ilike.%negritude%,category.ilike.%negritude%')
+          .limit(30),
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, ano, genero, banner')
           .or('genero.ilike.%negritude%')
+          .limit(20)
       ]);
 
       // REMOVER COLEÇÕES dos filmes de negritude
@@ -83,35 +85,16 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
         return shuffled;
       };
 
-      // Se não temos conteúdo suficiente, buscar filmes de outros gêneros como fallback
-      if (uniqueNegritude.length < 5) {
-        console.log('[useNegritude] Poucos itens encontrados, buscando fallback...');
-        const { data: fallbackData } = await supabase
-          .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating')
-          .not('poster', 'is', null);
-        
-        const fallbackContent = (fallbackData || [])
-          .filter((item: any) => !uniqueNegritude.find(n => n.id === item.id.toString()))
-          .map((item: any) => ({
-            id: item.id.toString(),
-            tmdbId: item.tmdb_id,
-            title: item.titulo,
-            poster: item.poster,
-            type: 'movie' as const,
-            year: item.year,
-            rating: item.rating,
-          }));
-        
-        uniqueNegritude.push(...fallbackContent);
-      }
+      // Não buscar fallback - buscar todos os filmes causa lentidão
 
       const shuffled = shuffleArray(uniqueNegritude);
       setNegritude(shuffled);
+      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('Erro ao buscar negritude:', err);
       setNegritude([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
   }, []);
@@ -121,10 +104,9 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
   }, [fetchNegritude]);
 
   useEffect(() => {
-    // Sempre buscar na montagem (atualiza a cada navegação)
+    // Carregar sem bloquear UI
     if (!isInitialized.current) {
       isInitialized.current = true;
-      console.log('[useNegritude] Inicializando carregamento...');
       fetchNegritude();
     }
   }, [fetchNegritude]);

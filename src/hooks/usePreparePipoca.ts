@@ -19,18 +19,20 @@ interface UsePreparePipocaReturn {
 
 export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
   const [series, setSeries] = useState<SeriePipoca[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchSeries = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
       console.log('🍿 [PreparePipoca] Buscando séries...');
       
-      // Buscar séries do banco - sem limite para pegar todas
+      // Buscar séries com limite para performance
       const { data, error } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, capa, ano, genero, descricao');
+        .select('id_n, tmdb_id, titulo, capa, ano, genero, descricao')
+        .limit(50);
 
       if (error) {
         console.error('❌ [PreparePipoca] Erro:', error);
@@ -66,10 +68,10 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
 
       console.log('🎬 [PreparePipoca] Séries únicas:', grouped.size);
 
-      // Pegar TODOS os títulos base (sem limite)
+      // Limitar a 15 séries únicas para performance
       const uniqueTitles = Array.from(grouped.keys());
       const shuffled = uniqueTitles.sort(() => Math.random() - 0.5);
-      const selected = shuffled;
+      const selected = shuffled.slice(0, 15);
 
       // Formatar resultado
       const result: SeriePipoca[] = selected.map(baseTitle => {
@@ -88,10 +90,12 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
 
       console.log('✅ [PreparePipoca] Selecionadas:', result.length, result.map(s => s.title));
       setSeries(result);
+      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('💥 [PreparePipoca] Erro fatal:', err);
       setSeries([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
   }, []);
@@ -105,12 +109,12 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
   }, [fetchSeries]);
 
   useEffect(() => {
+    // Carregar sem bloquear UI
     if (!isInitialized.current) {
       isInitialized.current = true;
-      console.log('[usePreparePipoca] Inicializando carregamento...');
-      fetchContent();
+      fetchSeries();
     }
-  }, [fetchContent]);
+  }, [fetchSeries]);
 
   return {
     series,

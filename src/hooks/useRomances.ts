@@ -20,27 +20,29 @@ interface UseRomancesReturn {
 
 export const useRomances = (userId?: string): UseRomancesReturn => {
   const [romances, setRomances] = useState<Romance[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Não começar como loading
   const isInitialized = useRef(false);
+  const hasCacheLoaded = useRef(false);
 
   const fetchRomances = useCallback(async () => {
+    // Não setar loading imediatamente - só mostrar se demorar mais de 500ms
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[useRomances] Buscando filmes/séries de romance...');
       
-      // Busca TODOS os itens de romance (sem limite)
+      // Busca otimizada de itens de romance
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
           .or('genero.ilike.%romance%,category.ilike.%romance%')
-          .limit(100),
+          .limit(30), // Reduzido para melhor performance
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, ano, genero')
           .or('genero.ilike.%romance%')
-          .limit(50)
+          .limit(20) // Reduzido para melhor performance
       ]);
 
       console.log('[useRomances] Cinema result:', cinemaData.data?.length || 0, 'itens');
@@ -121,10 +123,12 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
       console.log('[useRomances] Selecionados:', shuffled.length);
 
       setRomances(shuffled.slice(0, 10));
+      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[useRomances] Erro ao buscar romances:', err);
       setRomances([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
   }, []);
@@ -134,10 +138,10 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
   }, [fetchRomances]);
 
   useEffect(() => {
-    // Sempre buscar na montagem (atualiza a cada navegação)
+    // Carregar sem bloquear UI
     if (!isInitialized.current) {
       isInitialized.current = true;
-      console.log('[useRomances] Inicializando carregamento...');
+      // Carregar dados em background
       fetchRomances();
     }
   }, [fetchRomances]);

@@ -19,25 +19,25 @@ interface UseInfantilReturn {
 
 export const useInfantil = (userId?: string): UseInfantilReturn => {
   const [infantil, setInfantil] = useState<Infantil[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchInfantil = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
-      // Buscar filmes e séries da categoria infantil
+      // Buscar filmes e séries da categoria infantil (limitado para performance)
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
           .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
           .or('genero.ilike.%infantil%,category.ilike.%infantil%')
-          .limit(50),
+          .limit(30),
         supabase
           .from('series')
           .select('id_n, tmdb_id, titulo, ano, genero')
           .or('genero.ilike.%infantil%')
-          .limit(50)
+          .limit(20)
       ]);
 
       const allInfantil: Infantil[] = [
@@ -61,37 +61,17 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
         })),
       ];
 
-      // Se não temos conteúdo suficiente, buscar filmes de outros gêneros como fallback
-      if (allInfantil.length < 5) {
-        console.log('[useInfantil] Poucos itens encontrados, buscando fallback...');
-        const { data: fallbackData } = await supabase
-          .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating')
-          .not('poster', 'is', null)
-          .limit(20);
-        
-        const fallbackContent = (fallbackData || [])
-          .filter((item: any) => !allInfantil.find(i => i.id === item.id.toString()))
-          .map((item: any) => ({
-            id: item.id.toString(),
-            tmdbId: item.tmdb_id,
-            title: item.titulo,
-            poster: item.poster,
-            type: 'movie' as const,
-            year: item.year,
-            rating: item.rating,
-          }));
-        
-        allInfantil.push(...fallbackContent);
-      }
+      // Não buscar fallback - buscar todos os filmes causa lentidão
 
-      // Retornar TODOS (sem limite)
-      const shuffled = allInfantil.sort(() => Math.random() - 0.5);
+      // Limitar a 30 itens para performance
+      const shuffled = allInfantil.sort(() => Math.random() - 0.5).slice(0, 30);
       setInfantil(shuffled);
+      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('Erro ao buscar conteúdo infantil:', err);
       setInfantil([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
   }, []);
@@ -101,10 +81,9 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
   }, [fetchInfantil]);
 
   useEffect(() => {
-    // Sempre buscar na montagem (atualiza a cada navegação)
+    // Carregar sem bloquear UI
     if (!isInitialized.current) {
       isInitialized.current = true;
-      console.log('[useInfantil] Inicializando carregamento...');
       fetchInfantil();
     }
   }, [fetchInfantil]);
