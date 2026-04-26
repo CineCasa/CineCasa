@@ -19,13 +19,13 @@ interface UsePrepareParaMedoReturn {
 
 export const usePrepareParaMedo = () => {
   const [content, setContent] = useState<PrepareParaMedoContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[PrepareParaMedo] Buscando conteúdo da categoria terror...');
       
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
@@ -83,14 +83,16 @@ export const usePrepareParaMedo = () => {
       console.log('[PrepareParaMedo] Total:', shuffled.length, 'filmes');
       console.log('[PrepareParaMedo] Títulos:', shuffled.map(m => m.title).join(', '));
 
-      setContent(shuffled);
+      setContent(shuffled.slice(0, 15));
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[PrepareParaMedo] Erro ao buscar conteúdo:', err);
+      console.error('[PrepareParaMedo] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();

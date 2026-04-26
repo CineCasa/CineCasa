@@ -19,13 +19,13 @@ interface UseOrgulhoNacionalReturn {
 
 export const useOrgulhoNacional = () => {
   const [content, setContent] = useState<OrgulhoNacionalContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[OrgulhoNacional] Buscando conteúdo da categoria nacional...');
       
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
@@ -81,20 +81,22 @@ export const useOrgulhoNacional = () => {
         }
       }
 
-      // Selecionar apenas 5 filmes aleatórios
-      const selected = shuffled.slice(0, 5);
+      // Selecionar apenas 20 filmes aleatórios
+      const selected = shuffled.slice(0, 20);
 
       console.log('[OrgulhoNacional] Selecionados:', selected.length, 'filmes');
       console.log('[OrgulhoNacional] Títulos:', selected.map(m => m.title).join(', '));
 
       setContent(selected);
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[OrgulhoNacional] Erro ao buscar conteúdo:', err);
+      console.error('[OrgulhoNacional] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();

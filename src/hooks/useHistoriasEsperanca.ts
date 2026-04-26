@@ -19,13 +19,13 @@ interface UseHistoriasEsperancaReturn {
 
 export const useHistoriasEsperanca = () => {
   const [content, setContent] = useState<HistoriasEsperancaContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[HistoriasEsperanca] Buscando conteúdo da categoria religioso...');
       
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
@@ -81,20 +81,22 @@ export const useHistoriasEsperanca = () => {
         }
       }
 
-      // Selecionar apenas 5 filmes aleatórios
-      const selected = shuffled.slice(0, 5);
+      // Selecionar apenas 10 filmes aleatórios
+      const selected = shuffled.slice(0, 10);
 
       console.log('[HistoriasEsperanca] Selecionados:', selected.length, 'filmes');
       console.log('[HistoriasEsperanca] Títulos:', selected.map(m => m.title).join(', '));
 
       setContent(selected);
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[HistoriasEsperanca] Erro ao buscar conteúdo:', err);
+      console.error('[HistoriasEsperanca] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();

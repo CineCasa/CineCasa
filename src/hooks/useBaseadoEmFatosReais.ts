@@ -19,13 +19,13 @@ interface UseBaseadoEmFatosReaisReturn {
 
 export const useBaseadoEmFatosReais = () => {
   const [content, setContent] = useState<BaseadoEmFatosReaisContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[BaseadoEmFatosReais] Buscando conteúdo da categoria documentário...');
       
       // Buscar filmes documentários
@@ -140,14 +140,16 @@ export const useBaseadoEmFatosReais = () => {
       console.log('[BaseadoEmFatosReais] Séries:', selected.filter(s => s.type === 'series').length);
       console.log('[BaseadoEmFatosReais] Títulos:', selected.map(m => m.title).join(', '));
 
-      setContent(selected);
+      setContent([...movies, ...series].slice(0, 10));
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[BaseadoEmFatosReais] Erro ao buscar conteúdo:', err);
+      console.error('[BaseadoEmFatosReais] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();
