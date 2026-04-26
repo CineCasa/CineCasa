@@ -22,9 +22,25 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [newContent, setNewContent] = useState<NewContent[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
+
+  // Carregar credenciais salvas do localStorage ao montar o componente
+  useEffect(() => {
+    const savedCredentials = localStorage.getItem('cinecasa_credentials');
+    if (savedCredentials) {
+      try {
+        const { email: savedEmail, password: savedPassword } = JSON.parse(savedCredentials);
+        setEmail(savedEmail || '');
+        setPassword(savedPassword || '');
+        setRememberMe(true);
+      } catch (e) {
+        console.error('Erro ao carregar credenciais salvas:', e);
+      }
+    }
+  }, []);
 
   // Forçar reload limpo - limpa estado anterior
   useEffect(() => {
@@ -165,6 +181,14 @@ const Login = () => {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      
+      // Salvar ou remover credenciais do localStorage baseado no checkbox
+      if (rememberMe) {
+        localStorage.setItem('cinecasa_credentials', JSON.stringify({ email, password }));
+      } else {
+        localStorage.removeItem('cinecasa_credentials');
+      }
+      
       navigate("/");
     } catch (error: any) {
       alert(error.message || "Erro ao fazer login");
@@ -324,6 +348,25 @@ const Login = () => {
                   >
                     {showPassword ? <EyeOff className="w-5 h-5 flex-shrink-0" /> : <Eye className="w-5 h-5 flex-shrink-0" />}
                   </button>
+                </div>
+              )}
+
+              {/* Lembrar de mim - Checkbox */}
+              {!isSignUp && !isForgotPassword && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-400/50 bg-white/5 text-cyan-400 focus:ring-cyan-400/50 focus:ring-2 cursor-pointer"
+                  />
+                  <label 
+                    htmlFor="rememberMe" 
+                    className="ml-2 text-sm text-gray-300 cursor-pointer select-none hover:text-gray-200 transition-colors"
+                  >
+                    Lembrar de mim
+                  </label>
                 </div>
               )}
 
