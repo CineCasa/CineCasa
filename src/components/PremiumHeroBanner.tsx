@@ -143,14 +143,14 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
       };
 
       if (contentType === 'all') {
-        // Buscar filmes e séries simultaneamente com paginação (SEM LIMITE)
-        console.log('[PremiumHeroBanner] Buscando filmes E séries (SEM LIMITE)...');
+        // Buscar filmes e séries com limite para performance
+        console.log('[PremiumHeroBanner] Buscando filmes E séries (otimizado)...');
         const [cinemaData, seriesData] = await Promise.all([
-          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster'),
-          fetchAllRecords('series', 'id_n, titulo, capa, ano, descricao, genero', 'capa')
+          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster', 100),
+          fetchAllRecords('series', 'id_n, titulo, capa, ano, descricao, genero', 'capa', 50)
         ]);
 
-        console.log('[PremiumHeroBanner] Resultados (SEM LIMITE):', {
+        console.log('[PremiumHeroBanner] Resultados:', {
           cinemaCount: cinemaData?.length,
           seriesCount: seriesData?.length
         });
@@ -159,9 +159,9 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         const cinemaItems = processCinemaItems(cinemaData || []);
         const seriesItems = processSeriesItems(seriesData || []);
 
-        // Combinar todos os itens
-        const allItems = [...cinemaItems, ...seriesItems];
-        console.log('[PremiumHeroBanner] Total combinado:', allItems.length, '(filmes:', cinemaItems.length, 'séries:', seriesItems.length + ')');
+        // Combinar e limitar itens para performance
+        const allItems = [...cinemaItems, ...seriesItems].slice(0, 50);
+        console.log('[PremiumHeroBanner] Total combinado (limitado):', allItems.length);
 
         // Embaralhar todos juntos
         const shuffled = shuffleArray(allItems);
@@ -171,7 +171,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         // Iniciar em posição aleatória
         const randomStartIndex = shuffled.length > 0 ? Math.floor(Math.random() * shuffled.length) : 0;
         setCurrentIndex(randomStartIndex);
-        console.log('[PremiumHeroBanner] Todos embaralhados:', shuffled.length, 'iniciando em índice:', randomStartIndex, 'título:', shuffled[randomStartIndex]?.title);
+        console.log('[PremiumHeroBanner] Hero pronto:', shuffled.length, 'itens, índice:', randomStartIndex);
 
       } else if (contentType === 'movies') {
         // Buscar TODOS os filmes (SEM LIMITE)
