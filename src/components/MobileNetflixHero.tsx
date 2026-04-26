@@ -189,13 +189,11 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
             genre: item.genero
           }));
           
-          // SEM LIMITE - mostrar todos os itens embaralhados
-          const shuffled = shuffleArray(transformed);
+          // Limitar a 20 itens para performance - carregar mais conforme necessário
+          const shuffled = shuffleArray(transformed).slice(0, 20);
           
-          console.log('[MobileNetflixHero] Pré-carregando', shuffled.length, 'imagens...');
-          const posterUrls = shuffled.map(item => item.poster).filter(url => url && url.trim() !== '');
-          await preloadImages(posterUrls.slice(0, 10)); // Pré-carregar apenas as primeiras 10
-          console.log('[MobileNetflixHero] Imagens pré-carregadas!');
+          // Não bloquear UI com pré-carregamento - carregar imagens sob demanda
+          console.log('[MobileNetflixHero] Carregando', shuffled.length, 'itens (otimizado)');
           
           setDisplayQueue(shuffled);
           setHeroImagesReady(true);
