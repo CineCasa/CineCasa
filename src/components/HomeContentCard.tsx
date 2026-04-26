@@ -47,11 +47,7 @@ const HomeContentCard: React.FC<HomeContentCardProps> = ({
 
   return (
     <motion.div
-      className="relative group cursor-pointer"
-      whileHover={{ scale: 1.05, zIndex: 10 }}
-      transition={{ duration: 0.2 }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="relative cursor-pointer"
       onClick={handleCardClick}
     >
       <div className="relative w-[200px] md:w-[240px] overflow-hidden rounded-lg">
@@ -65,19 +61,6 @@ const HomeContentCard: React.FC<HomeContentCardProps> = ({
             target.src = `https://via.placeholder.com/240x360?text=${encodeURIComponent(content.title)}`;
           }}
         />
-        
-        {/* Overlay gradiente no hover */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`} />
-        
-        {/* Botões de ação no hover */}
-        <div className={`absolute bottom-0 left-0 right-0 p-4 transition-transform duration-300 ${isHovered ? 'translate-y-0' : 'translate-y-full'}`}>
-          <div className="flex flex-wrap gap-1 mb-3">
-            {content.genre.slice(0, 2).map((g, i) => (
-              <span key={i} className="bg-white/20 text-white text-xs px-2 py-1 rounded">
-                {g}
-              </span>
-            ))}
-          </div>
           
           {/* Botões de ação */}
           <div className="flex items-center gap-2">

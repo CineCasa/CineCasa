@@ -50,7 +50,7 @@ export function MovieCard({
         size="sm"
         interactive={!!onClick}
         onClick={onClick}
-        className={cn('relative overflow-hidden group rounded-xl border border-white/10 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] hover:border-[#00E5FF]', className)}
+        className={cn('relative overflow-hidden rounded-xl border border-white/10', className)}
       >
         <div className="aspect-[2/3] relative">
           <img
@@ -71,7 +71,7 @@ export function MovieCard({
         size="lg"
         interactive={!!onClick}
         onClick={onClick}
-        className={cn('overflow-hidden group rounded-xl border border-white/10 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] hover:border-[#00E5FF]', className)}
+        className={cn('overflow-hidden rounded-xl border border-white/10', className)}
       >
         <div className="flex flex-col md:flex-row gap-4">
           <div className="aspect-[2/3] md:aspect-video md:w-1/3 relative">
@@ -135,7 +135,7 @@ export function MovieCard({
       size="md"
       interactive={!!onClick}
       onClick={onClick}
-      className={cn('overflow-hidden group rounded-xl border border-white/10 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-[0_0_15px_rgba(0,229,255,0.6)] hover:border-[#00E5FF]', className)}
+      className={cn('overflow-hidden rounded-xl border border-white/10', className)}
     >
       <div className="aspect-[2/3] relative">
         <img
@@ -144,32 +144,6 @@ export function MovieCard({
           className="w-full h-full object-cover"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Overlay Glassmorphism */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 backdrop-blur-md bg-black/40">
-          <h3 className="text-white text-base font-semibold line-clamp-2 mb-2">
-            {movie.title}
-          </h3>
-          <div className="flex items-center gap-2">
-            {movie.rating && (
-              <Badge size="sm" variant="default" className="rounded-full bg-white/10 backdrop-blur-sm">
-                <Star className="w-3 h-3 mr-1" />
-                {movie.rating.toFixed(1)}
-              </Badge>
-            )}
-            {movie.year && (
-              <Badge size="sm" variant="secondary" className="rounded-full bg-white/10 backdrop-blur-sm">
-                {formatYear(movie.year)}
-              </Badge>
-            )}
-            {movie.genre && (
-              <Badge size="sm" variant="secondary" className="rounded-full bg-white/10 backdrop-blur-sm">
-                {movie.genre}
-              </Badge>
-            )}
-          </div>
-        </div>
       </div>
     </Card>
   );

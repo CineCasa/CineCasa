@@ -162,15 +162,14 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
         lg:w-[calc((100vw-96px-96px)/5)] 
         xl:w-[calc((100vw-128px-128px)/6)] 
         aspect-[2/3] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5FF] focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-xl cursor-pointer scroll-m-4
-        hover:scale-105 hover:shadow-[0_0_25px_rgba(0,229,255,0.3),0_10px_40px_rgba(0,0,0,0.5)]
-        border border-white/5 hover:border-[#00E5FF]/30
+        border border-white/5
         z-0
       "
     >
       {/* BASE PORTRAIT IMAGE */}
       <div 
         onClick={handleNavigateToDetails}
-        className={`w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300 ${!item.isComingSoon && 'cursor-pointer hover:brightness-110'}`}>
+        className="w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300">
         {isVisible ? (
           <img
             src={item.image || `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`}

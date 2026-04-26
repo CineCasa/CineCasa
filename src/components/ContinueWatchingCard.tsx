@@ -27,9 +27,7 @@ const ContinueWatchingCard: React.FC<ContinueWatchingCardProps> = ({
   };
   return (
     <motion.div
-      className="relative group cursor-pointer"
-      whileHover={{ scale: 1.05, zIndex: 10 }}
-      transition={{ duration: 0.2 }}
+      className="relative cursor-pointer"
       onClick={handleCardClick}
     >
       <div className="relative w-[200px] h-[112px] md:w-[240px] md:h-[135px] overflow-hidden rounded-lg">
