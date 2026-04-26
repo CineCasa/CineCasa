@@ -19,6 +19,7 @@ export function useAutoUpdate(checkInterval = 30000) {
     // DESABILITADO: Verificação via version.json removida
     // O service worker já gerencia atualizações automaticamente
     // e o arquivo version.json não existe no servidor
+    // Build v23 - Cache busting
     return;
   };
 
