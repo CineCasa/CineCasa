@@ -19,34 +19,30 @@ interface UseTravesseiroEdredonReturn {
 
 export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonReturn => {
   const [content, setContent] = useState<TravesseiroContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
+      console.log('[TravesseiroEdredon] Buscando conteúdo relaxante...');
       
-      console.log('[TravesseiroEdredon] Buscando conteúdo relaxante (drama, romance, família)...');
-      
-      // Buscar filmes relaxantes (drama, romance, família, musical)
+      // Buscar filmes relaxantes (limitado para performance)
       const { data: cinemaData, error: cinemaError } = await supabase
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
         .or('genero.ilike.%drama%,genero.ilike.%romance%,genero.ilike.%família%,category.ilike.%drama%,category.ilike.%romance%,category.ilike.%família%')
-        .not('poster', 'is', null);
+        .not('poster', 'is', null)
+        .limit(30);
       
-      if (cinemaError) {
-        console.error('[TravesseiroEdredon] Erro cinema:', cinemaError);
-      } else {
-        console.log('[TravesseiroEdredon] Cinema raw:', cinemaData);
-      }
-      
-      // Buscar séries relaxantes (drama, romance, família)
+      // Buscar séries relaxantes (limitado para performance)
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
         .select('id_n, tmdb_id, titulo, banner, ano, genero')
         .or('genero.ilike.%drama%,genero.ilike.%romance%,genero.ilike.%família%')
-        .not('banner', 'is', null);
+        .not('banner', 'is', null)
+        .limit(20);
       
       if (seriesError) {
         console.error('[TravesseiroEdredon] Erro series:', seriesError);
@@ -86,61 +82,20 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
 
       console.log('[TravesseiroEdredon] Conteúdo válido:', uniqueContent.length);
 
-      // Se não temos conteúdo adulto suficiente, buscar qualquer conteúdo como fallback
-      if (uniqueContent.length < 5) {
-        console.log('[TravesseiroEdredon] Buscando fallback...');
-        
-        const { data: fallbackCinema } = await supabase
-          .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, genero, description')
-          .not('poster', 'is', null);
-          
-        const { data: fallbackSeries } = await supabase
-          .from('series')
-          .select('id_n, tmdb_id, titulo, banner, ano, genero, descricao')
-          .not('banner', 'is', null);
-        
-        const fallbackContent: TravesseiroContent[] = [
-          ...(fallbackCinema || []).map((item: any) => ({
-            id: item.id?.toString() || `cinema-${Math.random()}`,
-            title: item.titulo || 'Sem título',
-            poster: item.poster || '',
-            type: 'movie' as const,
-            year: item.year,
-            rating: item.rating,
-          })),
-          ...(fallbackSeries || []).map((item: any) => ({
-            id: item.id_n?.toString() || `series-${Math.random()}`,
-            title: item.titulo || 'Sem título',
-            poster: item.banner || '',
-            type: 'series' as const,
-            year: item.ano,
-            rating: 'N/A',
-          })),
-        ].filter(item => item.poster && item.poster.trim() !== '');
-        
-        // Adicionar fallback ao conteúdo existente
-        const combined = [...uniqueContent, ...fallbackContent];
-        const uniqueCombined = combined.filter((item, index, self) =>
-          index === self.findIndex(t => t.id === item.id)
-        );
-        
-        const shuffledFallback = uniqueCombined.sort(() => Math.random() - 0.5);
-        setContent(shuffledFallback);
-      } else {
-        // Embaralhar todos os conteúdos
-        const shuffled = uniqueContent.sort(() => Math.random() - 0.5);
-        setContent(shuffled);
-      }
+      // Não buscar fallback - buscar todos os filmes causa lentidão
+      // Limitar a 20 itens para performance
+      const shuffled = uniqueContent.sort(() => Math.random() - 0.5).slice(0, 20);
+      setContent(shuffled);
       
-      console.log('[TravesseiroEdredon] Final:', uniqueContent.length, 'capas');
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[TravesseiroEdredon] Erro ao buscar conteúdo adulto:', err);
+      console.error('[TravesseiroEdredon] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();

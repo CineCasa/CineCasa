@@ -74,7 +74,7 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
       clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchInfantil();

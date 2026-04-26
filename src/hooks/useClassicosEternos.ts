@@ -19,22 +19,22 @@ interface UseClassicosEternosReturn {
 
 export const useClassicosEternos = () => {
   const [content, setContent] = useState<ClassicosEternosContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[ClassicosEternos] Buscando conteúdo das categorias Clássicos e Faroeste...');
       
-      // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
-      // Buscar de Clássicos e Faroeste
+      // Buscar de Clássicos e Faroeste (limitado para performance)
       const { data: cinemaData, error } = await supabase
         .from('cinema')
         .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
         .or('genero.ilike.%clássico%,genero.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%,genero.ilike.%faroeste%,category.ilike.%faroeste%')
-        .not('poster', 'is', null);
+        .not('poster', 'is', null)
+        .limit(30);
 
       if (error) {
         console.error('[ClassicosEternos] Erro:', error);
@@ -81,17 +81,20 @@ export const useClassicosEternos = () => {
         }
       }
 
-      console.log('[ClassicosEternos] Total:', shuffled.length, 'filmes');
-      console.log('[ClassicosEternos] Títulos:', shuffled.map(m => m.title).join(', '));
+      // Limitar a 20 itens para performance
+      const limited = shuffled.slice(0, 20);
+      console.log('[ClassicosEternos] Total:', limited.length, 'filmes');
 
-      setContent(shuffled);
+      setContent(limited);
+      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[ClassicosEternos] Erro ao buscar conteúdo:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();
