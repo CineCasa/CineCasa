@@ -135,15 +135,7 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
         className={`
           relative aspect-[2/3] sm:aspect-[3/4] overflow-hidden rounded-xl 
           border border-white/5 transition-all duration-300 
-          group-hover:border-[#00E5FF]/50 group-hover:shadow-[0_0_25px_rgba(0,229,255,0.3)]
           ${isAdult ? 'capa-masked' : ''}
-          
-          /* Efeitos de expansão apenas em telas grandes (lg: = 1024px+) */
-          lg:group-hover:scale-[1.2]
-          lg:group-hover:z-[100]
-          lg:group-hover:shadow-[0_20px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(0,229,255,0.4)]
-          lg:group-hover:border-[#00E5FF]
-          lg:transition-transform lg:duration-300
         `}
         style={{
           transformOrigin: 'center center',
