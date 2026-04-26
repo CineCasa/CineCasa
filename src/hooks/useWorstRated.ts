@@ -25,15 +25,15 @@ const WORST_RATED_TIMESTAMP_KEY = 'worst_rated_timestamp';
 
 export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
   const [content, setContent] = useState<WorstRatedContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async (forceRefresh = false) => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
       // Removido cache para garantir atualização a cada reinício como solicitado
       
@@ -110,19 +110,12 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
       localStorage.setItem(WORST_RATED_CACHE_KEY, JSON.stringify(shuffledMovies));
       localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
       
-      console.log('[WorstRated] Carregados', shuffledMovies.length, 'filmes com baixa avaliação');
-      
+      console.log('[WorstRated] Selecionados:', content.length, 'filmes');
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[WorstRated] Erro ao buscar conteúdo:', err);
-      
-      // Tentar usar cache em caso de erro
-      const cachedData = localStorage.getItem(WORST_RATED_CACHE_KEY);
-      if (cachedData) {
-        const parsedContent = JSON.parse(cachedData);
-        setContent(parsedContent);
-        const cachedTimestamp = localStorage.getItem(WORST_RATED_TIMESTAMP_KEY);
-        setLastUpdated(cachedTimestamp);
-      } else {
+      console.error('[WorstRated] Erro ao buscar conteúdos:', err);
+      setContent([]);
+      setIsUsingFallback(false);
         // Se não há cache, buscar filmes aleatórios
         console.log('[WorstRated] Erro - buscando filmes de emergência...');
         
@@ -152,7 +145,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     console.log('[WorstRated] Forçando atualização...');

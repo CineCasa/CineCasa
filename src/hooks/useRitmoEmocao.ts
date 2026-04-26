@@ -19,13 +19,13 @@ interface UseRitmoEmocaoReturn {
 
 export const useRitmoEmocao = () => {
   const [content, setContent] = useState<RitmoEmocaoContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
-      
       console.log('[RitmoEmocao] Buscando conteúdo da categoria musical...');
       
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
@@ -87,14 +87,17 @@ export const useRitmoEmocao = () => {
       console.log('[RitmoEmocao] Selecionados:', selected.length, 'filmes');
       console.log('[RitmoEmocao] Títulos:', selected.map(m => m.title).join(', '));
 
-      setContent(selected);
+      setContent(selected.slice(0, 10));
+      console.log('[RitmoEmocao] Selecionados:', selected.slice(0, 10).length, 'filmes');
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[RitmoEmocao] Erro ao buscar conteúdo:', err);
+      console.error('[RitmoEmocao] Erro:', err);
       setContent([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   const refresh = useCallback(async () => {
     await fetchContent();
