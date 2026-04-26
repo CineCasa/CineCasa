@@ -381,7 +381,9 @@
       // PWA Service Worker Registration
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js', {
+          // Cache-busting: força Cloudflare e navegador a buscar sw.js fresco (v24)
+          const swUrl = '/sw.js?v=24&bust=' + Date.now();
+          navigator.serviceWorker.register(swUrl, {
             scope: '/',
             updateViaCache: 'none'
           })
