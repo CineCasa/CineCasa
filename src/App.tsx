@@ -54,36 +54,22 @@ const queryClient = new QueryClient();
 // Componente para proteger rotas - redireciona para login se não autenticado
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
-  const { allCriticalReady, setAuthReady } = useAppLoading();
+  const { setAuthReady } = useAppLoading();
   const location = useLocation();
 
-  // Notificar quando auth estiver pronto
+  // Notificar quando auth estiver pronto - não bloqueia UI
   useEffect(() => {
     if (!authLoading && user) {
       setAuthReady(true);
     }
   }, [authLoading, user, setAuthReady]);
 
-  console.log('[ProtectedRoute] authLoading:', authLoading, 'user:', !!user, 'allCriticalReady:', allCriticalReady);
-
-  // Aguardar autenticação E conteúdo crítico (imagens do hero, primeiro row)
-  if (authLoading || (user && !allCriticalReady)) {
-    console.log('[ProtectedRoute] Exibindo LoadingScreen - aguardando auth e conteúdo crítico');
-    return (
-      <LoadingScreen 
-        isLoading={true} 
-        duration={8}
-        onComplete={() => console.log('[ProtectedRoute] Loading completo')}
-      />
-    );
-  }
-
-  if (!user) {
-    console.log('[ProtectedRoute] Sem usuário, redirecionando para login');
+  // Só redireciona se não estiver autenticado - nunca mostra loading screen
+  if (!authLoading && !user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  console.log('[ProtectedRoute] Tudo pronto - renderizando children');
+  // Sempre renderiza children imediatamente - sistema não bloqueia
   return <>{children}</>;
 };
 
@@ -91,22 +77,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
-  // Aguardar o carregamento da autenticação - mostra LoadingScreen com logo e progress bar
-  if (loading) {
-    return (
-      <LoadingScreen 
-        isLoading={true} 
-        duration={3}
-        onComplete={() => console.log('[PublicRoute] Loading completo')}
-      />
-    );
-  }
-  
+  // Nunca bloquear UI com loading - sempre renderizar imediatamente
   if (user) {
     // Se já está logado, redireciona para home
     return <Navigate to="/" replace />;
   }
   
+  // Renderiza children imediatamente mesmo durante loading
   return <>{children}</>;
 };
 

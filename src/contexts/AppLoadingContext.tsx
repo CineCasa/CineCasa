@@ -21,30 +21,22 @@ interface AppLoadingContextType {
 
 const AppLoadingContext = createContext<AppLoadingContextType | undefined>(undefined);
 
-const CRITICAL_IMAGES_TARGET = 5; // Mínimo de imagens críticas para considerar pronto
-const MAX_WAIT_TIME = 8000; // Máximo de 8 segundos esperando imagens
+const CRITICAL_IMAGES_TARGET = 2; // Reduzido para carregar mais rápido
+const MAX_WAIT_TIME = 2000; // Apenas 2 segundos máximo de espera
 
 export const AppLoadingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [authReady, setAuthReady] = useState(false);
-  const [heroImagesReady, setHeroImagesReady] = useState(false);
-  const [firstContentReady, setFirstContentReady] = useState(false);
+  const [authReady, setAuthReady] = useState(true); // Auth sempre ready imediatamente
+  const [heroImagesReady, setHeroImagesReady] = useState(true); // Hero ready imediatamente
+  const [firstContentReady, setFirstContentReady] = useState(true); // Content ready imediatamente
   const [criticalImagesLoaded, setCriticalImagesLoaded] = useState(0);
   const [criticalImagesError, setCriticalImagesError] = useState(0);
-  const [forceReady, setForceReady] = useState(false);
+  const [forceReady, setForceReady] = useState(true); // Forçar ready imediatamente
 
-  // Forçar ready após timeout máximo
+  // Sistema não bloqueia mais - todas as páginas abrem prontas
   useEffect(() => {
-    if (!authReady) return;
-    
-    const timer = setTimeout(() => {
-      if (!heroImagesReady || !firstContentReady) {
-        console.log('[AppLoading] Timeout atingido - forçando ready');
-        setForceReady(true);
-      }
-    }, MAX_WAIT_TIME);
-
-    return () => clearTimeout(timer);
-  }, [authReady, heroImagesReady, firstContentReady]);
+    // Apenas log, não bloqueia UI
+    console.log('[AppLoading] Sistema otimizado - carregamento não bloqueante');
+  }, []);
 
   const markCriticalImageLoaded = useCallback(() => {
     setCriticalImagesLoaded(prev => {
@@ -68,8 +60,8 @@ export const AppLoadingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     });
   }, []);
 
-  // Verificar se tudo está pronto
-  const allCriticalReady = (authReady && (heroImagesReady || forceReady) && (firstContentReady || forceReady)) || forceReady;
+  // Sempre retornar true - sistema não deve bloquear a UI
+  const allCriticalReady = true;
 
   // Log para debug
   useEffect(() => {

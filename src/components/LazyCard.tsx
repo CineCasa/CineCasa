@@ -86,12 +86,8 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
             />
           </div>
         ) : (
-          // Placeholder enquanto não está visível
-          <div className="relative aspect-[2/3] rounded-xl bg-white/5 animate-pulse">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
-            </div>
-          </div>
+          // Placeholder estático - sem animação para melhor performance
+          <div className="relative aspect-[2/3] rounded-xl bg-white/5" />
         )}
       </div>
     </motion.div>
