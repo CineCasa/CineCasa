@@ -16,49 +16,10 @@ export function useAutoUpdate(checkInterval = 30000) {
   const isCheckingRef = useRef(false);
 
   const checkForUpdate = async () => {
-    if (isCheckingRef.current) return;
-    isCheckingRef.current = true;
-
-    try {
-      // Adicionar timestamp para evitar cache
-      const timestamp = Date.now();
-      const response = await fetch(`/version.json?v=${timestamp}`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-
-      if (!response.ok) {
-        isCheckingRef.current = false;
-        return;
-      }
-
-      const serverVersion: VersionInfo = await response.json();
-      const localVersion = currentVersion;
-
-      // Comparar versões
-      if (serverVersion.version && serverVersion.version !== localVersion) {
-        console.log('[AutoUpdate] Nova versão detectada:', serverVersion.version);
-        setUpdateAvailable(true);
-
-        // Mostrar toast para o usuário
-        toast.info('Nova versão disponível!', {
-          description: 'Atualizando para a versão mais recente...',
-          duration: 3000,
-        });
-
-        // Aguardar 2 segundos para o usuário ver a mensagem, depois recarregar
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
-    } catch (error) {
-      console.log('[AutoUpdate] Erro ao verificar versão:', error);
-    } finally {
-      isCheckingRef.current = false;
-    }
+    // DESABILITADO: Verificação via version.json removida
+    // O service worker já gerencia atualizações automaticamente
+    // e o arquivo version.json não existe no servidor
+    return;
   };
 
   const forceReload = () => {
