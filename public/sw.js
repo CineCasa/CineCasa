@@ -1,8 +1,8 @@
-// Service Worker CineCasa - Stable Version v23
+// Service Worker CineCasa - Stable Version v24
 // Estratégia: Stale-While-Revalidate com fallback gracioso
-// BUILD: 20260426-114500 - FORCE CACHE CLEAR v2
-const CACHE_VERSION = 'v23-stable-v2';
-const BUILD_TIMESTAMP = '20260426-114500';
+// BUILD: 20260426-135500 - FORCE CACHE CLEAR v3
+const CACHE_VERSION = 'v24-stable';
+const BUILD_TIMESTAMP = '20260426-135500';
 
 // Arquivos essenciais para cache inicial
 const PRECACHE_ASSETS = [
@@ -16,7 +16,7 @@ const PRECACHE_ASSETS = [
 
 // === INSTALAÇÃO: Cachear assets essenciais ===
 self.addEventListener('install', e => {
-  console.log('[SW] Instalando v23 - Stable...');
+  console.log('[SW] Instalando v24 - Stable...');
   
   e.waitUntil(
     caches.open(CACHE_VERSION)
@@ -37,7 +37,7 @@ self.addEventListener('install', e => {
 
 // === ATIVAÇÃO: Limpar caches antigos apenas ===
 self.addEventListener('activate', e => {
-  console.log('[SW] Ativado v23 - Stable');
+  console.log('[SW] Ativado v24 - Stable');
   
   e.waitUntil(
     caches.keys()
