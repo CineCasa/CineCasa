@@ -22,7 +22,7 @@ export interface ContinueWatchingItem {
 export const useContinueWatching = () => {
   const [items, setItems] = useState<ContinueWatchingItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   // Obter usuário atual
@@ -52,8 +52,9 @@ export const useContinueWatching = () => {
       return;
     }
 
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
       console.log('🔄 [useContinueWatching] Iniciando busca no Supabase...');
       
       // Buscar progresso dos filmes (usando user_progress - mesma tabela do player)
@@ -236,25 +237,6 @@ export const useContinueWatching = () => {
       console.log('📊 [useContinueWatching] Total de itens formatados:', formattedItems.length);
 
       // Ordenar por data de atualização
-      formattedItems.sort((a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      );
-
-      // Limitar a 4 itens mais recentes
-      const limitedItems = formattedItems.slice(0, 4);
-
-      console.log('✅ [useContinueWatching] Definindo', limitedItems.length, 'itens finais (máx 4)');
-      setItems(limitedItems);
-    } catch (error) {
-      console.error('❌ [useContinueWatching] Erro ao buscar progresso:', error);
-    } finally {
-      setIsLoading(false);
-      console.log('🏁 [useContinueWatching] Busca finalizada');
-    }
-  }, [userId]);
-
-  // Carregar progresso quando userId mudar ou componente montar
-  useEffect(() => {
     if (!isInitialized.current && userId) {
       isInitialized.current = true;
       console.log('[useContinueWatching] Inicializando carregamento...');

@@ -50,12 +50,13 @@ const AWARD_KEYWORDS = ['oscar'];
 
 export const useOscarWinners = () => {
   const [oscarWinners, setOscarWinners] = useState<OscarWinner[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchOscarWinners = useCallback(async () => {
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    
     try {
-      setIsLoading(true);
       console.log('[useOscarWinners] Buscando vencedores do Oscar 2000+...');
 
       // Estratégia 1: Buscar por TMDB IDs conhecidos de vencedores
@@ -173,15 +174,17 @@ export const useOscarWinners = () => {
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
 
-      // Retornar TODOS os vencedores (sem limite)
-      setOscarWinners(shuffled);
+      setOscarWinners(uniqueWinners.slice(0, 10));
+      console.log(`[useOscarWinners] Encontrados ${uniqueWinners.length} filmes premiados`);
+      clearTimeout(loadingTimeout);
     } catch (err) {
-      console.error('[useOscarWinners] Erro ao buscar vencedores:', err);
+      console.error('[useOscarWinners] Erro:', err);
       setOscarWinners([]);
     } finally {
+      clearTimeout(loadingTimeout);
       setIsLoading(false);
     }
-  }, []);
+  }, [setIsLoading]);
 
   useEffect(() => {
     if (!isInitialized.current) {
