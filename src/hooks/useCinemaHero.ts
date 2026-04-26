@@ -41,7 +41,7 @@ export function useCinemaHero(): UseCinemaHeroReturn {
       try {
         const { data: movies, error } = await supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, capa, poster, year, rating, description, category, genero')
+          .select('id, tmdb_id, titulo, poster, year, rating, description, category, genero')
           .not('tmdb_id', 'is', null)
           .limit(30);
 
@@ -64,8 +64,8 @@ export function useCinemaHero(): UseCinemaHeroReturn {
                 id: `cinema-${m.id}`,
                 tmdbId: m.tmdb_id,
                 title: m.titulo,
-                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : (m.capa || m.poster),
-                poster: m.capa || m.poster,
+                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : m.poster,
+                poster: m.poster,
                 year: parseInt(m.year) || 0,
                 rating: m.rating || 'N/A',
                 duration: tmdbData?.runtime ? `${Math.floor(tmdbData.runtime / 60)}h ${tmdbData.runtime % 60}min` : '',
