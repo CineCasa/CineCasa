@@ -220,11 +220,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
     return () => clearInterval(interval);
   }, [displayQueue.length]);
 
-  if (isLoading) return (
-    <div className="relative w-full h-[70vh] bg-black flex items-center justify-center z-50">
-      <div className="w-8 h-8 border-2 border-[#00E5FF] border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
+  if (isLoading) return null;
 
   if (displayQueue.length === 0) return (
     <div className="relative w-full h-[70vh] bg-black flex items-center justify-center z-50">
