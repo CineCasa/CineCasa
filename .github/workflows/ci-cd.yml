@@ -65,7 +65,7 @@ jobs:
           name: codecov-umbrella
 
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-reports-${{ matrix.node-version }}
@@ -118,7 +118,7 @@ jobs:
           docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-files
           path: dist/
@@ -138,7 +138,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-files
           path: dist/
@@ -189,7 +189,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-files
           path: dist/
@@ -294,7 +294,11 @@ jobs:
         run: |
           ACTIVE=$(curl -s ${{ secrets.ACTIVE_ENV_CHECK_URL }} || echo "blue")
           echo "active=$ACTIVE" >> $GITHUB_OUTPUT
-          echo "previous=${{ env.ACTIVE == 'blue' && 'green' || 'blue' }}" >> $GITHUB_OUTPUT
+          if [ "$ACTIVE" = "blue" ]; then
+            echo "previous=green" >> $GITHUB_OUTPUT
+          else
+            echo "previous=blue" >> $GITHUB_OUTPUT
+          fi
 
       - name: Execute rollback
         run: |
@@ -415,7 +419,7 @@ jobs:
           echo "" >> CHANGELOG.md
 
       - name: Archive deployment logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: deployment-logs-${{ github.sha }}
           path: |
