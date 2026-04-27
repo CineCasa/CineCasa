@@ -6,6 +6,7 @@ import VideoJSPlayer from "@/components/VideoJSPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { WatchlistButton } from "@/components/WatchlistButton";
 import CastSection from "@/components/CastSection";
 import { getProxiedUrl, isArchiveOrgUrl } from "@/utils/videoProxy";
 
@@ -546,6 +547,23 @@ const Details = () => {
 
                 {data && (
                   <FavoriteButton
+                    item={{
+                      contentId: parseInt(id || '0') || 0,
+                      contentType: type === 'series' ? 'series' : 'movie',
+                      titulo: data.title || data.name || 'Sem título',
+                      poster: data.poster_path,
+                      banner: data.backdrop_path || data.banner,
+                      rating: data.vote_average?.toString(),
+                      year: (data.release_date || data.first_air_date)?.split('-')[0],
+                      genero: data.genres?.[0]?.name,
+                    }}
+                    userId={user?.id}
+                    size="lg"
+                  />
+                )}
+
+                {data && (
+                  <WatchlistButton
                     item={{
                       contentId: parseInt(id || '0') || 0,
                       contentType: type === 'series' ? 'series' : 'movie',
