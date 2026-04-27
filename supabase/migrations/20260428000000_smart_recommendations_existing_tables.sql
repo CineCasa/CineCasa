@@ -12,6 +12,9 @@
 -- user_progress com progress < 30 → penalidade -2
 -- ============================================
 
+-- Dropar função existente se houver conflito de tipo de retorno
+DROP FUNCTION IF EXISTS get_recommended_content(UUID, INTEGER);
+
 CREATE OR REPLACE FUNCTION get_recommended_content(
     p_user_id UUID,
     p_limit INTEGER DEFAULT 20
