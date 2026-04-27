@@ -88,9 +88,9 @@ export const useRecommendedForYou = (userId?: string): UseRecommendedForYouRetur
         }
       }
 
-      // Buscar recomendações ML (aprendizado contínuo + comportamento individual)
+      // Buscar recomendações híbridas (ML + Gêneros preferidos)
       const { data, error: rpcError } = await supabase
-        .rpc('get_ml_recommendations', {
+        .rpc('get_hybrid_recommendations', {
           p_user_id: userId,
           p_limit: 20 // Buscar mais para poder filtrar e embaralhar
         });
