@@ -50,7 +50,7 @@ export function useBecauseYouWatched() {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
       const { data: watchHistory, error: historyError } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('*')
         .eq('user_id', user.id)
         .gte('updated_at', thirtyDaysAgo.toISOString())

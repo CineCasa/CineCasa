@@ -111,35 +111,32 @@ export function useRealTimeUpdates({
       // Canal de progresso de visualização
       if (enableWatchProgress) {
         const progressChannel = supabase
-          .channel('watch_progress')
+          .channel('user_progress')
           .on(
             'postgres_changes',
             {
               event: 'UPDATE',
               schema: 'public',
-              table: 'watch_progress',
+              table: 'user_progress',
               filter: `user_id=eq.${userId}`,
             },
             (payload) => {
-              const event: RealTimeEvent = {
-                id: `progress_${Date.now()}`,
-                type: 'content_progress',
-                data: payload,
-                user_id: userId,
-                timestamp: new Date().toISOString(),
-                priority: 'normal',
-              };
+              console.log('📊 Progresso atualizado:', payload);
               
-              handleRealTimeEvent(event);
+              // Atualizar cache local
+              if (payload.new && payload.eventType === 'UPDATE') {
+                const updatedProgress = payload.new as WatchProgress;
+                updateLocalProgress(updatedProgress);
+                
+                // Disparar evento customizado
+                window.dispatchEvent(new CustomEvent('watch-progress-updated', {
+                  detail: updatedProgress
+                }));
+              }
             }
-          )
-          .subscribe((status) => {
-            if (status === 'SUBSCRIBED') {
-              console.log('✅ Conectado ao canal de progresso');
-            }
-          });
+          );
 
-        newChannels.set('watch_progress', progressChannel);
+        newChannels.set('user_progress', progressChannel);
       }
 
       // Canal de atividade de amigos

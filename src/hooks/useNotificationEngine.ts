@@ -16,7 +16,7 @@ export function useNewEpisodeDetector() {
 
       // Buscar séries que o usuário acompanha
       const { data: watchHistory } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('content_id, content_type')
         .eq('user_id', user.id)
         .eq('content_type', 'series')
@@ -142,7 +142,7 @@ export function useRecommendationEngine() {
 
       // Buscar histórico de visualização
       const { data: watchHistory } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('content_id, content_type')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
@@ -242,7 +242,7 @@ export function useContinueWatchingReminder() {
 
       // Buscar conteúdo parado (progresso entre 10% e 90%)
       const { data: pausedContent } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('*')
         .eq('user_id', user.id)
         .gt('progress', 10)

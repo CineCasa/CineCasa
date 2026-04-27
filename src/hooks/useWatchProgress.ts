@@ -41,7 +41,7 @@ export function useWatchProgress({
       if (!userId) return [];
 
       const { data, error } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('*')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
@@ -95,7 +95,7 @@ export function useWatchProgress({
 
       // Upsert (update ou insert)
       const { data, error } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .upsert(progressData, {
           onConflict: 'user_id,content_id,content_type,episode_number,season_number',
           ignoreDuplicates: false,
@@ -147,7 +147,7 @@ export function useWatchProgress({
       if (!userId) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .update({
           completed: true,
           progress: 100,
@@ -187,7 +187,7 @@ export function useWatchProgress({
       if (!userId) throw new Error('Usuário não autenticado');
 
       const { error } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .delete()
         .eq('user_id', userId)
         .eq('content_id', contentId)
@@ -247,7 +247,7 @@ export function useWatchProgress({
     try {
       // Buscar progresso do servidor
       const { data: serverData } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('*')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });

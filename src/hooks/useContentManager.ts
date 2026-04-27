@@ -90,7 +90,7 @@ export function useContentManager({
       if (!userId) return [];
 
       const { data } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select(`
           *,
           cinema:cinema(id),
@@ -118,7 +118,7 @@ export function useContentManager({
 
       // Buscar baseado nos gêneros mais assistidos
       const { data: watchHistory } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('genero')
         .eq('user_id', userId)
         .limit(50);

@@ -59,7 +59,7 @@ export function useRecommendations({
         const [watchHistoryResult, userProfileResult, trendingResult] = await Promise.all([
           // Histórico de visualização
           supabase
-            .from('watch_progress')
+            .from('user_progress')
             .select(`
               content_id,
               content_type,
@@ -288,7 +288,7 @@ export function useRecommendations({
     try {
       // Encontrar usuários similares
       const { data: similarUsers } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select('user_id')
         .neq('user_id', userId)
         .in('genre', userPreferences.topGenres)
@@ -300,7 +300,7 @@ export function useRecommendations({
 
       // Buscar conteúdo que usuários similares assistiram
       const { data: collaborativeContent } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .select(`
           content_id,
           content_type,
