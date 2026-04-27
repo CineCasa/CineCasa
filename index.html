@@ -1,7 +1,9 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <meta name="app-version" content="20260426-2115">
+    <!-- NUCLEAR CACHE BUSTER - Carrega antes de tudo -->
+    <script src="/cache-nuclear.js?v=27"></script>
+    <meta name="app-version" content="20260426-2140">
     <meta charset="UTF-8" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -11,7 +13,7 @@
     <script>
       // Força limpeza de cache se versão mudou
       (function() {
-        const CURRENT_VERSION = '20260426-2115';
+        const CURRENT_VERSION = '20260426-2140';
         const cachedVersion = localStorage.getItem('app_version');
         if (cachedVersion !== CURRENT_VERSION) {
           console.log('[CacheBusting] Nova versão detectada:', CURRENT_VERSION);
@@ -381,8 +383,8 @@
       // PWA Service Worker Registration
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          // Cache-busting: força Cloudflare e navegador a buscar sw.js fresco (v26)
-          const swUrl = '/sw.js?v=26&bust=' + Date.now() + '&t=20260426-2115';
+          // Cache-busting: força Cloudflare e navegador a buscar sw.js fresco (v27)
+          const swUrl = '/sw.js?v=27&bust=' + Date.now() + '&t=20260426-2140';
           navigator.serviceWorker.register(swUrl, {
             scope: '/',
             updateViaCache: 'none'
