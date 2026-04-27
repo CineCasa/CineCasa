@@ -301,6 +301,7 @@ jobs:
           fi
 
       - name: Execute rollback
+        if: secrets.LOAD_BALANCER_WEBHOOK != ''
         run: |
           echo "Executing rollback to ${{ steps.current-env.outputs.previous }}..."
           
@@ -315,10 +316,17 @@ jobs:
             }'
 
       - name: Verify rollback
+        if: secrets.PRODUCTION_HEALTH_CHECK_URL != ''
         run: |
           echo "Verifying rollback..."
           sleep 30
           curl -f ${{ secrets.PRODUCTION_HEALTH_CHECK_URL }} || exit 1
+
+      - name: Skip rollback (no secrets configured)
+        if: secrets.LOAD_BALANCER_WEBHOOK == ''
+        run: |
+          echo "⚠️ LOAD_BALANCER_WEBHOOK not configured - skipping automatic rollback"
+          echo "Manual intervention may be required"
 
       - name: Notify rollback
         uses: 8398a7/action-slack@v3
