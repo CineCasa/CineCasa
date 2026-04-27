@@ -511,5 +511,5 @@ ON CONFLICT (genre) DO NOTHING;
 --   gênero ponderado→ +2 * genre_weight
 --
 -- Regras de ML:
---   Peso = 1.0 + (retenção * 2.0) - (abandono * 2.0) + (rating / 10)
+--   Formula: 1.0 + (retention * 2.0) - (abandonment * 2.0) + (avg_rating / 10)
 --   Range: 0.1 a 4.0
