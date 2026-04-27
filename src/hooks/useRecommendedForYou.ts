@@ -88,9 +88,9 @@ export const useRecommendedForYou = (userId?: string): UseRecommendedForYouRetur
         }
       }
 
-      // Buscar recomendações inteligentes via RPC do Supabase
+      // Buscar recomendações ML (aprendizado contínuo + comportamento individual)
       const { data, error: rpcError } = await supabase
-        .rpc('get_intelligent_recommendations', {
+        .rpc('get_ml_recommendations', {
           p_user_id: userId,
           p_limit: 20 // Buscar mais para poder filtrar e embaralhar
         });
