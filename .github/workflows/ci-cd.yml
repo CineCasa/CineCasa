@@ -287,12 +287,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-production
     if: failure() && github.ref == 'refs/heads/main'
+    env:
+      LOAD_BALANCER_WEBHOOK: ${{ secrets.LOAD_BALANCER_WEBHOOK }}
+      PRODUCTION_HEALTH_CHECK_URL: ${{ secrets.PRODUCTION_HEALTH_CHECK_URL }}
+      ACTIVE_ENV_CHECK_URL: ${{ secrets.ACTIVE_ENV_CHECK_URL }}
     
     steps:
       - name: Get current active environment
         id: current-env
         run: |
-          ACTIVE=$(curl -s ${{ secrets.ACTIVE_ENV_CHECK_URL }} || echo "blue")
+          if [ -n "$ACTIVE_ENV_CHECK_URL" ]; then
+            ACTIVE=$(curl -s "$ACTIVE_ENV_CHECK_URL" || echo "blue")
+          else
+            ACTIVE="blue"
+          fi
           echo "active=$ACTIVE" >> $GITHUB_OUTPUT
           if [ "$ACTIVE" = "blue" ]; then
             echo "previous=green" >> $GITHUB_OUTPUT
@@ -301,32 +309,35 @@ jobs:
           fi
 
       - name: Execute rollback
-        if: secrets.LOAD_BALANCER_WEBHOOK != ''
         run: |
+          if [ -z "$LOAD_BALANCER_WEBHOOK" ]; then
+            echo "⚠️ LOAD_BALANCER_WEBHOOK not configured - skipping automatic rollback"
+            echo "Manual intervention may be required"
+            exit 0
+          fi
+          
           echo "Executing rollback to ${{ steps.current-env.outputs.previous }}..."
           
           # Switch traffic back
-          curl -X POST ${{ secrets.LOAD_BALANCER_WEBHOOK }} \
+          curl -X POST "$LOAD_BALANCER_WEBHOOK" \
             -H "Content-Type: application/json" \
-            -d '{
-              "active": "${{ steps.current-env.outputs.previous }}",
-              "rollback": true,
-              "version": "previous",
-              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-            }'
+            -d "{
+              \"active\": \"${{ steps.current-env.outputs.previous }}\",
+              \"rollback\": true,
+              \"version\": \"previous\",
+              \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+            }"
 
       - name: Verify rollback
-        if: secrets.PRODUCTION_HEALTH_CHECK_URL != ''
         run: |
+          if [ -z "$PRODUCTION_HEALTH_CHECK_URL" ]; then
+            echo "⚠️ PRODUCTION_HEALTH_CHECK_URL not configured - skipping verification"
+            exit 0
+          fi
+          
           echo "Verifying rollback..."
           sleep 30
-          curl -f ${{ secrets.PRODUCTION_HEALTH_CHECK_URL }} || exit 1
-
-      - name: Skip rollback (no secrets configured)
-        if: secrets.LOAD_BALANCER_WEBHOOK == ''
-        run: |
-          echo "⚠️ LOAD_BALANCER_WEBHOOK not configured - skipping automatic rollback"
-          echo "Manual intervention may be required"
+          curl -f "$PRODUCTION_HEALTH_CHECK_URL" || exit 1
 
       - name: Notify rollback
         uses: 8398a7/action-slack@v3
