@@ -292,13 +292,13 @@ export function useWatchProgress({
     if (!enableRealtime || !userId) return;
 
     const channel = supabase
-      .channel('watch_progress_changes')
+      .channel('user_progress_changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'watch_progress',
+          table: 'user_progress',
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {

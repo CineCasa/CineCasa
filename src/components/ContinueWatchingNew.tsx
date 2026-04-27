@@ -166,7 +166,7 @@ export const useContinueWatching = () => {
 
     try {
       const { error } = await supabase
-        .from('watch_progress')
+        .from('user_progress')
         .delete()
         .eq('id', itemId)
         .eq('user_id', user.id);
