@@ -22,18 +22,24 @@ CREATE INDEX IF NOT EXISTS idx_user_genre_preferences_score ON public.user_genre
 -- RLS: Usuários só veem suas próprias preferências
 ALTER TABLE public.user_genre_preferences ENABLE ROW LEVEL SECURITY;
 
+-- Dropar política existente se houver
+DROP POLICY IF EXISTS "Users can view own preferences" ON public.user_genre_preferences;
+
 CREATE POLICY "Users can view own preferences" 
   ON public.user_genre_preferences FOR SELECT 
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own preferences" ON public.user_genre_preferences;
 CREATE POLICY "Users can insert own preferences" 
   ON public.user_genre_preferences FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own preferences" ON public.user_genre_preferences;
 CREATE POLICY "Users can update own preferences" 
   ON public.user_genre_preferences FOR UPDATE 
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own preferences" ON public.user_genre_preferences;
 CREATE POLICY "Users can delete own preferences" 
   ON public.user_genre_preferences FOR DELETE 
   USING (auth.uid() = user_id);
@@ -60,18 +66,22 @@ CREATE INDEX IF NOT EXISTS idx_user_interactions_content ON public.user_interact
 -- RLS: Usuários só veem suas próprias interações
 ALTER TABLE public.user_interactions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own interactions" ON public.user_interactions;
 CREATE POLICY "Users can view own interactions" 
   ON public.user_interactions FOR SELECT 
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own interactions" ON public.user_interactions;
 CREATE POLICY "Users can insert own interactions" 
   ON public.user_interactions FOR INSERT 
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own interactions" ON public.user_interactions;
 CREATE POLICY "Users can update own interactions" 
   ON public.user_interactions FOR UPDATE 
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete own interactions" ON public.user_interactions;
 CREATE POLICY "Users can delete own interactions" 
   ON public.user_interactions FOR DELETE 
   USING (auth.uid() = user_id);
