@@ -1,8 +1,8 @@
-// Service Worker CineCasa - Stable Version v25
+// Service Worker CineCasa - Stable Version v26
 // Estratégia: Stale-While-Revalidate com fallback gracioso
-// BUILD: 20260426-2056 - FORCE CACHE CLEAR v4 - NO-STORE
-const CACHE_VERSION = 'v25-stable';
-const BUILD_TIMESTAMP = '20260426-2056';
+// BUILD: 20260426-2115 - FORCE CACHE CLEAR v5 - NO-STORE
+const CACHE_VERSION = 'v26-stable';
+const BUILD_TIMESTAMP = '20260426-2115';
 
 // Arquivos essenciais para cache inicial
 const PRECACHE_ASSETS = [
