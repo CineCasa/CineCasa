@@ -76,7 +76,7 @@ DROP FUNCTION IF EXISTS calculate_genre_weights();
 
 CREATE OR REPLACE FUNCTION calculate_genre_weights()
 RETURNS TABLE (
-    genre text,
+    genre_name text,
     new_weight numeric,
     retention_rate numeric,
     abandonment_rate numeric,
@@ -149,7 +149,7 @@ BEGIN
         total_interactions = EXCLUDED.total_interactions,
         last_calculated_at = NOW()
     RETURNING 
-        genre_weights.genre,
+        genre_weights.genre as genre_name,
         genre_weights.weight as new_weight,
         genre_weights.retention_rate,
         genre_weights.abandonment_rate,
