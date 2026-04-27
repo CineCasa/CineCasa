@@ -248,27 +248,23 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
         episode_id: config.episodeId ? parseInt(config.episodeId) : null,
       });
       
-      const { error } = await supabase
-        .from('user_progress')
-        .upsert({
-          user_id: user.id,
-          content_id: parseInt(config.contentId),
-          content_type: config.contentType === 'series' ? 'series' : 'movie',
-          "current_time": Math.round(currentTime),
-          progress: Math.round(progress),
-          duration: Math.round(duration),
-          updated_at: new Date().toISOString(),
-          episode_id: config.episodeId ? parseInt(config.episodeId) : null,
-          season_number: config.seasonNumber,
-          episode_number: config.episodeNumber,
-        }, { 
-          onConflict: 'user_id,content_id,content_type,episode_id'
-        });
+      // Usar RPC upsert_user_progress para salvar/atualizar progresso
+      const { data: result, error } = await supabase.rpc('upsert_user_progress', {
+        p_user_id: user.id,
+        p_content_id: parseInt(config.contentId),
+        p_content_type: config.contentType === 'series' ? 'series' : 'movie',
+        p_current_time: Math.round(currentTime),
+        p_duration: Math.round(duration),
+        p_progress: Math.round(progress),
+        p_episode_id: config.episodeId ? parseInt(config.episodeId) : null,
+        p_season_number: config.seasonNumber || null,
+        p_episode_number: config.episodeNumber || null
+      });
 
       if (error) {
         console.error('[ElitePlayer] ❌ Erro ao salvar progresso:', error);
       } else {
-        console.log('[ElitePlayer] ✅ Progresso salvo com sucesso:', Math.round(currentTime), '/', Math.round(duration));
+        console.log('[ElitePlayer] ✅ Progresso salvo via RPC:', result?.action || 'success', Math.round(currentTime), '/', Math.round(duration));
       }
     } catch (err) {
       console.error('[ElitePlayer] ❌ Falha ao salvar progresso:', err);

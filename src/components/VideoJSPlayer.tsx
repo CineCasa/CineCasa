@@ -597,7 +597,15 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
     });
 
     player.on('play', () => setIsPlaying(true));
-    player.on('pause', () => setIsPlaying(false));
+    player.on('pause', () => {
+      setIsPlaying(false);
+      // Salvar progresso ao pausar o vídeo
+      const current = player.currentTime() || 0;
+      const dur = player.duration() || 0;
+      if (current > 0 && dur > 0) {
+        saveWatchHistory(current, dur);
+      }
+    });
     player.on('timeupdate', () => {
       const current = player.currentTime() || 0;
       const dur = player.duration() || 0;
@@ -737,7 +745,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       if (playerRef.current && currentTime > 0 && duration > 0) {
         saveWatchHistory(currentTime, duration);
       }
-    }, 30000); // Salvar a cada 30 segundos
+    }, 10000); // Salvar a cada 10 segundos durante reprodução
 
     return () => {
       if (saveProgressIntervalRef.current) {

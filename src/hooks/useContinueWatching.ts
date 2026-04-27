@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useRealtimeProgress } from './useRealtimeProgress';
 
 export interface ContinueWatchingItem {
   id: string;
@@ -18,6 +19,52 @@ export interface ContinueWatchingItem {
   updatedAt: string;
 }
 
+// Usar RPC para buscar continue watching com ordenação inteligente
+const fetchContinueWatchingRpc = async (userId: string, limit: number = 10) => {
+  const { data, error } = await supabase.rpc('get_continue_watching', {
+    p_user_id: userId,
+    p_limit: limit
+  });
+  
+  if (error) {
+    console.error('[useContinueWatching] Erro RPC:', error);
+    throw error;
+  }
+  
+  return data || [];
+};
+
+// Usar RPC para upsert de progresso
+const upsertProgressRpc = async (params: {
+  userId: string;
+  contentId: number;
+  contentType: 'movie' | 'series';
+  currentTime: number;
+  duration: number;
+  progress: number;
+  episodeId?: number;
+  seasonNumber?: number;
+  episodeNumber?: number;
+}) => {
+  const { data, error } = await supabase.rpc('upsert_user_progress', {
+    p_user_id: params.userId,
+    p_content_id: params.contentId,
+    p_content_type: params.contentType,
+    p_current_time: params.currentTime,
+    p_duration: params.duration,
+    p_progress: params.progress,
+    p_episode_id: params.episodeId || null,
+    p_season_number: params.seasonNumber || null,
+    p_episode_number: params.episodeNumber || null
+  });
+  
+  if (error) {
+    console.error('[useContinueWatching] Erro upsert RPC:', error);
+    throw error;
+  }
+  
+  return data;
+};
 
 export const useContinueWatching = () => {
   const [items, setItems] = useState<ContinueWatchingItem[]>([]);
@@ -30,11 +77,9 @@ export const useContinueWatching = () => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUserId(user?.id || null);
-      setIsLoading(false);
     };
     getUser();
 
-    // Escutar mudanças de auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUserId(session?.user?.id || null);
     });
@@ -42,211 +87,132 @@ export const useContinueWatching = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Buscar progresso do usuário do Supabase
-  const fetchProgress = useCallback(async () => {
-    console.log('🔍 [useContinueWatching] fetchProgress chamado, userId:', userId);
+  // Buscar dados completos de filmes/séries
+  const fetchContentDetails = useCallback(async (progressData: any[]) => {
+    if (!progressData.length) return [];
     
+    const movieIds = progressData
+      .filter(p => p.content_type === 'movie')
+      .map(p => p.content_id);
+    
+    const seriesIds = progressData
+      .filter(p => p.content_type === 'series')
+      .map(p => p.content_id);
+
+    // Buscar dados dos filmes
+    const { data: moviesData } = await supabase
+      .from('cinema')
+      .select('id, titulo, poster')
+      .in('id', movieIds);
+    
+    const moviesMap = new Map(moviesData?.map(m => [m.id, m]) || []);
+
+    // Buscar dados das séries
+    const seriesData: any[] = [];
+    for (const id of seriesIds) {
+      const { data: serie } = await supabase
+        .from('series')
+        .select('id_n, titulo, capa, banner, tmdb_id')
+        .eq('id_n', id)
+        .maybeSingle();
+      
+      if (serie) {
+        seriesData.push(serie);
+      } else {
+        // Tentar por tmdb_id
+        const { data: serieByTmdb } = await supabase
+          .from('series')
+          .select('id_n, titulo, capa, banner, tmdb_id')
+          .eq('tmdb_id', id.toString())
+          .maybeSingle();
+        if (serieByTmdb) seriesData.push(serieByTmdb);
+      }
+    }
+    
+    const seriesMap = new Map<string, any>();
+    seriesData.forEach(s => {
+      seriesMap.set(String(s.id_n), s);
+      if (s.tmdb_id) seriesMap.set(String(s.tmdb_id), s);
+    });
+
+    // Mapear para o formato ContinueWatchingItem
+    return progressData.map((progress: any) => {
+      const isMovie = progress.content_type === 'movie';
+      const contentData = isMovie 
+        ? moviesMap.get(progress.content_id)
+        : seriesMap.get(String(progress.content_id));
+
+      return {
+        id: progress.id,
+        contentId: progress.content_id.toString(),
+        contentType: progress.content_type,
+        title: contentData?.titulo || (isMovie ? 'Filme' : 'Série'),
+        poster: isMovie ? (contentData?.poster || '') : (contentData?.capa || ''),
+        banner: isMovie ? (contentData?.poster || '') : (contentData?.banner || contentData?.capa || ''),
+        episodeId: progress.episode_id?.toString(),
+        seasonNumber: progress.season_number,
+        episodeNumber: progress.episode_number,
+        progress: Math.min(100, Math.max(0, progress.progress || 0)),
+        currentTime: progress.current_time || 0,
+        duration: progress.duration || 0,
+        updatedAt: progress.updated_at || progress.last_watched,
+      };
+    }).filter(item => item.title !== 'Filme' && item.title !== 'Série');
+  }, []);
+
+  // Buscar progresso usando RPC
+  const fetchProgress = useCallback(async () => {
     if (!userId) {
-      console.log('⚠️ [useContinueWatching] Sem userId, retornando array vazio');
       setItems([]);
       return;
     }
 
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    const loadingTimeout = setTimeout(() => setIsLoading(true), 300);
     
     try {
-      console.log('🔄 [useContinueWatching] Iniciando busca no Supabase...');
+      console.log('[useContinueWatching] Buscando via RPC...');
       
-      // Buscar progresso dos filmes (usando user_progress - mesma tabela do player)
-      console.log('🎬 [useContinueWatching] Buscando filmes para user:', userId);
-      const { data: movieProgress, error: movieError } = await (supabase
-        .from('user_progress') as any)
-        .select('*')
-        .eq('user_id', userId)
-        .eq('content_type', 'movie')
-        .order('updated_at', { ascending: false })
-        .limit(20);
+      const progressData = await fetchContinueWatchingRpc(userId, 10);
+      const formattedItems = await fetchContentDetails(progressData);
+      
+      console.log('[useContinueWatching] Itens carregados:', formattedItems.length);
+      setItems(formattedItems);
+    } catch (err) {
+      console.error('[useContinueWatching] Erro:', err);
+      setItems([]);
+    } finally {
+      clearTimeout(loadingTimeout);
+      setIsLoading(false);
+    }
+  }, [userId, fetchContentDetails]);
 
-      if (movieError) {
-        console.error('❌ [useContinueWatching] Erro ao buscar filmes:', movieError);
-      } else {
-        console.log('✅ [useContinueWatching] Filmes encontrados:', movieProgress?.length || 0);
-        console.log('📊 [useContinueWatching] Dados dos filmes:', movieProgress);
-      }
+  // Realtime - atualizar quando houver mudanças
+  const onRealtimeChange = useCallback(() => {
+    console.log('[useContinueWatching] Realtime update, recarregando...');
+    fetchProgress();
+  }, [fetchProgress]);
 
-      // Buscar progresso das séries (usando user_progress - mesma tabela do player)
-      console.log('📺 [useContinueWatching] Buscando séries para user:', userId);
-      const { data: seriesProgress, error: seriesError } = await (supabase
-        .from('user_progress') as any)
-        .select('*')
-        .eq('user_id', userId)
-        .eq('content_type', 'series')
-        .order('updated_at', { ascending: false })
-        .limit(20);
+  useRealtimeProgress(userId, onRealtimeChange);
 
-      if (seriesError) {
-        console.error('❌ [useContinueWatching] Erro ao buscar séries:', seriesError);
-      } else {
-        console.log('✅ [useContinueWatching] Séries encontradas:', seriesProgress?.length || 0);
-        console.log('📊 [useContinueWatching] Dados das séries:', seriesProgress);
-      }
-
-      const formattedItems: ContinueWatchingItem[] = [];
-
-      // Buscar dados completos dos filmes (incluindo poster)
-      if (movieProgress && movieProgress.length > 0) {
-        console.log('🎬 [useContinueWatching] Formatando', movieProgress.length, 'filmes');
-        
-        // Buscar dados de posters e títulos da tabela cinema
-        const movieIds = movieProgress.map((p: any) => p.content_id).filter(Boolean);
-        console.log('🎬 [useContinueWatching] Buscando dados dos filmes IDs:', movieIds);
-        
-        const { data: moviesData } = await supabase
-          .from('cinema')
-          .select('id, titulo, poster')
-          .in('id', movieIds);
-        
-        const moviesMap = new Map(moviesData?.map(m => [m.id, m]) || []);
-        
-        movieProgress.forEach((progress: any, index: number) => {
-          console.log(`🎬 [useContinueWatching] Filme ${index}:`, progress);
-          if (progress.content_id) {
-            const movieData = moviesMap.get(progress.content_id);
-            const title = movieData?.titulo || progress.title || `Filme ${progress.content_id}`;
-            const poster = movieData?.poster || '';
-            const banner = movieData?.poster || '';
-            
-            console.log(`🎬 [useContinueWatching] Filme ${index} - Título: ${title}, Poster: ${poster ? 'OK' : 'MISSING'}`);
-            
-            formattedItems.push({
-              id: progress.id,
-              contentId: progress.content_id.toString(),
-              contentType: 'movie',
-              title: title,
-              poster: poster,
-              banner: banner,
-              progress: Math.min(100, Math.round(((progress.progress || 0) / 100) * 100)),
-              currentTime: progress.current_time || 0,
-              duration: progress.duration || 0,
-              updatedAt: progress.updated_at,
-            });
-          }
-        });
-      }
-
-      // Buscar dados completos das séries (incluindo poster)
-      if (seriesProgress && seriesProgress.length > 0) {
-        console.log('📺 [useContinueWatching] Formatando', seriesProgress.length, 'séries');
-        
-        // Buscar dados de posters e títulos da tabela series
-        const seriesIds = seriesProgress.map((p: any) => p.content_id).filter(Boolean);
-        console.log('📺 [useContinueWatching] Buscando dados das séries IDs:', seriesIds);
-        console.log('📺 [useContinueWatching] Tipos dos IDs:', seriesIds.map((id: any) => typeof id));
-        
-        // Buscar séries individualmente - tentar por id_n e depois por tmdb_id
-        console.log('📺 [useContinueWatching] Buscando séries individualmente...');
-        
-        const seriesData: any[] = [];
-        for (const id of seriesIds) {
-          console.log(`📺 [useContinueWatching] Buscando série ID: ${id} (tipo: ${typeof id})`);
-          
-          // Tentar buscar por id_n primeiro
-          let { data: serie, error: serieError } = await supabase
-            .from('series')
-            .select('id_n, titulo, capa, banner, tmdb_id')
-            .eq('id_n', id)
-            .maybeSingle();
-          
-          // Se não encontrou, tentar por tmdb_id
-          if (!serie && !serieError) {
-            console.log(`📺 [useContinueWatching] ID ${id} não encontrado em id_n, tentando tmdb_id...`);
-            const result = await supabase
-              .from('series')
-              .select('id_n, titulo, capa, banner, tmdb_id')
-              .eq('tmdb_id', id.toString())
-              .maybeSingle();
-            serie = result.data;
-            serieError = result.error;
-          }
-          
-          if (serieError) {
-            console.log(`📺 [useContinueWatching] Erro ao buscar série ${id}:`, serieError);
-          } else if (serie) {
-            console.log(`📺 [useContinueWatching] Série ${id} encontrada: ${serie.titulo} (id_n: ${serie.id_n}, tmdb_id: ${serie.tmdb_id})`);
-            seriesData.push(serie);
-          } else {
-            console.log(`📺 [useContinueWatching] Série ${id} NÃO encontrada na tabela (nem id_n nem tmdb_id)`);
-          }
-        }
-        
-        console.log('📺 [useContinueWatching] Total de séries encontradas:', seriesData.length);
-        
-        // Criar map com IDs (tanto id_n quanto tmdb_id) como chaves
-        // Isso permite encontrar a série tanto pelo id_n quanto pelo tmdb_id
-        const seriesMap = new Map<string, any>();
-        seriesData?.forEach(s => {
-          seriesMap.set(String(s.id_n), s);
-          if (s.tmdb_id) {
-            seriesMap.set(String(s.tmdb_id), s);
-          }
-        });
-        console.log('📺 [useContinueWatching] Map de séries criado:', Array.from(seriesMap.entries()));
-        console.log('📺 [useContinueWatching] IDs buscados vs encontrados:', {
-          buscados: seriesIds,
-          encontrados: seriesData?.map(s => ({ id_n: s.id_n, tmdb_id: s.tmdb_id, titulo: s.titulo }))
-        });
-        
-        seriesProgress.forEach((progress: any, index: number) => {
-          console.log(`📺 [useContinueWatching] Série ${index}:`, progress);
-          if (progress.content_id) {
-            // Buscar usando ID como string para compatibilidade com bigint
-            const serieData = seriesMap.get(String(progress.content_id));
-            
-            // Se não encontrou a série na tabela, pular este registro (dados inválidos/antigos)
-            if (!serieData) {
-              console.log(`📺 [useContinueWatching] Série ${index} IGNORADA - não encontrada na tabela (ID: ${progress.content_id})`);
-              return;
-            }
-            
-            const title = serieData.titulo;
-            const poster = serieData.capa || '';
-            const banner = serieData.banner || serieData.capa || '';
-            
-            console.log(`📺 [useContinueWatching] Série ${index} - Título: ${title}, Poster: ${poster ? 'OK' : 'MISSING'}`);
-            
-            formattedItems.push({
-              id: progress.id,
-              contentId: progress.content_id.toString(),
-              contentType: 'series',
-              title: title,
-              poster: poster,
-              banner: banner,
-              episodeId: progress.episode_id,
-              episodeTitle: progress.episode_title,
-              seasonNumber: progress.season_number,
-              episodeNumber: progress.episode_number,
-              progress: Math.min(100, Math.round(((progress.progress || 0) / 100) * 100)),
-              currentTime: progress.current_time || 0,
-              duration: progress.duration || 0,
-              updatedAt: progress.updated_at,
-            });
-          }
-        });
-      }
-
-      console.log('📊 [useContinueWatching] Total de itens formatados:', formattedItems.length);
-
-      // Ordenar por data de atualização
-    if (!isInitialized.current && userId) {
+  // Carregar na montagem
+  useEffect(() => {
+    if (userId && !isInitialized.current) {
       isInitialized.current = true;
-      console.log('[useContinueWatching] Inicializando carregamento...');
       fetchProgress();
     }
   }, [fetchProgress, userId]);
 
-  // Salvar progresso em tempo real no Supabase
-  // APENAS salva se: progresso > 0% E < 95% (iniciado mas não terminado)
-  // Limite máximo: 4 itens (mais recentes)
+  // Reset quando userId muda
+  useEffect(() => {
+    if (!userId) {
+      isInitialized.current = false;
+      setItems([]);
+    }
+  }, [userId]);
+
+  // Salvar progresso com debounce
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   const updateProgress = useCallback(async (
     contentId: string,
     title: string,
@@ -255,122 +221,103 @@ export const useContinueWatching = () => {
     currentTime: number,
     totalDuration: number,
     episodeId?: string,
-    seasonNumber?: number
+    seasonNumber?: number,
+    episodeNumber?: number
   ) => {
     if (!userId) return;
 
     const progress = Math.min(100, Math.round((currentTime / (totalDuration || 1)) * 100));
 
-    // NÃO salvar se progresso = 0% (nunca iniciou) ou >= 95% (já terminou)
-    if (progress === 0 || progress >= 95) {
-      console.log(`[ContinueWatching] Ignorando - progresso ${progress}% (não salvar se 0% ou >=95%)`);
-      // Se >= 95%, remover se existir
-      if (progress >= 95) {
-        await removeItem(contentId, type, episodeId);
-      }
+    // Não salvar se concluído (>= 95%)
+    if (progress >= 95) {
+      await removeItem(contentId, type, episodeId);
       return;
     }
 
-    try {
-      const data: any = {
-        user_id: userId,
-        content_id: parseInt(contentId),
-        content_type: type === 'movie' ? 'movie' : 'series',
-        current_time: Math.floor(currentTime),
-        duration: Math.floor(totalDuration),
-        progress: progress,
-        updated_at: new Date().toISOString(),
-      };
+    // Debounce de 500ms
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
 
-      if (type === 'series') {
-        data.episode_id = episodeId ? parseInt(episodeId) : null;
-        data.season_number = seasonNumber;
-      }
-
-      // Upsert - atualizar ou inserir na tabela user_progress
-      await (supabase
-        .from('user_progress') as any)
-        .upsert(data, {
-          onConflict: 'user_id,content_id,content_type,episode_id',
+    saveTimeoutRef.current = setTimeout(async () => {
+      try {
+        await upsertProgressRpc({
+          userId,
+          contentId: parseInt(contentId),
+          contentType: type,
+          currentTime: Math.floor(currentTime),
+          duration: Math.floor(totalDuration),
+          progress,
+          episodeId: episodeId ? parseInt(episodeId) : undefined,
+          seasonNumber,
+          episodeNumber
         });
 
-      // Atualizar estado local - manter apenas 4 itens mais recentes
-      const newItem: ContinueWatchingItem = {
-        id: `${userId}-${contentId}${episodeId ? '-' + episodeId : ''}`,
-        contentId,
-        contentType: type,
-        title,
-        poster,
-        episodeId,
-        seasonNumber,
-        episodeNumber: undefined,
-        progress,
-        currentTime,
-        duration: totalDuration,
-        updatedAt: new Date().toISOString(),
-      };
+        // Atualizar estado local otimista
+        const newItem: ContinueWatchingItem = {
+          id: `${userId}-${contentId}${episodeId ? '-' + episodeId : ''}`,
+          contentId,
+          contentType: type,
+          title,
+          poster,
+          episodeId,
+          seasonNumber,
+          episodeNumber,
+          progress,
+          currentTime,
+          duration: totalDuration,
+          updatedAt: new Date().toISOString(),
+        };
 
-      setItems(prev => {
-        const filtered = prev.filter(item => 
-          !(item.contentId === contentId && item.contentType === type && 
-            (type === 'movie' || item.episodeId === episodeId))
-        );
-        // Adicionar novo item no início e limitar a 4 itens
-        const updated = [newItem, ...filtered].slice(0, 4);
-        return updated;
-      });
-    } catch (error) {
-      console.error('Erro ao salvar progresso:', error);
-    }
+        setItems(prev => {
+          const filtered = prev.filter(item => 
+            !(item.contentId === contentId && item.contentType === type && 
+              (type === 'movie' || item.episodeId === episodeId))
+          );
+          return [newItem, ...filtered].slice(0, 10);
+        });
+      } catch (error) {
+        console.error('[useContinueWatching] Erro ao salvar:', error);
+      }
+    }, 500);
   }, [userId]);
 
-  // Remover item específico
+  // Remover item
   const removeItem = useCallback(async (contentId: string, type: 'movie' | 'series', episodeId?: string) => {
     if (!userId) return;
 
     try {
-      let query = (supabase
-        .from('user_progress') as any)
-        .delete()
-        .eq('user_id', userId)
-        .eq('content_id', parseInt(contentId))
-        .eq('content_type', type);
-
-      if (type === 'series' && episodeId) {
-        query = query.eq('episode_id', parseInt(episodeId));
-      }
-
-      await query;
+      await supabase.rpc('remove_user_progress', {
+        p_user_id: userId,
+        p_content_id: parseInt(contentId),
+        p_content_type: type,
+        p_episode_id: episodeId ? parseInt(episodeId) : null
+      });
 
       setItems(prev => prev.filter(item => 
         !(item.contentId === contentId && item.contentType === type &&
           (type === 'movie' || item.episodeId === episodeId))
       ));
     } catch (error) {
-      console.error('Erro ao remover item:', error);
+      console.error('[useContinueWatching] Erro ao remover:', error);
     }
   }, [userId]);
 
-  // Limpar todos os itens
+  // Limpar todos
   const clearAll = useCallback(async () => {
     if (!userId) return;
 
     try {
-      await (supabase
-        .from('user_progress') as any)
-        .delete()
-        .eq('user_id', userId);
-
+      await supabase.rpc('clear_user_progress', { p_user_id: userId });
       setItems([]);
     } catch (error) {
-      console.error('Erro ao limpar progresso:', error);
+      console.error('[useContinueWatching] Erro ao limpar:', error);
     }
   }, [userId]);
 
   // Buscar próximo episódio
   const getNextEpisode = useCallback(async (seriesId: string, currentEpisodeId: string) => {
     try {
-      // Buscar episódio atual
       const { data: currentEpisode } = await (supabase
         .from('episodios') as any)
         .select('*, temporada:temporada_id (*)')
@@ -382,7 +329,6 @@ export const useContinueWatching = () => {
       const currentSeason = currentEpisode.temporada?.numero_temporada || currentEpisode.numero_temporada || 1;
       const currentNumber = currentEpisode.numero_episodio || currentEpisode.numero;
 
-      // Buscar próximo episódio na mesma temporada
       const { data: nextEpisode } = await (supabase
         .from('episodios') as any)
         .select('*, temporada:temporada_id (*)')
@@ -403,7 +349,6 @@ export const useContinueWatching = () => {
         };
       }
 
-      // Se não há próximo, buscar primeira temporada seguinte
       const { data: nextSeason } = await (supabase
         .from('temporadas') as any)
         .select('*')
@@ -443,8 +388,8 @@ export const useContinueWatching = () => {
   // Converter para formato do ContentCarousel
   const carouselItems = items.map(item => ({
     id: item.contentId,
-    title: item.contentType === 'series' && item.episodeTitle 
-      ? `${item.title} - E${item.episodeNumber}` 
+    title: item.contentType === 'series' && item.episodeNumber 
+      ? `${item.title} - T${item.seasonNumber}E${item.episodeNumber}` 
       : item.title,
     poster: item.poster,
     banner: item.banner,
