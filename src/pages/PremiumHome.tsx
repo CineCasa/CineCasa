@@ -25,6 +25,7 @@ import { useOrgulhoNacional } from '../hooks/useOrgulhoNacional';
 import { useBaseadoEmFatosReais } from '../hooks/useBaseadoEmFatosReais';
 import { usePrepareParaMedo } from '../hooks/usePrepareParaMedo';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
+import { useRecommendedForYou } from '../hooks/useRecommendedForYou';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
@@ -408,6 +409,7 @@ const PremiumHome: React.FC = () => {
   const { financas, isLoading: isLoadingFinancas } = useFinancas(user?.email);
   const { content: adrenalinaContent, isLoading: isLoadingAdrenalina } = useAdrenalinaPura();
   const { negritude, isLoading: isLoadingNegritude } = useNegritude(user?.email);
+  const { recommendations: recommendedForYou, isLoading: isLoadingRecommendedForYou } = useRecommendedForYou(user?.id);
   const { series: pipocaSeries, isLoading: isLoadingPipoca } = usePreparePipoca(user?.email);
   const { infantil, isLoading: isLoadingInfantil } = useInfantil(user?.email);
   const { content: classicosContent, isLoading: isLoadingClassicos } = useClassicosEternos();
@@ -609,6 +611,23 @@ const PremiumHome: React.FC = () => {
           })), 5)}
           onCardClick={handleCardClick}
         />
+
+        {/* Recomendado para você - Personalizado baseado no histórico do usuário */}
+        {user && (
+          <ContentCarousel
+            title="Recomendado para você 🎯"
+            items={!isLoadingRecommendedForYou ? filterUniqueItems((recommendedForYou || []).map(item => ({
+              id: item.id,
+              tmdbId: item.tmdbId,
+              title: item.title,
+              poster: item.poster,
+              type: item.type,
+              year: item.year,
+              rating: item.rating
+            })), 5) : []}
+            onCardClick={handleCardClick}
+          />
+        )}
 
         {/* Orgulho Nacional - 5 capas da categoria nacional */}
         <ContentCarousel
