@@ -119,8 +119,8 @@ BEGIN
             c.titulo as title,
             c.poster,
             c.poster as banner,
-            c.nota::NUMERIC as rating,
-            c.ano::TEXT as year,
+            c.rating::NUMERIC as rating,
+            c.year::TEXT as year,
             c.genero,
             2 as score_boost,  -- Score menor para similaridade
             'Baseado nos seus gêneros favoritos'::TEXT as reason,
@@ -152,11 +152,11 @@ BEGIN
             ELSE NULL
         END as banner,
         CASE 
-            WHEN cs.content_type = 'movie' THEN (SELECT c.nota::NUMERIC FROM public.cinema c WHERE c.id::TEXT = cs.content_id LIMIT 1)
+            WHEN cs.content_type = 'movie' THEN (SELECT c.rating::NUMERIC FROM public.cinema c WHERE c.id::TEXT = cs.content_id LIMIT 1)
             ELSE NULL
         END as rating,
         CASE 
-            WHEN cs.content_type = 'movie' THEN (SELECT c.ano::TEXT FROM public.cinema c WHERE c.id::TEXT = cs.content_id LIMIT 1)
+            WHEN cs.content_type = 'movie' THEN (SELECT c.year::TEXT FROM public.cinema c WHERE c.id::TEXT = cs.content_id LIMIT 1)
             ELSE NULL
         END as year,
         cs.genre as genero,

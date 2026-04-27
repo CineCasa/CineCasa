@@ -143,8 +143,8 @@ BEGIN
         c.titulo AS title,
         c.poster,
         c.poster AS banner,
-        c.nota::NUMERIC AS rating,
-        c.ano::INTEGER AS year,
+        c.rating::NUMERIC AS rating,
+        c.year::INTEGER AS year,
         c.genero,
         fs.final_score::INTEGER AS recommendation_score,
         LEFT(fs.all_reasons, 100)::TEXT AS reason
@@ -210,13 +210,13 @@ BEGIN
         c.titulo AS title,
         c.poster,
         c.poster AS banner,
-        c.nota::NUMERIC AS rating,
-        c.ano::INTEGER AS year,
+        c.rating::NUMERIC AS rating,
+        c.year::INTEGER AS year,
         c.genero,
         1::INTEGER AS recommendation_score,
         'Conteúdo popular'::TEXT AS reason
     FROM cinema c
-    ORDER BY c.ano DESC, c.nota DESC NULLS LAST
+    ORDER BY c.year DESC, c.rating DESC NULLS LAST
     LIMIT p_limit;
 END;
 $$;

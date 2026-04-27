@@ -302,8 +302,8 @@ BEGIN
             c.titulo as title,
             c.poster,
             c.poster as banner,
-            c.nota::NUMERIC as rating,
-            c.ano::TEXT as year,
+            c.rating::NUMERIC as rating,
+            c.year::TEXT as year,
             c.genero,
             2.0 * COALESCE(gw.weight, 1.0) as final_score,  -- Score base * peso do gênero
             '🎯 Similar aos seus gostos'::TEXT as reasons,
@@ -337,11 +337,11 @@ BEGIN
             ELSE NULL
         END as banner,
         CASE 
-            WHEN sc.content_type = 'movie' THEN (SELECT c.nota::NUMERIC FROM public.cinema c WHERE c.id::TEXT = sc.content_id LIMIT 1)
+            WHEN sc.content_type = 'movie' THEN (SELECT c.rating::NUMERIC FROM public.cinema c WHERE c.id::TEXT = sc.content_id LIMIT 1)
             ELSE NULL
         END as rating,
         CASE 
-            WHEN sc.content_type = 'movie' THEN (SELECT c.ano::TEXT FROM public.cinema c WHERE c.id::TEXT = sc.content_id LIMIT 1)
+            WHEN sc.content_type = 'movie' THEN (SELECT c.year::TEXT FROM public.cinema c WHERE c.id::TEXT = sc.content_id LIMIT 1)
             ELSE NULL
         END as year,
         sc.genre as genero,

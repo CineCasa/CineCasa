@@ -149,18 +149,18 @@ BEGIN
             c.titulo as title,
             c.poster,
             c.poster as banner,
-            c.nota::NUMERIC as rating,
-            c.ano::TEXT as year,
+            c.rating::NUMERIC as rating,
+            c.year::TEXT as year,
             c.genero,
             utg.score as genre_score,
             -- Score final = score do gênero * (rating do filme / 10)
-            utg.score * COALESCE(c.nota / 10, 0.5) as rec_score,
+            utg.score * COALESCE(c.rating / 10, 0.5) as rec_score,
             ('⭐ Gênero favorito: ' || utg.genre)::TEXT as reason,
             1 as priority  -- Prioridade alta para match direto
         FROM public.cinema c
         JOIN user_top_genres utg ON c.genero ILIKE '%' || utg.genre || '%'
         WHERE c.poster IS NOT NULL
-          AND c.nota IS NOT NULL
+          AND c.rating IS NOT NULL
         
         UNION ALL
         
