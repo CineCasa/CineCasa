@@ -1767,7 +1767,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       </div>
 
       {/* Cast Button - Center of Screen */}
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9998]">
+      <div className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9998] transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <CastButton
           mediaInfo={{
             contentId: videoUrl || originalUrl,
@@ -1785,7 +1785,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       {/* Fullscreen Button - Outside controls overlay */}
       <button
         onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleFullscreen(); }}
-        className={`fixed bottom-20 right-20 md:bottom-24 md:right-24 p-3 rounded-full transition-all cursor-pointer z-[9999] shadow-lg ${isFullscreen ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'}`}
+        className={`fixed bottom-20 right-20 md:bottom-24 md:right-24 p-3 rounded-full transition-all cursor-pointer z-[9999] shadow-lg ${isFullscreen ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'} transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         title={isFullscreen ? 'Sair da Tela Cheia' : 'Tela Cheia'}
         type="button"
         style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
@@ -1805,7 +1805,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
           console.log('[VideoJSPlayer] Mini player button CLICKED, current state:', isMiniPlayer);
           handleToggleMiniPlayer(); 
         }}
-        className={`fixed bottom-20 right-4 md:bottom-24 md:right-6 p-3 rounded-full transition-all cursor-pointer z-[9999] shadow-lg ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'}`}
+        className={`fixed bottom-20 right-4 md:bottom-24 md:right-6 p-3 rounded-full transition-all cursor-pointer z-[9999] shadow-lg ${isMiniPlayer ? 'bg-[#00A8E1] scale-110' : 'bg-black/50 hover:bg-black/70 backdrop-blur-sm'} transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         title={isMiniPlayer ? 'Sair do Mini Player' : 'Mini Player'}
         type="button"
         style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
@@ -1815,7 +1815,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
 
       {/* Volume Control - Outside controls overlay */}
       <div 
-        className="fixed bottom-20 left-4 md:bottom-24 md:left-6 flex items-center gap-2 z-[9999]"
+        className={`fixed bottom-20 left-4 md:bottom-24 md:left-6 flex items-center gap-2 z-[9999] transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
       >
         <button
@@ -1846,7 +1846,7 @@ const VideoJSPlayer: React.FC<VideoJSPlayerProps> = ({
       {/* Assistir Juntos Button - Outside controls overlay */}
       <button
         onClick={(e) => { e.stopPropagation(); e.preventDefault(); openWatchParty(); }}
-        className="fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 px-4 py-2 bg-[#00A8E1] hover:bg-[#00A8E1]/80 rounded-full transition-all cursor-pointer z-[9999] shadow-lg text-white text-sm font-medium"
+        className={`fixed top-4 right-4 md:top-6 md:right-6 flex items-center gap-2 px-4 py-2 bg-[#00A8E1] hover:bg-[#00A8E1]/80 rounded-full transition-all cursor-pointer z-[9999] shadow-lg text-white text-sm font-medium transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         title="Assistir Juntos"
         type="button"
         style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
