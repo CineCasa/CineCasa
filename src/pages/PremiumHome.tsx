@@ -26,6 +26,7 @@ import { useBaseadoEmFatosReais } from '../hooks/useBaseadoEmFatosReais';
 import { usePrepareParaMedo } from '../hooks/usePrepareParaMedo';
 import { useRecomendacoes } from '../hooks/useRecomendacoes';
 import { useRecommendedForYou } from '../hooks/useRecommendedForYou';
+import { useWatchlistSection } from '../hooks/useWatchlistSection';
 import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
@@ -423,6 +424,7 @@ const PremiumHome: React.FC = () => {
   const { content: orgulhoContent, isLoading: isLoadingOrgulho } = useOrgulhoNacional();
   const { content: baseadoEmFatosContent, isLoading: isLoadingBaseadoEmFatos } = useBaseadoEmFatosReais();
   const { content: prepareParaMedoContent, isLoading: isLoadingPrepareParaMedo } = usePrepareParaMedo();
+  const { watchlistItems, isLoading: isLoadingWatchlist, count: watchlistCount } = useWatchlistSection(user?.id);
 
   // Sistema para evitar duplicatas apenas DENTRO de cada seção (não entre seções)
   const filterUniqueItems = (items: any[], limit: number = 5) => {
@@ -543,6 +545,36 @@ const PremiumHome: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* VER DEPOIS - Seção exclusiva do usuário (apenas se logado e tiver itens) */}
+      {user && watchlistCount > 0 && (
+        <div className="relative z-30 my-6">
+          {isLoadingWatchlist ? (
+            <div className="px-4 md:px-8 py-8">
+              <div className="h-8 w-48 bg-gray-800 rounded animate-pulse mb-4"></div>
+              <div className="flex gap-4 overflow-hidden">
+                {[1,2,3,4,5].map(i => (
+                  <div key={i} className="w-32 h-48 bg-gray-800 rounded animate-pulse flex-shrink-0"></div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <ContentCarousel
+              title="➕ Ver depois"
+              items={filterUniqueItems((watchlistItems || []).map(item => ({
+                id: item.id,
+                tmdbId: item.tmdbId,
+                title: item.title,
+                poster: item.poster,
+                type: item.type,
+                year: item.year,
+                rating: item.rating
+              })), 5)}
+              onCardClick={handleCardClick}
+            />
+          )}
+        </div>
+      )}
 
       {/* Content Sections - no margin on mobile, keep margin on desktop */}
       <div className="mt-0 md:mt-[70px] relative z-30">
