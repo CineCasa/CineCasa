@@ -1,0 +1,10 @@
+{
+  "version": "20260427-verification",
+  "hash": "verify-deploy",
+  "timestamp": "2026-04-27T00:00:00Z",
+  "features": [
+    "user_progress_system",
+    "watchlist_section",
+    "realtime_sync"
+  ]
+}
