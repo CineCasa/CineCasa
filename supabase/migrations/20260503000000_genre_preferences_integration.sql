@@ -301,22 +301,22 @@ BEGIN
         FROM ml_recs ml
         FULL OUTER JOIN genre_recs gr ON ml.content_id = gr.content_id
     )
-    SELECT DISTINCT ON (content_id)
-        content_id,
-        content_type,
-        title,
-        poster,
-        banner,
-        rating,
-        year,
-        genero,
-        ml_score,
-        genre_score,
-        final_score,
-        reason
+    SELECT DISTINCT ON (combined.content_id)
+        combined.content_id,
+        combined.content_type,
+        combined.title,
+        combined.poster,
+        combined.banner,
+        combined.rating,
+        combined.year,
+        combined.genero,
+        combined.ml_score,
+        combined.genre_score,
+        combined.final_score,
+        combined.reason
     FROM combined
-    WHERE title IS NOT NULL  -- Garantir que temos dados válidos
-    ORDER BY content_id, final_score DESC
+    WHERE combined.title IS NOT NULL  -- Garantir que temos dados válidos
+    ORDER BY combined.content_id, combined.final_score DESC
     LIMIT p_limit;
 END;
 $$;
