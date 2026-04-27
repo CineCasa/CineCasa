@@ -116,32 +116,31 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
       console.error('[WorstRated] Erro ao buscar conteúdos:', err);
       setContent([]);
       setIsUsingFallback(false);
-        // Se não há cache, buscar filmes aleatórios
-        console.log('[WorstRated] Erro - buscando filmes de emergência...');
-        
-        const { data: emergencyMovies } = await supabase
-          .from('cinema')
-          .select('id, tmdb_id, titulo, poster, rating, year')
-          .limit(10);
-        
-        const emergencyContent: WorstRatedContent[] = (emergencyMovies || []).map((item: any) => ({
-          id: item.id.toString(),
-          title: item.titulo,
-          poster: item.poster || '/api/placeholder/300/450',
-          type: 'movie' as const,
-          year: item.year || 'N/A',
-          rating: item.rating || 'N/A',
-          tmdb_id: item.tmdb_id || undefined,
-        }));
-        
-        const shuffledEmergency = emergencyContent.sort(() => Math.random() - 0.5).slice(0, 5);
-        setContent(shuffledEmergency);
-        setLastUpdated(new Date().toISOString());
-        setIsUsingFallback(true);
-        
-        localStorage.setItem(WORST_RATED_CACHE_KEY, JSON.stringify(shuffledEmergency));
-        localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
-      }
+      // Se não há cache, buscar filmes aleatórios
+      console.log('[WorstRated] Erro - buscando filmes de emergência...');
+      
+      const { data: emergencyMovies } = await supabase
+        .from('cinema')
+        .select('id, tmdb_id, titulo, poster, rating, year')
+        .limit(10);
+      
+      const emergencyContent: WorstRatedContent[] = (emergencyMovies || []).map((item: any) => ({
+        id: item.id.toString(),
+        title: item.titulo,
+        poster: item.poster || '/api/placeholder/300/450',
+        type: 'movie' as const,
+        year: item.year || 'N/A',
+        rating: item.rating || 'N/A',
+        tmdb_id: item.tmdb_id || undefined,
+      }));
+      
+      const shuffledEmergency = emergencyContent.sort(() => Math.random() - 0.5).slice(0, 5);
+      setContent(shuffledEmergency);
+      setLastUpdated(new Date().toISOString());
+      setIsUsingFallback(true);
+      
+      localStorage.setItem(WORST_RATED_CACHE_KEY, JSON.stringify(shuffledEmergency));
+      localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
     } finally {
       setIsLoading(false);
     }
