@@ -56,7 +56,7 @@ BEGIN
         -- Atualizar registro existente
         UPDATE user_progress
         SET 
-            current_time = p_current_time,
+            "current_time" = p_current_time,
             duration = p_duration,
             progress = p_progress,
             episode_id = COALESCE(p_episode_id, episode_id),
@@ -75,7 +75,7 @@ BEGIN
         -- Inserir novo registro
         INSERT INTO user_progress (
             user_id, content_id, content_type,
-            current_time, duration, progress,
+            "current_time", duration, progress,
             episode_id, season_number, episode_number,
             last_watched, updated_at
         ) VALUES (
@@ -106,7 +106,7 @@ RETURNS TABLE (
     id UUID,
     content_id INTEGER,
     content_type TEXT,
-    current_time INTEGER,
+    "current_time" INTEGER,
     duration INTEGER,
     progress INTEGER,
     episode_id INTEGER,
@@ -124,7 +124,7 @@ BEGIN
         up.id,
         up.content_id,
         up.content_type,
-        up.current_time,
+        up."current_time",
         up.duration,
         up.progress,
         up.episode_id,
