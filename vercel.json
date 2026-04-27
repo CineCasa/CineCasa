@@ -2,6 +2,7 @@
   "version": 2,
   "name": "cinecasa",
   "framework": "vite",
+  "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "headers": [
