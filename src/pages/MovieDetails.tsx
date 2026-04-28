@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Play, Plus, Check, ArrowLeft, Star, Calendar, Clock, Info, User, Users, Heart, Share2, Monitor, Smartphone, Tv } from 'lucide-react';
+import { Play, Plus, Check, ArrowLeft, Star, Calendar, Clock, Info, User, Users, Heart, Share2, Monitor, Smartphone, Tv, MessageSquare } from 'lucide-react';
 import { getSupabaseClient } from '../lib/supabase';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { fetchTmdbMovie, tmdbImageUrl } from '../services/tmdb';
+import { useRatings } from '@/hooks/useRatings';
+import { RatingStars } from '@/components/RatingStars';
+import { RatingModal } from '@/components/RatingModal';
+import { RatingsSummary } from '@/components/RatingsSummary';
+import { ReviewCard } from '@/components/ReviewCard';
+import { Button } from '@/components/ui/button';
 
 // Helper to convert YouTube URL to embed format
 const getYoutubeEmbedUrl = (url: string): string => {
@@ -78,7 +84,24 @@ const MovieDetails: React.FC = () => {
   const [tmdbData, setTmdbData] = useState<TmdbDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [isDeletingRating, setIsDeletingRating] = useState(false);
   const supabase = getSupabaseClient();
+  
+  // Ratings hook
+  const {
+    userRating,
+    stats,
+    reviews,
+    isLoadingUserRating,
+    isLoadingStats,
+    isLoadingReviews,
+    hasMoreReviews,
+    submitRating,
+    deleteRating,
+    loadMoreReviews,
+  } = useRatings(id || '');
 
   useEffect(() => {
     if (id) {
@@ -212,6 +235,27 @@ const MovieDetails: React.FC = () => {
       year: movie.ano,
       genero: movie.genero
     });
+  };
+
+  // Handlers de rating
+  const handleSubmitRating = async (
+    rating: number,
+    review: string,
+    containsSpoilers: boolean
+  ) => {
+    if (!id) return;
+    setIsSubmittingRating(true);
+    await submitRating(id, 'movie', rating, review, containsSpoilers);
+    setIsSubmittingRating(false);
+    setIsRatingModalOpen(false);
+  };
+
+  const handleDeleteRating = async () => {
+    if (!id) return;
+    setIsDeletingRating(true);
+    await deleteRating(id);
+    setIsDeletingRating(false);
+    setIsRatingModalOpen(false);
   };
 
   // Gerar porcentagem de match
@@ -574,6 +618,75 @@ const MovieDetails: React.FC = () => {
                     </div>
                   </motion.div>
                 )}
+
+                {/* Ratings & Reviews - Glassmorphism Card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.45 }}
+                  className="md:col-span-2 bg-black/40 backdrop-blur-md border border-cyan-500/30 rounded-xl p-5"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                      <Star size={16} /> Avaliações
+                    </h3>
+                    <Button
+                      onClick={() => setIsRatingModalOpen(true)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-transparent border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-300"
+                    >
+                      {userRating ? (
+                        <>
+                          <Star size={16} className="mr-2 fill-yellow-400" />
+                          {userRating.rating}/5 - Editar
+                        </>
+                      ) : (
+                        <>
+                          <Star size={16} className="mr-2" />
+                          Avaliar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Ratings Summary */}
+                  <div className="mb-6">
+                    <RatingsSummary stats={stats} isLoading={isLoadingStats} />
+                  </div>
+
+                  {/* User's Review */}
+                  {userRating?.review && (
+                    <div className="mb-6 p-4 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-white">Sua avaliação</span>
+                        <RatingStars rating={userRating.rating} size="sm" />
+                      </div>
+                      <p className="text-gray-300 text-sm">{userRating.review}</p>
+                    </div>
+                  )}
+
+                  {/* Reviews List */}
+                  {reviews.length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-gray-400">Reviews da comunidade</h4>
+                      {reviews.map((review) => (
+                        <ReviewCard key={review.id} review={review} />
+                      ))}
+                      
+                      {hasMoreReviews && (
+                        <Button
+                          onClick={loadMoreReviews}
+                          disabled={isLoadingReviews}
+                          variant="outline"
+                          className="w-full bg-transparent border-white/10 text-gray-400 hover:bg-white/5"
+                        >
+                          {isLoadingReviews ? 'Carregando...' : 'Carregar mais reviews'}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
               </div>
 
               {/* Filmes Relacionados - Glassmorphism Section */}
@@ -617,6 +730,20 @@ const MovieDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Rating Modal */}
+      <RatingModal
+        isOpen={isRatingModalOpen}
+        onClose={() => setIsRatingModalOpen(false)}
+        onSubmit={handleSubmitRating}
+        onDelete={userRating ? handleDeleteRating : undefined}
+        initialRating={userRating?.rating || 0}
+        initialReview={userRating?.review || ''}
+        initialContainsSpoilers={userRating?.contains_spoilers || false}
+        contentTitle={movie?.titulo || ''}
+        isSubmitting={isSubmittingRating}
+        isDeleting={isDeletingRating}
+      />
     </div>
   );
 };

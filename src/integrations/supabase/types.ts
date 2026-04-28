@@ -470,56 +470,6 @@ export type Database = {
           }
         ]
       }
-      ratings: {
-        Row: {
-          id: string
-          user_id: string
-          content_id: string
-          content_type: string
-          titulo: string
-          poster: string | null
-          banner: string | null
-          rating: string
-          rating_type: 'like' | 'dislike'
-          rating_value: number
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          content_id: string
-          content_type: string
-          titulo: string
-          poster?: string | null
-          banner?: string | null
-          rating: string
-          rating_type: 'like' | 'dislike'
-          rating_value?: number
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          content_id?: string
-          content_type?: string
-          titulo?: string
-          poster?: string | null
-          banner?: string | null
-          rating?: string
-          rating_type?: 'like' | 'dislike'
-          rating_value?: number
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ratings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       user_progress: {
         Row: {
           id: string
@@ -679,6 +629,62 @@ export type Database = {
           }
         ]
       }
+      ratings: {
+        Row: {
+          id: string
+          user_id: string
+          content_id: string
+          content_type: string
+          rating: number | null
+          review: string | null
+          created_at: string | null
+          updated_at: string | null
+          helpful_count: number | null
+          contains_spoilers: boolean | null
+          status: string | null
+          metadata: Json | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content_id: string
+          content_type: string
+          rating?: number | null
+          review?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          helpful_count?: number | null
+          contains_spoilers?: boolean | null
+          status?: string | null
+          metadata?: Json | null
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content_id?: string
+          content_type?: string
+          rating?: number | null
+          review?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          helpful_count?: number | null
+          contains_spoilers?: boolean | null
+          status?: string | null
+          metadata?: Json | null
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -794,6 +800,109 @@ export type Database = {
         Returns: number
       }
       count_active_devices: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: number
+      }
+      create_or_update_rating: {
+        Args: {
+          p_user_id: string
+          p_content_id: string
+          p_content_type: string
+          p_rating: number
+          p_review?: string
+          p_contains_spoilers?: boolean
+        }
+        Returns: string
+      }
+      delete_rating: {
+        Args: {
+          p_user_id: string
+          p_content_id: string
+        }
+        Returns: boolean
+      }
+      get_user_rating: {
+        Args: {
+          p_user_id: string
+          p_content_id: string
+        }
+        Returns: {
+          id: string
+          rating: number
+          review: string | null
+          contains_spoilers: boolean
+          created_at: string
+          updated_at: string
+        }[]
+      }
+      get_content_average_rating: {
+        Args: {
+          p_content_id: string
+        }
+        Returns: {
+          average_rating: number
+          total_reviews: number
+          rating_1_count: number
+          rating_2_count: number
+          rating_3_count: number
+          rating_4_count: number
+          rating_5_count: number
+        }[]
+      }
+      get_content_reviews: {
+        Args: {
+          p_content_id: string
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: {
+          id: string
+          user_id: string
+          rating: number
+          review: string | null
+          contains_spoilers: boolean
+          helpful_count: number
+          created_at: string
+          username: string | null
+          avatar_url: string | null
+        }[]
+      }
+      get_user_recent_ratings: {
+        Args: {
+          p_user_id: string
+          p_limit?: number
+        }
+        Returns: {
+          id: string
+          content_id: string
+          content_type: string
+          rating: number
+          review: string | null
+          created_at: string
+        }[]
+      }
+      get_top_rated_contents: {
+        Args: {
+          p_content_type?: string
+          p_limit?: number
+          p_min_reviews?: number
+        }
+        Returns: {
+          content_id: string
+          content_type: string
+          average_rating: number
+          total_reviews: number
+        }[]
+      }
+      increment_helpful_count: {
+        Args: {
+          p_rating_id: string
+        }
+        Returns: boolean
+      }
+      count_user_ratings: {
         Args: {
           p_user_id: string
         }
