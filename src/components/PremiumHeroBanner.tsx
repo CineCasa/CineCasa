@@ -275,7 +275,9 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
             style={{ objectPosition: 'center top' }}
             onError={(e) => {
               console.error('[PremiumHeroBanner] Erro ao carregar poster:', currentBanner.poster);
-              (e.target as HTMLImageElement).style.display = 'none';
+              const img = e.target as HTMLImageElement;
+              // Mostrar placeholder com inicial do título ao invés de esconder
+              img.src = `https://placehold.co/1920x1080/1a1a1a/666666?text=${encodeURIComponent(currentBanner.title?.charAt(0).toUpperCase() || 'C')}`;
             }}
           />
           {/* Gradient Overlay */}

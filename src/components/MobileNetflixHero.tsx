@@ -257,15 +257,8 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
                 }}
                 onError={(e) => {
                   const img = e.target as HTMLImageElement;
-                  img.style.display = 'none';
-                  // Mostrar placeholder com inicial do título
-                  const parent = img.parentElement;
-                  if (parent && !parent.querySelector('.poster-fallback')) {
-                    const fallback = document.createElement('div');
-                    fallback.className = 'poster-fallback absolute inset-0 flex items-center justify-center bg-gradient-to-br from-neutral-800 to-black';
-                    fallback.innerHTML = `<span class="text-6xl font-bold text-white/30">${currentBanner.title.charAt(0).toUpperCase()}</span>`;
-                    parent.appendChild(fallback);
-                  }
+                  // Usar placeholder ao invés de esconder completamente
+                  img.src = `https://placehold.co/1080x1920/1a1a1a/666666?text=${encodeURIComponent(currentBanner.title?.charAt(0).toUpperCase() || 'C')}`;
                 }}
               />
             </div>
