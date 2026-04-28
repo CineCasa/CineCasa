@@ -28,11 +28,14 @@ export const useAdrenalinaPura = (): UseAdrenalinaPuraReturn => {
       
       console.log('[AdrenalinaPura] Buscando conteúdo de ação e aventura...');
       
-      // Buscar filmes das categorias ação e aventura
+      // Buscar filmes das categorias ação e aventura usando novo sistema de gêneros
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%ação%,genero.ilike.%acao%,genero.ilike.%aventura%,category.ilike.%ação%,category.ilike.%acao%,category.ilike.%aventura%')
+        .select(`
+          id, tmdb_id, titulo, poster, year, rating,
+          cinema_genres!inner (generos!inner (id, nome, slug))
+        `)
+        .or('generos.slug.eq.acao,generos.slug.eq.aventura,generos.nome.ilike.%ação%,generos.nome.ilike.%aventura%')
         .not('poster', 'is', null)
         .limit(100);
 
