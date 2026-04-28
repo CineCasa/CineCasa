@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
+import { updateGenrePreferences, processGenres, GENRE_SCORE_CONFIG } from '@/services/genrePreferencesService';
 
 export interface FavoriteItem {
   id: string;
@@ -59,6 +60,14 @@ export function useFavorites() {
 
       if (error) throw error;
       
+      // Atualizar preferências de gênero (não bloqueante)
+      const genres = processGenres(item.genero || item.category);
+      if (genres.length > 0) {
+        updateGenrePreferences(user.id, genres, 'FAVORITE_ADD').catch(err => {
+          console.error('[useFavorites] Erro ao atualizar preferências de gênero:', err);
+        });
+      }
+      
       setFavorites(prev => [data, ...prev]);
       toast.success('Adicionado aos favoritos!');
     } catch (error) {
@@ -72,6 +81,9 @@ export function useFavorites() {
     if (!user) return;
 
     try {
+      // Buscar gêneros do favorito antes de remover
+      const favoriteToRemove = favorites.find(f => f.content_id === contentId);
+      
       const { error } = await supabase
         .from('favorites')
         .delete()
@@ -80,13 +92,23 @@ export function useFavorites() {
 
       if (error) throw error;
       
+      // Atualizar preferências de gênero (diminuir score) - não bloqueante
+      if (favoriteToRemove) {
+        const genres = processGenres(favoriteToRemove.genero || favoriteToRemove.category);
+        if (genres.length > 0) {
+          updateGenrePreferences(user.id, genres, 'FAVORITE_REMOVE').catch(err => {
+            console.error('[useFavorites] Erro ao atualizar preferências de gênero:', err);
+          });
+        }
+      }
+      
       setFavorites(prev => prev.filter(f => f.content_id !== contentId));
       toast.success('Removido dos favoritos');
     } catch (error) {
       console.error('Erro ao remover favorito:', error);
       toast.error('Erro ao remover favorito');
     }
-  }, [user]);
+  }, [user, favorites]);
 
   // Verificar se é favorito
   const isFavorite = useCallback((contentId: number) => {

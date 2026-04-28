@@ -573,12 +573,85 @@ export type Database = {
           }
         ]
       }
+      user_genre_preferences: {
+        Row: {
+          id: number
+          user_id: string
+          genre: string
+          score: number
+          updated_at: string | null
+        }
+        Insert: {
+          id?: never
+          user_id: string
+          genre: string
+          score?: number
+          updated_at?: string | null
+        }
+        Update: {
+          id?: never
+          user_id?: string
+          genre?: string
+          score?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_genre_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_genre_preferences: {
+        Args: {
+          p_user_id: string
+          p_genres: string[]
+          p_score_delta: number
+        }
+        Returns: undefined
+      }
+      get_user_favorite_genres: {
+        Args: {
+          p_user_id: string
+          p_limit?: number
+        }
+        Returns: {
+          genre: string
+          score: number
+        }[]
+      }
+      get_content_by_genre_preferences: {
+        Args: {
+          p_user_id: string
+          p_content_type?: string
+          p_limit?: number
+          p_exclude_watched?: boolean
+        }
+        Returns: {
+          id: number
+          content_type: string
+          title: string
+          poster: string
+          year: string
+          rating: string
+          genre: string
+          genre_match_score: number
+        }[]
+      }
+      reset_genre_preferences: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

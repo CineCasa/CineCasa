@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { updateGenrePreferences, processGenres, GENRE_SCORE_CONFIG } from '@/services/genrePreferencesService';
 
 interface WatchProgress {
   id: string;
@@ -125,6 +126,7 @@ export function useWatchProgress({
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['continue-watching', userId] });
       queryClient.invalidateQueries({ queryKey: ['recommendations', userId] });
+      queryClient.invalidateQueries({ queryKey: ['genre-recommendations', userId] });
     },
     onError: (error) => {
       console.error('❌ Erro na mutation de progresso:', error);
