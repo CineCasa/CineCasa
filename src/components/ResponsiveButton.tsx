@@ -3,19 +3,19 @@ import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 const responsiveButtonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 cursor-pointer',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00E5FF] focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:pointer-events-none disabled:opacity-50 active:scale-95 cursor-pointer',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-primary/50',
-        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/50',
-        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-secondary/50',
-        ghost: 'hover:bg-accent hover:text-accent-foreground focus-visible:ring-accent',
-        link: 'text-primary underline-offset-4 hover:underline focus-visible:ring-primary/50',
-        premium: 'bg-white text-black hover:bg-white/90 hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)] focus-visible:ring-white/50',
-        'premium-secondary': 'bg-white/10 text-white hover:bg-white/20 border border-white/20 backdrop-blur-md focus-visible:ring-white/50',
-        'premium-icon': 'rounded-full border border-white/40 bg-background/50 backdrop-blur-md hover:bg-white/20 focus-visible:ring-white/50',
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        ghost: 'hover:bg-accent hover:text-accent-foreground',
+        link: 'text-primary underline-offset-4 hover:underline',
+        premium: 'bg-white text-black hover:bg-white/90 hover:scale-105 shadow-[0_0_30px_rgba(255,255,255,0.2)]',
+        'premium-secondary': 'bg-white/10 text-white hover:bg-white/20 border border-white/20 backdrop-blur-md',
+        'premium-icon': 'rounded-full border border-white/40 bg-background/50 backdrop-blur-md hover:bg-white/20',
       },
       size: {
         xs: 'h-7 px-2 text-xs gap-1',
