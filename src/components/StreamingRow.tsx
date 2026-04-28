@@ -134,7 +134,7 @@ const StreamingRow: React.FC<StreamingRowProps> = ({
               <StreamingCard
                 title={item.title}
                 description={item.description}
-                image={item.image}
+                image={item.image || item.poster || ''}
                 rating={item.rating}
                 year={item.year}
                 duration={item.duration}

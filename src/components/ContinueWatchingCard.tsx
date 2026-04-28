@@ -33,7 +33,7 @@ const ContinueWatchingCard: React.FC<ContinueWatchingCardProps> = ({
       <div className="relative w-[200px] h-[112px] md:w-[240px] md:h-[135px] overflow-hidden rounded-lg">
         {/* Imagem de fundo */}
         <img
-          src={item.image}
+          src={item.image || item.poster || ''}
           alt={item.title}
           className="w-full h-full object-cover cursor-pointer"
           onError={(e) => {

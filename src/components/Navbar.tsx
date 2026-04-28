@@ -231,7 +231,7 @@ const Navbar = () => {
                       className="flex items-center gap-3 p-3 hover:bg-white/5 cursor-pointer transition-colors border-b border-white/5 last:border-b-0"
                     >
                       <img
-                        src={item.image}
+                        src={item.image || item.poster || ''}
                         alt={item.title}
                         className="w-12 h-16 object-cover rounded"
                         loading="lazy"

@@ -172,7 +172,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
         className="w-full h-full rounded-xl overflow-hidden bg-secondary shadow-lg transition-all duration-300">
         {isVisible ? (
           <img
-            src={item.image || `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`}
+            src={item.image || item.poster || `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`}
             alt={item.title}
             className="w-full h-full object-cover animate-in fade-in duration-500"
             loading="lazy"
