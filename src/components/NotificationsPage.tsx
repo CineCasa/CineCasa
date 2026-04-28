@@ -221,7 +221,7 @@ export const NotificationsPage: React.FC = () => {
     }
   }, []);
 
-  // Polling para atualização automática
+  // Polling para atualização automática - executar apenas uma vez na montagem
   useEffect(() => {
     fetchRecentContent();
     fetchSubscriptionStatus();
@@ -233,7 +233,8 @@ export const NotificationsPage: React.FC = () => {
     }, 2 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [fetchRecentContent, fetchSubscriptionStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Focar no primeiro card quando a página carregar e dados estiverem prontos
   useEffect(() => {
