@@ -62,10 +62,12 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       }
     }
 
+    let loadingTimeout: NodeJS.Timeout | null = null;
+    
     try {
       // Não setar loading true imediatamente - carregar em background
       // apenas mostrar loading se demorar mais de 500ms
-      const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+      loadingTimeout = setTimeout(() => setIsLoading(true), 500);
       setError(null);
 
       // Buscar apenas filmes de lançamento (otimizado)
@@ -211,12 +213,16 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       
       setLancamentos(combined);
       setLastUpdated(new Date().toISOString());
-      clearTimeout(loadingTimeout);
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
     } catch (err: any) {
       setError('Erro ao carregar lançamentos');
       console.error('Error loading lançamentos:', err);
     } finally {
-      clearTimeout(loadingTimeout);
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
       setIsLoading(false);
     }
   }, [userId]);

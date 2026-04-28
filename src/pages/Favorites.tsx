@@ -27,6 +27,10 @@ const Favorites = () => {
   const [hydrating, setHydrating] = useState(false);
   const firstCardRef = useRef<HTMLDivElement>(null);
 
+  // Derived state (declarado antes dos useEffects que os usam)
+  const isEmpty = favorites.length === 0 && !loading;
+  const isLoading = loading || hydrating;
+
   // Hydrate favorites with TMDB data
   const hydrateFavorites = useCallback(async (items: FavoriteItem[]) => {
     if (!items.length) return;
@@ -153,9 +157,6 @@ const Favorites = () => {
     ];
     return gradients[index % gradients.length];
   };
-
-  const isEmpty = favorites.length === 0 && !loading;
-  const isLoading = loading || hydrating;
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-x-hidden">

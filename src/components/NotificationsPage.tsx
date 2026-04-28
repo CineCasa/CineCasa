@@ -56,6 +56,22 @@ export const NotificationsPage: React.FC = () => {
   const isLoggedIn = !!session;
   const userId = session?.user?.id;
 
+  // Verificar se data está dentro de 24h
+  const isWithin24Hours = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    return diffInHours < 24;
+  };
+
+  // Filtrar conteúdo: filmes apenas últimas 24h, séries dos últimos 50 cadastrados
+  const recentContent = content.filter(item => {
+    if (item.type === 'series') {
+      return true;
+    }
+    return isWithin24Hours(item.created_at);
+  });
+
   // Buscar status da assinatura do usuário
   const fetchSubscriptionStatus = useCallback(async () => {
     if (!userId) return;
@@ -334,24 +350,6 @@ export const NotificationsPage: React.FC = () => {
     }
     return { url: '', valid: false, error: 'Formato de URL do trailer não reconhecido' };
   };
-
-  // Verificar se conteúdo tem menos de 24h
-  const isWithin24Hours = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    return diffInHours < 24;
-  };
-
-  // Filtrar conteúdo: filmes apenas últimas 24h, séries dos últimos 50 cadastrados
-  const recentContent = content.filter(item => {
-    if (item.type === 'series') {
-      // Séries: mostrar todas as 50 mais recentes do banco
-      return true;
-    }
-    // Filmes: apenas últimas 24h
-    return isWithin24Hours(item.created_at);
-  });
 
   // Alertas visíveis (não dispensados)
   const visibleAlerts = alerts.filter(alert => !dismissedAlerts.includes(alert.id));
