@@ -152,27 +152,23 @@ jobs:
           echo "STAGING_SUPABASE_ANON_KEY=${{ secrets.STAGING_SUPABASE_ANON_KEY }}" >> .env.staging
 
       - name: Run health checks
-        if: secrets.STAGING_HEALTH_CHECK_URL != ''
         run: |
+          if [ -z "${{ secrets.STAGING_HEALTH_CHECK_URL }}" ]; then
+            echo "⚠️ STAGING_HEALTH_CHECK_URL not configured - skipping health checks"
+            exit 0
+          fi
           echo "Running health checks on staging..."
           sleep 30
           curl -f ${{ secrets.STAGING_HEALTH_CHECK_URL }} || exit 1
 
-      - name: Skip health checks (no URL configured)
-        if: secrets.STAGING_HEALTH_CHECK_URL == ''
-        run: |
-          echo "⚠️ STAGING_HEALTH_CHECK_URL not configured - skipping health checks"
-
       - name: Run E2E tests on staging
-        if: secrets.STAGING_HEALTH_CHECK_URL != ''
         run: |
+          if [ -z "${{ secrets.STAGING_HEALTH_CHECK_URL }}" ]; then
+            echo "⚠️ Staging environment not configured - skipping E2E tests"
+            exit 0
+          fi
           echo "Running E2E tests on staging..."
           npm run test:e2e:staging
-
-      - name: Skip E2E tests (staging not configured)
-        if: secrets.STAGING_HEALTH_CHECK_URL == ''
-        run: |
-          echo "⚠️ Staging environment not configured - skipping E2E tests"
 
       - name: Notify deployment
         uses: 8398a7/action-slack@v3
@@ -233,8 +229,12 @@ jobs:
           EOF
 
       - name: Run health checks on ${{ matrix.color }}
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.PRODUCTION_HEALTH_CHECK_URL != ''
+        if: matrix.color == steps.active-env.outputs.deploy
         run: |
+          if [ -z "${{ secrets.PRODUCTION_HEALTH_CHECK_URL }}" ]; then
+            echo "⚠️ PRODUCTION_HEALTH_CHECK_URL not configured - skipping health checks"
+            exit 0
+          fi
           echo "Running health checks on ${{ matrix.color }}..."
           sleep 60
           
@@ -251,25 +251,23 @@ jobs:
             curl -f ${{ secrets.PRODUCTION_SUPABASE_URL }}/rest/v1/ || exit 1
           fi
 
-      - name: Skip health checks (production not configured)
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.PRODUCTION_HEALTH_CHECK_URL == ''
-        run: |
-          echo "⚠️ PRODUCTION_HEALTH_CHECK_URL not configured - skipping health checks"
-
       - name: Run smoke tests
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.PRODUCTION_URL != ''
+        if: matrix.color == steps.active-env.outputs.deploy
         run: |
+          if [ -z "${{ secrets.PRODUCTION_URL }}" ]; then
+            echo "⚠️ PRODUCTION_URL not configured - skipping smoke tests"
+            exit 0
+          fi
           echo "Running smoke tests on ${{ matrix.color }}..."
           npm run test:smoke -- --baseUrl=${{ secrets.PRODUCTION_URL }}-${{ matrix.color }}
 
-      - name: Skip smoke tests (production not configured)
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.PRODUCTION_URL == ''
-        run: |
-          echo "⚠️ PRODUCTION_URL not configured - skipping smoke tests"
-
       - name: Switch traffic to ${{ matrix.color }}
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.LOAD_BALANCER_WEBHOOK != ''
+        if: matrix.color == steps.active-env.outputs.deploy
         run: |
+          if [ -z "${{ secrets.LOAD_BALANCER_WEBHOOK }}" ]; then
+            echo "⚠️ LOAD_BALANCER_WEBHOOK not configured - skipping traffic switch"
+            exit 0
+          fi
           echo "Switching traffic to ${{ matrix.color }}..."
           
           # Atualizar load balancer
@@ -281,22 +279,16 @@ jobs:
               "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
             }'
 
-      - name: Skip traffic switch (no load balancer configured)
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.LOAD_BALANCER_WEBHOOK == ''
-        run: |
-          echo "⚠️ LOAD_BALANCER_WEBHOOK not configured - skipping traffic switch"
-
       - name: Final health check after switch
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.PRODUCTION_HEALTH_CHECK_URL != ''
+        if: matrix.color == steps.active-env.outputs.deploy
         run: |
+          if [ -z "${{ secrets.PRODUCTION_HEALTH_CHECK_URL }}" ]; then
+            echo "⚠️ PRODUCTION_HEALTH_CHECK_URL not configured - skipping final health check"
+            exit 0
+          fi
           echo "Final health check after traffic switch..."
           sleep 30
           curl -f ${{ secrets.PRODUCTION_HEALTH_CHECK_URL }} || exit 1
-
-      - name: Skip final health check (no URL configured)
-        if: matrix.color == steps.active-env.outputs.deploy && secrets.PRODUCTION_HEALTH_CHECK_URL == ''
-        run: |
-          echo "⚠️ PRODUCTION_HEALTH_CHECK_URL not configured - skipping final health check"
 
       - name: Cleanup old environment
         if: matrix.color == steps.active-env.outputs.deploy

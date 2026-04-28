@@ -29,6 +29,30 @@ env:
 
 jobs:
   # ========================================
+  # CHECK SECRETS
+  # ========================================
+  check-secrets:
+    name: Check Secrets
+    runs-on: ubuntu-latest
+    outputs:
+      vercel_configured: ${{ steps.check.outputs.vercel_configured }}
+      cloudflare_configured: ${{ steps.check.outputs.cloudflare_configured }}
+    steps:
+      - name: Check Secrets
+        id: check
+        run: |
+          if [ -n "${{ secrets.VERCEL_TOKEN }}" ] && [ -n "${{ secrets.VERCEL_ORG_ID }}" ] && [ -n "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "vercel_configured=true" >> $GITHUB_OUTPUT
+          else
+            echo "vercel_configured=false" >> $GITHUB_OUTPUT
+          fi
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "cloudflare_configured=true" >> $GITHUB_OUTPUT
+          else
+            echo "cloudflare_configured=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ========================================
   # BUILD E CACHE BUSTING
   # ========================================
   build:
@@ -113,8 +137,8 @@ jobs:
   deploy-vercel:
     name: Deploy Vercel
     runs-on: ubuntu-latest
-    needs: build
-    if: (github.event.inputs.environment == 'all' || github.event.inputs.environment == 'vercel' || github.event.inputs.environment == null) && secrets.VERCEL_TOKEN != ''
+    needs: [check-secrets, build]
+    if: (github.event.inputs.environment == 'all' || github.event.inputs.environment == 'vercel' || github.event.inputs.environment == null) && needs.check-secrets.outputs.vercel_configured == 'true'
     environment: production
     steps:
       - name: Download build artifacts
@@ -152,8 +176,8 @@ jobs:
   deploy-cloudflare:
     name: Deploy Cloudflare
     runs-on: ubuntu-latest
-    needs: build
-    if: (github.event.inputs.environment == 'all' || github.event.inputs.environment == 'cloudflare' || github.event.inputs.environment == null) && secrets.CLOUDFLARE_API_TOKEN != ''
+    needs: [check-secrets, build]
+    if: (github.event.inputs.environment == 'all' || github.event.inputs.environment == 'cloudflare' || github.event.inputs.environment == null) && needs.check-secrets.outputs.cloudflare_configured == 'true'
     environment: production
     steps:
       - name: Checkout code

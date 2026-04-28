@@ -33,8 +33,12 @@ export default defineConfig(({ mode }) => ({
           name: 'copy-redirects',
           closeBundle() {
             try {
-              fs.copyFileSync('public/_redirects', 'dist/_redirects');
-              console.log('✓ _redirects copied to dist');
+              if (fs.existsSync('public/_redirects')) {
+                fs.copyFileSync('public/_redirects', 'dist/_redirects');
+                console.log('✓ _redirects copied to dist');
+              } else {
+                console.log('⚠️ public/_redirects not found, skipping copy');
+              }
             } catch (e) {
               console.error('Failed to copy _redirects:', e);
             }
