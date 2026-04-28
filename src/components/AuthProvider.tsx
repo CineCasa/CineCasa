@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { supabase, supabaseWithRetry } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 
@@ -166,25 +166,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
-  };
+  }, []);
 
   const isAdmin = profile?.is_admin || false;
   const plan = profile?.plan || "none";
 
+  // Memoizar valor do contexto para evitar re-renders desnecessários
+  const contextValue = useMemo(() => ({
+    session, 
+    user, 
+    profile, 
+    signOut, 
+    loading, 
+    isAdmin, 
+    plan,
+    isApproved,
+    approvalError 
+  }), [session, user, profile, signOut, loading, isAdmin, plan, isApproved, approvalError]);
+
   return (
-    <AuthContext.Provider value={{ 
-      session, 
-      user, 
-      profile, 
-      signOut, 
-      loading, 
-      isAdmin, 
-      plan,
-      isApproved,
-      approvalError 
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
