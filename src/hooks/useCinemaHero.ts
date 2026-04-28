@@ -75,32 +75,67 @@ export function useCinemaHero(): UseCinemaHeroReturn {
             .filter(m => m.tmdb_id)
             .slice(0, 20)
             .map(async (m: any) => {
-              const tmdbData = await fetchTmdbDetailsWithBackdrop(m.tmdb_id, 'movie');
-              const backdropPath = tmdbData?.backdrop_path;
-              
-              // Fallback hierarchy: TMDB backdrop -> DB backdrop -> DB banner -> poster
-              const dbBackdropPath = m.backdrop || m.banner;
-              const finalBackdropUrl = backdropPath 
-                ? tmdbImageUrl(backdropPath, 'original')
-                : dbBackdropPath 
-                  ? tmdbImageUrl(dbBackdropPath, 'original')
-                  : m.poster;
-              
-              return {
-                id: `cinema-${m.id}`,
-                tmdbId: m.tmdb_id,
-                title: m.titulo,
-                backdrop: finalBackdropUrl,
-                poster: m.poster ? tmdbImageUrl(m.poster, 'w500') : '',
-                year: parseInt(m.year) || 0,
-                rating: m.rating || 'N/A',
-                duration: tmdbData?.runtime ? `${Math.floor(tmdbData.runtime / 60)}h ${tmdbData.runtime % 60}min` : '',
-                description: m.description || tmdbData?.overview || '',
-                country: tmdbData?.origin_country?.[0] || tmdbData?.production_countries?.[0]?.iso_3166_1 || '',
-                contentRating: tmdbData?.content_rating || '',
-                genre: m.category ? m.category.split(',').map((g: string) => g.trim()) : 
-                       m.genero ? m.genero.split(',').map((g: string) => g.trim()) : [],
-              };
+              try {
+                const tmdbData = await fetchTmdbDetailsWithBackdrop(m.tmdb_id, 'movie');
+                const backdropPath = tmdbData?.backdrop_path;
+                
+                // DEBUG: Log do processo de imagem
+                console.log(`[useCinemaHero] Processando filme ${m.titulo}:`, {
+                  tmdb_id: m.tmdb_id,
+                  backdropPath,
+                  dbBackdrop: m.backdrop,
+                  dbBanner: m.banner,
+                  dbPoster: m.poster?.substring(0, 50)
+                });
+                
+                // Fallback hierarchy: TMDB backdrop -> DB backdrop -> DB banner -> poster
+                const dbBackdropPath = m.backdrop || m.banner;
+                let finalBackdropUrl = '';
+                
+                if (backdropPath) {
+                  finalBackdropUrl = tmdbImageUrl(backdropPath, 'original');
+                } else if (dbBackdropPath) {
+                  finalBackdropUrl = tmdbImageUrl(dbBackdropPath, 'original');
+                } else if (m.poster) {
+                  finalBackdropUrl = m.poster.startsWith('http') ? m.poster : tmdbImageUrl(m.poster, 'original');
+                }
+                
+                console.log(`[useCinemaHero] URL final backdrop: ${finalBackdropUrl.substring(0, 80)}...`);
+                
+                return {
+                  id: `cinema-${m.id}`,
+                  tmdbId: m.tmdb_id,
+                  title: m.titulo,
+                  backdrop: finalBackdropUrl,
+                  poster: m.poster ? (m.poster.startsWith('http') ? m.poster : tmdbImageUrl(m.poster, 'w500')) : '',
+                  year: parseInt(m.year) || 0,
+                  rating: m.rating || 'N/A',
+                  duration: tmdbData?.runtime ? `${Math.floor(tmdbData.runtime / 60)}h ${tmdbData.runtime % 60}min` : '',
+                  description: m.description || tmdbData?.overview || '',
+                  country: tmdbData?.origin_country?.[0] || tmdbData?.production_countries?.[0]?.iso_3166_1 || '',
+                  contentRating: tmdbData?.content_rating || '',
+                  genre: m.category ? m.category.split(',').map((g: string) => g.trim()) : 
+                         m.genero ? m.genero.split(',').map((g: string) => g.trim()) : [],
+                };
+              } catch (err) {
+                console.error(`[useCinemaHero] Erro ao processar filme ${m.titulo}:`, err);
+                // Retornar filme com dados mínimos em caso de erro
+                return {
+                  id: `cinema-${m.id}`,
+                  tmdbId: m.tmdb_id,
+                  title: m.titulo,
+                  backdrop: m.poster || '',
+                  poster: m.poster || '',
+                  year: parseInt(m.year) || 0,
+                  rating: m.rating || 'N/A',
+                  duration: '',
+                  description: m.description || '',
+                  country: '',
+                  contentRating: '',
+                  genre: m.category ? m.category.split(',').map((g: string) => g.trim()) : 
+                         m.genero ? m.genero.split(',').map((g: string) => g.trim()) : [],
+                };
+              }
             })
         );
 
