@@ -100,3 +100,43 @@ export function useProfilePhoto({ userId, profileId }: UseProfilePhotoOptions) {
         variant: 'destructive',
       });
       return null;
+    } finally {
+      setIsUploading(false);
+    }
+  }, [userId, profileId, toast]);
+
+  // Remover foto
+  const removePhoto = useCallback(async () => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('id', profileId || userId);
+
+      if (error) throw error;
+
+      setAvatarUrl(null);
+      toast({
+        title: 'Foto removida',
+        description: 'Sua foto de perfil foi removida',
+      });
+    } catch (error: any) {
+      console.error('❌ Erro ao remover foto:', error);
+      toast({
+        title: 'Erro',
+        description: error.message || 'Erro ao remover foto',
+        variant: 'destructive',
+      });
+    }
+  }, [userId, profileId, toast]);
+
+  return {
+    avatarUrl,
+    isUploading,
+    fetchAvatar,
+    uploadPhoto,
+    removePhoto
+  };
+}

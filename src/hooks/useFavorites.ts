@@ -38,3 +38,72 @@ export function useFavorites() {
       setFavorites(data || []);
     } catch (error) {
       console.error('Erro ao buscar favoritos:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Adicionar favorito
+  const addFavorite = useCallback(async (item: Omit<FavoriteItem, 'id' | 'user_id' | 'created_at'>) => {
+    if (!user) {
+      toast.error('Faça login para adicionar favoritos');
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .insert([{ ...item, user_id: user.id }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setFavorites(prev => [data, ...prev]);
+      toast.success('Adicionado aos favoritos!');
+    } catch (error) {
+      console.error('Erro ao adicionar favorito:', error);
+      toast.error('Erro ao adicionar favorito');
+    }
+  }, [user]);
+
+  // Remover favorito
+  const removeFavorite = useCallback(async (contentId: number) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('content_id', contentId);
+
+      if (error) throw error;
+      
+      setFavorites(prev => prev.filter(f => f.content_id !== contentId));
+      toast.success('Removido dos favoritos');
+    } catch (error) {
+      console.error('Erro ao remover favorito:', error);
+      toast.error('Erro ao remover favorito');
+    }
+  }, [user]);
+
+  // Verificar se é favorito
+  const isFavorite = useCallback((contentId: number) => {
+    return favorites.some(f => f.content_id === contentId);
+  }, [favorites]);
+
+  // Carregar favoritos ao montar
+  useEffect(() => {
+    fetchFavorites();
+  }, [fetchFavorites]);
+
+  return {
+    favorites,
+    loading,
+    addFavorite,
+    removeFavorite,
+    isFavorite,
+    refresh: fetchFavorites
+  };
+}

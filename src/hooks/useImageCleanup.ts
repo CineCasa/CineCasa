@@ -269,5 +269,18 @@ const useImageCleanup = () => {
       console.error('💥 [ImageCleanup] Erro na limpeza completa:', error);
       setStats(prev => ({
         ...prev,
-        errors: [...prev.errors, `Erro geral: ${error.message}`]
+        errors: [...prev.errors, `Erro geral: ${(error as Error).message}`]
       }));
+    } finally {
+      setIsScanning(false);
+    }
+  }, []);
+
+  return {
+    isScanning,
+    stats,
+    runFullCleanup
+  };
+};
+
+export default useImageCleanup;

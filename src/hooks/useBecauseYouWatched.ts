@@ -110,3 +110,19 @@ export function useBecauseYouWatched() {
     } catch (err) {
       console.error('[useBecauseYouWatched] Erro:', err);
       setError('Erro ao carregar recomendações');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBecauseYouWatched();
+  }, [fetchBecauseYouWatched]);
+
+  return {
+    recommendations,
+    loading,
+    error,
+    refresh: fetchBecauseYouWatched
+  };
+}

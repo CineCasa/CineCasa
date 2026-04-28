@@ -266,3 +266,71 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
       }
     } catch (err) {
       console.error('[ElitePlayer] ❌ Falha ao salvar progresso:', err);
+
+    }
+  }, [user, config.contentId, config.contentType, config.episodeId, config.seasonNumber, config.episodeNumber]);
+
+  // Carregar progresso salvo
+  const loadProgress = useCallback(async (): Promise<PlayerProgress | null> => {
+    if (!user || !config.contentId) return null;
+
+    try {
+      console.log('[ElitePlayer] 📂 Carregando progresso...');
+      
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('content_id', parseInt(config.contentId))
+        .eq('content_type', config.contentType === 'series' ? 'series' : 'movie')
+        .maybeSingle();
+
+      if (error) {
+        console.error('[ElitePlayer] ❌ Erro ao carregar progresso:', error);
+        return null;
+      }
+
+      if (data) {
+        const progress: PlayerProgress = {
+          contentId: config.contentId,
+          contentType: config.contentType,
+          currentTime: data.current_time || 0,
+          duration: data.duration || 0,
+          progress: data.progress || 0,
+          lastWatched: data.last_watched,
+          episodeId: data.episode_id?.toString(),
+          seasonNumber: data.season_number,
+          episodeNumber: data.episode_number
+        };
+        console.log('[ElitePlayer] ✅ Progresso carregado:', progress.currentTime, 's');
+        return progress;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[ElitePlayer] ❌ Falha ao carregar progresso:', err);
+      return null;
+    }
+  }, [user, config.contentId, config.contentType]);
+
+  // Atualizar estado do player
+  const updatePlayerState = useCallback((updates: Partial<ElitePlayerState>) => {
+    setState(prev => ({ ...prev, ...updates }));
+  }, []);
+
+  return {
+    // Estado
+    state,
+    updatePlayerState,
+    
+    // Ações
+    saveProgress,
+    loadProgress,
+    
+    // Config
+    config,
+    updateConfig: setConfig
+  };
+}
+
+export default useElitePlayer;
