@@ -237,8 +237,6 @@ export const useHeroisDaVidaReal = (): UseHeroisDaVidaRealReturn => {
     } catch (err) {
       console.error('[HeroisDaVidaReal] Erro ao buscar conteúdo:', err);
       setContent([]);
-    } finally {
-      setIsLoading(false);
     }
   }, [checkVisibility, fetchFallbackContent]);
 

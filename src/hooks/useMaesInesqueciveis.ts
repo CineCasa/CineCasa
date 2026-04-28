@@ -237,8 +237,6 @@ export const useMaesInesqueciveis = (): UseMaesInesqueciveisReturn => {
     } catch (err) {
       console.error('[MaesInesqueciveis] Erro ao buscar conteúdo:', err);
       setContent([]);
-    } finally {
-      setIsLoading(false);
     }
   }, [checkVisibility, fetchFallbackContent]);
 

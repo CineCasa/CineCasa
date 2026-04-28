@@ -203,8 +203,6 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
     } catch (err: any) {
       setError('Erro ao carregar recomendações');
       console.error('Error loading recomendacoes:', err);
-    } finally {
-      setIsLoading(false);
     }
   }, [userId, topGenres, viewingHistory]);
   
@@ -236,8 +234,6 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
       }
     } catch (err) {
       console.error('Error loading genericos:', err);
-    } finally {
-      setIsLoading(false);
     }
   };
 

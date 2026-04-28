@@ -50,8 +50,6 @@ export const useTop5Streamings = (): UseTop5StreamingsReturn => {
     } catch (err) {
       setError('Erro ao carregar Top 5 dos streamings');
       console.error('Error loading top 5:', err);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

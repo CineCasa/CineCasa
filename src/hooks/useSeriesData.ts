@@ -146,8 +146,6 @@ export function useSeriesData() {
     } catch (err) {
       console.error('Erro em useSeriesData:', err);
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

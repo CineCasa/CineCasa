@@ -121,8 +121,6 @@ export const usePoderiaSerMelhor = (userId?: string): UsePoderiaSerMelhorReturn 
       } else {
         setContent([]);
       }
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

@@ -23,7 +23,8 @@ export const useCineRiso = () => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('[CineRiso] Buscando conteúdo de comédia...');
@@ -104,13 +105,9 @@ export const useCineRiso = () => {
       console.log('[CineRiso] Séries:', finalSelection.filter(i => i.type === 'series').length);
 
       setContent(finalSelection);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[CineRiso] Erro:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

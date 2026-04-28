@@ -39,8 +39,6 @@ export const useServerIP = () => {
       } catch (error) {
         console.error('Erro ao detectar IP:', error);
         setServerIP('localhost:5173');
-      } finally {
-        setIsLoading(false);
       }
     };
 

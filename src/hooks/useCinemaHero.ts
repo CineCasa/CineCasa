@@ -124,8 +124,6 @@ export function useCinemaHero(): UseCinemaHeroReturn {
 
       } catch (error) {
         console.error('[useCinemaHero] Error:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 

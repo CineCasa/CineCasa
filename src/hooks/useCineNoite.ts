@@ -152,8 +152,6 @@ export const useCineNoite = (): UseCineNoiteReturn => {
     } catch (err) {
       console.error('[CineNoite] Erro ao buscar conteúdo:', err);
       setContent([]);
-    } finally {
-      setIsLoading(false);
     }
   }, [checkVisibility]);
 

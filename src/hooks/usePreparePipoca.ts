@@ -23,7 +23,8 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
   const isInitialized = useRef(false);
 
   const fetchSeries = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('🍿 [PreparePipoca] Buscando séries...');
@@ -90,13 +91,9 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
 
       console.log('✅ [PreparePipoca] Selecionadas:', result.length, result.map(s => s.title));
       setSeries(result);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('💥 [PreparePipoca] Erro fatal:', err);
       setSeries([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, []);
 

@@ -82,7 +82,6 @@ export const useRecommendedForYou = (userId?: string): UseRecommendedForYouRetur
           if (hoursSinceLastLoad < 1) {
             setRecommendations(JSON.parse(cached));
             setIsLoading(false);
-            clearTimeout(loadingTimeout);
             return;
           }
         }
@@ -156,9 +155,6 @@ export const useRecommendedForYou = (userId?: string): UseRecommendedForYouRetur
       console.error('Erro ao buscar recomendações:', err);
       setError('Não foi possível carregar as recomendações');
       setRecommendations([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [userId]);
 

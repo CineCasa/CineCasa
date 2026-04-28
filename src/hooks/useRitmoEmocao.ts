@@ -23,7 +23,8 @@ export const useRitmoEmocao = () => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('[RitmoEmocao] Buscando conteúdo da categoria musical...');
@@ -89,13 +90,9 @@ export const useRitmoEmocao = () => {
 
       setContent(selected.slice(0, 10));
       console.log('[RitmoEmocao] Selecionados:', selected.slice(0, 10).length, 'filmes');
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[RitmoEmocao] Erro:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

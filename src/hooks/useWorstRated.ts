@@ -31,7 +31,8 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async (forceRefresh = false) => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
@@ -111,7 +112,6 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
       localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
       
       console.log('[WorstRated] Selecionados:', content.length, 'filmes');
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[WorstRated] Erro ao buscar conteúdos:', err);
       setContent([]);
@@ -141,8 +141,6 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
       
       localStorage.setItem(WORST_RATED_CACHE_KEY, JSON.stringify(shuffledEmergency));
       localStorage.setItem(WORST_RATED_TIMESTAMP_KEY, Date.now().toString());
-    } finally {
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

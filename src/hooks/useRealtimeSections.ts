@@ -82,14 +82,3 @@ export const useRealtimeSections = () => {
     setIsUpdating(true);
     try {
       await refetch();
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  return {
-    sections,
-    isUpdating,
-    forceRefresh
-  };
-};

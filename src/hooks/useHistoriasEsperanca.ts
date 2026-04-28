@@ -23,7 +23,8 @@ export const useHistoriasEsperanca = () => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('[HistoriasEsperanca] Buscando conteúdo da categoria religioso...');
@@ -88,13 +89,9 @@ export const useHistoriasEsperanca = () => {
       console.log('[HistoriasEsperanca] Títulos:', selected.map(m => m.title).join(', '));
 
       setContent(selected);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[HistoriasEsperanca] Erro:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

@@ -23,7 +23,8 @@ export const useBaseadoEmFatosReais = () => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('[BaseadoEmFatosReais] Buscando conteúdo da categoria documentário...');
@@ -141,13 +142,9 @@ export const useBaseadoEmFatosReais = () => {
       console.log('[BaseadoEmFatosReais] Títulos:', selected.map(m => m.title).join(', '));
 
       setContent([...movies, ...series].slice(0, 10));
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[BaseadoEmFatosReais] Erro:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

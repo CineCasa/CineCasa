@@ -449,14 +449,3 @@ export function useAvatarPreview(customization: AvatarCustomization) {
       setPreviewUrl(url);
     } catch (error) {
       console.error('❌ Erro ao gerar preview:', error);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [customization]);
-
-  return {
-    previewUrl,
-    isGenerating,
-    generatePreview,
-  };
-}

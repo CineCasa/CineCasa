@@ -357,20 +357,3 @@ export function usePullToRefresh(
         refreshTimeout.current = setTimeout(async () => {
           try {
             await onRefresh();
-          } finally {
-            isPulling.current = false;
-            pullDistance.current = 0;
-          }
-        }, debounceTime);
-      }
-    },
-    preventDefault: true,
-  });
-
-  return {
-    elementRef,
-    isPulling: isPulling.current,
-    pullDistance: pullDistance.current,
-    canRefresh: pullDistance.current > threshold,
-  };
-}

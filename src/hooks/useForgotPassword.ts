@@ -55,8 +55,6 @@ export function useForgotPassword(): UseForgotPasswordReturn {
     } catch (err: any) {
       setError('Erro ao enviar email. Tente novamente.');
       setIsSuccess(false);
-    } finally {
-      setIsLoading(false);
     }
   }, [email]);
 
@@ -95,8 +93,6 @@ export function useForgotPassword(): UseForgotPasswordReturn {
       setError('Erro ao atualizar senha. Tente novamente.');
       setIsSuccess(false);
       return false;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

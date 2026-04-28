@@ -54,7 +54,8 @@ export const useOscarWinners = () => {
   const isInitialized = useRef(false);
 
   const fetchOscarWinners = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('[useOscarWinners] Buscando vencedores do Oscar 2000+...');
@@ -176,13 +177,9 @@ export const useOscarWinners = () => {
 
       setOscarWinners(uniqueWinners.slice(0, 10));
       console.log(`[useOscarWinners] Encontrados ${uniqueWinners.length} filmes premiados`);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[useOscarWinners] Erro:', err);
       setOscarWinners([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

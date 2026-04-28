@@ -100,8 +100,6 @@ export function useSeriesHero(): UseSeriesHeroReturn {
 
       } catch (error) {
         console.error('[useSeriesHero] Error:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 

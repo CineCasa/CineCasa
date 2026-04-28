@@ -172,8 +172,6 @@ export const useUserAnalytics = (userId?: string): UseUserAnalyticsReturn => {
       }
     } catch (err) {
       console.error('Error loading viewing history:', err);
-    } finally {
-      setIsLoading(false);
     }
   }, [userId, analyzeGenres]);
 

@@ -81,8 +81,6 @@ export function useNewContentNotifications() {
 
     } catch (error) {
       console.error('[NewContent] Erro ao buscar novos conteúdos:', error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

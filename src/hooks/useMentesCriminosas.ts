@@ -23,7 +23,8 @@ export const useMentesCriminosas = () => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('[MentesCriminosas] Buscando conteúdo de crime e policial...');
@@ -84,13 +85,9 @@ export const useMentesCriminosas = () => {
       // Selecionar apenas 5 filmes aleatórios
       setContent(shuffled.slice(0, 10));
       console.log('[MentesCriminosas] Selecionados:', shuffled.slice(0, 10).length, 'filmes');
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[MentesCriminosas] Erro:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

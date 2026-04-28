@@ -26,7 +26,8 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
 
   const fetchRomances = useCallback(async () => {
     // Não setar loading imediatamente - só mostrar se demorar mais de 500ms
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       console.log('[useRomances] Buscando filmes/séries de romance...');
@@ -123,13 +124,9 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
       console.log('[useRomances] Selecionados:', shuffled.length);
 
       setRomances(shuffled.slice(0, 10));
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[useRomances] Erro ao buscar romances:', err);
       setRomances([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, []);
 

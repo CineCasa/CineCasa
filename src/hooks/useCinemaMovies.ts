@@ -54,8 +54,6 @@ export function useCinemaMovies() {
       setCategorizedMovies(categorized);
     } catch (error) {
       console.error('Erro ao buscar filmes:', error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

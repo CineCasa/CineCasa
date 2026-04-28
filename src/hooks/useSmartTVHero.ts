@@ -159,8 +159,6 @@ export function useSmartTVHero(): UseSmartTVHeroReturn {
 
       } catch (error) {
         console.error('[useSmartTVHero] Error fetching content:', error);
-      } finally {
-        setIsLoading(false);
       }
     };
 

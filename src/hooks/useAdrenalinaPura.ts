@@ -93,8 +93,6 @@ export const useAdrenalinaPura = (): UseAdrenalinaPuraReturn => {
     } catch (err) {
       console.error('[AdrenalinaPura] Erro ao buscar conteúdo:', err);
       setContent([]);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 

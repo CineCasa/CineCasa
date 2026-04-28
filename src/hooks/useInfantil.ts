@@ -23,7 +23,8 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
   const isInitialized = useRef(false);
 
   const fetchInfantil = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
+    
     
     try {
       // Buscar filmes e séries da categoria infantil (limitado para performance)
@@ -66,13 +67,9 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
       // Limitar a 30 itens para performance
       const shuffled = allInfantil.sort(() => Math.random() - 0.5).slice(0, 30);
       setInfantil(shuffled);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('Erro ao buscar conteúdo infantil:', err);
       setInfantil([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

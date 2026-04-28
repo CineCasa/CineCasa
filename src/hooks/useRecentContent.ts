@@ -97,8 +97,6 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
     } catch (err: any) {
       console.error('[useRecentContent] Erro:', err);
       setError(err.message || 'Erro ao carregar conteúdo recente');
-    } finally {
-      setIsLoading(false);
     }
   }, [hoursBack]);
 
