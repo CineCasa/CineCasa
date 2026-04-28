@@ -50,9 +50,20 @@ export function CinemaHeroBanner() {
     return !!url && url.startsWith('http') && !url.includes('undefined') && !url.includes('null');
   };
 
+  // DEBUG: Log dos dados do banner
+  console.log('[CinemaHeroBanner] currentItem:', {
+    id: currentItem.id,
+    title: currentItem.title,
+    backdrop: currentItem.backdrop,
+    poster: currentItem.poster,
+    isBackdropValid: isValidImageUrl(currentItem.backdrop)
+  });
+
   const backdropUrl = isValidImageUrl(currentItem.backdrop) 
     ? currentItem.backdrop 
     : `https://placehold.co/1920x1080/1a1a2e/4a5568?text=${encodeURIComponent(currentItem.title?.charAt(0).toUpperCase() || 'C')}`;
+  
+  console.log('[CinemaHeroBanner] backdropUrl final:', backdropUrl);
   const countryFlag = getCountryFlag(currentItem.country);
   const ratingColor = getRatingColor(currentItem.contentRating);
 

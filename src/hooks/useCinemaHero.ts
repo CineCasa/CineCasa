@@ -51,6 +51,19 @@ export function useCinemaHero(): UseCinemaHeroReturn {
           return;
         }
 
+        // DEBUG: Log dos dados brutos do Supabase
+        console.log('[useCinemaHero] Raw movies count:', movies?.length || 0);
+        if (movies && movies.length > 0) {
+          console.log('[useCinemaHero] First movie raw:', {
+            id: movies[0].id,
+            titulo: movies[0].titulo,
+            poster: movies[0].poster,
+            backdrop: movies[0].backdrop,
+            banner: movies[0].banner,
+            tmdb_id: movies[0].tmdb_id
+          });
+        }
+
         // Enriquecer com backdrops do TMDB
         const moviesWithBackdrops = await Promise.all(
           (movies as any[] || [])
