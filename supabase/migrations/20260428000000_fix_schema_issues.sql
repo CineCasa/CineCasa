@@ -148,6 +148,8 @@ END;
 $$;
 
 -- 4. Criar função get_hybrid_recommendations (usada pelo useRecommendedForYou)
+DROP FUNCTION IF EXISTS get_hybrid_recommendations(uuid, integer);
+
 CREATE OR REPLACE FUNCTION get_hybrid_recommendations(
     p_user_id uuid,
     p_limit integer DEFAULT 10
