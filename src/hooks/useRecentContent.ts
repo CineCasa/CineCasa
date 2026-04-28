@@ -24,7 +24,7 @@ interface UseRecentContentReturn {
 
 export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn {
   const [content, setContent] = useState<RecentContentItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 

@@ -32,7 +32,7 @@ const LAST_START_KEY = 'smarttv_hero_last_start';
 export function useSmartTVHero(): UseSmartTVHeroReturn {
   const [items, setItems] = useState<SmartTVHeroItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [nextItem, setNextItem] = useState<SmartTVHeroItem | null>(null);
   const preloadedImages = useRef<Set<string>>(new Set());
 

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
  */
 export const useServerIP = () => {
   const [serverIP, setServerIP] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const detectIP = async () => {

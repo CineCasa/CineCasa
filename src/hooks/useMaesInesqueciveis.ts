@@ -41,7 +41,7 @@ const FALLBACK_TMDB_IDS = [
  */
 export const useMaesInesqueciveis = (): UseMaesInesqueciveisReturn => {
   const [content, setContent] = useState<MaesInesqueciveisContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const isInitialized = useRef(false);
 

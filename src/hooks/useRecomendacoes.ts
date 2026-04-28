@@ -30,7 +30,7 @@ const RECOMENDACOES_TIMESTAMP_KEY = 'cinecasa_recomendacoes_timestamp';
 
 export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
   const [recomendacoes, setRecomendacoes] = useState<Recomendacao[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isInitialized = useRef(false);
   

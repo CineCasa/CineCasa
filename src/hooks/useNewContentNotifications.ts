@@ -30,7 +30,7 @@ interface NewContentNotification {
 export function useNewContentNotifications() {
   const [newContent, setNewContent] = useState<NewContentItem[]>([]);
   const [notifications, setNotifications] = useState<NewContentNotification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { sendLocalNotification, permission } = useNotifications();
 
   // Buscar novos conteúdos das últimas 24 horas APENAS

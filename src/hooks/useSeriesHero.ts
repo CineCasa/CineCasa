@@ -30,7 +30,7 @@ interface UseSeriesHeroReturn {
 export function useSeriesHero(): UseSeriesHeroReturn {
   const [items, setItems] = useState<SeriesHeroItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [nextItem, setNextItem] = useState<SeriesHeroItem | null>(null);
   const preloadedImages = useRef<Set<string>>(new Set());
 

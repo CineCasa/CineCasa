@@ -52,7 +52,7 @@ export function useSeriesData() {
   const [series, setSeries] = useState<Serie[]>([]);
   const [seriesByGenre, setSeriesByGenre] = useState<SeriesByGenre>({});
   const [heroSerie, setHeroSerie] = useState<Serie | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAllSeries = useCallback(async () => {

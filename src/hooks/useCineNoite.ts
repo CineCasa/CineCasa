@@ -26,7 +26,7 @@ interface UseCineNoiteReturn {
  */
 export const useCineNoite = (): UseCineNoiteReturn => {
   const [content, setContent] = useState<CineNoiteContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const isInitialized = useRef(false);
 

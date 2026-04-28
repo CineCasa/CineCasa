@@ -25,7 +25,7 @@ const PODERIA_CACHE_TIMESTAMP_KEY = 'poderia_ser_melhor_timestamp';
 
 export const usePoderiaSerMelhor = (userId?: string): UsePoderiaSerMelhorReturn => {
   const [content, setContent] = useState<PoderiaContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const isInitialized = useRef(false);
 

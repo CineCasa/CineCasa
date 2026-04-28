@@ -104,7 +104,7 @@ export function useElitePlayer(config: ElitePlayerConfig): UseElitePlayerReturn 
   
   // States
   const [videoUrl, setVideoUrl] = useState<string>(config.url);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [savedProgress, setSavedProgress] = useState(0);

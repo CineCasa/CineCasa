@@ -30,7 +30,7 @@ const CINEMA_LAST_START_KEY = 'cinema_hero_last_start';
 export function useCinemaHero(): UseCinemaHeroReturn {
   const [items, setItems] = useState<CinemaHeroItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [nextItem, setNextItem] = useState<CinemaHeroItem | null>(null);
   const preloadedImages = useRef<Set<string>>(new Set());
 

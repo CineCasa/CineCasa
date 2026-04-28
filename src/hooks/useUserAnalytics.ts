@@ -31,7 +31,7 @@ const VIEWING_HISTORY_KEY = 'cinecasa_viewing_history';
 export const useUserAnalytics = (userId?: string): UseUserAnalyticsReturn => {
   const [topGenres, setTopGenres] = useState<GenreAnalytics[]>([]);
   const [viewingHistory, setViewingHistory] = useState<UserViewingHistory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Extrair gêneros/categorias do conteúdo
   const extractGenres = (content: any): string[] => {

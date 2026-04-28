@@ -38,7 +38,7 @@ export const useWatchPartyChat = ({
   userAvatar
 }: UseWatchPartyChatProps): UseWatchPartyChatReturn => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(true);

@@ -14,7 +14,7 @@ interface UseTop5StreamingsReturn {
 export const useTop5Streamings = (): UseTop5StreamingsReturn => {
   const [top5, setTop5] = useState<Top5Content[]>([]);
   const [missing, setMissing] = useState<MissingContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const isInitialized = useRef(false);

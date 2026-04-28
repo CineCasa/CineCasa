@@ -19,7 +19,7 @@ interface UseAdrenalinaPuraReturn {
 
 export const useAdrenalinaPura = (): UseAdrenalinaPuraReturn => {
   const [content, setContent] = useState<AdrenalinaPuraContent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {

@@ -9,7 +9,7 @@ interface CategorizedMovies {
 export function useCinemaMovies() {
   const [movies, setMovies] = useState<CinemaMovie[]>([]);
   const [categorizedMovies, setCategorizedMovies] = useState<CategorizedMovies>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchMovies = useCallback(async () => {
     try {
