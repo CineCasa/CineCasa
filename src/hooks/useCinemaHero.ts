@@ -34,9 +34,14 @@ export function useCinemaHero(): UseCinemaHeroReturn {
   const [nextItem, setNextItem] = useState<CinemaHeroItem | null>(null);
   const preloadedImages = useRef<Set<string>>(new Set());
 
-  // Buscar filmes aleatórios com backdrops do TMDB
+  // Buscar filmes aleatórios com backdrops do TMDB - com proteção contra loop
+  const isFetchingRef = useRef(false);
+  
   useEffect(() => {
+    if (isFetchingRef.current) return; // Evitar chamadas duplicadas
+    
     const fetchMovies = async () => {
+      isFetchingRef.current = true;
       setIsLoading(true);
       try {
         const { data: movies, error } = await supabase
@@ -145,6 +150,9 @@ export function useCinemaHero(): UseCinemaHeroReturn {
 
       } catch (error) {
         console.error('[useCinemaHero] Error:', error);
+      } finally {
+        setIsLoading(false);
+        isFetchingRef.current = false;
       }
     };
 

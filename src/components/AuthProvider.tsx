@@ -23,8 +23,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [isApproved, setIsApproved] = useState(false);
   const [approvalError, setApprovalError] = useState<string | null>(null);
+  const isFetchingProfile = useRef(false); // Proteção contra loop
 
   const fetchProfile = async (userId: string) => {
+    if (isFetchingProfile.current) return; // Evitar chamadas duplicadas
+    isFetchingProfile.current = true;
     console.log('[AuthProvider] Iniciando fetchProfile para userId:', userId);
     try {
       console.log('[AuthProvider] Buscando perfil no Supabase...');
@@ -85,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       console.log('[AuthProvider] fetchProfile finally - setLoading(false)');
       setLoading(false);
+      isFetchingProfile.current = false;
     }
   };
 

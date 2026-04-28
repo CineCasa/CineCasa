@@ -12,6 +12,8 @@ export const useSupabaseContent = () => {
 
   return useQuery({
     queryKey: ["supabase-content", plan],
+    retry: 2, // Limitar retries para evitar loop
+    retryDelay: 1000,
     queryFn: async () => {
       console.log('[useSupabaseContent] Query started, plan:', plan);
       
