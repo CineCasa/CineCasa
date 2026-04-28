@@ -14,6 +14,7 @@ export function useAutoUpdate(checkInterval = 30000) {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isCheckingRef = useRef(false);
+  const hasReloadedRef = useRef(false); // Flag para evitar loop de recarga
 
   const checkForUpdate = async () => {
     // DESABILITADO: Verificação via version.json removida
@@ -70,7 +71,9 @@ export function useAutoUpdate(checkInterval = 30000) {
     // Configurar Service Worker para atualização automática
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (hasReloadedRef.current) return; // Evitar recarga múltipla
         console.log('[AutoUpdate] Service Worker atualizado, recarregando...');
+        hasReloadedRef.current = true;
         window.location.reload();
       });
 
@@ -80,12 +83,14 @@ export function useAutoUpdate(checkInterval = 30000) {
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                if (hasReloadedRef.current) return; // Evitar recarga múltipla
                 console.log('[AutoUpdate] Novo Service Worker disponível');
                 setUpdateAvailable(true);
                 toast.info('Atualização disponível!', {
                   description: 'Aplicando atualização...',
                   duration: 2000,
                 });
+                hasReloadedRef.current = true;
                 setTimeout(() => window.location.reload(), 1500);
               }
             });
