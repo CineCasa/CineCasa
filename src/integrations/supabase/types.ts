@@ -685,6 +685,75 @@ export type Database = {
           }
         ]
       }
+      genre_weights: {
+        Row: {
+          id: number
+          genre: string
+          weight: number
+          retention_rate: number | null
+          abandonment_rate: number | null
+          avg_rating: number | null
+          total_interactions: number | null
+          last_calculated_at: string | null
+          created_at: string | null
+          updated_at: string | null
+          completion_rate: number | null
+          trending_score: number | null
+          growth_rate: number | null
+          engagement_score: number | null
+          avg_watch_time: number | null
+          metadata: Json | null
+          popularity_score: number | null
+          quality_score: number | null
+          total_ratings: number | null
+          avg_user_rating: number | null
+        }
+        Insert: {
+          id?: never
+          genre: string
+          weight?: number
+          retention_rate?: number | null
+          abandonment_rate?: number | null
+          avg_rating?: number | null
+          total_interactions?: number | null
+          last_calculated_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          completion_rate?: number | null
+          trending_score?: number | null
+          growth_rate?: number | null
+          engagement_score?: number | null
+          avg_watch_time?: number | null
+          metadata?: Json | null
+          popularity_score?: number | null
+          quality_score?: number | null
+          total_ratings?: number | null
+          avg_user_rating?: number | null
+        }
+        Update: {
+          id?: never
+          genre?: string
+          weight?: number
+          retention_rate?: number | null
+          abandonment_rate?: number | null
+          avg_rating?: number | null
+          total_interactions?: number | null
+          last_calculated_at?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          completion_rate?: number | null
+          trending_score?: number | null
+          growth_rate?: number | null
+          engagement_score?: number | null
+          avg_watch_time?: number | null
+          metadata?: Json | null
+          popularity_score?: number | null
+          quality_score?: number | null
+          total_ratings?: number | null
+          avg_user_rating?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -904,6 +973,60 @@ export type Database = {
       }
       count_user_ratings: {
         Args: {
+          p_user_id: string
+        }
+        Returns: number
+      }
+      calculate_genre_weight: {
+        Args: {
+          p_retention?: number
+          p_abandon?: number
+          p_rating?: number
+          p_interactions?: number
+          p_completion?: number
+          p_engagement?: number
+        }
+        Returns: number
+      }
+      update_genre_metrics: {
+        Args: {
+          p_genre: string
+        }
+        Returns: boolean
+      }
+      recalculate_all_genre_weights: {
+        Args: Record<string, never>
+        Returns: {
+          genre: string
+          weight: number
+        }[]
+      }
+      get_trending_genres: {
+        Args: {
+          p_limit?: number
+        }
+        Returns: {
+          genre: string
+          weight: number
+          trending_score: number
+          engagement_score: number
+        }[]
+      }
+      get_personalized_genres: {
+        Args: {
+          p_user_id: string
+          p_limit?: number
+        }
+        Returns: {
+          genre: string
+          user_score: number
+          global_weight: number
+          combined_score: number
+        }[]
+      }
+      calculate_content_recommendation_score: {
+        Args: {
+          p_content_id: string
           p_user_id: string
         }
         Returns: number
