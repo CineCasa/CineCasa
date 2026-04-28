@@ -56,16 +56,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const { setAuthReady } = useAppLoading();
   const location = useLocation();
+  
+  // Usar apenas user?.id para evitar loop quando objeto user muda referência
+  const userId = user?.id;
 
   // Notificar quando auth estiver pronto - não bloqueia UI
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && userId) {
       setAuthReady(true);
     }
-  }, [authLoading, user, setAuthReady]);
+  }, [authLoading, userId, setAuthReady]);
 
   // Só redireciona se não estiver autenticado - nunca mostra loading screen
-  if (!authLoading && !user) {
+  if (!authLoading && !userId) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -77,8 +80,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
+  // Usar user?.id para verificação estável
+  const userId = user?.id;
+  
   // Nunca bloquear UI com loading - sempre renderizar imediatamente
-  if (user) {
+  if (userId) {
     // Se já está logado, redireciona para home
     return <Navigate to="/" replace />;
   }
@@ -90,7 +96,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   const location = useLocation();
   const { user } = useAuth();
-  console.log('[AppRoutes] Rota atual:', location.pathname, 'Usuário logado:', !!user);
+  // Usar user?.id para verificação estável
+  const userId = user?.id;
+  console.log('[AppRoutes] Rota atual:', location.pathname, 'Usuário logado:', !!userId);
   
   return (
     <>

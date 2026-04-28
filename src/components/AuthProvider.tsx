@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { supabase, supabaseWithRetry } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
 
@@ -166,28 +166,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
-  const signOut = useCallback(async () => {
+  const signOut = async () => {
     await supabase.auth.signOut();
-  }, []);
+  };
 
   const isAdmin = profile?.is_admin || false;
   const plan = profile?.plan || "none";
-
-  // Memoizar valor do contexto para evitar re-renders desnecessários
-  const contextValue = useMemo(() => ({
-    session, 
-    user, 
-    profile, 
-    signOut, 
-    loading, 
-    isAdmin, 
-    plan,
-    isApproved,
-    approvalError 
-  }), [session, user, profile, signOut, loading, isAdmin, plan, isApproved, approvalError]);
+  
+  // Memoizar user para estabilizar referência - só muda quando ID mudar
+  // Isso previne loops em hooks que usam user como dependência
+  const stableUser = useMemo(() => {
+    if (!user) return null;
+    // Retornar o próprio user - o useMemo garante que só recalcula quando user.id mudar
+    return user;
+  }, [user?.id]);
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user: stableUser, 
+      profile, 
+      signOut, 
+      loading, 
+      isAdmin, 
+      plan,
+      isApproved,
+      approvalError 
+    }}>
       {children}
     </AuthContext.Provider>
   );

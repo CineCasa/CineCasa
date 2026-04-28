@@ -23,16 +23,18 @@ export function useFavorites() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Buscar favoritos do usuário
+  // Buscar favoritos do usuário - usar user?.id como dependência para evitar loop
+  const userId = user?.id;
+  
   const fetchFavorites = useCallback(async () => {
-    if (!user) return;
+    if (!userId) return;
     
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('favorites')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -42,11 +44,11 @@ export function useFavorites() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [userId]);
 
-  // Adicionar favorito
+  // Adicionar favorito - usar userId estável
   const addFavorite = useCallback(async (item: Omit<FavoriteItem, 'id' | 'user_id' | 'created_at'>) => {
-    if (!user) {
+    if (!userId) {
       toast.error('Faça login para adicionar favoritos');
       return;
     }
@@ -54,16 +56,16 @@ export function useFavorites() {
     try {
       const { data, error } = await supabase
         .from('favorites')
-        .insert([{ ...item, user_id: user.id }])
+        .insert([{ ...item, user_id: userId }])
         .select()
         .single();
 
       if (error) throw error;
       
       // Atualizar preferências de gênero (não bloqueante)
-      const genres = processGenres(item.genero || item.category);
+      const genres = processGenres(item.genero);
       if (genres.length > 0) {
-        updateGenrePreferences(user.id, genres, 'FAVORITE_ADD').catch(err => {
+        updateGenrePreferences(userId, genres, 'FAVORITE_ADD').catch(err => {
           console.error('[useFavorites] Erro ao atualizar preferências de gênero:', err);
         });
       }
@@ -74,11 +76,11 @@ export function useFavorites() {
       console.error('Erro ao adicionar favorito:', error);
       toast.error('Erro ao adicionar favorito');
     }
-  }, [user]);
+  }, [userId]);
 
-  // Remover favorito
+  // Remover favorito - usar userId estável
   const removeFavorite = useCallback(async (contentId: number) => {
-    if (!user) return;
+    if (!userId) return;
 
     try {
       // Buscar gêneros do favorito antes de remover
@@ -87,16 +89,16 @@ export function useFavorites() {
       const { error } = await supabase
         .from('favorites')
         .delete()
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('content_id', contentId);
 
       if (error) throw error;
       
       // Atualizar preferências de gênero (diminuir score) - não bloqueante
       if (favoriteToRemove) {
-        const genres = processGenres(favoriteToRemove.genero || favoriteToRemove.category);
+        const genres = processGenres(favoriteToRemove.genero);
         if (genres.length > 0) {
-          updateGenrePreferences(user.id, genres, 'FAVORITE_REMOVE').catch(err => {
+          updateGenrePreferences(userId, genres, 'FAVORITE_REMOVE').catch(err => {
             console.error('[useFavorites] Erro ao atualizar preferências de gênero:', err);
           });
         }
@@ -108,7 +110,7 @@ export function useFavorites() {
       console.error('Erro ao remover favorito:', error);
       toast.error('Erro ao remover favorito');
     }
-  }, [user, favorites]);
+  }, [userId, favorites]);
 
   // Verificar se é favorito
   const isFavorite = useCallback((contentId: number) => {
