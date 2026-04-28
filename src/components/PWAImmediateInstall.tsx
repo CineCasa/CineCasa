@@ -183,8 +183,7 @@ export const PWAImmediateInstall: React.FC<PWAImmediateInstallProps> = ({ classN
                     onError={(e) => {
                       // Fallback se o logo não carregar
                       const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.parentElement!.innerHTML = '<span class="text-white text-xl font-black italic">CC</span>';
+                      target.src = '/logo.png'; // Fallback para logo padrão
                     }}
                   />
                 </div>

@@ -155,7 +155,7 @@ const Navbar = () => {
                 className="w-7 h-7 sm:w-8 sm:h-8 object-contain flex-shrink-0"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
+                  target.src = '/logo.png'; // Fallback para logo padrão
                   const textElement = target.nextElementSibling as HTMLElement;
                   if (textElement) textElement.style.display = 'block';
                 }}

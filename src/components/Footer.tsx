@@ -38,7 +38,7 @@ const Footer = () => (
             className="w-6 h-6 object-contain"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
+              target.src = '/logo.png'; // Fallback para logo padrão
             }}
           />
           <p className="text-xs text-muted-foreground/60">
