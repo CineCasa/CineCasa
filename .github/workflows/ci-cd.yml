@@ -58,11 +58,12 @@ jobs:
         run: npm run test:e2e -- --ci
 
       - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
-          file: ./coverage/lcov.info
+          files: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
@@ -171,7 +172,7 @@ jobs:
           npm run test:e2e:staging
 
       - name: Notify deployment
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@v4
         if: always()
         with:
           status: ${{ job.status }}
@@ -300,7 +301,7 @@ jobs:
           echo "Scheduling cleanup of $OLD_COLOR environment in 30 minutes..."
 
       - name: Notify deployment
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@v4
         if: matrix.color == steps.active-env.outputs.deploy
         with:
           status: ${{ job.status }}
@@ -368,7 +369,7 @@ jobs:
           curl -f "$PRODUCTION_HEALTH_CHECK_URL" || exit 1
 
       - name: Notify rollback
-        uses: 8398a7/action-slack@v3
+        uses: 8398a7/action-slack@v4
         with:
           status: 'failure'
           channel: '#deployments'
