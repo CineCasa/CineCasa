@@ -1047,6 +1047,118 @@ export default function Admin() {
                   ))}
                 </div>
               </GlassCard>
+              
+              {/* Backup e Exportação */}
+              <GlassCard className="p-4">
+                <h3 className="font-semibold mb-4 flex items-center gap-2">
+                  <Database className="w-5 h-5 text-cyan-500" />
+                  Backup e Exportação
+                </h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-white/5 rounded-xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-medium">Exportar Dados do Catálogo</p>
+                        <p className="text-sm text-gray-400">Download de backup JSON com todos os filmes e séries</p>
+                      </div>
+                      <ActionButton 
+                        onClick={async () => {
+                          try {
+                            setLoading('backup');
+                            
+                            // Buscar dados do cinema
+                            const { data: cinemaData, error: cinemaError } = await supabase
+                              .from('cinema')
+                              .select('*');
+                            
+                            if (cinemaError) throw cinemaError;
+                            
+                            // Buscar dados das séries
+                            const { data: seriesData, error: seriesError } = await supabase
+                              .from('series')
+                              .select('*');
+                            
+                            if (seriesError) throw seriesError;
+                            
+                            // Criar objeto de backup
+                            const backupData = {
+                              export_date: new Date().toISOString(),
+                              version: '1.0',
+                              cinema: cinemaData || [],
+                              series: seriesData || [],
+                              stats: {
+                                total_movies: cinemaData?.length || 0,
+                                total_series: seriesData?.length || 0,
+                                total_content: (cinemaData?.length || 0) + (seriesData?.length || 0)
+                              }
+                            };
+                            
+                            // Converter para JSON e download
+                            const jsonStr = JSON.stringify(backupData, null, 2);
+                            const blob = new Blob([jsonStr], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `cinecasa_backup_${new Date().toISOString().split('T')[0]}.json`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            
+                            toast({ 
+                              title: 'Backup criado!', 
+                              description: `Exportados ${backupData.stats.total_content} itens do catálogo.` 
+                            });
+                          } catch (err: any) {
+                            console.error('Erro ao criar backup:', err);
+                            toast({ 
+                              title: 'Erro no backup', 
+                              description: err.message || 'Não foi possível exportar os dados.' 
+                            });
+                          } finally {
+                            setLoading(null);
+                          }
+                        }} 
+                        variant="secondary" 
+                        icon={Download}
+                        loading={loading === 'backup'}
+                      >
+                        Download JSON
+                      </ActionButton>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Último backup: {new Date().toLocaleDateString('pt-BR', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                  
+                  <div className="p-4 bg-white/5 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">Importar Dados</p>
+                        <p className="text-sm text-gray-400">Restaurar catálogo a partir de arquivo JSON</p>
+                      </div>
+                      <ActionButton 
+                        onClick={() => {
+                          toast({ 
+                            title: 'Funcionalidade em desenvolvimento', 
+                            description: 'A importação será disponibilizada em breve.' 
+                          });
+                        }} 
+                        variant="secondary" 
+                        icon={Upload}
+                      >
+                        Importar
+                      </ActionButton>
+                    </div>
+                  </div>
+                </div>
+              </GlassCard>
             </div>
           )}
         </div>
