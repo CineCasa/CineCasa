@@ -68,9 +68,9 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       // Buscar apenas filmes de lançamento (otimizado)
       const { data: allMovies, error } = await supabase
         .from('cinema')
-        .select('id, id_n, tmdb_id, titulo, capa, poster, year, ano, rating, category, genero, description, duration, banner, backdrop')
+        .select('id, id_n, tmdb_id, titulo, poster, year, ano, rating, category, genero, description, duration, banner, backdrop')
         .or('year.eq.2026,year.eq.2025,category.ilike.%Lançamento 2026%,category.ilike.%Lançamento 2025%,genero.ilike.%Lançamento 2026%,genero.ilike.%Lançamento 2025%')
-        .limit(50); // Limitar a 50 filmes de lançamento
+        .limit(50);
 
       if (error) throw error;
 
@@ -132,7 +132,8 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       console.log('📊 Filmes após remover coleções:', filteredMovies.length);
 
       filteredMovies.forEach((item: any) => {
-        const isImageValid = isValidImageUrl(item.capa) || isValidImageUrl(item.poster);
+        // Verificar se imagem é válida - usar coluna 'poster' para filmes
+        const isImageValid = isValidImageUrl(item.poster);
         
         // Verificar se é lançamento 2026 ou 2025 (aceita year como string ou número)
         const itemYear = String(item.year || item.ano || '');
@@ -170,13 +171,14 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
         id: item.id_n?.toString() || item.id?.toString() || `cinema-${Math.random()}`,
         tmdbId: item.tmdb_id,
         title: item.titulo,
-        poster: isValidImageUrl(item.capa) ? item.capa : (isValidImageUrl(item.poster) ? item.poster : `https://picsum.photos/seed/fallback-${item.id}/300/450.jpg`),
+        // Usar coluna 'poster' para filmes (conforme schema do banco)
+        poster: isValidImageUrl(item.poster) ? item.poster : `https://picsum.photos/seed/fallback-${item.id}/300/450.jpg`,
         backdrop: item.banner || item.backdrop,
         type: 'movie' as const,
         year: item.ano || item.year || category,
         rating: item.rating,
         category: category,
-        description: item.description || item.description,
+        description: item.description,
         duration: item.duration,
         userId: userId,
         lastLoaded: new Date().toISOString(),

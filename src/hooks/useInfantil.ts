@@ -36,7 +36,7 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           .limit(30),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, genero')
+          .select('id_n, tmdb_id, titulo, ano, genero, capa, banner')
           .or('genero.ilike.%infantil%')
           .limit(20)
       ]);
@@ -55,10 +55,11 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           id: item.id_n?.toString() || item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
+          // Usar 'capa' ou 'banner' para séries (conforme schema do banco)
+          poster: item.capa || item.banner || '/api/placeholder/300/450',
           type: 'series' as const,
           year: item.ano,
-          rating: 'N/A', // Séries não têm rating na tabela
+          rating: 'N/A',
         })),
       ];
 

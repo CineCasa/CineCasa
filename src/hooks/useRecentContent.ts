@@ -37,10 +37,10 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
       
       console.log(`[useRecentContent] Buscando conteúdo desde: ${cutoffDate}`);
 
-      // Buscar filmes das últimas 24h
+      // Buscar filmes das últimas 24h - usar 'poster' para filmes
       let { data: movies, error: moviesError } = await supabase
         .from('cinema')
-        .select('id, titulo, capa, year, category, genero, created_at, tmdb_id, rating')
+        .select('id, titulo, poster, year, category, genero, created_at, tmdb_id, rating')
         .gte('created_at', cutoffDate)
         .order('created_at', { ascending: false });
 
@@ -48,7 +48,7 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
         console.error('[useRecentContent] Erro ao buscar filmes:', moviesError);
       }
 
-      // Buscar séries das últimas 24h
+      // Buscar séries das últimas 24h - usar 'capa' para séries
       let { data: series, error: seriesError } = await supabase
         .from('series')
         .select('id_n, titulo, capa, ano, genero, tmdb_id, created_at')
@@ -64,7 +64,7 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
         id: item.id.toString(),
         title: item.titulo,
         type: 'movie' as const,
-        poster: item.capa,
+        poster: item.poster, // Usar 'poster' para filmes
         year: item.year,
         category: item.category,
         genero: item.genero,

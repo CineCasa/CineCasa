@@ -75,20 +75,21 @@ export const useSupabaseContent = () => {
         const genres = splitGenres(item.category || item.genero);
         const category = item.category || item.genero || "Ação"; // Categoria principal
         
-        // Verificar ambos capa e poster para compatibilidade
-        const imagePath = item.capa || item.poster;
+        // Coluna 'poster' é a correta para filmes no banco
+        const imagePath = item.poster;
         
         return {
           id: `cinema-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
           image: imagePath ? tmdbImageUrl(imagePath, "w500") : "",
-          backdrop: imagePath ? tmdbImageUrl(imagePath, "original") : "",
+          backdrop: item.backdrop || item.banner ? tmdbImageUrl(item.backdrop || item.banner, "original") : "",
+          poster: imagePath ? tmdbImageUrl(imagePath, "w500") : "",
           year: parseInt(item.year || "0"),
           rating: item.rating || "N/A",
           duration: "",
           genre: genres.length > 0 ? genres : ["Filme"],
-          category: category, // Usar categoria do Supabase
+          category: category,
           description: item.description || "",
           type: (item.type as any) || "movie",
           trailer: item.trailer,
@@ -98,19 +99,23 @@ export const useSupabaseContent = () => {
 
       const mapFilmesKids = (item: any): ContentItem => {
         const genres = splitGenres(item.genero || item.category);
-        const category = item.category || item.genero || "Animação"; // Categoria principal
+        const category = item.category || item.genero || "Animação";
+        
+        // Usar poster para filmes kids
+        const imagePath = item.poster;
         
         return {
           id: `kids-movie-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: item.poster ? tmdbImageUrl(item.poster, "w500") : "",
-          backdrop: item.poster ? tmdbImageUrl(item.poster, "original") : "",
+          image: imagePath ? tmdbImageUrl(imagePath, "w500") : "",
+          backdrop: item.backdrop || item.banner ? tmdbImageUrl(item.backdrop || item.banner, "original") : "",
+          poster: imagePath ? tmdbImageUrl(imagePath, "w500") : "",
           year: parseInt(item.year || "0"),
           rating: item.rating || "L",
           duration: "",
           genre: genres.length > 0 ? genres : ["Infantil"],
-          category: category, // Usar categoria do Supabase
+          category: category,
           description: item.description || "",
           type: "movie",
           url: item.url,
@@ -120,14 +125,20 @@ export const useSupabaseContent = () => {
 
       const mapSeries = (item: any): ContentItem => {
         const genres = splitGenres(item.genero);
-        const category = item.genero || "Drama"; // Usar genero como categoria
+        const category = item.genero || "Drama";
+        
+        // Para séries: usar 'capa' como poster e 'banner' como backdrop
+        const posterPath = item.capa;
+        const backdropPath = item.banner;
         
         return {
           id: `series-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: item.banner ? tmdbImageUrl(item.banner, "w500") : "",
-          backdrop: item.banner ? tmdbImageUrl(item.banner, "original") : "",
+          image: posterPath ? tmdbImageUrl(posterPath, "w500") : "",
+          backdrop: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
+          poster: posterPath ? tmdbImageUrl(posterPath, "w500") : "",
+          banner: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
           year: parseInt(item.ano || "0"),
           rating: "N/A",
           duration: "",
@@ -142,19 +153,25 @@ export const useSupabaseContent = () => {
 
       const mapSeriesKids = (item: any): ContentItem => {
         const genres = splitGenres(item.genero || item.category);
-        const category = item.category || item.genero || "Animação"; // Categoria principal
+        const category = item.category || item.genero || "Animação";
+        
+        // Para séries kids: usar 'capa' como poster e 'banner' como backdrop
+        const posterPath = item.capa;
+        const backdropPath = item.banner;
         
         return {
           id: `kids-series-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: item.banner ? tmdbImageUrl(item.banner, "w500") : "",
-          backdrop: item.banner ? tmdbImageUrl(item.banner, "original") : "",
+          image: posterPath ? tmdbImageUrl(posterPath, "w500") : "",
+          backdrop: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
+          poster: posterPath ? tmdbImageUrl(posterPath, "w500") : "",
+          banner: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
           year: parseInt(item.year || "0"),
           rating: item.rating || "L",
           duration: "",
           genre: genres.length > 0 ? genres : ["Infantil"],
-          category: category, // Usar categoria do Supabase
+          category: category,
           description: item.description || "",
           type: "series",
           identificadorArchive: item.identificador_archive,

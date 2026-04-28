@@ -60,17 +60,21 @@ export function useSmartTVHero(): UseSmartTVHeroReturn {
         const moviesWithBackdrops = await Promise.all(
           moviesRaw
             .filter(m => m.tmdb_id)
-            .slice(0, 20) // Limitar para não sobrecarregar a API
+            .slice(0, 20)
             .map(async (m: any) => {
               const tmdbData = await fetchTmdbDetailsWithBackdrop(m.tmdb_id, 'movie');
               const backdropPath = tmdbData?.backdrop_path;
+              
+              // Filmes usam 'poster' conforme schema do banco
+              const posterPath = m.poster;
+              const backdropDbPath = m.backdrop || m.banner;
               
               return {
                 id: `movie-${m.id}`,
                 tmdbId: m.tmdb_id,
                 title: m.titulo,
-                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : (m.capa || m.poster),
-                poster: m.capa || m.poster,
+                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : (backdropDbPath ? tmdbImageUrl(backdropDbPath, 'original') : ''),
+                poster: posterPath ? tmdbImageUrl(posterPath, 'w500') : '',
                 year: parseInt(m.year) || 0,
                 rating: m.rating || 'N/A',
                 description: m.description || '',
