@@ -64,11 +64,8 @@ export const NotificationsPage: React.FC = () => {
     return diffInHours < 24;
   };
 
-  // Filtrar conteúdo: filmes apenas últimas 24h, séries dos últimos 50 cadastrados
+  // Filtrar conteúdo: APENAS últimas 24h (tanto filmes quanto séries)
   const recentContent = content.filter(item => {
-    if (item.type === 'series') {
-      return true;
-    }
     return isWithin24Hours(item.created_at);
   });
 

@@ -46,9 +46,14 @@ export function useNewContentNotifications() {
         .gte('created_at', twentyFourHoursAgo)
         .order('created_at', { ascending: false });
 
-      // NÃO buscar séries - a tabela não tem created_at para filtrar corretamente
-      // Séries só aparecerão quando a tabela tiver created_at
-      const newSeries: any[] = [];
+      // Buscar novas séries das últimas 24h APENAS
+      const { data: newSeries, error: seriesError } = await supabase
+        .from('series')
+        .select('id_n, titulo, banner, ano, created_at, tmdb_id')
+        .gte('created_at', twentyFourHoursAgo)
+        .order('created_at', { ascending: false });
+
+      if (seriesError) console.error('[NewContent] Erro ao buscar séries:', seriesError);
 
       if (moviesError) console.error('[NewContent] Erro ao buscar filmes:', moviesError);
 
@@ -67,9 +72,9 @@ export function useNewContentNotifications() {
           id: series.id_n?.toString(),
           title: series.titulo,
           type: 'series' as const,
-          poster: '/api/placeholder/300/450', // Fallback para poster (séries não têm poster)
+          poster: series.banner || '/api/placeholder/300/450',
           year: series.ano,
-          created_at: new Date().toISOString(), // Data atual como fallback
+          created_at: series.created_at,
           tmdb_id: series.tmdb_id,
         })),
       ];
