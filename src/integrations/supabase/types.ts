@@ -754,6 +754,138 @@ export type Database = {
         }
         Relationships: []
       }
+      generos: {
+        Row: {
+          id: string
+          nome: string
+          slug: string | null
+          description: string | null
+          image_url: string | null
+          banner_url: string | null
+          display_order: number | null
+          popularity_score: number | null
+          is_active: boolean | null
+          metadata: Json | null
+          created_at: string | null
+          updated_at: string | null
+          tmdb_id: number | null
+          content_count: number | null
+          avg_rating: number | null
+        }
+        Insert: {
+          id: string
+          nome: string
+          slug?: string | null
+          description?: string | null
+          image_url?: string | null
+          banner_url?: string | null
+          display_order?: number | null
+          popularity_score?: number | null
+          is_active?: boolean | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+          tmdb_id?: number | null
+          content_count?: number | null
+          avg_rating?: number | null
+        }
+        Update: {
+          id?: string
+          nome?: string
+          slug?: string | null
+          description?: string | null
+          image_url?: string | null
+          banner_url?: string | null
+          display_order?: number | null
+          popularity_score?: number | null
+          is_active?: boolean | null
+          metadata?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+          tmdb_id?: number | null
+          content_count?: number | null
+          avg_rating?: number | null
+        }
+        Relationships: []
+      }
+      cinema_genres: {
+        Row: {
+          id: number
+          cinema_id: number
+          genre_id: string
+          is_primary: boolean | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: never
+          cinema_id: number
+          genre_id: string
+          is_primary?: boolean | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: never
+          cinema_id?: number
+          genre_id?: string
+          is_primary?: boolean | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cinema_genres_cinema_id_fkey"
+            columns: ["cinema_id"]
+            isOneToOne: false
+            referencedRelation: "cinema"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cinema_genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "generos"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      series_genres: {
+        Row: {
+          id: number
+          series_id: number
+          genre_id: string
+          is_primary: boolean | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: never
+          series_id: number
+          genre_id: string
+          is_primary?: boolean | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: never
+          series_id?: number
+          genre_id?: string
+          is_primary?: boolean | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_genres_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id_n"]
+          },
+          {
+            foreignKeyName: "series_genres_genre_id_fkey"
+            columns: ["genre_id"]
+            isOneToOne: false
+            referencedRelation: "generos"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1030,6 +1162,56 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      get_all_genres: {
+        Args: {
+          p_limit?: number
+        }
+        Returns: {
+          id: string
+          nome: string
+          slug: string
+          description: string
+          image_url: string
+          popularity_score: number
+          content_count: number
+        }[]
+      }
+      get_genre_by_slug: {
+        Args: {
+          p_slug: string
+        }
+        Returns: {
+          id: string
+          nome: string
+          slug: string
+          description: string
+          image_url: string
+          banner_url: string
+          popularity_score: number
+          content_count: number
+          avg_rating: number
+        }[]
+      }
+      get_trending_generos: {
+        Args: {
+          p_limit?: number
+        }
+        Returns: {
+          id: string
+          nome: string
+          slug: string
+          popularity_score: number
+          content_count: number
+        }[]
+      }
+      sync_genre: {
+        Args: {
+          p_id: string
+          p_nome: string
+          p_tmdb_id?: number
+        }
+        Returns: string
       }
     }
     Enums: {
