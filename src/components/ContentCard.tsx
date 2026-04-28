@@ -218,5 +218,6 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
     </div>
   );
 };
+}
 
 export default ContentCard;

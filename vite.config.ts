@@ -31,9 +31,13 @@ export default defineConfig(({ mode }) => ({
       plugins: [
         {
           name: 'copy-redirects',
-          closeBundle() {
+          writeBundle() {
             try {
               if (fs.existsSync('public/_redirects')) {
+                // Ensure dist directory exists
+                if (!fs.existsSync('dist')) {
+                  fs.mkdirSync('dist', { recursive: true });
+                }
                 fs.copyFileSync('public/_redirects', 'dist/_redirects');
                 console.log('✓ _redirects copied to dist');
               } else {
@@ -41,6 +45,7 @@ export default defineConfig(({ mode }) => ({
               }
             } catch (e) {
               console.error('Failed to copy _redirects:', e);
+              // Don't throw to avoid breaking the build
             }
           }
         }
