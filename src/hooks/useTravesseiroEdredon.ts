@@ -23,7 +23,7 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
     
     try {
       console.log('[TravesseiroEdredon] Buscando conteúdo relaxante...');
@@ -86,14 +86,9 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
       // Limitar a 20 itens para performance
       const shuffled = uniqueContent.sort(() => Math.random() - 0.5).slice(0, 20);
       setContent(shuffled);
-      
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[TravesseiroEdredon] Erro:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [setIsLoading]);
 

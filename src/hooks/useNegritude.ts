@@ -24,7 +24,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
   const isInitialized = useRef(false);
 
   const fetchNegritude = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
     
     try {
       // Busca otimizada de itens de negritude
@@ -89,13 +89,9 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
 
       const shuffled = shuffleArray(uniqueNegritude);
       setNegritude(shuffled);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('Erro ao buscar negritude:', err);
       setNegritude([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, []);
 

@@ -34,8 +34,7 @@ export const useWatchlistSection = (userId?: string): UseWatchlistSectionReturn 
       return;
     }
 
-    // Não setar loading imediatamente - só mostrar se demorar mais de 300ms
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 300);
+    // Carregar em background sem mostrar loading
     
     try {
       console.log('[useWatchlistSection] Buscando watchlist para usuário:', userId);
@@ -69,14 +68,10 @@ export const useWatchlistSection = (userId?: string): UseWatchlistSectionReturn 
 
       setWatchlistItems(mappedItems);
       setError(null);
-      clearTimeout(loadingTimeout);
     } catch (err: any) {
       console.error('[useWatchlistSection] Erro ao buscar watchlist:', err);
       setError('Erro ao carregar lista "Ver depois"');
       setWatchlistItems([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [userId]);
 

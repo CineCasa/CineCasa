@@ -167,7 +167,7 @@ export const useContinueWatching = () => {
       return;
     }
 
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 300);
+    // Carregar em background sem mostrar loading
     
     try {
       console.log('[useContinueWatching] Buscando via RPC...');
@@ -180,9 +180,6 @@ export const useContinueWatching = () => {
     } catch (err) {
       console.error('[useContinueWatching] Erro:', err);
       setItems([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, [userId, fetchContentDetails]);
 

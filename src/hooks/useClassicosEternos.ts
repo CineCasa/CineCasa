@@ -23,7 +23,7 @@ export const useClassicosEternos = () => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
     
     try {
       console.log('[ClassicosEternos] Buscando conteúdo das categorias Clássicos e Faroeste...');
@@ -86,15 +86,11 @@ export const useClassicosEternos = () => {
       console.log('[ClassicosEternos] Total:', limited.length, 'filmes');
 
       setContent(limited);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[ClassicosEternos] Erro ao buscar conteúdo:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
-  }, [setIsLoading]);
+  }, []);
 
   const refresh = useCallback(async () => {
     await fetchContent();

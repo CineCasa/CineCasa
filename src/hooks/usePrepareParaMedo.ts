@@ -23,7 +23,7 @@ export const usePrepareParaMedo = () => {
   const isInitialized = useRef(false);
 
   const fetchContent = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
     
     try {
       console.log('[PrepareParaMedo] Buscando conteúdo da categoria terror...');
@@ -84,15 +84,11 @@ export const usePrepareParaMedo = () => {
       console.log('[PrepareParaMedo] Títulos:', shuffled.map(m => m.title).join(', '));
 
       setContent(shuffled.slice(0, 15));
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[PrepareParaMedo] Erro:', err);
       setContent([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
-  }, [setIsLoading]);
+  }, []);
 
   const refresh = useCallback(async () => {
     await fetchContent();

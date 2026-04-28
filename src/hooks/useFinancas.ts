@@ -24,7 +24,7 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
   const isInitialized = useRef(false);
 
   const fetchFinancas = useCallback(async () => {
-    const loadingTimeout = setTimeout(() => setIsLoading(true), 500);
+    // Carregar em background sem mostrar loading
     
     try {
       console.log('[useFinancas] Buscando filmes de finanças...');
@@ -78,13 +78,9 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
       console.log('[useFinancas] Total:', shuffled.length);
 
       setFinancas(shuffled);
-      clearTimeout(loadingTimeout);
     } catch (err) {
       console.error('[useFinancas] Erro ao buscar finanças:', err);
       setFinancas([]);
-    } finally {
-      clearTimeout(loadingTimeout);
-      setIsLoading(false);
     }
   }, []);
 
