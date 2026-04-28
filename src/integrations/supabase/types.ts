@@ -1213,6 +1213,60 @@ export type Database = {
         }
         Returns: string
       }
+      upsert_user_progress: {
+        Args: {
+          p_user_id: string
+          p_content_id: number
+          p_content_type: string
+          p_current_time?: number
+          p_duration?: number
+          p_progress?: number
+          p_episode_id?: number
+          p_season_number?: number
+          p_episode_number?: number
+        }
+        Returns: {
+          success: boolean
+          action: string
+          id: string
+          progress: number
+        }
+      }
+      get_continue_watching: {
+        Args: {
+          p_user_id: string
+          p_limit?: number
+        }
+        Returns: {
+          id: string
+          content_id: number
+          content_type: string
+          current_time: number
+          duration: number
+          progress: number
+          episode_id: number
+          season_number: number
+          episode_number: number
+          last_watched: string
+          updated_at: string
+          priority_score: number
+        }[]
+      }
+      remove_user_progress: {
+        Args: {
+          p_user_id: string
+          p_content_id: number
+          p_content_type: string
+          p_episode_id?: number
+        }
+        Returns: boolean
+      }
+      clear_user_progress: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

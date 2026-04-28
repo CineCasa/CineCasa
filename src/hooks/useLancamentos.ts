@@ -65,12 +65,14 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
     try {
       setError(null);
 
-      // Buscar apenas filmes de lançamento (otimizado)
+      // Buscar filmes de lançamento (2025-2026) com poster válido
       const { data: allMovies, error } = await supabase
         .from('cinema')
         .select('id, id_n, tmdb_id, titulo, poster, year, ano, rating, category, genero, description, duration, banner, backdrop')
-        .or('year.eq.2026,year.eq.2025,category.ilike.%Lançamento 2026%,category.ilike.%Lançamento 2025%,genero.ilike.%Lançamento 2026%,genero.ilike.%Lançamento 2025%')
-        .limit(50);
+        .or('year.eq.2026,year.eq.2025,year.eq.2024,ano.eq.2026,ano.eq.2025,ano.eq.2024,category.ilike.%Lançamento%,genero.ilike.%Lançamento%')
+        .not('poster', 'is', null)
+        .order('year', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
 
