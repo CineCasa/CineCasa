@@ -2,8 +2,7 @@
   "version": 2,
   "name": "cinecasa",
   "framework": "vite",
-  "cleanInstallCommand": "rm -rf node_modules package-lock.json && npm install --legacy-peer-deps",
-  "installCommand": "npm install --legacy-peer-deps",
+  "installCommand": "rm -rf node_modules && npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "headers": [
