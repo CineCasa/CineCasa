@@ -174,7 +174,7 @@ jobs:
           npm run test:e2e:staging
 
       - name: Notify deployment
-        uses: 8398a7/action-slack@v4
+        uses: 8398a7/action-slack@v3
         if: always()
         with:
           status: ${{ job.status }}
@@ -303,7 +303,7 @@ jobs:
           echo "Scheduling cleanup of $OLD_COLOR environment in 30 minutes..."
 
       - name: Notify deployment
-        uses: 8398a7/action-slack@v4
+        uses: 8398a7/action-slack@v3
         if: matrix.color == steps.active-env.outputs.deploy
         with:
           status: ${{ job.status }}
@@ -371,7 +371,7 @@ jobs:
           curl -f "$PRODUCTION_HEALTH_CHECK_URL" || exit 1
 
       - name: Notify rollback
-        uses: 8398a7/action-slack@v4
+        uses: 8398a7/action-slack@v3
         with:
           status: 'failure'
           channel: '#deployments'
