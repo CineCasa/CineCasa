@@ -365,7 +365,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       {/* Buffering Spinner */}
       {isBuffering && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-12 h-12 border-4 border-white/20 border-t-red-600 rounded-full animate-spin" />
+          <div className="w-12 h-12 border-4 border-white/20 border-t-[#00E5FF] rounded-full animate-spin" />
         </div>
       )}
 
@@ -392,7 +392,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
           <button
             onClick={togglePlay}
-            className="pointer-events-auto w-20 h-20 bg-red-600/90 hover:bg-red-600 rounded-full flex items-center justify-center transition-transform hover:scale-110 shadow-2xl"
+            className="pointer-events-auto w-20 h-20 bg-[#00E5FF]/90 hover:bg-[#00E5FF] rounded-full flex items-center justify-center transition-transform hover:scale-110 shadow-2xl"
           >
             <Play size={40} className="text-white ml-1" fill="white" />
           </button>
@@ -424,14 +424,14 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
           <div className="absolute inset-0 bg-white/20 rounded-full overflow-hidden">
             {/* Progress Fill */}
             <div 
-              className="h-full bg-red-600 rounded-full transition-all"
+              className="h-full bg-[#00E5FF] rounded-full transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
           
           {/* Draggable Thumb (visible on hover) */}
           <div 
-            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-[#00E5FF] rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
             style={{ left: `calc(${progressPercent}% - 8px)` }}
           />
         </div>
@@ -541,7 +541,7 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                       key={speed}
                       onClick={() => setSpeed(speed)}
                       className={`w-full text-left px-3 py-2 text-sm rounded transition ${
-                        playbackRate === speed ? 'bg-red-600 text-white' : 'text-white hover:bg-white/10'
+                        playbackRate === speed ? 'bg-[#00E5FF] text-black' : 'text-white hover:bg-white/10'
                       }`}
                     >
                       {speed}x
