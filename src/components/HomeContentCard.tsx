@@ -53,7 +53,7 @@ const HomeContentCard: React.FC<HomeContentCardProps> = ({
       <div className="relative w-[200px] md:w-[240px] overflow-hidden rounded-lg">
         {/* Imagem da capa */}
         <img
-          src={content.image}
+          src={content.image || content.poster || ''}
           alt={content.title}
           className="w-full h-[300px] md:h-[360px] object-cover cursor-pointer"
           onError={(e) => {
