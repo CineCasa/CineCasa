@@ -353,7 +353,7 @@ const MovieDetails: React.FC = () => {
               >
                 <button
                   onClick={handlePlayMovie}
-                  className="col-span-2 flex items-center justify-center gap-2 bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00A8E1]/30"
+                  className="col-span-2 flex items-center justify-center gap-2 bg-[#00A8E1] hover:bg-[#0095C8] text-white font-bold py-3 px-6 rounded-[20px] transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#00A8E1]/30"
                 >
                   <Play size={20} fill="currentColor" />
                   <span>Assistir</span>
@@ -361,7 +361,7 @@ const MovieDetails: React.FC = () => {
                 
                 <button
                   onClick={handleToggleFavorite}
-                  className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
+                  className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-[20px] transition-all duration-300"
                   title={movie && isFavorite(movie.id, 'movie') ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                 >
                   {movie && isFavorite(movie.id, 'movie') ? (
@@ -373,7 +373,7 @@ const MovieDetails: React.FC = () => {
 
                 <button
                   onClick={handlePlayTrailer}
-                  className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#cc0000] text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#FF0000]/30"
+                  className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#cc0000] text-white font-medium py-3 px-4 rounded-[20px] transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-[#FF0000]/30"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
@@ -381,7 +381,7 @@ const MovieDetails: React.FC = () => {
                   <span>Trailer</span>
                 </button>
 
-                <button className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300">
+                <button className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-cyan-500/30 hover:bg-white/20 hover:border-cyan-400/50 text-white font-medium py-3 px-4 rounded-[20px] transition-all duration-300">
                   <Share2 size={18} className="text-cyan-400" />
                   <span>Compartilhar</span>
                 </button>
