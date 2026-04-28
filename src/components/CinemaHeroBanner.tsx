@@ -70,6 +70,10 @@ export function CinemaHeroBanner() {
             initial={{ scale: 1 }}
             animate={{ scale: 1.05 }}
             transition={{ duration: 7, ease: 'linear' }}
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              img.src = `https://placehold.co/1920x1080/1a1a2e/4a5568?text=${encodeURIComponent(currentItem.title?.charAt(0).toUpperCase() || 'C')}`;
+            }}
           />
         </motion.div>
       </AnimatePresence>

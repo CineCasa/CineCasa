@@ -124,6 +124,10 @@ export function HeroBannerTV() {
                 imageRendering: 'high-quality',
                 WebkitImageRendering: 'crisp-edges'
               }}
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.src = `https://placehold.co/1920x1080/1a1a2e/4a5568?text=${encodeURIComponent(currentItem.title?.charAt(0).toUpperCase() || 'C')}`;
+              }}
             />
           </div>
         </motion.div>
