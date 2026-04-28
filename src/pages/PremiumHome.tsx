@@ -426,6 +426,22 @@ const PremiumHome: React.FC = () => {
   const { content: prepareParaMedoContent, isLoading: isLoadingPrepareParaMedo } = usePrepareParaMedo();
   const { watchlistItems, isLoading: isLoadingWatchlist, count: watchlistCount } = useWatchlistSection(user?.id);
 
+  // Verificar visibilidade de seções agendadas (evitar flickering)
+  const now = new Date();
+  const currentMonth = now.getMonth(); // 0-11
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  const currentTime = currentHour * 60 + currentMinute; // minutos desde meia-noite
+  
+  // Cine Noite: 23:58 - 05:59
+  const isCineNoiteVisible = currentTime >= (23 * 60 + 58) || currentTime <= (5 * 60 + 59);
+  
+  // Mães Inesquecíveis: mês de maio (4)
+  const isMaesInesqueciveisVisible = currentMonth === 4;
+  
+  // Heróis da Vida Real: mês de agosto (7)
+  const isHeroisDaVidaRealVisible = currentMonth === 7;
+
   // Sistema para evitar duplicatas apenas DENTRO de cada seção (não entre seções)
   const filterUniqueItems = (items: any[], limit: number = 5) => {
     const usedIds = new Set<string>();
@@ -507,10 +523,10 @@ const PremiumHome: React.FC = () => {
       ) : null}
 
       {/* HERÓIS DA VIDA REAL - Seção especial Dia dos Pais (mês de agosto) */}
-      <HeroisDaVidaRealSection onCardClick={handleCardClick} />
+      {isHeroisDaVidaRealVisible && <HeroisDaVidaRealSection onCardClick={handleCardClick} />}
 
       {/* MÃES INESQUECÍVEIS - Seção especial Dia das Mães (mês de maio) */}
-      <MaesInesqueciveisSection onCardClick={handleCardClick} />
+      {isMaesInesqueciveisVisible && <MaesInesqueciveisSection onCardClick={handleCardClick} />}
 
       {/* LANÇAMENTOS E NOVIDADES - Seção principal, sempre visível */}
       <div className="relative z-30 my-6">
@@ -877,7 +893,7 @@ const PremiumHome: React.FC = () => {
         />
 
         {/* Cine Noite - Seção 18+ (23:58 - 05:59) - ÚLTIMA SEÇÃO */}
-        <CineNoiteSection onCardClick={handleCardClick} />
+        {isCineNoiteVisible && <CineNoiteSection onCardClick={handleCardClick} />}
       </div>
     </div>
   );
