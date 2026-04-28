@@ -13,7 +13,7 @@ import MobileBottomNav from "./components/MobileBottomNav";
 import PremiumNavbar from "./components/PremiumNavbar";
 import ScrollToTop from "./components/ScrollToTop";
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
-import VideoJSPlayer from "./components/VideoJSPlayer";
+import YouTubePlayer from "./components/YouTubePlayer";
 import PremiumHome from "./pages/PremiumHome";
 import Series from "./pages/Series";
 import FilmesPorCategoria from "./pages/FilmesPorCategoria";
@@ -143,7 +143,7 @@ const PlayerContainer = () => {
   if (!isPlayerOpen || !currentItem) return null;
   
   return (
-    <VideoJSPlayer
+    <YouTubePlayer
       url={currentItem.videoUrl || ''}
       title={currentItem.title}
       poster={currentItem.poster}

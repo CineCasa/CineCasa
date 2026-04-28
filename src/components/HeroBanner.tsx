@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { fetchTmdbDetails, getTmdbTrailerUrl, tmdbImageUrl } from "@/services/tmdb";
-import VideoJSPlayer from "./VideoJSPlayer";
+import YouTubePlayer from "./YouTubePlayer";
 import { useAuth } from "./AuthProvider";
 
 interface HeroBannerProps {
@@ -341,12 +341,12 @@ const HeroBanner = ({ filterCategory }: HeroBannerProps) => {
 
 
       {isPlayerOpen && hero && (
-        <VideoJSPlayer 
+        <YouTubePlayer 
           url={(() => {
             const videoUrl = hero.type === "series" 
-              ? (hero.identificadorArchive?.startsWith("http") ? hero.identificadorArchive : hero.identificadorArchive ? `https://archive.org/embed/${hero.identificadorArchive}` : null)
-              : (hero.url || trailerUrl || null);
-            console.log('[HeroBanner] VideoJSPlayer URL:', videoUrl);
+              ? (hero.identificadorArchive?.startsWith("http") ? hero.identificadorArchive : hero.identificadorArchive ? `https://archive.org/embed/${hero.identificadorArchive}` : '')
+              : (hero.url || trailerUrl || '');
+            console.log('[HeroBanner] YouTubePlayer URL:', videoUrl);
             return videoUrl || "";
           })()} 
           title={hero.title || "Sem título"}

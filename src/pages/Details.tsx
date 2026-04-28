@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, Play, ThumbsUp, Share2, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import VideoJSPlayer from "@/components/VideoJSPlayer";
+import YouTubePlayer from "@/components/YouTubePlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { FavoriteButton } from "@/components/FavoriteButton";
@@ -775,14 +775,14 @@ const Details = () => {
       {/* Video Player Modal */}
       <AnimatePresence>
         {isPlayerOpen && data && (
-          <VideoJSPlayer
+          <YouTubePlayer
             url={(() => {
               let url = isTrailerMode ? trailerUrl || "" : videoUrl || "";
               // Apply proxy for archive.org URLs to bypass CORS
               if (url && isArchiveOrgUrl(url)) {
                 url = getProxiedUrl(url);
               }
-              console.log('[Details] VideoJSPlayer URL:', url);
+              console.log('[Details] YouTubePlayer URL:', url);
               return url;
             })()}
             title={data.title || "Sem título"}

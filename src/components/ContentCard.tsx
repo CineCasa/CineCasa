@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ContentItem } from "@/data/content";
-import VideoJSPlayer from "./VideoJSPlayer";
+import YouTubePlayer from "./YouTubePlayer";
 import { useAuth } from "@/components/AuthProvider";
 
 interface ContentCardProps {
@@ -204,10 +204,10 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
       </div>
 
       {isPlayerOpen && item && (
-        <VideoJSPlayer 
+        <YouTubePlayer 
           url={item.type === "series" 
-            ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : item.identificadorArchive ? `https://archive.org/embed/${item.identificadorArchive}` : null)
-            : (item.url || null)} 
+            ? (item.identificadorArchive?.startsWith("http") ? item.identificadorArchive : item.identificadorArchive ? `https://archive.org/embed/${item.identificadorArchive}` : '')
+            : (item.url || '')} 
           title={item.title || "Sem título"}
           poster={item.poster || ""}
           contentType={(item.type as 'movie' | 'series') || 'movie'}

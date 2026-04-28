@@ -4,7 +4,7 @@ import { Play, ChevronDown, ChevronUp, Clock, Calendar, Star } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { Episodio } from "@/types/database";
-import VideoJSPlayer from "@/components/VideoJSPlayer";
+import YouTubePlayer from "@/components/YouTubePlayer";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -460,7 +460,7 @@ const SeriesEpisodes = ({ seriesId, tmdbId, seriesTitle, seriesPoster, seriesBac
 
       {/* Netflix Player com autoplay do próximo episódio */}
       {isPlayerOpen && currentEpisode && (
-        <VideoJSPlayer
+        <YouTubePlayer
           url={currentEpisode.arquivo}
           title={`${seriesTitle || 'Série'} - S${currentEpisode.seasonNumber}:E${currentEpisode.episodeNumber} ${currentEpisode.title}`}
           onClose={() => {
