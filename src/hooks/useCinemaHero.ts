@@ -41,7 +41,7 @@ export function useCinemaHero(): UseCinemaHeroReturn {
       try {
         const { data: movies, error } = await supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, description, category, genero')
+          .select('id, tmdb_id, titulo, poster, backdrop, banner, year, rating, description, category, genero')
           .not('tmdb_id', 'is', null)
           .limit(30);
 
@@ -60,12 +60,20 @@ export function useCinemaHero(): UseCinemaHeroReturn {
               const tmdbData = await fetchTmdbDetailsWithBackdrop(m.tmdb_id, 'movie');
               const backdropPath = tmdbData?.backdrop_path;
               
+              // Fallback hierarchy: TMDB backdrop -> DB backdrop -> DB banner -> poster
+              const dbBackdropPath = m.backdrop || m.banner;
+              const finalBackdropUrl = backdropPath 
+                ? tmdbImageUrl(backdropPath, 'original')
+                : dbBackdropPath 
+                  ? tmdbImageUrl(dbBackdropPath, 'original')
+                  : m.poster;
+              
               return {
                 id: `cinema-${m.id}`,
                 tmdbId: m.tmdb_id,
                 title: m.titulo,
-                backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : m.poster,
-                poster: m.poster,
+                backdrop: finalBackdropUrl,
+                poster: m.poster ? tmdbImageUrl(m.poster, 'w500') : '',
                 year: parseInt(m.year) || 0,
                 rating: m.rating || 'N/A',
                 duration: tmdbData?.runtime ? `${Math.floor(tmdbData.runtime / 60)}h ${tmdbData.runtime % 60}min` : '',
