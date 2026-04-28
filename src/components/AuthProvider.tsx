@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { supabase, supabaseWithRetry } from "@/integrations/supabase/client";
 import { Session, User } from "@supabase/supabase-js";
+import { deviceService } from "@/services/DeviceService";
 
 interface AuthContextType {
   session: Session | null;
@@ -120,6 +121,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         if (session?.user) {
           console.log('[AuthProvider] Usuário encontrado na sessão, chamando fetchProfile');
+          // Registrar dispositivo em paralelo (não bloqueante)
+          deviceService.registerDevice(session.user.id).catch(err => {
+            console.warn('[AuthProvider] Erro ao registrar dispositivo:', err);
+          });
           await fetchProfile(session.user.id);
         } else {
           console.log('[AuthProvider] Sem usuário na sessão, setLoading(false)');
@@ -148,6 +153,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
         if (session?.user) {
           console.log('[AuthProvider] Evento', event, '- chamando fetchProfile');
+          // Registrar/atualizar dispositivo em eventos de autenticação
+          deviceService.registerDevice(session.user.id).catch(err => {
+            console.warn('[AuthProvider] Erro ao registrar dispositivo:', err);
+          });
           await fetchProfile(session.user.id);
         }
       } else if (event === 'SIGNED_OUT') {

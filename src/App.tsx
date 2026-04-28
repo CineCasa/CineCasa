@@ -31,6 +31,7 @@ import NotificationSettings from "./pages/NotificationSettings";
 import Search from "./pages/Search";
 import Profiles from "./pages/Profiles";
 import Profile from "./pages/Profile";
+import DeviceManagement from "./pages/DeviceManagement";
 import { NotificationProvider } from "@/hooks/useNotifications.tsx";
 import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
@@ -134,6 +135,7 @@ const AppRoutes = () => {
       <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
       <Route path="/profiles" element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/devices" element={<ProtectedRoute><DeviceManagement /></ProtectedRoute>} />
       
       {/* Home - Protegida, redireciona para login se não autenticado */}
       <Route path="/" element={<ProtectedRoute><PremiumHome /></ProtectedRoute>} />

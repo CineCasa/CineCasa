@@ -605,6 +605,80 @@ export type Database = {
           }
         ]
       }
+      user_devices: {
+        Row: {
+          id: string
+          user_id: string
+          device_id: string
+          device_name: string | null
+          device_type: string | null
+          location: string | null
+          last_active: string | null
+          is_current: boolean | null
+          is_active: boolean | null
+          created_at: string | null
+          updated_at: string | null
+          ip_address: string | null
+          user_agent: string | null
+          os: string | null
+          browser: string | null
+          screen_resolution: string | null
+          timezone: string | null
+          language: string | null
+          fingerprint: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          device_id: string
+          device_name?: string | null
+          device_type?: string | null
+          location?: string | null
+          last_active?: string | null
+          is_current?: boolean | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          os?: string | null
+          browser?: string | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          language?: string | null
+          fingerprint?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          device_id?: string
+          device_name?: string | null
+          device_type?: string | null
+          location?: string | null
+          last_active?: string | null
+          is_current?: boolean | null
+          is_active?: boolean | null
+          created_at?: string | null
+          updated_at?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          os?: string | null
+          browser?: string | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          language?: string | null
+          fingerprint?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_devices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -651,6 +725,79 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      register_device: {
+        Args: {
+          p_user_id: string
+          p_device_id: string
+          p_device_name: string | null
+          p_device_type: string | null
+          p_location: string | null
+          p_ip_address: string | null
+          p_user_agent: string | null
+          p_os: string | null
+          p_browser: string | null
+          p_screen_resolution: string | null
+          p_timezone: string | null
+          p_language: string | null
+          p_fingerprint: string | null
+        }
+        Returns: string
+      }
+      update_device_activity: {
+        Args: {
+          p_device_id: string
+          p_user_id: string | null
+        }
+        Returns: boolean
+      }
+      get_user_devices: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          id: string
+          device_id: string
+          device_name: string | null
+          device_type: string | null
+          location: string | null
+          last_active: string | null
+          is_current: boolean | null
+          is_active: boolean | null
+          created_at: string | null
+          ip_address: string | null
+          os: string | null
+          browser: string | null
+          screen_resolution: string | null
+          timezone: string | null
+        }[]
+      }
+      remove_device: {
+        Args: {
+          p_device_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      mark_current_device: {
+        Args: {
+          p_device_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      logout_other_devices: {
+        Args: {
+          p_current_device_id: string
+          p_user_id: string
+        }
+        Returns: number
+      }
+      count_active_devices: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: number
       }
     }
     Enums: {
