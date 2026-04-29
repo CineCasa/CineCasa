@@ -131,7 +131,7 @@ export const useContinueWatching = () => {
     
     const seriesMap = new Map<string, any>();
     seriesData.forEach(s => {
-      seriesMap.set(String(s.id_n), s);
+      seriesMap.set(String(s.id), s);
       if (s.tmdb_id) seriesMap.set(String(s.tmdb_id), s);
     });
 
