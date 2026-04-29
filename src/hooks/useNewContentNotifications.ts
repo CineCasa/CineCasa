@@ -49,7 +49,7 @@ export function useNewContentNotifications() {
       // Buscar novas séries das últimas 24h APENAS
       const { data: newSeries, error: seriesError } = await supabase
         .from('series')
-        .select('id, titulo, banner, year, created_at, tmdb_id')
+        .select('id_n, titulo, banner, year, created_at, tmdb_id')
         .gte('created_at', twentyFourHoursAgo)
         .order('created_at', { ascending: false });
 
@@ -69,7 +69,7 @@ export function useNewContentNotifications() {
           tmdb_id: movie.tmdb_id,
         })),
         ...(newSeries || []).map((series: any) => ({
-          id: series.id?.toString(),
+          id: series.id_n?.toString(),
           title: series.titulo,
           type: 'series' as const,
           poster: series.banner || '/api/placeholder/300/450',

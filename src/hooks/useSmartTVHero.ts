@@ -50,7 +50,7 @@ export function useSmartTVHero(): UseSmartTVHeroReturn {
             .limit(50),
           supabase
             .from('series')
-            .select('id, tmdb_id, titulo, banner, ano, rating, descricao, genero')
+            .select('id_n, tmdb_id, titulo, banner, ano, rating, descricao, genero')
             .not('banner', 'is', null)
             .limit(50)
         ]);
