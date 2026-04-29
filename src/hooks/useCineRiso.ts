@@ -40,7 +40,7 @@ export const useCineRiso = () => {
           .limit(20),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, genero')
+          .select('id, tmdb_id, titulo, year, genero')
           .or('genero.ilike.%comédia%,genero.ilike.%comedia%')
           .limit(10)
       ]);

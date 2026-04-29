@@ -41,7 +41,7 @@ export function useSeriesHero(): UseSeriesHeroReturn {
       try {
         const { data: series, error } = await supabase
           .from('series')
-          .select('id, tmdb_id, titulo, banner, year, rating, descricao, genero, temporadas, episodios')
+          .select('id, tmdb_id, titulo')
           .not('tmdb_id', 'is', null);
 
         if (error) {

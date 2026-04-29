@@ -33,7 +33,7 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
       // Buscar séries com limite para performance
       const { data, error } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, capa, ano, genero, descricao')
+        .select('id, tmdb_id, titulo')
         .limit(50);
 
       if (error) {
@@ -80,12 +80,12 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
         const variations = grouped.get(baseTitle) || [];
         const serie = variations[Math.floor(Math.random() * variations.length)];
         return {
-          id: String(serie.id_n || `series-${Math.random()}`),
+          id: String(serie.id || `series-${Math.random()}`),
           tmdbId: serie.tmdb_id,
           title: serie.titulo,
-          poster: serie.capa ? tmdbImageUrl(serie.capa, 'w500') : '',
+          poster: '',
           type: 'series',
-          year: serie.ano || '2024',
+          year: '2024',
           rating: 'N/A',
         };
       });

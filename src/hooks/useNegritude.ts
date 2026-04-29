@@ -37,8 +37,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           .limit(30),
         supabase
           .from('series')
-          .select('id, tmdb_id, titulo, year, genero, banner')
-          .or('genero.ilike.%negritude%')
+          .select('id, tmdb_id, titulo')
           .limit(20)
       ]);
 

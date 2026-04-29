@@ -37,8 +37,7 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           .limit(30),
         supabase
           .from('series')
-          .select('id, tmdb_id, titulo, year, genero, capa, banner')
-          .or('genero.ilike.%infantil%')
+          .select('id, tmdb_id, titulo')
           .limit(20)
       ]);
 
