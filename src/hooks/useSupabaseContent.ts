@@ -128,11 +128,16 @@ export const useSupabaseContent = () => {
       const mapSeries = (item: any): ContentItem => {
         const genres = splitGenres(item.genero);
         const category = item.genero || "Drama";
-        
+
         // Para séries: usar 'capa' como poster e 'banner' como backdrop
         const posterPath = item.capa;
         const backdropPath = item.banner;
-        
+
+        // Log para debugar
+        if (!posterPath) {
+          console.warn(`[mapSeries] Série sem capa: ${item.titulo} (id: ${item.id})`);
+        }
+
         return {
           id: `series-${item.id}`,
           tmdbId: item.tmdb_id,
