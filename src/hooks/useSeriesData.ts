@@ -79,16 +79,16 @@ export function useSeriesData() {
 
       // Mapear dados do banco
       let mappedSeries: Serie[] = seriesData.map((s: any) => ({
-        id: s.id,
+        id: s.id_n,
         tmdb_id: s.tmdb_id,
         titulo: s.titulo,
-        descricao: null,
-        year: null,
-        capa: null,
-        banner: null,
+        descricao: s.descricao,
+        year: s.year || s.ano?.toString(),
+        capa: s.capa,
+        banner: s.banner,
         trailer: s.trailer,
-        genero: null,
-        classificacao: null,
+        genero: s.genero,
+        classificacao: s.classificacao,
         elenco: null,
         diretor: null,
         pais: null,

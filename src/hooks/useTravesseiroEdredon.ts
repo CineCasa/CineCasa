@@ -40,7 +40,8 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
       // Buscar séries relaxantes (limitado para performance)
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id, tmdb_id, titulo')
+        .select('id_n, tmdb_id, titulo, ano, genero, capa, banner')
+        .or('genero.ilike.%drama%,genero.ilike.%romance%,genero.ilike.%família%')
         .limit(20);
       
       if (seriesError) {
@@ -64,11 +65,11 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
           rating: item.rating,
         })),
         ...(seriesData || []).map((item: any) => ({
-          id: item.id?.toString() || `series-${Math.random()}`,
+          id: item.id_n?.toString() || `series-${Math.random()}`,
           title: item.titulo || 'Sem título',
-          poster: '',
+          poster: item.capa ? tmdbImageUrl(item.capa, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
           type: 'series' as const,
-          year: 'N/A',
+          year: String(item.ano || 'N/A'),
           rating: 'N/A',
         })),
       ];

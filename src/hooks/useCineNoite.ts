@@ -85,7 +85,8 @@ export const useCineNoite = (): UseCineNoiteReturn => {
       // Buscar séries da categoria adulto
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id, tmdb_id, titulo')
+        .select('id_n, tmdb_id, titulo, ano, capa, banner, genero, rating')
+        .or('genero.ilike.%adulto%,genero.ilike.%erotico%,genero.ilike.%sexo%')
         .limit(10);
 
       if (seriesError) {
