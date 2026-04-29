@@ -123,6 +123,7 @@ const AppRoutes = () => {
       <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
       <Route path="/cinema" element={<ProtectedRoute><Cinema /></ProtectedRoute>} />
             <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
+            <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
       <Route path="/series" element={<ProtectedRoute><Series /></ProtectedRoute>} />
             <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />
       <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />

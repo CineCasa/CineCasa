@@ -1,7 +1,36 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TrendingUp, Flame, Activity } from 'lucide-react';
 import { useGenreWeights } from '@/hooks/useGenreWeights';
 import { cn } from '@/lib/utils';
+
+// Mapeamento de gêneros EN -> PT-BR
+const genreTranslations: Record<string, string> = {
+  'action': 'ação',
+  'adventure': 'aventura',
+  'comedy': 'comédia',
+  'drama': 'drama',
+  'horror': 'terror',
+  'thriller': 'thriller',
+  'romance': 'romance',
+  'sci-fi': 'ficção científica',
+  'science fiction': 'ficção científica',
+  'fantasy': 'fantasia',
+  'animation': 'animação',
+  'documentary': 'documentário',
+  'crime': 'crime',
+  'mystery': 'mistério',
+  'war': 'guerra',
+  'history': 'história',
+  'family': 'família',
+  'musical': 'musical',
+  'music': 'musical',
+  'western': 'faroeste',
+  'sport': 'esporte',
+  'sports': 'esporte',
+  'film noir': 'noir',
+  'noir': 'noir',
+};
 
 interface TrendingGenresProps {
   onGenreClick?: (genre: string) => void;
@@ -35,7 +64,24 @@ export const TrendingGenres: React.FC<TrendingGenresProps> = ({
   onGenreClick,
   className
 }) => {
+  const navigate = useNavigate();
   const { trendingGenres, isLoadingTrending, topGenres } = useGenreWeights();
+
+  // Função para traduzir gênero para PT-BR
+  const translateGenre = (genre: string): string => {
+    const normalized = genre.toLowerCase().trim();
+    return genreTranslations[normalized] || genre;
+  };
+
+  // Função de navegação interna
+  const handleGenreClick = (genre: string) => {
+    const translatedGenre = translateGenre(genre);
+    if (onGenreClick) {
+      onGenreClick(translatedGenre);
+    } else {
+      navigate(`/categoria/${encodeURIComponent(translatedGenre)}`);
+    }
+  };
 
   // Usar trending ou top genres como fallback
   const displayGenres = trendingGenres.length > 0 
@@ -85,7 +131,7 @@ export const TrendingGenres: React.FC<TrendingGenresProps> = ({
           return (
             <button
               key={genre}
-              onClick={() => onGenreClick?.(genre)}
+              onClick={() => handleGenreClick(genre)}
               className={cn(
                 'group relative px-4 py-2 rounded-full text-sm font-medium',
                 'bg-gradient-to-r text-white transition-all duration-300',
@@ -97,7 +143,7 @@ export const TrendingGenres: React.FC<TrendingGenresProps> = ({
               <span className="flex items-center gap-1.5">
                 {isHot && <Flame className="w-3.5 h-3.5 text-yellow-300" />}
                 {isTrending && !isHot && <Activity className="w-3.5 h-3.5 text-cyan-300" />}
-                {genre.charAt(0).toUpperCase() + genre.slice(1)}
+                {translateGenre(genre).charAt(0).toUpperCase() + translateGenre(genre).slice(1)}
               </span>
               
               {/* Tooltip com stats */}
