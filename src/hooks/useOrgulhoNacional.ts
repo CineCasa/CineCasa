@@ -32,8 +32,8 @@ export const useOrgulhoNacional = () => {
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
-        .or('genre.ilike.%nacional%,genre.ilike.%nacionais%,genre.ilike.%brasil%,genre.ilike.%brasileiro%,category.ilike.%nacional%,category.ilike.%nacionais%,category.ilike.%brasil%,category.ilike.%brasileiro%')
+        .select('id, tmdb_id, titulo, poster, year, rating, category')
+        .or('category.ilike.%nacional%,category.ilike.%nacionais%,category.ilike.%brasil%,category.ilike.%brasileiro%')
         .not('poster', 'is', null)
         .limit(100);
 

@@ -33,8 +33,8 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
       // Busca otimizada de filmes de finanças
       const cinemaResult = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
-        .or('genre.ilike.%finanças%,genre.ilike.%financas%,genre.ilike.%finance%,category.ilike.%finanças%,category.ilike.%financas%,category.ilike.%finance%')
+        .select('id, tmdb_id, titulo, poster, year, rating, category')
+        .or('category.ilike.%finanças%,category.ilike.%financas%,category.ilike.%finance%')
         .limit(20);
 
       console.log('[useFinancas] Cinema result:', cinemaResult.data?.length || 0, 'itens');
