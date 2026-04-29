@@ -1,0 +1,11 @@
+// Profile Components - Barrel Export
+export { ProfileSidebar } from './ProfileSidebar';
+export { ProfileHeader } from './ProfileHeader';
+export { AboutSection } from './AboutSection';
+export { AvatarSection } from './AvatarSection';
+export { PreferencesSection } from './PreferencesSection';
+export { ActivitySection } from './ActivitySection';
+export { AchievementsSection } from './AchievementsSection';
+export { StatsChartSection } from './StatsChartSection';
+export { QuickActionsSection } from './QuickActionsSection';
+export { AccountSettingsSection } from './AccountSettingsSection';
