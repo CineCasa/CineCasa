@@ -33,8 +33,6 @@ import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
 import CineNoiteSection from '../components/CineNoiteSection';
 import MaesInesqueciveisSection from '../components/MaesInesqueciveisSection';
 import HeroisDaVidaRealSection from '../components/HeroisDaVidaRealSection';
-import { TrendingGenres } from '../components/TrendingGenres';
-
 // Mock data para demonstração
 const mockHeroContent = {
   title: "A ORIGEM DO AMANHÃ",
@@ -528,15 +526,6 @@ const PremiumHome: React.FC = () => {
 
       {/* MÃES INESQUECÍVEIS - Seção especial Dia das Mães (mês de maio) */}
       {isMaesInesqueciveisVisible && <MaesInesqueciveisSection onCardClick={handleCardClick} />}
-
-      {/* GÊNEROS EM ALTA - Baseado nos pesos calculados */}
-      <div className="relative z-30 px-4 md:px-8 py-4">
-        <TrendingGenres 
-          onGenreClick={(genre) => {
-            navigate(`/categoria/${encodeURIComponent(genre)}`);
-          }}
-        />
-      </div>
 
       {/* LANÇAMENTOS E NOVIDADES - Seção principal, sempre visível */}
       <div className="relative z-30 my-6">
