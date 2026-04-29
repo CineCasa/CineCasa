@@ -1,53 +1,39 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Crown, Edit3, Camera, LogOut, Mail, Calendar, Clock, Heart, Star, Settings, 
-  ChevronRight, User, Shield, Users, Film, BarChart3, Bell, Lock, HelpCircle, 
-  ShieldAlert, Monitor, Smartphone, Globe, X, Check, FileText, CreditCard,
-  Type, Palette, Eye, EyeOff, ChevronDown, Plus, Trash2, Loader2
-} from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Switch } from '@/components/ui/switch';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { LogOut, Search, Bell } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { AvatarCustomizer } from '@/components/AvatarCustomizer';
-import { ProfilePhotoUploader } from '@/components/ProfilePhotoUploader';
+import { profileService, type UserProfile, type UserStats, type WatchActivity, type UserAchievement, type UserPreferences } from '@/services/ProfileService';
+import { userStatsService, type MonthlyActivity } from '@/services/UserStatsService';
+import { achievementService, type Achievement } from '@/services/AchievementService';
+
+// Profile Components
+import {
+  ProfileSidebar,
+  ProfileHeader,
+  AboutSection,
+  AvatarSection,
+  PreferencesSection,
+  ActivitySection,
+  AchievementsSection,
+  StatsChartSection,
+  QuickActionsSection,
+  AccountSettingsSection,
+} from '@/components/profile';
 
 // ============================================
 // TYPES & INTERFACES
 // ============================================
-interface Device {
-  id: string;
-  name: string;
-  type: 'tv' | 'mobile' | 'web';
-  location: string;
-  lastActive: string;
-  isCurrent: boolean;
+interface ProfileData {
+  user: UserProfile | null;
+  stats: UserStats;
+  activities: WatchActivity[];
+  achievements: UserAchievement[];
+  preferences: UserPreferences;
+  monthlyActivity: MonthlyActivity[];
 }
-
-interface Invoice {
-  id: string;
-  date: string;
-  amount: string;
-  status: 'paid' | 'pending' | 'overdue';
-  description: string;
-}
-
-interface SubtitleSettings {
-  fontSize: 'small' | 'medium' | 'large';
-  color: string;
-  background: boolean;
-}
-
-interface Profile {
-  id: string;
-  name: string;
-  avatar: string;
   isKid: boolean;
   color: string;
 }
