@@ -1,8 +1,8 @@
-// Service Worker CineCasa - Stable Version v30
-// Estratégia: Stale-While-Revalidate - AUTO-RELOAD COMPLETAMENTE DESATIVADO
-// BUILD: 20260428-2200 - NO LOOP - NO RELOAD
-const CACHE_VERSION = 'v30-noloop';
-const BUILD_TIMESTAMP = '20260428-2200';
+// Service Worker CineCasa - Stable Version v31
+// Estratégia: Stale-While-Revalidate - CACHE BUSTING TOTAL
+// BUILD: 20260429-0057 - FORCE CLEAR CACHE
+const CACHE_VERSION = 'v31-force-clear';
+const BUILD_TIMESTAMP = '20260429-0057';
 
 // Arquivos essenciais para cache inicial
 const PRECACHE_ASSETS = [
@@ -35,21 +35,29 @@ self.addEventListener('install', e => {
   );
 });
 
-// === ATIVAÇÃO: Limpar caches antigos apenas ===
+// === ATIVAÇÃO: Limpar TODOS os caches antigos ===
 self.addEventListener('activate', e => {
-  console.log('[SW] Ativado v30 - No Loop');
+  console.log('[SW] Ativado v31 - Force Clear');
   
   e.waitUntil(
     caches.keys()
       .then(cacheNames => {
+        console.log('[SW] Limpando todos os caches:', cacheNames);
         return Promise.all(
-          cacheNames
-            .filter(name => name !== CACHE_VERSION)
-            .map(name => {
-              console.log('[SW] Removendo cache antigo:', name);
-              return caches.delete(name);
-            })
+          cacheNames.map(name => {
+            console.log('[SW] Removendo cache:', name);
+            return caches.delete(name);
+          })
         );
+      })
+      .then(() => {
+        console.log('[SW] Todos os caches limpos');
+        // Notificar todos os clients que o cache foi limpo
+        return self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            client.postMessage({ type: 'CACHE_CLEARED', version: CACHE_VERSION });
+          });
+        });
       })
       .then(() => {
         console.log('[SW] Controle assumido');
@@ -82,29 +90,19 @@ self.addEventListener('fetch', e => {
   if (url.protocol === 'chrome-extension:') return;
   if (url.pathname.startsWith('/api/')) return; // Não cachear APIs
   
-  // Estratégia Stale-While-Revalidate: serve do cache imediatamente,
-  // mas atualiza em background
+  // Estratégia Network First: sempre tenta buscar da rede primeiro
+  // Só usa cache se a rede falhar ou para recursos essenciais
   e.respondWith(
-    caches.match(request)
-      .then(cachedResponse => {
-        // Se tem no cache, retorna imediatamente
-        const fetchPromise = fetch(request)
-          .then(networkResponse => {
-            if (networkResponse && networkResponse.ok) {
-              // Atualiza cache em background
-              const clone = networkResponse.clone();
-              caches.open(CACHE_VERSION).then(cache => {
-                cache.put(request, clone);
-              });
-            }
-            return networkResponse;
-          })
-          .catch(() => {
-            // Falha silenciosa - já temos o cache
-            console.log('[SW] Network falhou, usando cache');
-            return cachedResponse;
+    fetch(request)
+      .then(networkResponse => {
+        if (networkResponse && networkResponse.ok) {
+          // Atualiza cache em background
+          const clone = networkResponse.clone();
+          caches.open(CACHE_VERSION).then(cache => {
+            cache.put(request, clone);
           });
-        
+        }
+        return networkResponse;
         // Retorna cache imediatamente (ou fetch se não tiver cache)
         return cachedResponse || fetchPromise;
       })
