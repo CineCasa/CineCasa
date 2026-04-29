@@ -63,7 +63,7 @@ export const usePoderiaSerMelhor = (userId?: string): UsePoderiaSerMelhorReturn 
           .limit(10),  // Buscar mais itens para depois filtrar
         supabase
           .from('series')
-          .select('id, tmdb_id, titulo, banner, year, tmdb_rating')
+          .select('id_n, tmdb_id, titulo, banner, ano, tmdb_rating')
           .lt('tmdb_rating', '5.0')
           .not('tmdb_rating', 'is', null)
           .order('tmdb_rating', { ascending: true })
@@ -82,14 +82,14 @@ export const usePoderiaSerMelhor = (userId?: string): UsePoderiaSerMelhorReturn 
           tmdb_id: item.tmdb_id || undefined,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id?.toString(),
+          id: item.id_n?.toString(),
           title: item.titulo,
           poster: item.banner,
           type: 'series' as const,
-          year: item.year,
-          rating: item.rating || `${item.tmdb_rating}/10`,
-          tmdb_rating: item.tmdb_rating || undefined,
-          tmdb_id: item.tmdb_id || undefined,
+          year: item.ano?.toString(),
+          rating: item.tmdb_rating ? `${item.tmdb_rating}/10` : 'N/A',
+          tmdb_rating: item.tmdb_rating,
+          tmdb_id: item.tmdb_id,
         }))
       ];
 
