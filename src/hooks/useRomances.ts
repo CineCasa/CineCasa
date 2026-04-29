@@ -42,7 +42,7 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
           .limit(30), // Reduzido para melhor performance
         supabase
           .from('series')
-          .select('id, tmdb_id, titulo, year, genero, capa, banner')
+          .select('id_n, tmdb_id, titulo, ano, genero, capa, banner')
           .or('genero.ilike.%romance%')
           .limit(20) // Reduzido para melhor performance
       ]);
@@ -65,13 +65,12 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
           rating: item.rating,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id?.toString(),
+          id: item.id_n?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          // Usar 'capa' para séries (conforme schema do banco)
           poster: item.capa ? tmdbImageUrl(item.capa, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
           type: 'series' as const,
-          year: item.year,
+          year: item.ano,
           rating: 'N/A',
         })),
       ];
