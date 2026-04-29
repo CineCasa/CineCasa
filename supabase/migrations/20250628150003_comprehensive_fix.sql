@@ -10,6 +10,14 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username text;
 -- Fix 3: Adicionar colunas faltantes na tabela user_devices
 ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS is_active boolean DEFAULT true;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS ip_address text;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS user_agent text;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS os text;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS browser text;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS screen_resolution text;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS timezone text;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS language text;
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS fingerprint text;
 
 -- Fix 5: Dropar função get_user_devices se existir para recriar com assinatura correta
 DROP FUNCTION IF EXISTS public.get_user_devices(uuid);
