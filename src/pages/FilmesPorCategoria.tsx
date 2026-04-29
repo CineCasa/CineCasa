@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import CategoryFilms from '@/components/CategoryFilms';
 import useCinemaCategories from '@/hooks/useCinemaCategories';
 import PremiumHeroBanner from '@/components/PremiumHeroBanner';
@@ -21,6 +21,7 @@ import {
 
 const FilmesPorCategoria: React.FC = () => {
   const navigate = useNavigate();
+  const { categoria } = useParams<{ categoria: string }>();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAll, setShowAll] = useState(false);
@@ -38,6 +39,14 @@ const FilmesPorCategoria: React.FC = () => {
   useEffect(() => {
     extractAndOrganizeCategories();
   }, [extractAndOrganizeCategories]);
+
+  // Efeito para selecionar categoria automaticamente quando vem da URL
+  useEffect(() => {
+    if (categoria) {
+      const decodedCategory = decodeURIComponent(categoria);
+      setSelectedCategory(decodedCategory);
+    }
+  }, [categoria]);
 
   const handleCategoryClick = (categoryName: string) => {
     setSelectedCategory(categoryName);
