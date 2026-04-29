@@ -61,12 +61,12 @@ export const useCineRiso = () => {
 
       // Mapear séries
       const series: CineRisoContent[] = (seriesData.data || []).map((item: any) => ({
-        id: item.id?.toString(),
+        id: item.id_n?.toString(),
         tmdbId: item.tmdb_id,
         title: item.titulo,
         poster: item.capa ? tmdbImageUrl(item.capa, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
         type: 'series' as const,
-        year: item.year || 'N/A',
+        year: item.ano?.toString() || 'N/A',
         rating: 'N/A',
       }));
 
