@@ -83,7 +83,7 @@ export function useSeriesData() {
         tmdb_id: s.tmdb_id,
         titulo: s.titulo,
         descricao: s.descricao,
-        year: s.year || s.ano?.toString(),
+        ano: s.ano?.toString() || s.year,
         capa: s.capa,
         banner: s.banner,
         trailer: s.trailer,
