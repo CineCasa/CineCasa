@@ -49,7 +49,18 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
 
       console.log('[useRomances] Cinema result:', cinemaData.data?.length || 0, 'itens');
       console.log('[useRomances] Series result:', seriesData.data?.length || 0, 'itens');
-      console.log('[useRomances] Erros:', cinemaData.error, seriesData.error);
+      console.log('[useRomances] Erros cinema:', cinemaData.error);
+      console.log('[useRomances] Erros series:', seriesData.error);
+      
+      // Debug: verificar se há séries no banco sem filtro
+      if (!seriesData.data || seriesData.data.length === 0) {
+        const { data: allSeries, error: allSeriesError } = await supabase
+          .from('series')
+          .select('id_n, titulo, genero, capa')
+          .limit(5);
+        console.log('[useRomances] Debug - Séries sem filtro:', allSeries?.length || 0, 'Primeiras:', allSeries?.slice(0, 3));
+        console.log('[useRomances] Debug - Erro sem filtro:', allSeriesError);
+      }
 
       // REMOVER COLEÇÕES dos filmes de romance
       const filteredCinemaData = (cinemaData.data || []).filter(isNotCollection);
