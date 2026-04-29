@@ -7,13 +7,8 @@ ALTER TABLE public.ratings ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 -- Fix 2: Adicionar coluna username na tabela profiles se não existir
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username text;
 
--- Fix 3: Criar sequence para user_devices se não existir
-CREATE SEQUENCE IF NOT EXISTS public.user_devices_id_seq;
-
--- Fix 4: Garantir que a tabela user_devices tenha a estrutura correta
-ALTER TABLE public.user_devices 
-  ALTER COLUMN id SET DEFAULT nextval('public.user_devices_id_seq'),
-  ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+-- Fix 3: Adicionar coluna deleted_at na tabela user_devices se não existir
+ALTER TABLE public.user_devices ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 
 -- Fix 5: Dropar função get_user_devices se existir para recriar com assinatura correta
 DROP FUNCTION IF EXISTS public.get_user_devices(uuid);
