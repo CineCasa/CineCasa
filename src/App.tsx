@@ -202,22 +202,13 @@ const AppContent = () => {
   // Inicializar limpeza automática de cache - garante atualizações sempre
   useAutoCacheCleanup();
 
-  // Inicializar sistema de force update automático
-  useForceUpdate();
+  // DESATIVADO: Hooks de auto-update causando loop de reinicialização
+  // useForceUpdate();
+  // useAutoUpdate(30000);
+  // useSilentUpdate({ checkInterval: 5 * 60 * 1000 });
 
   // Hook para corrigir viewport em dispositivos móveis
   useMobileViewportHeight();
-
-  // Auto-update com versionamento - verifica a cada 30 segundos
-  useAutoUpdate(30000);
-
-  // Atualização silenciosa do PWA - verifica a cada 5 minutos
-  useSilentUpdate({
-    checkInterval: 5 * 60 * 1000, // 5 minutos
-    onUpdateAvailable: () => {
-      console.log('[App] Nova versão disponível - atualizará silenciosamente');
-    }
-  });
   
   console.log('[AppContent] pathname:', location.pathname, 'isLoginPage:', isLoginPage, 'isPlayerOpen:', isPlayerOpen);
 

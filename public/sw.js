@@ -1,8 +1,8 @@
-// Service Worker CineCasa - Stable Version v29
-// Estratégia: Stale-While-Revalidate com fallback gracioso
-// BUILD: 20260428-1920 - LOOP FIX - SINGLE RELOAD
-const CACHE_VERSION = 'v29-loopfix';
-const BUILD_TIMESTAMP = '20260428-1920';
+// Service Worker CineCasa - Stable Version v30
+// Estratégia: Stale-While-Revalidate - AUTO-RELOAD COMPLETAMENTE DESATIVADO
+// BUILD: 20260428-2200 - NO LOOP - NO RELOAD
+const CACHE_VERSION = 'v30-noloop';
+const BUILD_TIMESTAMP = '20260428-2200';
 
 // Arquivos essenciais para cache inicial
 const PRECACHE_ASSETS = [
@@ -16,7 +16,7 @@ const PRECACHE_ASSETS = [
 
 // === INSTALAÇÃO: Cachear assets essenciais ===
 self.addEventListener('install', e => {
-  console.log('[SW] Instalando v29 - Loop Fix...');
+  console.log('[SW] Instalando v30 - No Loop...');
   
   e.waitUntil(
     caches.open(CACHE_VERSION)
@@ -25,7 +25,7 @@ self.addEventListener('install', e => {
         return cache.addAll(PRECACHE_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Instalação completa v29');
+        console.log('[SW] Instalação completa v30');
         return self.skipWaiting();
       })
       .catch(err => {
@@ -37,7 +37,7 @@ self.addEventListener('install', e => {
 
 // === ATIVAÇÃO: Limpar caches antigos apenas ===
 self.addEventListener('activate', e => {
-  console.log('[SW] Ativado v29 - Loop Fix');
+  console.log('[SW] Ativado v30 - No Loop');
   
   e.waitUntil(
     caches.keys()
