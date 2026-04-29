@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserAnalytics, GenreAnalytics } from './useUserAnalytics';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface Recomendacao {
   id: string;
@@ -133,7 +134,7 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
                 id,
                 tmdbId: filme.tmdb_id,
                 title: filme.titulo,
-                poster: filme.poster || '/api/placeholder/300/450',
+                poster: filme.poster ? tmdbImageUrl(filme.poster, 'w500') : '',
                 backdrop: (filme as any).backdrop,
                 type: 'movie',
                 year: filme.year,
@@ -158,7 +159,7 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
         
         if (!errorSeries && series) {
           for (const serie of series) {
-            const id = ((serie as any).id_n || (serie as any).id)?.toString();
+            const id = (serie as any).id?.toString();
             if (!id || contentIds.has(id) || viewedIds.has(id)) continue;
             
             const { score, matchedGenres } = calculateMatchScore(serie, topGenres);
@@ -170,11 +171,11 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
                 tmdbId: serie.tmdb_id,
                 title: serie.titulo,
                 // Séries usam 'capa' conforme schema do banco
-                poster: serie.capa || serie.banner || '/api/placeholder/300/450',
-                backdrop: serie.banner,
+                poster: serie.capa ? tmdbImageUrl(serie.capa, 'w500') : (serie.banner ? tmdbImageUrl(serie.banner, 'w500') : ''),
+                backdrop: serie.banner ? tmdbImageUrl(serie.banner, 'original') : '',
                 type: 'series',
                 year: serie.year || '2024',
-                rating: serie.rating || 'N/A',
+                rating: 'N/A',
                 genres: matchedGenres,
                 matchScore: score,
                 reason: `Baseado em: ${matchedGenres.slice(0, 2).join(', ')}`,
@@ -220,7 +221,7 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
         const genericos = data.map((item: any) => ({
           id: item.id.toString(),
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
           backdrop: item.backdrop,
           type: 'movie' as const,
           year: item.year,

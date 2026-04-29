@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { isNotCollection } from '@/lib/utils';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface CineNoiteContent {
   id: string;
@@ -84,7 +85,7 @@ export const useCineNoite = (): UseCineNoiteReturn => {
       // Buscar séries da categoria adulto
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, banner, ano, genero')
+        .select('id, tmdb_id, titulo, banner, year, genero, capa')
         .or('genero.ilike.%adulto%,genero.ilike.%erotico%,genero.ilike.%sexo%')
         .not('banner', 'is', null)
         .limit(10);
@@ -104,7 +105,7 @@ export const useCineNoite = (): UseCineNoiteReturn => {
         id: item.id?.toString() || `cinema-${Math.random()}`,
         tmdbId: item.tmdb_id,
         title: item.titulo || 'Sem título',
-        poster: item.poster || '',
+        poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
         type: 'movie' as const,
         year: item.year || 'N/A',
         rating: item.rating || 'N/A',
@@ -115,7 +116,7 @@ export const useCineNoite = (): UseCineNoiteReturn => {
         id: item.id?.toString() || `series-${Math.random()}`,
         tmdbId: item.tmdb_id,
         title: item.titulo || 'Sem título',
-        poster: item.banner || '',
+        poster: item.capa ? tmdbImageUrl(item.capa, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
         type: 'series' as const,
         year: item.year || 'N/A',
         rating: 'N/A',

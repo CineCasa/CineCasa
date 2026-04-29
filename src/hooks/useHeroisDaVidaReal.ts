@@ -130,7 +130,7 @@ export const useHeroisDaVidaReal = (): UseHeroisDaVidaRealReturn => {
       // Buscar séries com termos sobre pais/paternidade
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, banner, ano, descricao, genero, vote_average')
+        .select('id, tmdb_id, titulo, banner, year, descricao, genero, vote_average')
         .or('descricao.ilike.%pai%,descricao.ilike.%paternidade%,descricao.ilike.%paternal%,descricao.ilike.%filho%,descricao.ilike.%família%,descricao.ilike.%herói%,descricao.ilike.%heroi%,titulo.ilike.%pai%,titulo.ilike.%paterno%,titulo.ilike.%herói%')
         .or('genero.ilike.%Drama%,genero.ilike.%Ação%,genero.ilike.%Família%')
         .not('banner', 'is', null)

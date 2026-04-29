@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { isNotCollection } from '@/lib/utils';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface Financa {
   id: string;
@@ -47,7 +48,7 @@ export const useFinancas = (userId?: string): UseFinancasReturn => {
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
           type: 'movie' as const,
           year: item.year,
           rating: item.rating,

@@ -112,8 +112,8 @@ export const useContinueWatching = () => {
     for (const id of seriesIds) {
       const { data: serie } = await supabase
         .from('series')
-        .select('id_n, titulo, capa, banner, tmdb_id')
-        .eq('id_n', id)
+        .select('id, titulo, capa, banner, tmdb_id')
+        .eq('id', id)
         .maybeSingle();
       
       if (serie) {
@@ -122,7 +122,7 @@ export const useContinueWatching = () => {
         // Tentar por tmdb_id
         const { data: serieByTmdb } = await supabase
           .from('series')
-          .select('id_n, titulo, capa, banner, tmdb_id')
+          .select('id, titulo, capa, banner, tmdb_id')
           .eq('tmdb_id', id.toString())
           .maybeSingle();
         if (serieByTmdb) seriesData.push(serieByTmdb);
@@ -131,7 +131,7 @@ export const useContinueWatching = () => {
     
     const seriesMap = new Map<string, any>();
     seriesData.forEach(s => {
-      seriesMap.set(String(s.id_n), s);
+      seriesMap.set(String(s.id), s);
       if (s.tmdb_id) seriesMap.set(String(s.tmdb_id), s);
     });
 
@@ -318,7 +318,7 @@ export const useContinueWatching = () => {
       const { data: currentEpisode } = await (supabase
         .from('episodios') as any)
         .select('*, temporada:temporada_id (*)')
-        .eq('id_n', currentEpisodeId)
+        .eq('id', currentEpisodeId)
         .single();
 
       if (!currentEpisode) return null;
@@ -336,7 +336,7 @@ export const useContinueWatching = () => {
 
       if (nextEpisode) {
         return {
-          id: nextEpisode.id_n,
+          id: nextEpisode.id,
           title: nextEpisode.titulo,
           number: nextEpisode.numero_episodio || nextEpisode.numero,
           season: nextEpisode.temporada?.numero_temporada || 1,
@@ -357,14 +357,14 @@ export const useContinueWatching = () => {
         const { data: firstEpisode } = await (supabase
           .from('episodios') as any)
           .select('*')
-          .eq('temporada_id', nextSeason.id_n)
+          .eq('temporada_id', nextSeason.id)
           .eq('numero_episodio', 1)
           .or('numero.eq.1')
           .single();
 
         if (firstEpisode) {
           return {
-            id: firstEpisode.id_n,
+            id: firstEpisode.id,
             title: firstEpisode.titulo,
             number: firstEpisode.numero_episodio || firstEpisode.numero,
             season: nextSeason.numero_temporada,

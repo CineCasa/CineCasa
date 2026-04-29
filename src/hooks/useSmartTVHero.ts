@@ -103,7 +103,7 @@ export function useSmartTVHero(): UseSmartTVHeroReturn {
                 title: s.titulo,
                 backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : s.banner,
                 poster: s.banner,
-                year: parseInt(s.ano) || 0,
+                year: parseInt(s.year) || 0,
                 rating: s.rating || 'N/A',
                 description: s.descricao || '',
                 country: tmdbData?.origin_country?.[0],

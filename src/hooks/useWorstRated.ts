@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface WorstRatedContent {
   id: string;
@@ -93,7 +94,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
       const movieContent: WorstRatedContent[] = allLowRatedMovies.map((item: any) => ({
         id: item.id.toString(),
         title: item.titulo,
-        poster: item.poster,
+        poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
         type: 'movie' as const,
         year: item.year || 'N/A',
         rating: item.rating || 'N/A',
@@ -127,7 +128,7 @@ export const useWorstRated = (userId?: string): UseWorstRatedReturn => {
       const emergencyContent: WorstRatedContent[] = (emergencyMovies || []).map((item: any) => ({
         id: item.id.toString(),
         title: item.titulo,
-        poster: item.poster || '/api/placeholder/300/450',
+        poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
         type: 'movie' as const,
         year: item.year || 'N/A',
         rating: item.rating || 'N/A',

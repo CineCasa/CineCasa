@@ -130,7 +130,7 @@ export const useMaesInesqueciveis = (): UseMaesInesqueciveisReturn => {
       // Buscar séries com termos sobre mães/maternidade
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, banner, ano, descricao, genero, vote_average')
+        .select('id, tmdb_id, titulo, banner, year, descricao, genero, vote_average')
         .or('descricao.ilike.%mãe%,descricao.ilike.%materno%,descricao.ilike.%maternidade%,descricao.ilike.%filhos%,descricao.ilike.%família%,descricao.ilike.%maternal%,titulo.ilike.%mãe%,titulo.ilike.%materno%,titulo.ilike.%maternidade%')
         .or('genero.ilike.%Drama%,genero.ilike.%Família%')
         .not('banner', 'is', null)

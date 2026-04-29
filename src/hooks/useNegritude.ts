@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { isNotCollection } from '@/lib/utils';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface Negritude {
   id: string;
@@ -36,7 +37,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           .limit(30),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, genero, banner')
+          .select('id, tmdb_id, titulo, year, genero, banner')
           .or('genero.ilike.%negritude%')
           .limit(20)
       ]);
@@ -49,7 +50,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
           type: 'movie' as const,
           year: item.year,
           rating: item.rating,
@@ -58,10 +59,10 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           id: item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.banner || '/api/placeholder/300/450', // Usar banner se disponível
+          poster: item.banner ? tmdbImageUrl(item.banner, 'w500') : '',
           type: 'series' as const,
           year: item.year,
-          rating: 'N/A', // Séries não têm rating na tabela
+          rating: 'N/A',
         })),
       ];
 

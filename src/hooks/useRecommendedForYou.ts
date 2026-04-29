@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 // Debounce utility
 const debounce = <T extends (...args: any[]) => void>(fn: T, delay: number) => {
@@ -105,7 +106,7 @@ export const useRecommendedForYou = (userId?: string): UseRecommendedForYouRetur
           id: item.content_id,
           tmdbId: item.content_id, // Usando content_id como tmdbId fallback
           title: item.title,
-          poster: item.poster || '/api/placeholder/300/450',
+          poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
           type: item.content_type as 'movie' | 'series',
           year: item.year || 'N/A',
           rating: item.rating?.toString() || 'N/A',
@@ -138,7 +139,7 @@ export const useRecommendedForYou = (userId?: string): UseRecommendedForYouRetur
             id: item.id.toString(),
             tmdbId: item.tmdb_id,
             title: item.titulo,
-            poster: item.poster,
+            poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
             type: 'movie',
             year: item.year || 'N/A',
             rating: item.rating || 'N/A',

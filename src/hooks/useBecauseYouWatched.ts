@@ -70,7 +70,7 @@ export function useBecauseYouWatched() {
       for (const watchItem of watchHistory) {
         // Buscar dados do conteúdo em tabela separada
         const table = watchItem.content_type === 'movie' ? 'cinema' : 'series';
-        const idColumn = watchItem.content_type === 'movie' ? 'id' : 'id_n';
+        const idColumn = 'id';
         const contentId = watchItem.cinema_id || watchItem.serie_id;
 
         if (!contentId) continue;

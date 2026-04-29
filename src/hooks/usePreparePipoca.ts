@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface SeriePipoca {
   id: string;
@@ -32,7 +33,7 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
       // Buscar séries com limite para performance
       const { data, error } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, capa, ano, genero, descricao')
+        .select('id, tmdb_id, titulo, capa, year, genero, descricao')
         .limit(50);
 
       if (error) {
@@ -82,10 +83,10 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
           id: String(serie.id || `series-${Math.random()}`),
           tmdbId: serie.tmdb_id,
           title: serie.titulo,
-          poster: serie.capa || '/api/placeholder/300/450', // Fallback para poster
+          poster: serie.capa ? tmdbImageUrl(serie.capa, 'w500') : '',
           type: 'series',
           year: serie.year || '2024',
-          rating: 'N/A', // Séries não têm rating na tabela
+          rating: 'N/A',
         };
       });
 

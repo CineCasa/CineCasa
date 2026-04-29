@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { tmdbImageUrl, fetchTmdbDetails } from '@/services/tmdb';
 
 export interface Serie {
-  id_n: number;
+  id: number;
   tmdb_id: string | null;
   titulo: string;
   descricao: string | null;
@@ -22,7 +22,7 @@ export interface Serie {
 }
 
 export interface Temporada {
-  id_n: number;
+  id: number;
   serie_id: number;
   numero_temporada: number;
   titulo?: string;
@@ -31,7 +31,7 @@ export interface Temporada {
 }
 
 export interface Episodio {
-  id_n: number;
+  id: number;
   temporada_id: number;
   numero_episodio: number;
   titulo: string;
@@ -79,11 +79,11 @@ export function useSeriesData() {
 
       // Mapear dados do banco
       let mappedSeries: Serie[] = seriesData.map((s: any) => ({
-        id_n: s.id_n,
+        id: s.id,
         tmdb_id: s.tmdb_id,
         titulo: s.titulo,
         descricao: s.descricao,
-        ano: s.ano,
+        year: s.year,
         capa: s.capa,
         banner: s.banner,
         trailer: s.trailer,
@@ -173,7 +173,7 @@ export function useSeriesData() {
       const { data: epsData, error: epsError } = await supabase
         .from('episodios')
         .select('*')
-        .eq('temporada_id', primeiraTemporada.id_n)
+        .eq('temporada_id', primeiraTemporada.id)
         .order('numero_episodio', { ascending: true })
         .limit(1);
 
@@ -183,7 +183,7 @@ export function useSeriesData() {
 
       const ep = epsData[0];
       return {
-        id_n: ep.id_n,
+        id: ep.id,
         temporada_id: ep.temporada_id,
         numero_episodio: ep.numero_episodio,
         titulo: ep.titulo,

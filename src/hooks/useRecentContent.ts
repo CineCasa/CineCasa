@@ -51,7 +51,7 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
       // Buscar séries das últimas 24h - usar 'capa' para séries
       let { data: series, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, capa, ano, genero, tmdb_id, created_at')
+        .select('id, titulo, capa, year, genero, tmdb_id, created_at')
         .gte('created_at', cutoffDate)
         .order('created_at', { ascending: false });
 

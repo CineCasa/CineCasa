@@ -63,7 +63,7 @@ export const usePoderiaSerMelhor = (userId?: string): UsePoderiaSerMelhorReturn 
           .limit(10),  // Buscar mais itens para depois filtrar
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, banner, ano, tmdb_rating')
+          .select('id, tmdb_id, titulo, banner, year, tmdb_rating')
           .lt('tmdb_rating', '5.0')
           .not('tmdb_rating', 'is', null)
           .order('tmdb_rating', { ascending: true })

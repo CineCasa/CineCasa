@@ -137,7 +137,7 @@ const useCinemaCategories = () => {
           }
           
           organizedCategories[normalizedGenre].push({
-            id: (film as any).id_n || (film as any).id || `film-${Math.random()}`,
+            id: (film as any).id || `film-${Math.random()}`,
             name: normalizedGenre,
             description: getGenreDescription(normalizedGenre),
             icon: getGenreIcon(normalizedGenre),

@@ -41,7 +41,7 @@ export function useSeriesHero(): UseSeriesHeroReturn {
       try {
         const { data: series, error } = await supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, banner, ano, rating, descricao, genero, temporadas, episodios')
+          .select('id, tmdb_id, titulo, banner, year, rating, descricao, genero, temporadas, episodios')
           .not('tmdb_id', 'is', null);
 
         if (error) {
@@ -59,12 +59,12 @@ export function useSeriesHero(): UseSeriesHeroReturn {
               const backdropPath = tmdbData?.backdrop_path;
               
               return {
-                id: `series-${s.id_n}`,
+                id: `series-${s.id}`,
                 tmdbId: s.tmdb_id,
                 title: s.titulo,
                 backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : s.banner,
                 poster: s.banner,
-                year: parseInt(s.ano) || 0,
+                year: parseInt(s.year) || 0,
                 rating: s.rating || 'N/A',
                 seasons: s.temporadas || tmdbData?.number_of_seasons || 1,
                 episodes: s.episodios || tmdbData?.number_of_episodes,

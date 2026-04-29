@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { isNotCollection } from '@/lib/utils';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface TravesseiroContent {
   id: string;
@@ -39,7 +40,7 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
       // Buscar séries relaxantes (limitado para performance)
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, tmdb_id, titulo, banner, ano, genero')
+        .select('id, tmdb_id, titulo, banner, year, genero, capa')
         .or('genero.ilike.%drama%,genero.ilike.%romance%,genero.ilike.%família%')
         .not('banner', 'is', null)
         .limit(20);
@@ -59,7 +60,7 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
         ...(filteredCinemaData).map((item: any) => ({
           id: item.id?.toString() || `cinema-${Math.random()}`,
           title: item.titulo || 'Sem título',
-          poster: item.poster || '',
+          poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
           type: 'movie' as const,
           year: item.year,
           rating: item.rating,
@@ -67,7 +68,7 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
         ...(seriesData || []).map((item: any) => ({
           id: item.id?.toString() || `series-${Math.random()}`,
           title: item.titulo || 'Sem título',
-          poster: item.banner || '',
+          poster: item.capa ? tmdbImageUrl(item.capa, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
           type: 'series' as const,
           year: item.year,
           rating: 'N/A',

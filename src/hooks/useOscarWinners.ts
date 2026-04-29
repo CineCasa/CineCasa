@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { isNotCollection } from '@/lib/utils';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface OscarWinner {
   id: string;
@@ -89,7 +90,7 @@ export const useOscarWinners = () => {
         // Busca em séries - simplificada
         supabase
           .from('series')
-          .select('id_n, titulo, banner, ano, genero')
+          .select('id, titulo, banner, year, genero')
           .ilike('genero', '%documentario%')
           .not('banner', 'is', null)
           .limit(10)
@@ -122,14 +123,14 @@ export const useOscarWinners = () => {
           id: item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
+          poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
           type: 'movie' as const,
           year: item.year,
-          rating: item.rating || 'N/A', // Fallback para rating
+          rating: item.rating || 'N/A',
           oscarYear: item.year,
           award: 'Oscar Winner',
         }))
-        .filter(item => item.id && item.tmdbId); // Remover inválidos
+        .filter(item => item.id && item.tmdbId);
 
       // Remover duplicados baseado no tmdbId
       const uniqueWinners = processedWinners.filter((item, index, self) =>
@@ -155,7 +156,7 @@ export const useOscarWinners = () => {
               id: item.id?.toString(),
               tmdbId: item.tmdb_id?.toString() || '',
               title: item.titulo,
-              poster: item.poster,
+              poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
               type: 'movie' as const,
               year: item.year?.toString() || 'N/A',
               rating: item.rating || 'N/A',

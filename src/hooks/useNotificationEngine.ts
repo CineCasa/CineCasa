@@ -254,7 +254,7 @@ export function useContinueWatchingReminder() {
       if (pausedContent) {
         // Buscar dados do conteúdo em tabela separada
         const table = pausedContent.content_type === 'movie' ? 'cinema' : 'series';
-        const idColumn = pausedContent.content_type === 'movie' ? 'id' : 'id_n';
+        const idColumn = 'id';
         const contentId = pausedContent.cinema_id || pausedContent.serie_id;
 
         let title = '';

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface WatchlistItem {
   id: string;
@@ -59,7 +60,7 @@ export const useWatchlistSection = (userId?: string): UseWatchlistSectionReturn 
       const mappedItems: WatchlistItem[] = (data || []).map((item: any) => ({
         id: item.content_id?.toString() || item.id,
         title: item.titulo || 'Sem título',
-        poster: item.poster || item.banner || '/placeholder-poster.jpg',
+        poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
         type: item.content_type as 'movie' | 'series',
         year: item.year || '',
         rating: item.rating || 'N/A',

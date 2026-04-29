@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { tmdbImageUrl } from '@/services/tmdb';
 
 export interface Infantil {
   id: string;
@@ -36,7 +37,7 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           .limit(30),
         supabase
           .from('series')
-          .select('id_n, tmdb_id, titulo, ano, genero, capa, banner')
+          .select('id, tmdb_id, titulo, year, genero, capa, banner')
           .or('genero.ilike.%infantil%')
           .limit(20)
       ]);
@@ -46,7 +47,7 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           id: item.id.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          poster: item.poster,
+          poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',
           type: 'movie' as const,
           year: item.year,
           rating: item.rating,
@@ -55,8 +56,7 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           id: item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          // Usar 'capa' ou 'banner' para séries (conforme schema do banco)
-          poster: item.capa || item.banner || '/api/placeholder/300/450',
+          poster: item.capa ? tmdbImageUrl(item.capa, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
           type: 'series' as const,
           year: item.year,
           rating: 'N/A',
