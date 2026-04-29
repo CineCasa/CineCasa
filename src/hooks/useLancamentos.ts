@@ -68,7 +68,7 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       // Buscar filmes de lançamento (2025-2026) com poster válido
       const { data: allMovies, error } = await supabase
         .from('cinema')
-        .select('id, id_n, tmdb_id, titulo, poster, year, ano, rating, category, genero, description, duration, banner, backdrop')
+        .select('id, tmdb_id, titulo, poster, year, ano, rating, category, genero, description, duration, banner, backdrop')
         .or('year.eq.2026,year.eq.2025,year.eq.2024,ano.eq.2026,ano.eq.2025,ano.eq.2024,category.ilike.%Lançamento%,genero.ilike.%Lançamento%')
         .not('poster', 'is', null)
         .order('year', { ascending: false })
@@ -170,7 +170,7 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
 
       // Mapear para o formato Lancamento
       const mapMovie = (item: any, category: string): Lancamento => ({
-        id: item.id_n?.toString() || item.id?.toString() || `cinema-${Math.random()}`,
+        id: item.id?.toString() || `cinema-${Math.random()}`,
         tmdbId: item.tmdb_id,
         title: item.titulo,
         // Usar coluna 'poster' para filmes (conforme schema do banco)
