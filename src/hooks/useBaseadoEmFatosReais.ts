@@ -45,7 +45,7 @@ export const useBaseadoEmFatosReais = () => {
       // Buscar séries documentárias
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id, tmdb_id, titulo, banner, year, genero')
+        .select('id_n, tmdb_id, titulo, banner, ano, genero')
         .ilike('genero', '%documentario%')
         .not('banner', 'is', null)
         .limit(50);
@@ -70,12 +70,12 @@ export const useBaseadoEmFatosReais = () => {
 
       // Mapear séries
       const series: BaseadoEmFatosReaisContent[] = (seriesData || []).map((item: any) => ({
-        id: item.id?.toString() || '',
+        id: item.id_n?.toString() || '',
         tmdbId: item.tmdb_id,
         title: item.titulo,
         poster: item.banner ? tmdbImageUrl(item.banner, 'w500') : '',
         type: 'series' as const,
-        year: item.year?.toString() || 'N/A',
+        year: item.ano?.toString() || 'N/A',
         rating: 'N/A',
       }));
 

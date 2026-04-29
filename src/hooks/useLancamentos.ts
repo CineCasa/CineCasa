@@ -68,7 +68,7 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       // Buscar filmes de lançamento (2025-2026) com poster válido
       const { data: allMovies, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, category, genero, description, duration, banner, backdrop')
+        .select('id, tmdb_id, titulo, poster, year, rating, category, genero, description')
         .or('year.eq.2026,year.eq.2025,year.eq.2024,category.ilike.%Lançamento%,genero.ilike.%Lançamento%')
         .not('poster', 'is', null)
         .order('year', { ascending: false })
