@@ -157,7 +157,12 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
             src={validPoster}
             alt={title}
             className={`w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${isAdult ? 'adult-poster' : ''}`}
-            loading="lazy"
+            loading="eager"
+            onLoad={() => {
+              if (window.innerWidth < 768) {
+                console.log('✅ [Mobile] Poster carregado:', { id, title, poster: validPoster?.substring(0, 50) });
+              }
+            }}
             onError={(e) => {
               console.log('❌ Erro ao carregar poster:', poster);
               console.log('🎭 Item:', { id, title, poster, type });
