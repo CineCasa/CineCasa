@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 // Versão atual da aplicação - alterar sempre que fizer deploy de novas features
-const APP_VERSION = '2026.04.23-v1';
+const APP_VERSION = '2026.04.29-v2';
 const VERSION_KEY = 'cinecasa-app-version';
 const LAST_CLEANUP_KEY = 'cinecasa-last-cleanup';
 
@@ -145,17 +145,24 @@ export function useAutoCacheCleanup() {
     }
   }, [clearAllCaches, clearLocalStorage, clearSessionStorage, clearIndexedDB, updateServiceWorker]);
 
-  // DESATIVADO: Limpeza automática desabilitada para reduzir erros
-  // O sistema está online, cache local não é necessário
+  // ATIVADO: Limpeza automática quando detectar nova versão
   const checkVersionAndCleanup = useCallback(async (): Promise<boolean> => {
-    // Apenas registrar versão atual, sem limpeza agressiva
     const storedVersion = localStorage.getItem(VERSION_KEY);
     if (storedVersion !== APP_VERSION) {
-      console.log('[CacheCleanup] Nova versão:', APP_VERSION);
+      console.log('[CacheCleanup] Nova versão detectada:', APP_VERSION, 'Versão anterior:', storedVersion);
+      console.log('[CacheCleanup] Executando limpeza automática...');
+      
+      // Forçar limpeza completa de todos os caches
+      await performCleanup({ force: true, preserveAuth: true });
+      
+      // Atualizar versão registrada
       localStorage.setItem(VERSION_KEY, APP_VERSION);
+      
+      console.log('[CacheCleanup] Limpeza automática concluída');
+      return true;
     }
     return false;
-  }, []);
+  }, [performCleanup]);
 
   // DESATIVADO: Limpeza periódica desabilitada
   // O sistema está online, não precisa limpar cache periodicamente
@@ -166,6 +173,7 @@ export function useAutoCacheCleanup() {
 
   // Effect: verifica versão ao montar
   useEffect(() => {
+    // Executar limpeza de versão imediatamente
     checkVersionAndCleanup();
     schedulePeriodicCleanup();
 
@@ -174,6 +182,12 @@ export function useAutoCacheCleanup() {
       if (event.data?.type === 'NEW_VERSION_AVAILABLE') {
         console.log('[CacheCleanup] Nova versão disponível via SW');
         checkVersionAndCleanup();
+      }
+      
+      if (event.data?.type === 'CACHE_CLEARED') {
+        console.log('[CacheCleanup] Cache limpo pelo Service Worker, recarregando...');
+        // Recarregar a página para garantir dados frescos
+        window.location.reload();
       }
     };
 
