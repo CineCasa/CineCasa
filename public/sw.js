@@ -103,14 +103,12 @@ self.addEventListener('fetch', e => {
           });
         }
         return networkResponse;
-        // Retorna cache imediatamente (ou fetch se não tiver cache)
-        return cachedResponse || fetchPromise;
       })
       .catch(() => {
-        // Último fallback
-        return fetch(request).catch(() => 
-          new Response('Offline', { status: 503 })
-        );
+        // Se falhar na rede, tenta buscar do cache
+        return caches.match(request).then(cachedResponse => {
+          return cachedResponse || new Response('Offline', { status: 503 });
+        });
       })
   );
 });
