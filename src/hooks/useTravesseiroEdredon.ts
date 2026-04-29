@@ -32,8 +32,8 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
       // Buscar filmes relaxantes (limitado para performance)
       const { data: cinemaData, error: cinemaError } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%drama%,genero.ilike.%romance%,genero.ilike.%família%,category.ilike.%drama%,category.ilike.%romance%,category.ilike.%família%')
+        .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
+        .or('genre.ilike.%drama%,genre.ilike.%romance%,genre.ilike.%família%,category.ilike.%drama%,category.ilike.%romance%,category.ilike.%família%')
         .not('poster', 'is', null)
         .limit(30);
       

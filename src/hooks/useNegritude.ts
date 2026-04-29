@@ -32,8 +32,8 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%negritude%,category.ilike.%negritude%')
+          .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
+          .or('genre.ilike.%negritude%,category.ilike.%negritude%')
           .limit(30),
         supabase
           .from('series')

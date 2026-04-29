@@ -116,9 +116,9 @@ export const useMaesInesqueciveis = (): UseMaesInesqueciveisReturn => {
       // Buscar filmes com termos sobre mães/maternidade na descrição ou título
       const { data: cinemaData, error: cinemaError } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, description, genero, category, vote_average')
+        .select('id, tmdb_id, titulo, poster, year, rating, description, genre, category, vote_average')
         .or('description.ilike.%mãe%,description.ilike.%materno%,description.ilike.%maternidade%,description.ilike.%filhos%,description.ilike.%família%,description.ilike.%maternal%,titulo.ilike.%mãe%,titulo.ilike.%materno%,titulo.ilike.%maternidade%')
-        .or('genero.ilike.%Drama%,genero.ilike.%Família%,category.ilike.%Drama%,category.ilike.%Família%')
+        .or('genre.ilike.%Drama%,genre.ilike.%Família%,category.ilike.%Drama%,category.ilike.%Família%')
         .not('poster', 'is', null)
         .order('vote_average', { ascending: false }) // Melhores notas primeiro
         .limit(20);

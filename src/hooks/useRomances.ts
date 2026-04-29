@@ -37,8 +37,8 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%romance%,category.ilike.%romance%')
+          .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
+          .or('genre.ilike.%romance%,category.ilike.%romance%')
           .limit(30), // Reduzido para melhor performance
         supabase
           .from('series')

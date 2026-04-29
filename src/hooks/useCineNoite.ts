@@ -73,8 +73,8 @@ export const useCineNoite = (): UseCineNoiteReturn => {
       // Buscar filmes da categoria adulto
       const { data: cinemaData, error: cinemaError } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%adulto%,genero.ilike.%erotico%,genero.ilike.%sexo%,category.ilike.%adulto%,category.ilike.%erotico%')
+        .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
+        .or('genre.ilike.%adulto%,genre.ilike.%erotico%,genre.ilike.%sexo%,category.ilike.%adulto%,category.ilike.%erotico%')
         .not('poster', 'is', null)
         .limit(20);
 

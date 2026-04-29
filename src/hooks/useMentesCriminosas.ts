@@ -33,8 +33,8 @@ export const useMentesCriminosas = () => {
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%crime%,genero.ilike.%policial%,category.ilike.%crime%,category.ilike.%policial%')
+        .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
+        .or('genre.ilike.%crime%,genre.ilike.%policial%,category.ilike.%crime%,category.ilike.%policial%')
         .not('poster', 'is', null)
         .limit(100);
 

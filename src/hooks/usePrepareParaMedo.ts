@@ -32,8 +32,8 @@ export const usePrepareParaMedo = () => {
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%terror%,genero.ilike.%horror%,genero.ilike.%medo%,category.ilike.%terror%,category.ilike.%horror%,category.ilike.%medo%')
+        .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
+        .or('genre.ilike.%terror%,genre.ilike.%horror%,genre.ilike.%medo%,category.ilike.%terror%,category.ilike.%horror%,category.ilike.%medo%')
         .not('poster', 'is', null);
 
       if (error) {

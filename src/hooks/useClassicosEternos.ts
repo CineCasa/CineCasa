@@ -32,8 +32,8 @@ export const useClassicosEternos = () => {
       // Buscar de Clássicos e Faroeste (limitado para performance)
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%clássico%,genero.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%,genero.ilike.%faroeste%,category.ilike.%faroeste%')
+        .select('id, tmdb_id, titulo, poster, year, rating, genre, category')
+        .or('genre.ilike.%clássico%,genre.ilike.%classico%,category.ilike.%clássico%,category.ilike.%classico%,genre.ilike.%faroeste%,category.ilike.%faroeste%')
         .not('poster', 'is', null)
         .limit(30);
 
