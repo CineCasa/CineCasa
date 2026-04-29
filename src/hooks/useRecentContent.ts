@@ -51,7 +51,7 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
       // Buscar séries das últimas 24h - usar 'capa' para séries
       let { data: series, error: seriesError } = await supabase
         .from('series')
-        .select('id, titulo, capa, year, genero, tmdb_id, created_at')
+        .select('id_n, titulo, capa, ano, genero, tmdb_id, created_at')
         .gte('created_at', cutoffDate)
         .order('created_at', { ascending: false });
 
@@ -74,11 +74,11 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
       }));
 
       const formattedSeries: RecentContentItem[] = (series || []).map((item: any) => ({
-        id: item.id?.toString(),
+        id: item.id_n?.toString(),
         title: item.titulo,
         type: 'series' as const,
         poster: item.capa,
-        year: item.year,
+        year: item.ano?.toString(),
         category: undefined,
         genero: item.genero,
         created_at: item.created_at,

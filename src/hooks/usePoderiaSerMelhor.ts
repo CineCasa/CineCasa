@@ -82,11 +82,11 @@ export const usePoderiaSerMelhor = (userId?: string): UsePoderiaSerMelhorReturn 
           tmdb_id: item.tmdb_id || undefined,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id_n?.toString(),
+          id: item.id?.toString(),
           title: item.titulo,
           poster: item.banner,
           type: 'series' as const,
-          year: item.ano?.toString(),
+          year: item.year?.toString(),
           rating: item.tmdb_rating ? `${item.tmdb_rating}/10` : 'N/A',
           tmdb_rating: item.tmdb_rating,
           tmdb_id: item.tmdb_id,

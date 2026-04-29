@@ -98,12 +98,12 @@ export function useSmartTVHero(): UseSmartTVHeroReturn {
               const backdropPath = tmdbData?.backdrop_path;
               
               return {
-                id: `series-${s.id}`,
+                id: `series-${s.id_n}`,
                 tmdbId: s.tmdb_id,
                 title: s.titulo,
                 backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : s.banner,
                 poster: s.banner,
-                year: parseInt(s.year) || 0,
+                year: parseInt(s.ano) || 0,
                 rating: s.rating || 'N/A',
                 description: s.descricao || '',
                 country: tmdbData?.origin_country?.[0],

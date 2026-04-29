@@ -49,7 +49,7 @@ export function useNewContentNotifications() {
       // Buscar novas séries das últimas 24h APENAS
       const { data: newSeries, error: seriesError } = await supabase
         .from('series')
-        .select('id_n, titulo, banner, year, created_at, tmdb_id')
+        .select('id_n, titulo, banner, ano, created_at, tmdb_id')
         .gte('created_at', twentyFourHoursAgo)
         .order('created_at', { ascending: false });
 

@@ -189,14 +189,14 @@ export const useMaesInesqueciveis = (): UseMaesInesqueciveisReturn => {
 
       // Mapear séries
       finalSeries = (seriesData || []).map((item: any) => ({
-        id: item.id?.toString() || `series-${Math.random()}`,
+        id: item.id_n?.toString() || `series-${Math.random()}`,
         tmdbId: item.tmdb_id,
         title: item.titulo || 'Sem título',
-        poster: item.banner || '',
+        poster: item.banner ? tmdbImageUrl(item.banner, 'w500') : '',
         type: 'series' as const,
-        year: item.year || 'N/A',
+        year: item.ano?.toString() || 'N/A',
         rating: 'N/A',
-        voteAverage: item.vote_average || 0,
+        voteAverage: item.rating || 0,
       }));
 
       // Ordenar por vote_average (melhores notas primeiro)

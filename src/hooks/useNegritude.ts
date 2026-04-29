@@ -61,7 +61,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           title: item.titulo,
           poster: item.banner ? tmdbImageUrl(item.banner, 'w500') : '',
           type: 'series' as const,
-          year: item.year,
+          year: item.ano?.toString() || 'N/A',
           rating: 'N/A',
         })),
       ];

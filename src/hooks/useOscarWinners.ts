@@ -90,7 +90,7 @@ export const useOscarWinners = () => {
         // Busca em séries - simplificada
         supabase
           .from('series')
-          .select('id, titulo, banner, year, genero')
+          .select('id_n, titulo, banner, ano, genero')
           .ilike('genero', '%documentario%')
           .not('banner', 'is', null)
           .limit(10)

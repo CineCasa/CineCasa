@@ -59,12 +59,12 @@ export function useSeriesHero(): UseSeriesHeroReturn {
               const backdropPath = tmdbData?.backdrop_path;
               
               return {
-                id: `series-${s.id}`,
+                id: `series-${s.id_n}`,
                 tmdbId: s.tmdb_id,
                 title: s.titulo,
                 backdrop: backdropPath ? tmdbImageUrl(backdropPath, 'original') : s.banner,
                 poster: s.banner,
-                year: parseInt(s.year) || 0,
+                year: parseInt(s.ano) || 0,
                 rating: s.rating || 'N/A',
                 seasons: s.temporadas || tmdbData?.number_of_seasons || 1,
                 episodes: s.episodios || tmdbData?.number_of_episodes,

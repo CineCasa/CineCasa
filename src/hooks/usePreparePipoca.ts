@@ -80,12 +80,12 @@ export const usePreparePipoca = (userId?: string): UsePreparePipocaReturn => {
         const variations = grouped.get(baseTitle) || [];
         const serie = variations[Math.floor(Math.random() * variations.length)];
         return {
-          id: String(serie.id_n || `series-${Math.random()}`),
+          id: String(serie.id || `series-${Math.random()}`),
           tmdbId: serie.tmdb_id,
           title: serie.titulo,
           poster: serie.capa ? tmdbImageUrl(serie.capa, 'w500') : '',
           type: 'series',
-          year: String(serie.ano || '2024'),
+          year: String(serie.year || '2024'),
           rating: 'N/A',
         };
       });

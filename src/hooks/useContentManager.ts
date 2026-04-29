@@ -94,7 +94,7 @@ export function useContentManager({
         .select(`
           *,
           cinema:cinema(id),
-          series:series(id)
+          series:series(id_n)
         `)
         .eq('user_id', userId)
         .not('progress', 'eq', 0)

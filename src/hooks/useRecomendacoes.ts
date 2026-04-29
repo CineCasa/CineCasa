@@ -153,13 +153,13 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
         // Buscar em series - SEM limite
         const { data: series, error: errorSeries } = await supabase
           .from('series')
-          .select('*')
+          .select('id_n, tmdb_id, titulo, capa, banner, genero, ano')
           .or(`genero.ilike.${genreAnalytics.genre}%,categoria.ilike.${genreAnalytics.genre}%`)
-          .order('id', { ascending: false });
+          .order('id_n', { ascending: false });
         
         if (!errorSeries && series) {
           for (const serie of series) {
-            const id = (serie as any).id?.toString();
+            const id = serie.id_n?.toString();
             if (!id || contentIds.has(id) || viewedIds.has(id)) continue;
             
             const { score, matchedGenres } = calculateMatchScore(serie, topGenres);
@@ -174,7 +174,7 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
                 poster: serie.capa ? tmdbImageUrl(serie.capa, 'w500') : (serie.banner ? tmdbImageUrl(serie.banner, 'w500') : ''),
                 backdrop: serie.banner ? tmdbImageUrl(serie.banner, 'original') : '',
                 type: 'series',
-                year: serie.year || '2024',
+                year: serie.ano?.toString() || '2024',
                 rating: 'N/A',
                 genres: matchedGenres,
                 matchScore: score,
