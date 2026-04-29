@@ -39,97 +39,25 @@ interface ProfileData {
 }
 
 // ============================================
-// COMPONENT: NEON SWITCH
+// COMPONENT: LOADING SKELETON
 // ============================================
-const NeonSwitch = ({ checked, onCheckedChange, disabled = false }: { 
-  checked: boolean; 
-  onCheckedChange: (checked: boolean) => void;
-  disabled?: boolean;
-}) => {
-  const [isOptimistic, setIsOptimistic] = useState(false);
-  const [optimisticValue, setOptimisticValue] = useState(checked);
-
-  const handleToggle = async () => {
-    if (disabled) return;
-    
-    const newValue = !checked;
-    setIsOptimistic(true);
-    setOptimisticValue(newValue);
-    
-    try {
-      await onCheckedChange(newValue);
-      toast.success(newValue ? 'Ativado com sucesso!' : 'Desativado com sucesso!');
-    } catch (error) {
-      setOptimisticValue(checked);
-      toast.error('Erro ao atualizar. Tente novamente.');
-    } finally {
-      setIsOptimistic(false);
-    }
-  };
-
-  const displayValue = isOptimistic ? optimisticValue : checked;
-
+function ProfileSkeleton() {
   return (
-    <button
-      onClick={handleToggle}
-      disabled={disabled || isOptimistic}
-      className={`relative w-14 h-7 rounded-full transition-all duration-300 ${
-        displayValue 
-          ? 'bg-cyan-500 shadow-[0_0_15px_rgba(0,229,255,0.5)]' 
-          : 'bg-gray-700'
-      } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
-    >
-      <motion.div
-        className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-lg"
-        animate={{ 
-          left: displayValue ? 'calc(100% - 1.5rem)' : '0.25rem',
-          scale: isOptimistic ? 0.9 : 1
-        }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      />
-      {isOptimistic && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Loader2 className="w-3 h-3 text-white animate-spin" />
-        </div>
-      )}
-    </button>
-  );
-};
-
-// ============================================
-// COMPONENT: SUBTITLE PREVIEW
-// ============================================
-const SubtitlePreview = ({ settings }: { settings: SubtitleSettings }) => {
-  const sizeClasses = {
-    small: 'text-xs',
-    medium: 'text-sm',
-    large: 'text-base'
-  };
-
-  return (
-    <div className="relative w-full h-32 bg-black/60 rounded-lg overflow-hidden border border-white/10">
-      {/* Mock Video Frame */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="text-white/30">
-          <Film className="w-12 h-12" />
-        </div>
-      </div>
-      
-      {/* Subtitle Preview */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center px-4">
-        <div 
-          className={`${sizeClasses[settings.fontSize]} px-3 py-1 rounded transition-all duration-300 ${
-            settings.background ? 'bg-black/70' : ''
-          }`}
-          style={{ color: settings.color }}
-        >
-          <span className="font-medium">Preview da legenda</span>
+    <div className="min-h-screen bg-[#0a0a0f] pl-0 lg:pl-64">
+      <div className="p-4 lg:p-8 space-y-6">
+        {/* Header Skeleton */}
+        <div className="h-64 rounded-3xl bg-gray-800/50 animate-pulse" />
+        
+        {/* Grid Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-48 rounded-2xl bg-gray-800/50 animate-pulse" />
+          ))}
         </div>
       </div>
     </div>
   );
-};
+}
 
 // ============================================
 // MAIN COMPONENT: PROFILE PAGE
