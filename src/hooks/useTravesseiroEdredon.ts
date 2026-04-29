@@ -65,11 +65,11 @@ export const useTravesseiroEdredon = (userId?: string): UseTravesseiroEdredonRet
           rating: item.rating,
         })),
         ...(seriesData || []).map((item: any) => ({
-          id: item.id_n?.toString() || `series-${Math.random()}`,
+          id: item.id?.toString() || `series-${Math.random()}`,
           title: item.titulo || 'Sem título',
           poster: item.banner || '',
           type: 'series' as const,
-          year: item.ano,
+          year: item.year,
           rating: 'N/A',
         })),
       ];

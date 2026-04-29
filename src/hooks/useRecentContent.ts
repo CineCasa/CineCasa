@@ -74,11 +74,11 @@ export function useRecentContent(hoursBack: number = 24): UseRecentContentReturn
       }));
 
       const formattedSeries: RecentContentItem[] = (series || []).map((item: any) => ({
-        id: item.id_n?.toString() || item.id?.toString(),
+        id: item.id?.toString(),
         title: item.titulo,
         type: 'series' as const,
         poster: item.capa,
-        year: item.ano,
+        year: item.year,
         category: undefined,
         genero: item.genero,
         created_at: item.created_at,

@@ -68,8 +68,8 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
       // Buscar filmes de lançamento (2025-2026) com poster válido
       const { data: allMovies, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, ano, rating, category, genero, description, duration, banner, backdrop')
-        .or('year.eq.2026,year.eq.2025,year.eq.2024,ano.eq.2026,ano.eq.2025,ano.eq.2024,category.ilike.%Lançamento%,genero.ilike.%Lançamento%')
+        .select('id, tmdb_id, titulo, poster, year, rating, category, genero, description, duration, banner, backdrop')
+        .or('year.eq.2026,year.eq.2025,year.eq.2024,category.ilike.%Lançamento%,genero.ilike.%Lançamento%')
         .not('poster', 'is', null)
         .order('year', { ascending: false })
         .limit(100);
@@ -138,7 +138,7 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
         const isImageValid = isValidImageUrl(item.poster);
         
         // Verificar se é lançamento 2026 ou 2025 (aceita year como string ou número)
-        const itemYear = String(item.year || item.ano || '');
+        const itemYear = String(item.year || '');
         const is2026 = itemYear === '2026' || itemYear.includes('2026') || 
                        item.category?.includes('Lançamento 2026') ||
                        item.genero?.includes('Lançamento 2026');
@@ -177,7 +177,7 @@ export const useLancamentos = (userId?: string): UseLancamentosReturn => {
         poster: isValidImageUrl(item.poster) ? item.poster : `https://picsum.photos/seed/fallback-${item.id}/300/450.jpg`,
         backdrop: item.banner || item.backdrop,
         type: 'movie' as const,
-        year: item.ano || item.year || category,
+        year: item.year || category,
         rating: item.rating,
         category: category,
         description: item.description,

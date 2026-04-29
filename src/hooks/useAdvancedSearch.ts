@@ -223,7 +223,7 @@ export function useAdvancedSearch({
             coverImage: item.cover_image,
             backdropPath: item.backdrop_path,
             genre: item.genre,
-            year: item.ano,
+            year: item.year,
             rating: item.rating,
             duration: item.duration,
             contentType: 'movie',

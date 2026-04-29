@@ -141,7 +141,7 @@ export const useSupabaseContent = () => {
           backdrop: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
           poster: posterPath ? tmdbImageUrl(posterPath, "w500") : "",
           banner: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
-          year: parseInt(item.ano || "0"),
+          year: parseInt(item.year || "0"),
           rating: "N/A",
           duration: "",
           genre: genres.length > 0 ? genres : ["Série"],

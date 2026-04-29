@@ -110,7 +110,7 @@ export function useSeriesData() {
               };
             }
           } catch (e) {
-            console.warn(`Erro ao buscar TMDB para série ${serie.id_n}:`, e);
+            console.warn(`Erro ao buscar TMDB para série ${serie.id}:`, e);
           }
           return serie;
         })
@@ -128,7 +128,7 @@ export function useSeriesData() {
               grouped[genre] = [];
             }
             // Evitar duplicatas na mesma categoria
-            if (!grouped[genre].find(s => s.id_n === serie.id_n)) {
+            if (!grouped[genre].find(s => s.id === serie.id)) {
               grouped[genre].push(serie);
             }
           });

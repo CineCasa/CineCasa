@@ -119,14 +119,14 @@ export const useOscarWinners = () => {
       // Processar e formatar filmes
       const processedWinners: OscarWinner[] = filteredMovies
         .map((item: any) => ({
-          id: item.id?.toString() || item.id_n?.toString(),
+          id: item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
           poster: item.poster || '/api/placeholder/300/450', // Fallback para poster
-          type: (item.ano ? 'series' : 'movie') as 'movie' | 'series',
-          year: item.year || item.ano,
+          type: 'movie' as const,
+          year: item.year,
           rating: item.rating || 'N/A', // Fallback para rating
-          oscarYear: item.year || item.ano,
+          oscarYear: item.year,
           award: 'Oscar Winner',
         }))
         .filter(item => item.id && item.tmdbId); // Remover inválidos

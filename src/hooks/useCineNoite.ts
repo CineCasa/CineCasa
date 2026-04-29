@@ -112,12 +112,12 @@ export const useCineNoite = (): UseCineNoiteReturn => {
 
       // Mapear séries
       const series: CineNoiteContent[] = (seriesData || []).map((item: any) => ({
-        id: item.id_n?.toString() || `series-${Math.random()}`,
+        id: item.id?.toString() || `series-${Math.random()}`,
         tmdbId: item.tmdb_id,
         title: item.titulo || 'Sem título',
         poster: item.banner || '',
         type: 'series' as const,
-        year: item.ano || 'N/A',
+        year: item.year || 'N/A',
         rating: 'N/A',
       }));
 

@@ -60,12 +60,12 @@ export const useCineRiso = () => {
 
       // Mapear séries
       const series: CineRisoContent[] = (seriesData.data || []).map((item: any) => ({
-        id: item.id_n?.toString() || item.id?.toString(),
+        id: item.id?.toString(),
         tmdbId: item.tmdb_id,
         title: item.titulo,
         poster: '/api/placeholder/300/450', // Fallback para séries
         type: 'series' as const,
-        year: item.ano || 'N/A',
+        year: item.year || 'N/A',
         rating: 'N/A',
       }));
 

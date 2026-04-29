@@ -69,12 +69,12 @@ export const useBaseadoEmFatosReais = () => {
 
       // Mapear séries
       const series: BaseadoEmFatosReaisContent[] = (seriesData || []).map((item: any) => ({
-        id: item.id_n?.toString() || '',
+        id: item.id?.toString() || '',
         tmdbId: item.tmdb_id,
         title: item.titulo,
         poster: item.banner,
         type: 'series' as const,
-        year: item.ano?.toString() || 'N/A',
+        year: item.year?.toString() || 'N/A',
         rating: 'N/A',
       }));
 

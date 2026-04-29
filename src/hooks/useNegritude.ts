@@ -51,16 +51,16 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           title: item.titulo,
           poster: item.poster,
           type: 'movie' as const,
-          year: item.year || item.ano,
+          year: item.year,
           rating: item.rating,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id_n?.toString() || item.id?.toString(),
+          id: item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
           poster: item.banner || '/api/placeholder/300/450', // Usar banner se disponível
           type: 'series' as const,
-          year: item.ano,
+          year: item.year,
           rating: 'N/A', // Séries não têm rating na tabela
         })),
       ];

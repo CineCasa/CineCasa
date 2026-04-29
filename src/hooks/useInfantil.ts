@@ -52,13 +52,13 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           rating: item.rating,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id_n?.toString() || item.id?.toString(),
+          id: item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
           // Usar 'capa' ou 'banner' para séries (conforme schema do banco)
           poster: item.capa || item.banner || '/api/placeholder/300/450',
           type: 'series' as const,
-          year: item.ano,
+          year: item.year,
           rating: 'N/A',
         })),
       ];

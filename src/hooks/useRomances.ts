@@ -64,13 +64,13 @@ export const useRomances = (userId?: string): UseRomancesReturn => {
           rating: item.rating,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id_n?.toString() || item.id?.toString(),
+          id: item.id?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
           // Usar 'capa' para séries (conforme schema do banco)
           poster: item.capa || item.banner || '',
           type: 'series' as const,
-          year: item.ano,
+          year: item.year,
           rating: 'N/A',
         })),
       ];
