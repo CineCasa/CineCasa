@@ -33,8 +33,8 @@ export const useBaseadoEmFatosReais = () => {
       // Buscar filmes documentários
       const { data: cinemaData, error: cinemaError } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%documentario%,genero.ilike.%documentário%,genero.ilike.%documentary%,category.ilike.%documentario%,category.ilike.%documentário%,category.ilike.%documentary%')
+        .select('id, tmdb_id, titulo, poster, year, rating, category')
+        .or('category.ilike.%documentario%,category.ilike.%documentário%,category.ilike.%documentary%')
         .not('poster', 'is', null)
         .limit(100);
 

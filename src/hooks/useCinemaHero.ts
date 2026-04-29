@@ -46,7 +46,7 @@ export function useCinemaHero(): UseCinemaHeroReturn {
       try {
         const { data: movies, error } = await supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, banner, year, rating, description, category, genero')
+          .select('id, tmdb_id, titulo, poster, year, rating, description, category')
           .not('tmdb_id', 'is', null)
           .limit(30);
 
