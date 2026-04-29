@@ -45,9 +45,7 @@ export const useBaseadoEmFatosReais = () => {
       // Buscar séries documentárias
       const { data: seriesData, error: seriesError } = await supabase
         .from('series')
-        .select('id, tmdb_id, titulo, banner, year, genero')
-        .ilike('genero', '%documentario%')
-        .not('banner', 'is', null)
+        .select('id, tmdb_id, titulo')
         .limit(50);
 
       if (seriesError) {
@@ -73,9 +71,9 @@ export const useBaseadoEmFatosReais = () => {
         id: item.id?.toString() || '',
         tmdbId: item.tmdb_id,
         title: item.titulo,
-        poster: item.banner ? tmdbImageUrl(item.banner, 'w500') : '',
+        poster: '',
         type: 'series' as const,
-        year: item.year?.toString() || 'N/A',
+        year: 'N/A',
         rating: 'N/A',
       }));
 
