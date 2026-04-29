@@ -37,7 +37,8 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           .limit(30),
         supabase
           .from('series')
-          .select('id, tmdb_id, titulo')
+          .select('id_n, tmdb_id, titulo, ano, genero, capa, banner')
+          .or('genero.ilike.%negritude%')
           .limit(20)
       ]);
 
@@ -55,7 +56,7 @@ export const useNegritude = (userId?: string): UseNegritudeReturn => {
           rating: item.rating,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id?.toString(),
+          id: item.id_n?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
           poster: item.banner ? tmdbImageUrl(item.banner, 'w500') : '',

@@ -37,7 +37,8 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           .limit(30),
         supabase
           .from('series')
-          .select('id, tmdb_id, titulo')
+          .select('id_n, tmdb_id, titulo, ano, genero, capa, banner')
+          .or('genero.ilike.%infantil%')
           .limit(20)
       ]);
 
@@ -52,12 +53,12 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
           rating: item.rating,
         })),
         ...(seriesData.data || []).map((item: any) => ({
-          id: item.id?.toString(),
+          id: item.id_n?.toString(),
           tmdbId: item.tmdb_id,
           title: item.titulo,
           poster: item.capa ? tmdbImageUrl(item.capa, 'w500') : (item.banner ? tmdbImageUrl(item.banner, 'w500') : ''),
           type: 'series' as const,
-          year: item.year,
+          year: String(item.ano || 'N/A'),
           rating: 'N/A',
         })),
       ];

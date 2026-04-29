@@ -112,8 +112,8 @@ export const useContinueWatching = () => {
     for (const id of seriesIds) {
       const { data: serie } = await supabase
         .from('series')
-        .select('id, titulo, tmdb_id')
-        .eq('id', id)
+        .select('id_n, titulo, tmdb_id, capa, banner')
+        .eq('id_n', id)
         .maybeSingle();
       
       if (serie) {
@@ -122,7 +122,7 @@ export const useContinueWatching = () => {
         // Tentar por tmdb_id
         const { data: serieByTmdb } = await supabase
           .from('series')
-          .select('id, titulo, tmdb_id')
+          .select('id_n, titulo, tmdb_id, capa, banner')
           .eq('tmdb_id', id.toString())
           .maybeSingle();
         if (serieByTmdb) seriesData.push(serieByTmdb);
@@ -131,7 +131,7 @@ export const useContinueWatching = () => {
     
     const seriesMap = new Map<string, any>();
     seriesData.forEach(s => {
-      seriesMap.set(String(s.id), s);
+      seriesMap.set(String(s.id_n), s);
       if (s.tmdb_id) seriesMap.set(String(s.tmdb_id), s);
     });
 
