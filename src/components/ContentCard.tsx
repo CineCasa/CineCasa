@@ -129,20 +129,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
       }
     }
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
+  // Imagem visível imediatamente - lazy loading removido
 
   return (
     <div
@@ -175,7 +162,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
             src={item.image || item.poster || `https://placehold.co/300x450/1a1a1a/666666?text=${encodeURIComponent(item.title || 'Sem+Título')}`}
             alt={item.title}
             className="w-full h-full object-cover animate-in fade-in duration-500"
-            loading="lazy"
+            loading="eager"
             onError={(e) => {
               // Fallback se a imagem falhar ao carregar
               const target = e.target as HTMLImageElement;
