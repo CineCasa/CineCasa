@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import PremiumCard from './PremiumCard';
 import getSupabaseClient from '../lib/supabase';
@@ -118,10 +117,8 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
       >
         <div className="flex gap-5 px-4 pb-4">
           {films.map((film, i) => (
-            <motion.div
+            <div
               key={`m-${film.id}-${i}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               className="flex-shrink-0 w-32 sm:w-40"
             >
               <PremiumCard
@@ -133,7 +130,7 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
                 rating={film.rating ?? ''}
                 onClick={() => handleClick(film)}
               />
-            </motion.div>
+            </div>
           ))}
           {loading && [1,2,3,4].map(i => (
             <div key={`lm-${i}`} className="flex-shrink-0 w-32 sm:w-40">
@@ -147,10 +144,8 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
       <div className="hidden lg:block px-6">
         <div className="flex flex-wrap gap-5">
           {films.map((film, i) => (
-            <motion.div
+            <div
               key={`d-${film.id}-${i}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
               className="w-[calc(20%-12.8px)]"
             >
               <PremiumCard
@@ -162,7 +157,7 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
                 rating={film.rating ?? ''}
                 onClick={() => handleClick(film)}
               />
-            </motion.div>
+            </div>
           ))}
           {loading && [1,2,3,4,5].map(i => (
             <div key={`ld-${i}`} className="w-[calc(20%-16px)]">
