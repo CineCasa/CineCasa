@@ -142,8 +142,12 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
   const handleWheel = (e: React.WheelEvent) => {
     if (!scrollRef.current) return;
     
-    // Prevenir scroll vertical padrão
-    e.preventDefault();
+    // Prevenir scroll vertical padrão (pode falhar em eventos passivos)
+    try {
+      e.preventDefault();
+    } catch (e) {
+      // Ignorar erro em eventos passivos
+    }
     
     const el = scrollRef.current;
     const scrollAmount = e.deltaY > 0 ? 300 : -300;

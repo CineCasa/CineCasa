@@ -2,9 +2,25 @@ const TMDB_API_KEY = "b275ce8e1a6b3d5d879bb0907e4f56ad";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
 
+// Validar se o caminho é um UUID (commit SHA do git)
+const isUUID = (str: string): boolean => {
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const shortSHA = /^[0-9a-f]{7,40}$/i;
+  return uuidPattern.test(str) || (str.length >= 7 && str.length <= 40 && shortSHA.test(str));
+};
+
 export const tmdbImageUrl = (path: string | null, size: "w500" | "w780" | "original" = "w500") => {
   if (!path) return "";
   if (path.startsWith("http")) return path;
+  
+  // Detectar se o path é um UUID/commit SHA inválido
+  const cleanPath = path.replace(/^\//, ''); // Remove leading slash
+  if (isUUID(cleanPath)) {
+    console.error('🚫 ERRO: UUID/Commit SHA sendo usado como caminho de imagem:', path);
+    console.error('   Isso indica que o campo poster/capa contém dados incorretos do banco.');
+    return ""; // Retorna vazio para usar fallback
+  }
+  
   return `${TMDB_IMAGE_BASE}/${size}${path}`;
 };
 
