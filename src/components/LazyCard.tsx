@@ -21,8 +21,7 @@ interface LazyCardProps {
 
 const LazyCard: React.FC<LazyCardProps> = (props) => {
   const { index, ...cardProps } = props;
-  const [isVisible, setIsVisible] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Mostrar imediatamente
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -38,7 +37,7 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
       },
       {
         threshold: 0.1,
-        rootMargin: '100px', // Preload antes de entrar na tela
+        rootMargin: '100px',
       }
     );
 
@@ -53,14 +52,14 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
     <motion.div
       ref={cardRef}
       className="carousel-item"
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 1, y: 0 }}
       animate={{ 
-        opacity: isVisible ? 1 : 0.3, 
-        y: isVisible ? 0 : 20 
+        opacity: 1, 
+        y: 0 
       }}
       transition={{ 
-        duration: 0.5, 
-        delay: isVisible ? index * 0.1 : 0 
+        duration: 0.3, 
+        delay: index * 0.05 
       }}
     >
       <div 
@@ -68,27 +67,22 @@ const LazyCard: React.FC<LazyCardProps> = (props) => {
         data-navigable="true"
         data-nav-index={index}
       >
-        {isVisible ? (
-          <div className="lazy-card-content">
-            <PremiumCard
-              id={cardProps.id}
-              title={cardProps.title}
-              poster={cardProps.poster}
-              type={cardProps.type}
-              progress={cardProps.progress}
-              year={cardProps.year}
-              rating={cardProps.rating}
-              isNew={cardProps.isNew}
-              isComingSoon={cardProps.isComingSoon}
-              isAdult={cardProps.isAdult}
-              trailer={cardProps.trailer}
-              onClick={cardProps.onClick}
-            />
-          </div>
-        ) : (
-          // Placeholder estático - sem animação para melhor performance
-          <div className="relative aspect-[2/3] rounded-xl bg-white/5" />
-        )}
+        <div className="lazy-card-content">
+          <PremiumCard
+            id={cardProps.id}
+            title={cardProps.title}
+            poster={cardProps.poster}
+            type={cardProps.type}
+            progress={cardProps.progress}
+            year={cardProps.year}
+            rating={cardProps.rating}
+            isNew={cardProps.isNew}
+            isComingSoon={cardProps.isComingSoon}
+            isAdult={cardProps.isAdult}
+            trailer={cardProps.trailer}
+            onClick={cardProps.onClick}
+          />
+        </div>
       </div>
     </motion.div>
   );
