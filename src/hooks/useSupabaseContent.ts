@@ -74,8 +74,8 @@ export const useSupabaseContent = () => {
       };
 
       const mapCinema = (item: any): ContentItem => {
-        const genres = splitGenres(item.category || item.genero);
-        const category = item.category || item.genero || "Ação"; // Categoria principal
+        const genres = splitGenres(item.category || item.genre);
+        const category = item.category || item.genre || "Ação"; // Categoria principal
         
         // Coluna 'poster' é a correta para filmes no banco
         const imagePath = item.poster;

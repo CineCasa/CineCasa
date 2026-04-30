@@ -83,7 +83,7 @@ export function useRecommendations({
           // Conteúdo em alta
           supabase
             .from('cinema')
-            .select('id, genre, rating, year, view_count')
+            .select('id, tmdb_id, titulo, poster, year, rating, category, genre')
             .order('view_count', { ascending: false })
             .limit(100),
         ]);

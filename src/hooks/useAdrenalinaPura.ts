@@ -32,8 +32,8 @@ export const useAdrenalinaPura = (): UseAdrenalinaPuraReturn => {
       // Buscar filmes das categorias ação e aventura
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, category, genero')
-        .or('category.ilike.%Ação%,category.ilike.%Aventura%,genero.ilike.%Ação%,genero.ilike.%Aventura%')
+        .select('id, tmdb_id, titulo, poster, year, rating, category, genre')
+        .or('category.ilike.%Ação%,category.ilike.%Aventura%,genre.ilike.%Ação%,genre.ilike.%Aventura%')
         .not('poster', 'is', null)
         .limit(100);
 

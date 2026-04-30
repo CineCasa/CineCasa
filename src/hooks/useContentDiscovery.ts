@@ -84,7 +84,7 @@ export function useContentDiscovery({
 
         // Aplicar filtros
         if (activeFilters.genres.length > 0) {
-          query = query.in('genre', activeFilters.genres);
+          query = query.in('category', activeFilters.genres);
         }
 
         if (activeFilters.years.length > 0) {
