@@ -36,10 +36,11 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ category, contentType }) 
       setLoading(true);
       const table = contentType === 'movies' ? 'cinema' : 'series';
       
+      const filterColumn = table === 'cinema' ? 'category' : 'genero';
       const { data, error } = await supabase
         .from(table)
         .select('*')
-        .ilike('genero', `%${category}%`)
+        .ilike(filterColumn, `%${category}%`)
         .order('ano', { ascending: false })
         .range(pageNum * 20, (pageNum + 1) * 20 - 1);
 

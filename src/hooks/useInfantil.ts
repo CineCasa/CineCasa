@@ -32,8 +32,8 @@ export const useInfantil = (userId?: string): UseInfantilReturn => {
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%infantil%,category.ilike.%infantil%')
+          .select('id, tmdb_id, titulo, poster, year, rating, category')
+          .or('category.ilike.%infantil%')
           .limit(30),
         supabase
           .from('series')

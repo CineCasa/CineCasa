@@ -146,7 +146,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
         // Buscar filmes e séries com limite para performance
         console.log('[PremiumHeroBanner] Buscando filmes E séries (otimizado)...');
         const [cinemaData, seriesData] = await Promise.all([
-          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster', 100),
+          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, category', 'poster', 100),
           fetchAllRecords('series', 'id_n, titulo, capa, ano, descricao, genero', 'capa', 50)
         ]);
 
@@ -176,7 +176,7 @@ const PremiumHeroBanner: React.FC<PremiumHeroBannerProps> = ({
       } else if (contentType === 'movies') {
         // Buscar TODOS os filmes (SEM LIMITE)
         console.log('[PremiumHeroBanner] Buscando filmes da tabela cinema (SEM LIMITE)...');
-        const cinemaData = await fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster');
+        const cinemaData = await fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, category', 'poster');
 
         console.log('[PremiumHeroBanner] Total de filmes recebidos:', cinemaData?.length);
 

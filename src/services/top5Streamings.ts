@@ -87,11 +87,11 @@ class Top5StreamingsService {
         .from('cinema')
         .select('*')
         .ilike('titulo', title + '%')
-        .not('genero', 'ilike', 'novela%')
-        .not('genero', 'ilike', 'telenovela%')
+        .not('category', 'ilike', 'novela%')
+        .not('category', 'ilike', 'telenovela%')
         .not('titulo', 'ilike', 'novela%')
         .not('titulo', 'ilike', 'telenovela%')
-        .not('genero', 'ilike', 'novela%')
+        .not('category', 'ilike', 'novela%')
         .limit(1);
 
       if (!cinemaError && cinemaData && cinemaData.length > 0) {

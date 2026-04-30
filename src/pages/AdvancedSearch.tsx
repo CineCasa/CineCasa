@@ -81,7 +81,7 @@ export function AdvancedSearch() {
       if (filters.type === 'all' || filters.type === 'movie') {
         let movieQuery = supabase
           .from('cinema')
-          .select('id, titulo, poster, banner, year, rating, genero, descricao')
+          .select('id, titulo, poster, banner, year, rating, category, descricao')
           .gte('year', filters.yearFrom)
           .lte('year', filters.yearTo);
         
@@ -94,7 +94,7 @@ export function AdvancedSearch() {
         }
 
         if (filters.genre) {
-          movieQuery = movieQuery.ilike('genero', `%${filters.genre.toLowerCase()}%`);
+          movieQuery = movieQuery.ilike('category', `%${filters.genre.toLowerCase()}%`);
         }
 
         const { data: movies } = await movieQuery.limit(20);
@@ -107,7 +107,7 @@ export function AdvancedSearch() {
           type: 'movie' as const,
           year: m.year,
           rating: parseFloat(m.rating) || 0,
-          genre: m.genero,
+          genre: m.category,
           description: m.descricao
         }));
       }

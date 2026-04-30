@@ -33,8 +33,8 @@ export const useHistoriasEsperanca = () => {
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%religioso%,genero.ilike.%religião%,genero.ilike.%religiao%,category.ilike.%religioso%,category.ilike.%religião%,category.ilike.%religiao%')
+        .select('id, tmdb_id, titulo, poster, year, rating, category')
+        .or('category.ilike.%religioso%,category.ilike.%religião%,category.ilike.%religiao%')
         .not('poster', 'is', null)
         .limit(100);
 

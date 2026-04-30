@@ -118,7 +118,7 @@ export const useRecomendacoes = (userId?: string): UseRecomendacoesReturn => {
         const { data: filmes, error: errorFilmes } = await supabase
           .from('cinema')
           .select('*')
-          .or(`genero.ilike.${genreAnalytics.genre}%,categoria.ilike.${genreAnalytics.genre}%`)
+          .or(`category.ilike.${genreAnalytics.genre}%`)
           .order('id', { ascending: false });
         
         if (!errorFilmes && filmes) {

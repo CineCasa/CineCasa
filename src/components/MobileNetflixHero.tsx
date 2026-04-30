@@ -127,7 +127,7 @@ export const MobileNetflixHero: React.FC<MobileNetflixHeroProps> = ({ contentTyp
         // Buscar filmes e séries simultaneamente (SEM LIMITE)
         console.log('[MobileNetflixHero] Buscando filmes E séries (SEM LIMITE)...');
         const [cinemaData, seriesData] = await Promise.all([
-          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, genero', 'poster'),
+          fetchAllRecords('cinema', 'id, titulo, poster, year, description, trailer, rating, category', 'poster'),
           fetchAllRecords('series', 'id_n, titulo, capa, ano, descricao, genero', 'capa')
         ]);
 

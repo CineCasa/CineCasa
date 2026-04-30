@@ -33,8 +33,8 @@ export const useRitmoEmocao = () => {
       // SEMPRE buscar novos filmes a cada reinício (sem cache persistente)
       const { data: cinemaData, error } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-        .or('genero.ilike.%musical%,genero.ilike.%musicais%,category.ilike.%musical%,category.ilike.%musicais%')
+        .select('id, tmdb_id, titulo, poster, year, rating, category')
+        .or('category.ilike.%musical%,category.ilike.%musicais%')
         .not('poster', 'is', null)
         .limit(100);
 

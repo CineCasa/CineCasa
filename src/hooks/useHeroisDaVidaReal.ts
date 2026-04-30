@@ -116,9 +116,9 @@ export const useHeroisDaVidaReal = (): UseHeroisDaVidaRealReturn => {
       // Buscar filmes com termos sobre pais/paternidade na descrição ou título
       const { data: cinemaData, error: cinemaError } = await supabase
         .from('cinema')
-        .select('id, tmdb_id, titulo, poster, year, rating, description, genero, category, vote_average')
+        .select('id, tmdb_id, titulo, poster, year, rating, description, category, vote_average')
         .or('description.ilike.%pai%,description.ilike.%paternidade%,description.ilike.%paternal%,description.ilike.%filho%,description.ilike.%família%,description.ilike.%herói%,description.ilike.%heroi%,titulo.ilike.%pai%,titulo.ilike.%paterno%,titulo.ilike.%herói%')
-        .or('genero.ilike.%Drama%,genero.ilike.%Ação%,genero.ilike.%Família%,category.ilike.%Drama%,category.ilike.%Ação%,category.ilike.%Família%')
+        .or('category.ilike.%Drama%,category.ilike.%Ação%,category.ilike.%Família%')
         .not('poster', 'is', null)
         .order('vote_average', { ascending: false }) // Melhores notas primeiro
         .limit(20);

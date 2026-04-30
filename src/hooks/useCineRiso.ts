@@ -34,8 +34,8 @@ export const useCineRiso = () => {
       const [cinemaData, seriesData] = await Promise.all([
         supabase
           .from('cinema')
-          .select('id, tmdb_id, titulo, poster, year, rating, genero, category')
-          .or('genero.ilike.%comédia%,genero.ilike.%comedia%,category.ilike.%comédia%,category.ilike.%comedia%')
+          .select('id, tmdb_id, titulo, poster, year, rating, category')
+          .or('category.ilike.%comédia%,category.ilike.%comedia%')
           .not('poster', 'is', null)
           .limit(20),
         supabase
