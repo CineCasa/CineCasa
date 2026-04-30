@@ -17,7 +17,7 @@ const ContentCard = ({ item, index, isLast = false, showProgress = false, rowInd
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // Mostrar imediatamente
 
   const handleNavigateToDetails = () => {
     if (item.isComingSoon) return;
