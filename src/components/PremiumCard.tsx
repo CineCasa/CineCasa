@@ -53,7 +53,6 @@ const processTrailerUrl = (url: string): string => {
 const PremiumCard: React.FC<PremiumCardProps> = ({
   id,
   title,
-  poster,
   type,
   progress = 0,
   year,
@@ -73,9 +72,6 @@ const PremiumCard: React.FC<PremiumCardProps> = ({
   const [showTrailer, setShowTrailer] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const trailerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Validar poster URL
-  const validPoster = isValidPosterUrl(poster) ? poster : `https://picsum.photos/seed/${id || title || 'default'}/300/450.jpg`;
   
   // Verificar se tem trailer válido (apenas para desktop lg:)
   const hasTrailer = trailer && trailer.trim() !== '';

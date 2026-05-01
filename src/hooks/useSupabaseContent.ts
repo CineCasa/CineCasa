@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ContentItem, Category, movieCategories } from "@/data/content";
-import { tmdbImageUrl, fetchTmdbDetails } from "@/services/tmdb";
+import { fetchTmdbDetails } from "@/services/tmdb";
 import { useAuth } from "@/components/AuthProvider";
 
 export const useSupabaseContent = () => {
@@ -84,9 +84,6 @@ export const useSupabaseContent = () => {
           id: `cinema-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: imagePath ? tmdbImageUrl(imagePath, "w500") : "",
-          backdrop: item.backdrop || item.banner ? tmdbImageUrl(item.backdrop || item.banner, "original") : "",
-          poster: imagePath ? tmdbImageUrl(imagePath, "w500") : "",
           year: parseInt(item.year || "0"),
           rating: item.rating || "N/A",
           duration: "",
@@ -142,10 +139,6 @@ export const useSupabaseContent = () => {
           id: `series-${item.id}`,
           tmdbId: item.tmdb_id,
           title: item.titulo,
-          image: posterPath ? tmdbImageUrl(posterPath, "w500") : "",
-          backdrop: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
-          poster: posterPath ? tmdbImageUrl(posterPath, "w500") : "",
-          banner: backdropPath ? tmdbImageUrl(backdropPath, "original") : "",
           year: parseInt(item.year || "0"),
           rating: "N/A",
           duration: "",

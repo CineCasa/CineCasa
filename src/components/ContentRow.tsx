@@ -196,13 +196,6 @@ const ContentRow = ({ category, showProgress = false, infiniteScroll = false, ma
               scrollbarColor: '#00E5FF transparent'
             }}
             className="row-scroll-container snap-x snap-mandatory overflow-x-auto overflow-y-hidden flex flex-row flex-nowrap gap-5 pb-3 cursor-grab active:cursor-grabbing"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              touchAction: 'pan-x',
-              scrollBehavior: 'smooth',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#00E5FF transparent'
-            }}
           >
             {/* Estilização da scrollbar neon/ciano */}
             <style>{`

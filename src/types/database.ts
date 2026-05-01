@@ -3,8 +3,6 @@
 export interface Cinema {
   id: number;
   titulo: string;
-  poster: string | null;
-  banner: string | null;
   year: string | null;
   rating: string | null;
   category: string | null;
@@ -22,30 +20,15 @@ export interface Series {
   titulo: string;
   descricao: string | null;
   ano: string | null;
-  capa: string | null;
-  banner: string | null;
   trailer: string | null;
   genero: string | null;
 }
 
 export interface Temporada {
-  // Identificação (conforme tabela real)
   id_n: number;
   serie_id: number;
-  
-  // Informações básicas
   numero_temporada: number;
   titulo?: string;
-  capa?: string;
-  banner?: string;
-  
-  // Campos opcionais para compatibilidade
-  id?: string;
-  serie_id_string?: string;
-  numero?: number;
-  descricao?: string;
-  poster?: string;
-  ano?: string;
 }
 
 export interface Episodio {
