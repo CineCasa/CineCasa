@@ -1,4 +1,3 @@
-import HeroBanner from "@/components/HeroBanner";
 import ContentCard from "@/components/ContentCard";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 
@@ -9,8 +8,7 @@ const FilmesKids = () => {
 
   return (
     <main className="min-h-screen bg-background pb-20">
-        <HeroBanner filterCategory="Filmes Infantis" />
-        <div className="relative z-10 pt-16 -mt-10 px-4 md:px-8 lg:px-12">
+        <div className="relative z-10 pt-16 px-4 md:px-8 lg:px-12">
           <h2 className="text-3xl font-black text-white mb-10 tracking-tight uppercase">Filmes Infantis</h2>
           
           {isLoading ? (

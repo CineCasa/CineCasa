@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import { usePlayer } from "@/contexts/PlayerContext";
-import PremiumHeroBanner from "@/components/PremiumHeroBanner";
 
 const Content = () => {
   const { id } = useParams<{ id: string }>();
