@@ -59,17 +59,6 @@ const Content = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Banner - Igual da Home */}
-      <PremiumHeroBanner
-        title={content.title}
-        description={content.description || 'Sem descrição disponível'}
-        backdrop={content.backdrop || content.image || '/api/placeholder/1920/1080'}
-        year={content.year}
-        rating={content.rating}
-        onPlay={handleHeroPlay}
-        onDetails={handleHeroDetails}
-      />
-
       <div className="pt-20 pb-12 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
