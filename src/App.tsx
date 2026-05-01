@@ -22,7 +22,6 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Content from "./pages/Content";
 import Details from "./pages/Details";
-import SeriesDetails from "./pages/SeriesDetails";
 import MovieDetails from "./pages/MovieDetails";
 import ImageCleanup from "./pages/ImageCleanup";
 import NotificationSettings from "./pages/NotificationSettings";
@@ -119,13 +118,10 @@ const AppRoutes = () => {
       {/* Rotas protegidas - Requerem autenticação */}
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
       <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
-      <Route path="/cinema" element={<ProtectedRoute><Cinema /></ProtectedRoute>} />
             <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
-      <Route path="/series" element={<ProtectedRoute><Series /></ProtectedRoute>} />
             <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />
       <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />
-      <Route path="/series-details/:id" element={<ProtectedRoute><SeriesDetails /></ProtectedRoute>} />
       <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
       <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
       <Route path="/image-cleanup" element={<ProtectedRoute><ImageCleanup /></ProtectedRoute>} />

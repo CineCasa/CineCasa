@@ -60,19 +60,3 @@ export const CATEGORY_MAPPING: Record<string, string> = {
   'Adulto': 'adulto',
 };
 
-// Interface para filmes da tabela cinema
-export interface CinemaMovie {
-  id: number;
-  titulo: string;
-  description: string | null;
-  poster: string | null;
-  banner: string | null;
-  year: string | null;
-  rating: string | null;
-  category: string | null;
-  tmdb_id: string | null;
-  trailer: string | null;
-  url: string | null;
-  type: string | null;
-  created_at: string | null;
-}

@@ -14,7 +14,6 @@ export const LazyContinueWatchingRow = lazy(() => import('@/components/ContinueW
 // Lazy loading para componentes de UI
 export const LazyFilterSystem = lazy(() => import('@/components/FilterSystem'));
 export const LazyFinanceSection = lazy(() => import('@/components/FinanceSection'));
-export const LazyHeroBanner = lazy(() => import('@/components/HeroBanner'));
 export const LazyPremiumNavbar = lazy(() => import('@/components/PremiumNavbar'));
 
 // Função para preload de rota
@@ -26,8 +25,6 @@ export const preloadRoute = (routePath: string) => {
     '/favorites': () => import('@/pages/Favorites'),
     '/tv-live': () => import('@/pages/TvAoVivo'),
     '/details': () => import('@/pages/Details'),
-    '/cinema': () => import('@/pages/Cinema'),
-    '/series': () => import('@/pages/Series'),
   };
 
   const loader = componentMap[routePath];
@@ -76,8 +73,6 @@ export const CHUNK_NAMES = {
   'favorites': 'Favorites',
   'tv-live': 'TV Live',
   'details': 'Content Details',
-  'cinema': 'Cinema Page',
-  'series': 'Series Page',
   'category-row': 'Category Components',
   'filter-system': 'Filter Components',
   'finance': 'Finance Components',

@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import CategoryFilms from '@/components/CategoryFilms';
-import useCinemaCategories from '@/hooks/useCinemaCategories';
-import PremiumHeroBanner from '@/components/PremiumHeroBanner';
-import { MobileNetflixHero } from '@/components/MobileNetflixHero';
 import { 
   Film, 
   Grid, 
@@ -26,19 +23,9 @@ const FilmesPorCategoria: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showAll, setShowAll] = useState(false);
   
-  const { 
-    categories, 
-    loading, 
-    error, 
-    extractAndOrganizeCategories,
-    getGenreIcon,
-    getGenreColor,
-    normalizeGenre
-  } = useCinemaCategories();
-
-  useEffect(() => {
-    extractAndOrganizeCategories();
-  }, [extractAndOrganizeCategories]);
+  const categories: Record<string, any[]> = {};
+  const loading = false;
+  const error = null;
 
   // Efeito para selecionar categoria automaticamente quando vem da URL
   useEffect(() => {
@@ -165,16 +152,6 @@ const FilmesPorCategoria: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      
-      {/* Banner Principal - Mobile/Desktop */}
-      {/* Mobile Banner - hidden on desktop */}
-      <div className="md:hidden">
-        <MobileNetflixHero contentType="movies" />
-      </div>
-      {/* Desktop Banner - hidden on mobile */}
-      <div className="hidden md:block">
-        <PremiumHeroBanner contentType="movies" />
-      </div>
       
       {/* Hero Section */}
       <div className="relative h-64 bg-gradient-to-b from-red-900/20 to-black overflow-hidden">
