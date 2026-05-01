@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import HeroBanner from "@/components/HeroBanner";
 import ContentRow from "@/components/ContentRow";
 import { useSupabaseContent } from "@/hooks/useSupabaseContent";
 import ContinueWatchingRow from "@/components/ContinueWatchingRow";
@@ -78,7 +77,6 @@ const Index = () => {
 
   return (
     <main className="min-h-screen bg-black pt-[94px]">
-      <HeroBanner />
         <div className="relative z-30 pt-6 flex flex-col gap-4 bg-gradient-to-b from-black/80 via-black to-black">
           <ContinueWatchingRow />
 

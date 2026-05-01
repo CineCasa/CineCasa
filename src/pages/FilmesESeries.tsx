@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import PremiumNavbar from '@/components/PremiumNavbar';
-import PremiumHeroBanner from '@/components/PremiumHeroBanner';
-import { MobileNetflixHero } from '@/components/MobileNetflixHero';
-import { MOVIE_CATEGORIES, CATEGORY_MAPPING } from '@/data/movieCategories';
 import { Play, Info } from 'lucide-react';
 import { cleanTitle } from '@/lib/utils';
 

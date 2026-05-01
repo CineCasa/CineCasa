@@ -1,6 +1,4 @@
 import React from 'react';
-import PremiumHeroBanner from '@/components/PremiumHeroBanner';
-import { MobileNetflixHero } from '@/components/MobileNetflixHero';
 import { useNavigate } from 'react-router-dom';
 
 interface PremiumCatalogProps {
@@ -30,18 +28,10 @@ const PremiumCatalog: React.FC<PremiumCatalogProps> = ({ contentType }) => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* Hero Banner - Mobile/Desktop */}
-      {/* Mobile Banner - hidden on desktop */}
-      <div className="md:hidden">
-        <MobileNetflixHero contentType={contentType} />
-      </div>
-      {/* Desktop Banner - hidden on mobile */}
-      <div className="hidden md:block">
-        <PremiumHeroBanner
-          contentType={contentType}
-          onPlay={handleHeroPlay}
-          onDetails={handleHeroDetails}
-        />
+      {/* Catálogo de conteúdo */}
+      <div className="p-8 text-white">
+        <h1 className="text-2xl font-bold mb-4">Catálogo</h1>
+        <p>Conteúdo {contentType === 'movies' ? 'de Filmes' : 'de Séries'}</p>
       </div>
     </div>
   );

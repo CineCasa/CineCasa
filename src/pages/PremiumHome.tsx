@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PremiumNavbar from '../components/PremiumNavbar';
-import PremiumHeroBanner from '../components/PremiumHeroBanner';
-import { MobileNetflixHero } from '../components/MobileNetflixHero';
 import ContentCarousel from '../components/ContentCarousel';
 import { useContinueWatching } from '../hooks/useContinueWatching';
 import { useLancamentos } from '../hooks/useLancamentos';
@@ -477,16 +475,6 @@ const PremiumHome: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* HERO BANNER - Primeiro elemento visível da página */}
-      {/* Mobile Banner - hidden on desktop */}
-      <div className="md:hidden relative z-[100]">
-        <MobileNetflixHero contentType="all" />
-      </div>
-      {/* Desktop Banner - hidden on mobile */}
-      <div className="hidden md:block relative z-[100]">
-        <PremiumHeroBanner contentType="all" />
-      </div>
-
       {/* Continue Watching - Logo após o Banner */}
       {(() => {
         console.log('[PremiumHome] Continue Watching - isLoading:', isLoadingContinue, 'items:', continueWatchingItems.length, 'user:', user?.id);

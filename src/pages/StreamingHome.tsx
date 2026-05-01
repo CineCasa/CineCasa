@@ -8,7 +8,6 @@ import { ContinueWatchingSection } from '../components/ContinueWatchingSection';
 import { useDynamicHomeSections } from '../hooks/useDynamicHomeSections';
 import { useFavorites } from '../hooks/useFavorites';
 import { ContentItem } from '../data/content';
-import { HeroBannerTV } from '@/components/HeroBannerTV';
 
 const StreamingHome: React.FC = () => {
   const navigate = useNavigate();
@@ -58,9 +57,6 @@ const StreamingHome: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* Hero Banner TV - Apenas telas grandes (lg+) */}
-      <HeroBannerTV />
-
       {/* Content Sections */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         {/* Continue Watching Section - First */}
