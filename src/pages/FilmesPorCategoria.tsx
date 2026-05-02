@@ -65,12 +65,22 @@ const FilmesPorCategoria: React.FC = () => {
       setLoading(true);
       setError(null);
       
+      // Debug: verificar configuração do Supabase
+      console.log('[FilmesPorCategoria] Verificando Supabase...');
+      console.log('[FilmesPorCategoria] VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL ? 'Definida' : 'FALTANDO');
+      console.log('[FilmesPorCategoria] VITE_SUPABASE_PUBLISHABLE_KEY:', import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? 'Definida' : 'FALTANDO');
+      
       const { data, error: supabaseError } = await supabase
         .from('cinema')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (supabaseError) throw supabaseError;
+      console.log('[FilmesPorCategoria] Resposta:', { dataLength: data?.length, error: supabaseError });
+      
+      if (supabaseError) {
+        console.error('[FilmesPorCategoria] Erro Supabase:', supabaseError);
+        throw supabaseError;
+      }
       
       // Agrupar por categoria
       const grouped: Record<string, Filme[]> = {};
