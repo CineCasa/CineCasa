@@ -38,6 +38,8 @@ export const supabase = (() => {
       global: {
         headers: {
           'X-Client-Info': 'cinecasa-web',
+          'apikey': SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
         },
         fetch: (url, options) => {
           // Custom fetch com timeout de 30s (aumentado de 8s)
