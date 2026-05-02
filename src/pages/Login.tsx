@@ -35,7 +35,6 @@ const Login = () => {
   useEffect(() => {
     // Nenhum conteúdo para buscar - tabelas removidas
   }, []);
-  }, []);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
