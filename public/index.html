@@ -1,1 +1,43 @@
-<!DOCTYPE html><html lang="pt-BR"><head>  <meta charset="UTF-8" />  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  <title>Streaming</title>  <link rel="stylesheet" href="./assets/app.css"></head><body>  <header class="top-header">    <h1>Minha Plataforma</h1>  </header>  <main id="catalog"></main>  <!-- OVERLAY TIKTOK -->  <div class="tiktok-player" id="tiktokPlayer">    <button class="back-btn focusable" id="backBtn" tabindex="0">← Voltar</button>    <button class="sound-btn focusable" id="soundBtn" tabindex="0">🔇 Som</button>    <video class="bg-video" id="bgVideo" muted playsinline></video>    <video class="main-video" id="mainVideo" muted playsinline autoplay></video>    <div class="action-buttons">      <button class="watch-btn focusable" id="watchNowBtn" tabindex="0">▶ Assistir agora</button>      <button class="details-btn focusable" id="detailsBtn" tabindex="0">ℹ Ver detalhes</button>    </div>    <div class="info-panel">      <h2 id="playerTitle"></h2>      <p id="playerDesc"></p>    </div>  </div>  <script src="./assets/app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#0b0b0f"/>
+  <title>Streaming</title>
+  <link rel="stylesheet" href="./assets/app.css">
+</head>
+<body>
+  <header class="top-header">
+    <h1>Minha Plataforma</h1>
+  </header>
+  
+  <main id="catalog" role="main" aria-label="Catálogo de filmes"></main>
+  
+  <!-- OVERLAY TIKTOK -->
+  <div class="tiktok-player" id="tiktokPlayer" role="dialog" aria-modal="true" aria-label="Visualização de trailer" hidden>
+    <button class="back-btn focusable" id="backBtn" tabindex="0" aria-label="Fechar">
+      ← Voltar
+    </button>
+    <button class="sound-btn focusable" id="soundBtn" tabindex="0" aria-label="Alternar som">
+      🔇 Som
+    </button>
+    <video class="bg-video" id="bgVideo" muted playsinline aria-hidden="true"></video>
+    <video class="main-video" id="mainVideo" muted playsinline autoplay></video>
+    <div class="action-buttons">
+      <button class="watch-btn focusable" id="watchNowBtn" tabindex="0" aria-label="Assistir agora">
+        ▶ Assistir agora
+      </button>
+      <button class="details-btn focusable" id="detailsBtn" tabindex="0" aria-label="Ver detalhes">
+        ℹ Ver detalhes
+      </button>
+    </div>
+    <div class="info-panel">
+      <h2 id="playerTitle"></h2>
+      <p id="playerDesc"></p>
+    </div>
+  </div>
+  
+  <script src="./assets/app.js"></script>
+</body>
+</html>

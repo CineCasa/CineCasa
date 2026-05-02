@@ -1,1 +1,412 @@
-<!DOCTYPE html><html lang="pt-BR"><head>  <meta charset="UTF-8"/>  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  <title>Assistir</title>  <link href="https://vjs.zencdn.net/8.12.0/video-js.css" rel="stylesheet"/>  <style>    body {      margin: 0;      background: black;      color: white;      font-family: Arial;    }    .topbar {      position: fixed;      top: 0;      left: 0;      right: 0;      z-index: 9999;      display: flex;      gap: 10px;      align-items: center;      padding: 12px 14px;      background: rgba(0,0,0,0.6);      backdrop-filter: blur(12px);    }    .topbar button {      border: none;      border-radius: 12px;      padding: 10px 14px;      cursor: pointer;      background: rgba(255,255,255,0.15);      color: white;      font-weight: bold;      outline: none;    }    .topbar button:focus {      box-shadow: 0 0 0 3px rgba(255,255,255,0.8);    }    .player-container {      position: fixed;      inset: 0;      padding-top: 55px;    }    .video-js {      width: 100%;      height: 100%;    }  </style></head><body>  <div class="topbar">    <button id="backBtn" tabindex="0">← Voltar</button>    <span id="movieTitle" style="font-weight:bold;"></span>  </div>  <div class="player-container">    <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto"></video>  </div>  <script src="https://vjs.zencdn.net/8.12.0/video.min.js"></script>  <script src="https://cdn.jsdelivr.net/npm/videojs-hotkeys@0.2.27/videojs.hotkeys.min.js"></script>  <script>    // TROCAR PARA SUA URL DO WORKER SE NECESSÁRIO    const API_BASE = "https://SEU-WORKER.workers.dev";    const params = new URLSearchParams(window.location.search);    const tmdbId = params.get("tmdb");    document.getElementById("backBtn").addEventListener("click", () => history.back());    const player = videojs("my-video", {      autoplay: true,      controls: true,      fluid: true,      responsive: true,      playbackRates: [0.5, 1, 1.25, 1.5, 2]    });    player.ready(function() {      this.hotkeys({        volumeStep: 0.1,        seekStep: 10,        enableModifiersForNumbers: false      });    });    async function loadMovie() {      const res = await fetch(`${API_BASE}/movie?tmdb=${tmdbId}`);      const data = await res.json();      document.getElementById("movieTitle").textContent = data.titulo || "";      const movieUrl = data.url;      if (!movieUrl) {        alert("URL do filme não encontrada.");        return;      }      if (movieUrl.endsWith(".m3u8")) {        player.src({          src: movieUrl,          type: "application/x-mpegURL"        });      } else {        player.src({          src: movieUrl,          type: "video/mp4"        });      }      player.play();    }    // CONTROLE REMOTO NO PLAYER    document.addEventListener("keydown", (e) => {      if (e.key === "Enter") {        if (player.paused()) player.play();        else player.pause();      }      if (e.key === "ArrowRight") {        player.currentTime(player.currentTime() + 10);      }      if (e.key === "ArrowLeft") {        player.currentTime(player.currentTime() - 10);      }      if (e.key === "ArrowUp") {        player.volume(Math.min(1, player.volume() + 0.1));      }      if (e.key === "ArrowDown") {        player.volume(Math.max(0, player.volume() - 0.1));      }    });    loadMovie();  </script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#000000"/>
+  <title>Assistir</title>
+  <link href="https://vjs.zencdn.net/8.12.0/video-js.css" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+    
+    /* Responsive Topbar */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(12px);
+      height: 50px;
+    }
+    
+    .topbar button {
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-weight: bold;
+      outline: none;
+      font-size: 14px;
+      min-height: 36px;
+      touch-action: manipulation;
+      transition: background 0.2s;
+    }
+    
+    .topbar button:hover,
+    .topbar button:focus {
+      background: rgba(255,255,255,0.25);
+    }
+    
+    .topbar button:focus {
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.8);
+    }
+    
+    #movieTitle {
+      font-weight: bold;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      margin-left: 8px;
+    }
+    
+    /* Player Container - Responsive */
+    .player-container {
+      position: fixed;
+      top: 50px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: black;
+    }
+    
+    .video-js {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    /* Video.js Responsive Overrides */
+    .vjs-fluid {
+      padding-top: 0 !important;
+      height: 100% !important;
+    }
+    
+    .vjs-tech {
+      object-fit: contain;
+    }
+    
+    /* Loading state */
+    .loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      color: #888;
+      font-size: 14px;
+      z-index: 9998;
+    }
+    
+    .loading::after {
+      content: "";
+      width: 30px;
+      height: 30px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Error state */
+    .error {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      color: #ff6b6b;
+      padding: 20px;
+      text-align: center;
+      z-index: 9998;
+    }
+    
+    .error button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    /* ============================================
+       TABLET BREAKPOINT
+       ============================================ */
+    @media (min-width: 600px) {
+      .topbar {
+        padding: 14px 18px;
+        height: 56px;
+      }
+      
+      .topbar button {
+        padding: 10px 14px;
+        font-size: 15px;
+      }
+      
+      #movieTitle {
+        font-size: 16px;
+        margin-left: 12px;
+      }
+      
+      .player-container {
+        top: 56px;
+      }
+    }
+    
+    /* ============================================
+       DESKTOP BREAKPOINT
+       ============================================ */
+    @media (min-width: 1024px) {
+      .topbar {
+        padding: 16px 24px;
+        height: 64px;
+      }
+      
+      .topbar button {
+        padding: 12px 16px;
+        font-size: 16px;
+      }
+      
+      #movieTitle {
+        font-size: 18px;
+        margin-left: 16px;
+      }
+      
+      .player-container {
+        top: 64px;
+      }
+    }
+    
+    /* ============================================
+       LANDSCAPE MOBILE OPTIMIZATION
+       ============================================ */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .topbar {
+        padding: 8px 12px;
+        height: 40px;
+      }
+      
+      .topbar button {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      
+      #movieTitle {
+        font-size: 12px;
+      }
+      
+      .player-container {
+        top: 40px;
+      }
+    }
+    
+    /* ============================================
+       TV/LARGE SCREEN
+       ============================================ */
+    @media (min-width: 1600px) {
+      .topbar {
+        height: 70px;
+        padding: 18px 30px;
+      }
+      
+      .topbar button {
+        padding: 14px 18px;
+        font-size: 18px;
+      }
+      
+      #movieTitle {
+        font-size: 20px;
+      }
+      
+      .player-container {
+        top: 70px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">Carregando...</div>
+  
+  <div class="topbar">
+    <button id="backBtn" tabindex="0">← Voltar</button>
+    <span id="movieTitle"></span>
+  </div>
+  
+  <div class="player-container">
+    <video id="my-video" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto" playsinline></video>
+  </div>
+
+  <script src="https://vjs.zencdn.net/8.12.0/video.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-hotkeys@0.2.27/videojs.hotkeys.min.js"></script>
+  
+  <script>
+    // API Configuration
+    const API_BASE = "https://SEU-WORKER.workers.dev";
+    const params = new URLSearchParams(window.location.search);
+    const tmdbId = params.get("tmdb");
+    
+    // Elements
+    const backBtn = document.getElementById("backBtn");
+    const movieTitle = document.getElementById("movieTitle");
+    const loadingEl = document.getElementById("loading");
+    
+    // Back button
+    backBtn.addEventListener("click", () => history.back());
+    
+    // Initialize player
+    const player = videojs("my-video", {
+      autoplay: true,
+      controls: true,
+      fluid: true,
+      responsive: true,
+      playbackRates: [0.5, 1, 1.25, 1.5, 2],
+      html5: {
+        vhs: {
+          overrideNative: true,
+          limitRenditionByPlayerDimensions: true,
+          useDevicePixelRatio: true
+        }
+      }
+    });
+    
+    // Hotkeys
+    player.ready(function() {
+      this.hotkeys({
+        volumeStep: 0.1,
+        seekStep: 10,
+        enableModifiersForNumbers: false
+      });
+    });
+    
+    // Load movie
+    async function loadMovie() {
+      if (!tmdbId) {
+        showError("ID do filme não fornecido");
+        return;
+      }
+      
+      try {
+        const res = await fetch(`${API_BASE}/movie?tmdb=${tmdbId}`);
+        if (!res.ok) throw new Error("Failed to load");
+        
+        const data = await res.json();
+        
+        movieTitle.textContent = data.titulo || "";
+        
+        const movieUrl = data.url;
+        if (!movieUrl) {
+          showError("URL do filme não encontrada");
+          return;
+        }
+        
+        // Set source based on file type
+        if (movieUrl.endsWith(".m3u8")) {
+          player.src({
+            src: movieUrl,
+            type: "application/x-mpegURL"
+          });
+        } else {
+          player.src({
+            src: movieUrl,
+            type: "video/mp4"
+          });
+        }
+        
+        // Hide loading
+        loadingEl.style.display = "none";
+        
+        // Play
+        player.play().catch(() => {
+          // Autoplay blocked, user needs to press play
+        });
+        
+      } catch (error) {
+        console.error(error);
+        showError("Erro ao carregar o filme");
+      }
+    }
+    
+    // Show error
+    function showError(message) {
+      loadingEl.style.display = "none";
+      document.body.innerHTML += `
+        <div class="error">
+          <p>${message}</p>
+          <button onclick="history.back()">← Voltar</button>
+        </div>
+      `;
+    }
+    
+    // Keyboard controls
+    document.addEventListener("keydown", (e) => {
+      // Only if not typing in a control
+      if (e.target.tagName === "INPUT") return;
+      
+      switch(e.key) {
+        case "Enter":
+          if (player.paused()) player.play();
+          else player.pause();
+          break;
+          
+        case "ArrowRight":
+          e.preventDefault();
+          player.currentTime(player.currentTime() + 10);
+          break;
+          
+        case "ArrowLeft":
+          e.preventDefault();
+          player.currentTime(player.currentTime() - 10);
+          break;
+          
+        case "ArrowUp":
+          e.preventDefault();
+          player.volume(Math.min(1, player.volume() + 0.1));
+          break;
+          
+        case "ArrowDown":
+          e.preventDefault();
+          player.volume(Math.max(0, player.volume() - 0.1));
+          break;
+          
+        case "Escape":
+          history.back();
+          break;
+      }
+    });
+    
+    // Handle fullscreen changes
+    player.on('fullscreenchange', () => {
+      if (player.isFullscreen()) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = '';
+      }
+    });
+    
+    // Load movie
+    loadMovie();
+  </script>
+</body>
+</html>
