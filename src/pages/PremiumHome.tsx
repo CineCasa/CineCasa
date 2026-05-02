@@ -29,8 +29,6 @@ import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
 import CineNoiteSection from '../components/CineNoiteSection';
-import MaesInesqueciveisSection from '../components/MaesInesqueciveisSection';
-import HeroisDaVidaRealSection from '../components/HeroisDaVidaRealSection';
 // Mock data para demonstração
 const mockHeroContent = {
   title: "A ORIGEM DO AMANHÃ",
@@ -425,19 +423,12 @@ const PremiumHome: React.FC = () => {
 
   // Verificar visibilidade de seções agendadas (evitar flickering)
   const now = new Date();
-  const currentMonth = now.getMonth(); // 0-11
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
   const currentTime = currentHour * 60 + currentMinute; // minutos desde meia-noite
   
   // Cine Noite: 23:58 - 05:59
   const isCineNoiteVisible = currentTime >= (23 * 60 + 58) || currentTime <= (5 * 60 + 59);
-  
-  // Mães Inesquecíveis: mês de maio (4)
-  const isMaesInesqueciveisVisible = currentMonth === 4;
-  
-  // Heróis da Vida Real: mês de agosto (7)
-  const isHeroisDaVidaRealVisible = currentMonth === 7;
 
   // Sistema para evitar duplicatas apenas DENTRO de cada seção (não entre seções)
   const filterUniqueItems = (items: any[], limit: number = 5) => {
@@ -508,12 +499,6 @@ const PremiumHome: React.FC = () => {
           )}
         </div>
       ) : null}
-
-      {/* HERÓIS DA VIDA REAL - Seção especial Dia dos Pais (mês de agosto) */}
-      {isHeroisDaVidaRealVisible && <HeroisDaVidaRealSection onCardClick={handleCardClick} />}
-
-      {/* MÃES INESQUECÍVEIS - Seção especial Dia das Mães (mês de maio) */}
-      {isMaesInesqueciveisVisible && <MaesInesqueciveisSection onCardClick={handleCardClick} />}
 
       {/* LANÇAMENTOS E NOVIDADES - Seção principal, sempre visível */}
       <div className="relative z-30 my-6">
