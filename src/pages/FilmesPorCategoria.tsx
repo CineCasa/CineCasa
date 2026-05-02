@@ -111,8 +111,16 @@ const FilmesPorCategoria: React.FC = () => {
       
       setCategories(grouped);
     } catch (err: any) {
-      console.error('[FilmesPorCategoria] Erro:', err);
-      setError(err.message || 'Erro ao carregar filmes');
+      console.error('[FilmesPorCategoria] Erro completo:', err);
+      console.error('[FilmesPorCategoria] Erro message:', err.message);
+      console.error('[FilmesPorCategoria] Erro stack:', err.stack);
+      
+      // Identificar a origem do erro
+      let errorMsg = err.message || 'Erro ao carregar filmes';
+      if (errorMsg.includes('API key')) {
+        errorMsg = 'Erro de autenticação com o banco de dados. Verifique as configurações do Supabase.';
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
