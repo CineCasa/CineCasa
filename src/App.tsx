@@ -118,6 +118,7 @@ const AppRoutes = () => {
       {/* Rotas protegidas - Requerem autenticação */}
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
       <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
+      <Route path="/filmes" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />

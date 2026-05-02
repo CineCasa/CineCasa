@@ -7,7 +7,7 @@ export default function PremiumNavbar() {
   const location = useLocation();
 
   const navItems = [
-    { icon: Film, path: '/movies', label: 'Filmes' },
+    { icon: Film, path: '/filmes', label: 'Filmes' },
     { icon: Tv, path: '/series', label: 'Séries' },
     { icon: Compass, path: '/explore', label: 'Explorar' },
     { icon: User, path: '/profile', label: 'Perfil' },

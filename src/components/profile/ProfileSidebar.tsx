@@ -29,7 +29,7 @@ interface MenuItem {
 
 const mainMenuItems: MenuItem[] = [
   { icon: <Home className="w-5 h-5" />, label: 'Início', path: '/' },
-  { icon: <Film className="w-5 h-5" />, label: 'Filmes', path: '/movies' },
+  { icon: <Film className="w-5 h-5" />, label: 'Filmes', path: '/filmes' },
   { icon: <Tv className="w-5 h-5" />, label: 'Séries', path: '/series' },
   { icon: <Compass className="w-5 h-5" />, label: 'Explorar', path: '/explore' },
   { icon: <List className="w-5 h-5" />, label: 'Minha Lista', path: '/watchlist' },
