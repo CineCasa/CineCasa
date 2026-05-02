@@ -12,41 +12,43 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   console.error('[Supabase] VITE_SUPABASE_PUBLISHABLE_KEY:', SUPABASE_PUBLISHABLE_KEY ? 'Definida' : 'FALTANDO');
 }
 
-// Fetch com timeout que preserva todos os headers
+// Fetch com timeout que garante headers do Supabase
 async function fetchWithTimeout(url: string, options: RequestInit, timeout: number) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   
-  // Debug: mostrar headers originais
-  console.log('[Supabase Fetch] URL:', url);
-  console.log('[Supabase Fetch] Headers originais:', options.headers);
-  
-  // Garantir que os headers do Supabase sejam sempre enviados
-  // Converter headers para objeto plano para garantir compatibilidade
+  // Normalizar headers para objeto plano
   const existingHeaders: Record<string, string> = {};
   if (options.headers) {
     if (options.headers instanceof Headers) {
       options.headers.forEach((value, key) => {
-        existingHeaders[key] = value;
+        existingHeaders[key.toLowerCase()] = value;
       });
     } else if (Array.isArray(options.headers)) {
       options.headers.forEach(([key, value]) => {
-        existingHeaders[key] = value;
+        existingHeaders[key.toLowerCase()] = value;
       });
     } else {
-      Object.assign(existingHeaders, options.headers);
+      Object.entries(options.headers).forEach(([key, value]) => {
+        if (value !== undefined) {
+          existingHeaders[key.toLowerCase()] = String(value);
+        }
+      });
     }
   }
   
-  // Mesclar headers: manter os existentes e adicionar/os sobrescrever com os do Supabase
-  const headers: Record<string, string> = {
-    ...existingHeaders,
+  // Headers obrigatórios do Supabase (em lowercase para evitar duplicatas)
+  const supabaseHeaders: Record<string, string> = {
     'apikey': SUPABASE_PUBLISHABLE_KEY,
-    'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-    'X-Client-Info': 'cinecasa-web',
+    'authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+    'x-client-info': 'cinecasa-web',
   };
   
-  console.log('[Supabase Fetch] Headers finais:', headers);
+  // Mesclar: headers do Supabase têm prioridade
+  const headers: Record<string, string> = {
+    ...existingHeaders,
+    ...supabaseHeaders,
+  };
   
   try {
     const response = await fetch(url, {
@@ -55,11 +57,9 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
       signal: controller.signal,
     });
     clearTimeout(id);
-    console.log('[Supabase Fetch] Resposta status:', response.status);
     return response;
   } catch (error) {
     clearTimeout(id);
-    console.error('[Supabase Fetch] Erro:', error);
     throw error;
   }
 }
