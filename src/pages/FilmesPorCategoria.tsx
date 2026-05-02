@@ -91,22 +91,41 @@ const FilmesPorCategoria: React.FC = () => {
       });
       
       (data || []).forEach((filme: any) => {
-        const cat = filme.category?.trim() || 'Outros';
+        // Suportar múltiplas categorias: pode ser array ou string separada por vírgula
+        let categoriasDoFilme: string[] = [];
         
-        // Só adicionar se a categoria está na lista definida
-        if (CATEGORIAS_ORDEM.includes(cat)) {
-          grouped[cat].push({
-            id: filme.id?.toString() || '',
-            titulo: filme.titulo || 'Sem título',
-            poster: filme.poster || '',
-            banner: filme.banner || '',
-            year: filme.year || '',
-            rating: filme.rating || 'N/A',
-            category: cat,
-            genre: filme.genre || '',
-            description: filme.description || '',
-          });
+        if (Array.isArray(filme.category)) {
+          categoriasDoFilme = filme.category.map((c: string) => c?.trim()).filter(Boolean);
+        } else if (typeof filme.category === 'string') {
+          // Pode ser "Ação, Aventura" ou "Ação;Aventura" ou simplesmente "Ação"
+          categoriasDoFilme = filme.category
+            .split(/[,;]/)
+            .map((c: string) => c?.trim())
+            .filter(Boolean);
         }
+        
+        // Se não tiver categoria, coloca em "Outros"
+        if (categoriasDoFilme.length === 0) {
+          categoriasDoFilme = ['Outros'];
+        }
+        
+        // Adicionar o filme em CADA categoria que ele pertence
+        categoriasDoFilme.forEach((cat: string) => {
+          // Só adicionar se a categoria está na lista definida
+          if (CATEGORIAS_ORDEM.includes(cat)) {
+            grouped[cat].push({
+              id: filme.id?.toString() || '',
+              titulo: filme.titulo || 'Sem título',
+              poster: filme.poster || '',
+              banner: filme.banner || '',
+              year: filme.year || '',
+              rating: filme.rating || 'N/A',
+              category: cat,
+              genre: filme.genre || '',
+              description: filme.description || '',
+            });
+          }
+        });
       });
       
       setCategories(grouped);
