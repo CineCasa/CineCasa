@@ -1,8 +1,9 @@
-// Service Worker CineCasa - Stable Version v31
-// Estratégia: Stale-While-Revalidate - CACHE BUSTING TOTAL
-// BUILD: 20260429-0057 - FORCE CLEAR CACHE
-const CACHE_VERSION = 'v31-force-clear';
-const BUILD_TIMESTAMP = '20260429-0057';
+// Service Worker CineCasa - NUCLEAR CACHE CLEAR v32
+// Estratégia: Network First + Nuclear Cache Clearing
+// BUILD: 20250502-1627 - NUCLEAR CLEAR ALL CACHES
+const CACHE_VERSION = 'v32-nuclear-clear';
+const BUILD_TIMESTAMP = '20250502-1627';
+const NUCLEAR_CLEAR = true;
 
 // Arquivos essenciais para cache inicial
 const PRECACHE_ASSETS = [
@@ -16,7 +17,7 @@ const PRECACHE_ASSETS = [
 
 // === INSTALAÇÃO: Cachear assets essenciais ===
 self.addEventListener('install', e => {
-  console.log('[SW] Instalando v30 - No Loop...');
+  console.log('[SW] Instalando v32 - NUCLEAR CACHE CLEAR...');
   
   e.waitUntil(
     caches.open(CACHE_VERSION)
@@ -25,7 +26,7 @@ self.addEventListener('install', e => {
         return cache.addAll(PRECACHE_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Instalação completa v30');
+        console.log('[SW] Instalação completa v32');
         return self.skipWaiting();
       })
       .catch(err => {
@@ -35,32 +36,37 @@ self.addEventListener('install', e => {
   );
 });
 
-// === ATIVAÇÃO: Limpar TODOS os caches antigos ===
+// === ATIVAÇÃO: NUCLEAR CLEAR - Limpar absolutamente TUDO ===
 self.addEventListener('activate', e => {
-  console.log('[SW] Ativado v31 - Force Clear');
+  console.log('[SW] Ativado v32 - NUCLEAR CLEAR MODE');
   
   e.waitUntil(
+    // Primeiro: limpar TODOS os caches existentes
     caches.keys()
       .then(cacheNames => {
-        console.log('[SW] Limpando todos os caches:', cacheNames);
+        console.log('[SW] NUCLEAR CLEAR - Removendo caches:', cacheNames);
         return Promise.all(
           cacheNames.map(name => {
-            console.log('[SW] Removendo cache:', name);
+            console.log('[SW] 💥 NUCLEAR DELETE:', name);
             return caches.delete(name);
           })
         );
       })
       .then(() => {
-        console.log('[SW] Todos os caches limpos');
-        // Notificar todos os clients que o cache foi limpo
-        return self.clients.matchAll().then(clients => {
+        console.log('[SW] ✅ Todos os caches destruídos');
+        // Notificar todos os clients para recarregar
+        return self.clients.matchAll({ includeUncontrolled: true }).then(clients => {
           clients.forEach(client => {
-            client.postMessage({ type: 'CACHE_CLEARED', version: CACHE_VERSION });
+            client.postMessage({ 
+              type: 'NUCLEAR_CACHE_CLEARED', 
+              version: CACHE_VERSION,
+              reload: true 
+            });
           });
         });
       })
       .then(() => {
-        console.log('[SW] Controle assumido');
+        console.log('[SW] 🚀 Forçando reload em todos clients');
         return self.clients.claim();
       })
   );
@@ -81,22 +87,26 @@ self.addEventListener('message', e => {
   }
 });
 
-// === FETCH: Stale-While-Revalidate ===
+// === FETCH: Network Only (desabilitar cache temporariamente) ===
 self.addEventListener('fetch', e => {
   const { request } = e;
   const url = new URL(request.url);
   
   if (request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
-  if (url.pathname.startsWith('/api/')) return; // Não cachear APIs
+  if (url.pathname.startsWith('/api/')) return;
   
-  // Estratégia Network First: sempre tenta buscar da rede primeiro
-  // Só usa cache se a rede falhar ou para recursos essenciais
+  // Estratégia Network First com cache-busting
   e.respondWith(
-    fetch(request)
+    fetch(request, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    })
       .then(networkResponse => {
         if (networkResponse && networkResponse.ok) {
-          // Atualiza cache em background
           const clone = networkResponse.clone();
           caches.open(CACHE_VERSION).then(cache => {
             cache.put(request, clone);
@@ -105,10 +115,24 @@ self.addEventListener('fetch', e => {
         return networkResponse;
       })
       .catch(() => {
-        // Se falhar na rede, tenta buscar do cache
         return caches.match(request).then(cachedResponse => {
           return cachedResponse || new Response('Offline', { status: 503 });
         });
       })
   );
+});
+
+// === SYNC: Forçar limpeza periódica ===
+self.addEventListener('sync', e => {
+  if (e.tag === 'clear-old-caches') {
+    e.waitUntil(
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames
+            .filter(name => name !== CACHE_VERSION)
+            .map(name => caches.delete(name))
+        );
+      })
+    );
+  }
 });
