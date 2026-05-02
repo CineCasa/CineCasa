@@ -12,6 +12,31 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   console.error('[Supabase] VITE_SUPABASE_PUBLISHABLE_KEY:', SUPABASE_PUBLISHABLE_KEY ? 'Definida' : 'FALTANDO');
 }
 
+// Fetch com timeout que preserva todos os headers
+async function fetchWithTimeout(url: string, options: RequestInit, timeout: number) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  // Garantir que os headers do Supabase sejam sempre enviados
+  const headers = new Headers(options.headers || {});
+  headers.set('apikey', SUPABASE_PUBLISHABLE_KEY);
+  headers.set('Authorization', `Bearer ${SUPABASE_PUBLISHABLE_KEY}`);
+  headers.set('X-Client-Info', 'cinecasa-web');
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+}
+
 // Singleton pattern para evitar múltiplas instâncias
 let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;
 
@@ -24,7 +49,7 @@ export const supabase = (() => {
       auth: {
         storage: localStorage,
         persistSession: true,
-        autoRefreshToken: false, // Desabilitar auto refresh para evitar timeouts
+        autoRefreshToken: false,
         detectSessionInUrl: false,
         flowType: 'implicit',
         debug: false,
@@ -33,45 +58,20 @@ export const supabase = (() => {
         params: {
           eventsPerSecond: 1,
         },
-        timeout: 5000, // Timeout curto para realtime
+        timeout: 5000,
       },
       global: {
-        headers: {
-          'X-Client-Info': 'cinecasa-web',
-          'apikey': SUPABASE_PUBLISHABLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-        },
         fetch: (url, options) => {
-          // Custom fetch com timeout de 30s (aumentado de 8s)
-          // O Supabase está com lentidão, precisamos de mais tempo
           return fetchWithTimeout(url as string, options as RequestInit, 30000);
         },
       },
     });
-    console.log('[Supabase] Nova instância criada com configurações otimizadas');
+    console.log('[Supabase] Nova instância criada com headers garantidos');
   } else {
     console.log('[Supabase] Reutilizando instância existente');
   }
   return supabaseInstance;
 })();
-
-// Fetch com timeout
-async function fetchWithTimeout(url: string, options: RequestInit, timeout: number) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-    clearTimeout(id);
-    return response;
-  } catch (error) {
-    clearTimeout(id);
-    throw error;
-  }
-}
 
 // Função utilitária para retry de operações Supabase
 export async function supabaseWithRetry<T>(
