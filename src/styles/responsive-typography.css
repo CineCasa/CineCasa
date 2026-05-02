@@ -404,12 +404,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  display: -moz-box;
-  -moz-line-clamp: 2;
-  -moz-box-orient: vertical;
-  display: box;
   line-clamp: 2;
-  box-orient: vertical;
 }
 
 .text-clamp-3 {
@@ -417,12 +412,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  display: -moz-box;
-  -moz-line-clamp: 3;
-  -moz-box-orient: vertical;
-  display: box;
   line-clamp: 3;
-  box-orient: vertical;
 }
 
 /* Font weights */
