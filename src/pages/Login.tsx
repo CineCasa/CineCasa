@@ -91,13 +91,6 @@ const Login = () => {
     }
   };
 
-  const handleContentClick = (item: NewContent) => {
-    if (item.type === 'movie') {
-      navigate(`/movie-details/${item.id}`);
-    } else {
-      navigate(`/series-details/${item.id}`);
-    }
-  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,8 +126,6 @@ const Login = () => {
     }
   };
 
-  const visibleContent = newContent;
-  
   // Timestamp para forçar re-renderização das capas a cada reload
   const renderTimestamp = Date.now();
 
