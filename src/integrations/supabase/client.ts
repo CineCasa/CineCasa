@@ -5,6 +5,13 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Verificar se as variáveis de ambiente estão definidas
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error('[Supabase] ERRO: Variáveis de ambiente não definidas!');
+  console.error('[Supabase] VITE_SUPABASE_URL:', SUPABASE_URL ? 'Definida' : 'FALTANDO');
+  console.error('[Supabase] VITE_SUPABASE_PUBLISHABLE_KEY:', SUPABASE_PUBLISHABLE_KEY ? 'Definida' : 'FALTANDO');
+}
+
 // Singleton pattern para evitar múltiplas instâncias
 let supabaseInstance: ReturnType<typeof createClient<Database>> | null = null;
 
