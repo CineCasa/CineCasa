@@ -1,5 +1,13 @@
 const TMDB_API_KEY = "b275ce8e1a6b3d5d879bb0907e4f56ad";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
+
+// Generate TMDB image URL
+export const tmdbImageUrl = (path: string, size: string = 'w500'): string => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
+};
 
 export const fetchTmdbDetails = async (tmdbId: string, type: "movie" | "tv") => {
   try {
