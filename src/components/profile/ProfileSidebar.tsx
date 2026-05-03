@@ -114,7 +114,7 @@ export function ProfileSidebar({ isPremium = false, onLogout }: ProfileSidebarPr
           </div>
           {!isCollapsed && (
             <div>
-              <h1 className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              <h1 className="text-lg font-bold text-[#E53935]">
                 CINECASA
               </h1>
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">
@@ -177,7 +177,7 @@ export function ProfileSidebar({ isPremium = false, onLogout }: ProfileSidebarPr
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-2">
                 <Crown className="w-5 h-5 text-cyan-400" />
-                <span className="text-sm font-bold text-cyan-400">CINECASA PREMIUM</span>
+                <span className="text-sm font-bold text-[#E53935]">CINECASA PREMIUM</span>
               </div>
               <p className="text-xs text-gray-400 mb-3">
                 Assine agora e tenha acesso ilimitado.

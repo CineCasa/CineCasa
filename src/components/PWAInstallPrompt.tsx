@@ -16,7 +16,7 @@ export default function PWAInstallPrompt() {
 
   return (
     <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-gray-900 p-4 rounded-lg z-50">
-      <p className="text-white font-medium">Instalar CineCasa</p>
+      <p className="text-[#E53935] font-medium">Instalar CineCasa</p>
       <p className="text-gray-400 text-sm">Adicione à tela inicial para acesso rápido</p>
       <button
         onClick={() => setShow(false)}

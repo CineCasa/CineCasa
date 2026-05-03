@@ -133,7 +133,7 @@ const Sidebar = ({ activeItem = 'Perfil' }: { activeItem?: string }) => {
           <Play className="w-5 h-5 text-white fill-white" />
         </div>
         <div>
-          <h1 className="text-white font-bold text-lg tracking-tight">CINECASA</h1>
+          <h1 className="text-[#E53935] font-bold text-lg tracking-tight">CINECASA</h1>
           <p className="text-[10px] text-gray-500 uppercase tracking-wider">Entretenimento</p>
         </div>
       </div>
@@ -183,7 +183,7 @@ const Sidebar = ({ activeItem = 'Perfil' }: { activeItem?: string }) => {
       <div className="p-4">
         <div className="bg-gradient-to-br from-cyan-500/20 to-blue-600/20 rounded-xl p-4 border border-cyan-500/30">
           <CrownIcon className="w-8 h-8 text-cyan-400 mb-2" />
-          <h3 className="text-white font-bold text-sm">CineCasa Premium</h3>
+          <h3 className="text-[#E53935] font-bold text-sm">CineCasa Premium</h3>
           <p className="text-gray-400 text-xs mt-1">Acesse todo o conteúdo</p>
           <button className="mt-3 w-full py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs rounded-lg transition-colors">
             Ver planos
