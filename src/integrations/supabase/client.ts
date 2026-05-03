@@ -14,12 +14,16 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 
 // Fetch com timeout que garante headers do Supabase
 async function fetchWithTimeout(url: string, options: RequestInit, timeout: number) {
+  console.log('[Supabase Fetch] URL:', url);
+  console.log('[Supabase Fetch] Options:', options);
+  
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   
   // Normalizar headers para objeto plano
   const existingHeaders: Record<string, string> = {};
   if (options.headers) {
+    console.log('[Supabase Fetch] Headers type:', typeof options.headers, options.headers.constructor?.name);
     if (options.headers instanceof Headers) {
       options.headers.forEach((value, key) => {
         existingHeaders[key.toLowerCase()] = value;
@@ -37,6 +41,8 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
     }
   }
   
+  console.log('[Supabase Fetch] Existing headers:', existingHeaders);
+  
   // Headers obrigatórios do Supabase (em lowercase para evitar duplicatas)
   const supabaseHeaders: Record<string, string> = {
     'apikey': SUPABASE_PUBLISHABLE_KEY,
@@ -44,11 +50,15 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
     'x-client-info': 'cinecasa-web',
   };
   
+  console.log('[Supabase Fetch] Supabase headers:', supabaseHeaders);
+  
   // Mesclar: headers do Supabase têm prioridade
   const headers: Record<string, string> = {
     ...existingHeaders,
     ...supabaseHeaders,
   };
+  
+  console.log('[Supabase Fetch] Final headers:', headers);
   
   try {
     const response = await fetch(url, {
@@ -56,10 +66,12 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
       headers,
       signal: controller.signal,
     });
+    console.log('[Supabase Fetch] Response status:', response.status);
     clearTimeout(id);
     return response;
   } catch (error) {
     clearTimeout(id);
+    console.error('[Supabase Fetch] Error:', error);
     throw error;
   }
 }
