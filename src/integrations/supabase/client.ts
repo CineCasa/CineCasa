@@ -21,10 +21,13 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Verificar se as variáveis de ambiente estão definidas
+console.log('[Supabase] Verificando variáveis de ambiente...');
+console.log('[Supabase] VITE_SUPABASE_URL:', SUPABASE_URL ? `Definida (${SUPABASE_URL.substring(0, 20)}...)` : 'FALTANDO');
+console.log('[Supabase] VITE_SUPABASE_PUBLISHABLE_KEY:', SUPABASE_PUBLISHABLE_KEY ? `Definida (${SUPABASE_PUBLISHABLE_KEY.substring(0, 10)}...)` : 'FALTANDO');
+console.log('[Supabase] Tamanho da KEY:', SUPABASE_PUBLISHABLE_KEY?.length || 0);
+
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.error('[Supabase] ERRO: Variáveis de ambiente não definidas!');
-  console.error('[Supabase] VITE_SUPABASE_URL:', SUPABASE_URL ? 'Definida' : 'FALTANDO');
-  console.error('[Supabase] VITE_SUPABASE_PUBLISHABLE_KEY:', SUPABASE_PUBLISHABLE_KEY ? 'Definida' : 'FALTANDO');
+  console.error('[Supabase] ERRO CRÍTICO: Variáveis de ambiente não definidas!');
 }
 
 // Fetch com timeout que garante headers do Supabase
