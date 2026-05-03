@@ -349,3 +349,146 @@ button.watch-btn {
   font-family: "JetBrains Mono", monospace;
   font-weight: 500;
 }
+
+/* ============================================
+   ATUALIZAÇÕES - FONTES E CORES CINECASA
+   ============================================ */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap');
+
+/* TÍTULOS PRINCIPAIS - Inter 700 */
+.title-main {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+@media (min-width: 1024px) {
+  .title-main { font-size: 22px; }
+}
+
+@media (min-width: 1920px) {
+  .title-main { font-size: 32px; }
+}
+
+/* SUBTÍTULOS - Inter 500 */
+.subtitle {
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  opacity: 0.8;
+  letter-spacing: 0.01em;
+}
+
+@media (min-width: 1024px) {
+  .subtitle { font-size: 13px; }
+}
+
+@media (min-width: 1920px) {
+  .subtitle { font-size: 16px; }
+}
+
+/* DESCRIÇÃO/SINOPSE - Inter 400 */
+.description {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+@media (min-width: 1024px) {
+  .description { font-size: 15px; line-height: 1.6; }
+}
+
+@media (min-width: 1920px) {
+  .description { font-size: 18px; }
+}
+
+@media (min-width: 2560px) {
+  .description { font-size: 20px; }
+}
+
+/* BOTÕES - Inter 600 */
+.btn,
+.watch-btn,
+.glass-action,
+.details-btn,
+.play-btn,
+.btn-play,
+.btn-assistir,
+.btn-watch,
+button.watch-btn {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+@media (min-width: 1024px) {
+  .btn, .watch-btn, .glass-action, .details-btn { font-size: 15px; }
+}
+
+@media (min-width: 1920px) {
+  .btn, .watch-btn, .glass-action, .details-btn { font-size: 18px; }
+}
+
+/* BOTÕES PLAY - COR CIANO DO LOGO */
+.watch-btn,
+.glass-action,
+.play-btn,
+.btn-play,
+.btn-assistir,
+.btn-watch {
+  background: #00d9ff !important;
+  background-color: #00d9ff !important;
+  color: #000 !important;
+  border: none !important;
+}
+
+.watch-btn:hover,
+.glass-action:hover,
+.play-btn:hover {
+  background: #00b8d9 !important;
+  transform: scale(1.05);
+}
+
+/* LABELS PEQUENOS - Inter 600 */
+.label, .label-tag, .label-quality, .label-category {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+@media (min-width: 1024px) {
+  .label, .label-tag, .label-quality, .label-category { font-size: 12px; }
+}
+
+@media (min-width: 1920px) {
+  .label, .label-tag, .label-quality, .label-category { font-size: 14px; }
+}
+
+/* INTERFACE TÉCNICA - JetBrains Mono */
+.tech {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+@media (min-width: 1024px) {
+  .tech { font-size: 13px; }
+}
+
+/* Fallback para elementos existentes */
+.card .title,
+.category-title,
+.info-panel h2,
+.card .subtitle,
+.overview,
+.info-panel p,
+.playerDesc {
+  font-family: "Inter", sans-serif;
+}
