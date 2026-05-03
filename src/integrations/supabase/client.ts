@@ -2,6 +2,21 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Helper to check if JWT token is expired
+function isTokenExpired(token: string): boolean {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    const { exp } = JSON.parse(jsonPayload);
+    return exp && Date.now() >= exp * 1000;
+  } catch {
+    return true; // If can't parse, consider expired
+  }
+}
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -14,8 +29,6 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 
 // Fetch com timeout que garante headers do Supabase
 async function fetchWithTimeout(url: string, options: RequestInit, timeout: number) {
-  console.log('[Supabase Fetch] URL:', url);
-  console.log('[Supabase Fetch] Options:', options);
   
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -23,7 +36,6 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
   // Normalizar headers para objeto plano
   const existingHeaders: Record<string, string> = {};
   if (options.headers) {
-    console.log('[Supabase Fetch] Headers type:', typeof options.headers, options.headers.constructor?.name);
     if (options.headers instanceof Headers) {
       options.headers.forEach((value, key) => {
         existingHeaders[key.toLowerCase()] = value;
@@ -41,31 +53,31 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
     }
   }
   
-  console.log('[Supabase Fetch] Existing headers:', existingHeaders);
+  // Check if existing authorization token is expired - remove it if so
+  const authHeader = existingHeaders['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.replace('Bearer ', '');
+    if (isTokenExpired(token)) {
+      delete existingHeaders['authorization'];
+    }
+  }
   
   // Headers obrigatórios do Supabase
-  // IMPORTANTE: Não sobrescrever 'authorization' se já existe (é o token do usuário logado)
   const supabaseHeaders: Record<string, string> = {
     'apikey': SUPABASE_PUBLISHABLE_KEY,
     'x-client-info': 'cinecasa-web',
   };
   
-  // Só adicionar authorization se não existir ou se for a chave anônima
-  // (quando o usuário está logado, o Supabase já envia o token de sessão)
+  // Only add anonymous authorization if no valid user token exists
   if (!existingHeaders['authorization']) {
     supabaseHeaders['authorization'] = `Bearer ${SUPABASE_PUBLISHABLE_KEY}`;
   }
   
-  console.log('[Supabase Fetch] Supabase headers:', supabaseHeaders);
-  
-  // Mesclar: headers do Supabase têm prioridade para apikey, 
-  // mas NÃO para authorization (preserva token do usuário se existir)
+  // Mesclar: headers do Supabase têm prioridade para apikey
   const headers: Record<string, string> = {
     ...supabaseHeaders,
     ...existingHeaders,
   };
-  
-  console.log('[Supabase Fetch] Final headers:', headers);
   
   try {
     const response = await fetch(url, {
@@ -73,12 +85,10 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
       headers,
       signal: controller.signal,
     });
-    console.log('[Supabase Fetch] Response status:', response.status);
     clearTimeout(id);
     return response;
   } catch (error) {
     clearTimeout(id);
-    console.error('[Supabase Fetch] Error:', error);
     throw error;
   }
 }
