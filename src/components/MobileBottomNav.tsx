@@ -20,8 +20,8 @@ export default function MobileBottomNav() {
           <button
             key={path}
             onClick={() => navigate(path)}
-            className={`flex flex-col items-center justify-center w-full h-full ${
-              location.pathname === path ? 'text-cyan-400' : 'text-gray-400'
+            className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
+              location.pathname === path ? 'text-[#E53935]' : 'text-gray-400'
             }`}
           >
             <Icon className="w-5 h-5" />

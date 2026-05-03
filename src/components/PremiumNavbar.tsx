@@ -1,17 +1,26 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Film, Tv, Compass, User } from 'lucide-react';
+import { Home, Film, Tv, Heart, Search, User } from 'lucide-react';
 
 export default function PremiumNavbar() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
+    { icon: Home, path: '/', label: 'Início' },
     { icon: Film, path: '/filmes', label: 'Filmes' },
     { icon: Tv, path: '/series', label: 'Séries' },
-    { icon: Compass, path: '/explore', label: 'Explorar' },
+    { icon: Heart, path: '/favorites', label: 'Favoritos' },
+    { icon: Search, path: '/search', label: 'Pesquisa' },
     { icon: User, path: '/profile', label: 'Perfil' },
   ];
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-b border-white/10 z-50 hidden md:block">
@@ -19,7 +28,7 @@ export default function PremiumNavbar() {
         <div className="flex items-center justify-between h-16">
           <button
             onClick={() => navigate('/')}
-            className="text-xl font-bold text-cyan-400"
+            className="text-xl font-bold text-[#E53935]"
           >
             CineCasa
           </button>
@@ -28,8 +37,8 @@ export default function PremiumNavbar() {
               <button
                 key={path}
                 onClick={() => navigate(path)}
-                className={`flex items-center gap-2 ${
-                  location.pathname === path ? 'text-cyan-400' : 'text-gray-300 hover:text-white'
+                className={`flex items-center gap-2 transition-colors ${
+                  isActive(path) ? 'text-[#E53935]' : 'text-gray-300 hover:text-white'
                 }`}
               >
                 <Icon className="w-5 h-5" />
