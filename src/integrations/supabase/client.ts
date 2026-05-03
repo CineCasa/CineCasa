@@ -58,6 +58,7 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.replace('Bearer ', '');
     if (isTokenExpired(token)) {
+      console.log('[Supabase Fetch] Token expirado removido');
       delete existingHeaders['authorization'];
     }
   }
@@ -79,12 +80,21 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
     ...existingHeaders,
   };
   
+  // DEBUG: Log headers being sent
+  console.log('[Supabase Fetch] URL:', url);
+  console.log('[Supabase Fetch] Headers:', headers);
+  console.log('[Supabase Fetch] apikey presente:', !!headers['apikey']);
+  console.log('[Supabase Fetch] authorization presente:', !!headers['authorization']);
+  
   try {
     const response = await fetch(url, {
       ...options,
       headers,
       signal: controller.signal,
     });
+    if (response.status === 401) {
+      console.error('[Supabase Fetch] 401 Unauthorized - Headers enviados:', headers);
+    }
     clearTimeout(id);
     return response;
   } catch (error) {
