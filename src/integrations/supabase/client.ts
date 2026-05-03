@@ -103,6 +103,9 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
   }
   console.log('[Supabase Fetch] URL:', url);
   console.log('[Supabase Fetch] Headers:', debugHeaders);
+  console.log('[Supabase Fetch] apikey length:', headers['apikey']?.length);
+  console.log('[Supabase Fetch] authorization length:', headers['authorization']?.length);
+  console.log('[Supabase Fetch] apikey starts with:', headers['apikey']?.substring(0, 20));
   console.log('[Supabase Fetch] apikey válido:', headers['apikey']?.length > 10);
   console.log('[Supabase Fetch] authorization válido:', headers['authorization']?.length > 20);
   
