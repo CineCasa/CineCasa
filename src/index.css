@@ -959,3 +959,141 @@ html, body {
     object-position: center center !important;
   }
 }
+
+/* TV NAVBAR STYLES */
+.tv-navbar-cinecasa {
+  background-color: #050a12;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(12px);
+}
+
+.tv-nav-item {
+  color: #ffffff;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  outline: none;
+  cursor: pointer;
+}
+
+.tv-nav-item.active {
+  font-weight: 900;
+  color: #00d9ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px #00d9ff, 0 0 15px rgba(0, 217, 255, 0.6);
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, transparent 100%);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+}
+
+.tv-nav-item:hover,
+.tv-nav-item:focus-visible {
+  color: #00d9ff;
+  transform: scale(1.1);
+  text-shadow: 0 0 10px #00d9ff;
+  background: rgba(0, 217, 255, 0.1);
+}
+
+.tv-nav-item:focus-visible {
+  outline: 2px solid #00d9ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
+/* TV Optimized - Telas grandes */
+@media (min-width: 1920px) {
+  .tv-nav-item {
+    font-size: 1.5rem;
+    padding: 0.75rem 1.5rem;
+  }
+  .tv-navbar-cinecasa {
+    padding: 1.5rem 3rem;
+  }
+}
+
+/* 4K Screens */
+@media (min-width: 2560px) {
+  .tv-nav-item {
+    font-size: 1.8rem;
+    padding: 1rem 2rem;
+  }
+}
+
+/* TV Navbar Logo Styles */
+.tv-navbar-logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.tv-navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.tv-navbar-logo-img {
+  height: 40px;
+  width: auto;
+  filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.6));
+}
+
+.tv-navbar-logo-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* TV Navbar Menu */
+.tv-navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tv-nav-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5rem;
+}
+
+.tv-nav-indicator {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30%;
+  height: 3px;
+  background: #00d9ff;
+  border-radius: 2px;
+  box-shadow: 0 0 10px #00d9ff, 0 0 20px rgba(0, 217, 255, 0.6);
+}
+
+.tv-navbar-spacer {
+  flex: 1;
+}
+
+/* Spatial Navigation Focus */
+.tv-nav-item.spatial-focus {
+  outline: 2px solid #00d9ff;
+  outline-offset: 2px;
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.7);
+  transform: scale(1.05);
+}
