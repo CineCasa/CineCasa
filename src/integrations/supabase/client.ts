@@ -43,19 +43,26 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
   
   console.log('[Supabase Fetch] Existing headers:', existingHeaders);
   
-  // Headers obrigatórios do Supabase (em lowercase para evitar duplicatas)
+  // Headers obrigatórios do Supabase
+  // IMPORTANTE: Não sobrescrever 'authorization' se já existe (é o token do usuário logado)
   const supabaseHeaders: Record<string, string> = {
     'apikey': SUPABASE_PUBLISHABLE_KEY,
-    'authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
     'x-client-info': 'cinecasa-web',
   };
   
+  // Só adicionar authorization se não existir ou se for a chave anônima
+  // (quando o usuário está logado, o Supabase já envia o token de sessão)
+  if (!existingHeaders['authorization']) {
+    supabaseHeaders['authorization'] = `Bearer ${SUPABASE_PUBLISHABLE_KEY}`;
+  }
+  
   console.log('[Supabase Fetch] Supabase headers:', supabaseHeaders);
   
-  // Mesclar: headers do Supabase têm prioridade
+  // Mesclar: headers do Supabase têm prioridade para apikey, 
+  // mas NÃO para authorization (preserva token do usuário se existir)
   const headers: Record<string, string> = {
-    ...existingHeaders,
     ...supabaseHeaders,
+    ...existingHeaders,
   };
   
   console.log('[Supabase Fetch] Final headers:', headers);
