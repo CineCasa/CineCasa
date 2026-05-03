@@ -63,28 +63,45 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
     }
   }
   
-  // Headers obrigatórios do Supabase
+  // Headers obrigatórios do Supabase - sempre usar a chave anônima
   const supabaseHeaders: Record<string, string> = {
-    'apikey': SUPABASE_PUBLISHABLE_KEY,
+    'apikey': SUPABASE_PUBLISHABLE_KEY || '',
     'x-client-info': 'cinecasa-web',
   };
   
-  // Only add anonymous authorization if no valid user token exists
-  if (!existingHeaders['authorization']) {
+  // Sempre garantir que temos um authorization válido
+  // Se existe um token de usuário válido, usar ele; senão usar a chave anônima
+  const userToken = existingHeaders['authorization'];
+  if (userToken && userToken.startsWith('Bearer ') && userToken.length > 20) {
+    // Usa o token do usuário (session token)
+    supabaseHeaders['authorization'] = userToken;
+  } else {
+    // Usa a chave anônima para requisições não autenticadas
     supabaseHeaders['authorization'] = `Bearer ${SUPABASE_PUBLISHABLE_KEY}`;
   }
   
-  // Mesclar: headers do Supabase têm prioridade para apikey
+  // Garantir que apikey nunca seja vazio ou sobrescrito
+  // Limpar existingHeaders de qualquer apikey incorreto
+  delete existingHeaders['apikey'];
+  
+  // Mesclar: supabaseHeaders tem prioridade absoluta
   const headers: Record<string, string> = {
-    ...supabaseHeaders,
     ...existingHeaders,
+    ...supabaseHeaders,
   };
   
-  // DEBUG: Log headers being sent
+  // DEBUG: Log headers being sent (com valores truncados por segurança)
+  const debugHeaders = { ...headers };
+  if (debugHeaders['apikey']) {
+    debugHeaders['apikey'] = debugHeaders['apikey'].substring(0, 10) + '...';
+  }
+  if (debugHeaders['authorization']) {
+    debugHeaders['authorization'] = debugHeaders['authorization'].substring(0, 20) + '...';
+  }
   console.log('[Supabase Fetch] URL:', url);
-  console.log('[Supabase Fetch] Headers:', headers);
-  console.log('[Supabase Fetch] apikey presente:', !!headers['apikey']);
-  console.log('[Supabase Fetch] authorization presente:', !!headers['authorization']);
+  console.log('[Supabase Fetch] Headers:', debugHeaders);
+  console.log('[Supabase Fetch] apikey válido:', headers['apikey']?.length > 10);
+  console.log('[Supabase Fetch] authorization válido:', headers['authorization']?.length > 20);
   
   try {
     const response = await fetch(url, {
