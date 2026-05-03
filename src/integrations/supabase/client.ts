@@ -109,14 +109,41 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
   console.log('[Supabase Fetch] apikey válido:', headers['apikey']?.length > 10);
   console.log('[Supabase Fetch] authorization válido:', headers['authorization']?.length > 20);
   
+  // CRITICAL: Verificar se apikey está presente nos headers finais
+  if (!headers['apikey'] || headers['apikey'].length < 10) {
+    console.error('[Supabase Fetch] ERRO CRÍTICO: apikey ausente ou inválido nos headers finais!');
+    console.error('[Supabase Fetch] Headers finais:', Object.keys(headers));
+  }
+
+  // Adicionar apikey como query parameter como fallback
+  const urlObj = new URL(url);
+  if (!urlObj.searchParams.has('apikey') && SUPABASE_PUBLISHABLE_KEY) {
+    urlObj.searchParams.set('apikey', SUPABASE_PUBLISHABLE_KEY);
+  }
+  const finalUrl = urlObj.toString();
+
+  // DEBUG: Mostrar headers EXATOS que serão enviados
+  console.log('[Supabase Fetch] Headers finais a serem enviados:', {
+    'apikey-presente': !!headers['apikey'],
+    'apikey-length': headers['apikey']?.length,
+    'authorization-presente': !!headers['authorization'],
+    'authorization-length': headers['authorization']?.length,
+    'url-com-apikey-param': finalUrl !== url,
+  });
+
   try {
-    const response = await fetch(url, {
+    const response = await fetch(finalUrl, {
       ...options,
       headers,
       signal: controller.signal,
     });
     if (response.status === 401) {
-      console.error('[Supabase Fetch] 401 Unauthorized - Headers enviados:', headers);
+      console.error('[Supabase Fetch] 401 Unauthorized - Headers enviados:', {
+        'apikey-presente': !!headers['apikey'],
+        'apikey-tamanho': headers['apikey']?.length,
+        'authorization-tamanho': headers['authorization']?.length,
+      });
+      console.error('[Supabase Fetch] URL chamada:', finalUrl);
     }
     clearTimeout(id);
     return response;
@@ -150,6 +177,9 @@ export const supabase = (() => {
         timeout: 5000,
       },
       global: {
+        headers: {
+          'apikey': SUPABASE_PUBLISHABLE_KEY || '',
+        },
         fetch: (url, options) => {
           return fetchWithTimeout(url as string, options as RequestInit, 30000);
         },
