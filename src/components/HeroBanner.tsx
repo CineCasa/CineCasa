@@ -85,7 +85,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           console.log('[HeroBanner] Buscando filmes do Supabase...');
           const { data: movies, error: moviesError } = await supabase
             .from('cinema')
-            .select('id, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop')
+            .select('id, tmdb_id, titulo, description, year, rating, genre, genero, poster, banner, backdrop')
             .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
 
           if (moviesError) {
@@ -163,7 +163,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 description: m.overview || m.description || '',
                 year: m.year || '',
                 rating: m.rating || '',
-                genre: m.genre || '',
+                genre: m.genre || m.genero || '',
                 backdrop: imageUrl,
                 type: 'movie' as const,
                 country,
