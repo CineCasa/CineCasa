@@ -15,7 +15,6 @@ interface BannerItem {
   rating: string;
   genre: string;
   backdrop: string;
-  country?: string;
   type: 'movie' | 'series';
 }
 
@@ -84,7 +83,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           console.log('[HeroBanner] Buscando filmes do Supabase...');
           const { data: movies, error: moviesError } = await supabase
             .from('cinema')
-            .select('id, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop, country')
+            .select('id, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop')
             .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
 
           if (moviesError) {
@@ -149,7 +148,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 rating: m.rating || '',
                 genre: m.genre || '',
                 backdrop: imageUrl,
-                country: m.country,
                 type: 'movie' as const
               };
             });
@@ -163,7 +161,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           // Buscar séries com qualquer imagem (poster, banner ou backdrop)
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id_n, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop, country')
+            .select('id_n, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop')
             .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
 
           if (seriesError) throw seriesError;
@@ -204,7 +202,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 rating: s.rating || '',
                 genre: s.genre || '',
                 backdrop: imageUrl,
-                country: s.country,
                 type: 'series' as const
               };
             });
@@ -323,12 +320,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
     }
   };
 
-  // Função para obter URL da bandeira
-  const getFlagUrl = (countryCode?: string) => {
-    if (!countryCode) return null;
-    return `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`;
-  };
-
   // Variantes de animação
   const slideVariants = {
     enter: (direction: number) => ({
@@ -431,14 +422,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
               {/* Meta info */}
               <div className="flex items-center gap-3 flex-wrap text-sm md:text-base text-gray-200">
-                {currentItem.country && (
-                  <img
-                    src={getFlagUrl(currentItem.country) || ''}
-                    alt={currentItem.country}
-                    className="w-6 h-4 rounded object-cover shadow-sm"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
-                )}
                 {currentItem.year && <span>{currentItem.year}</span>}
                 {currentItem.genre && (
                   <span className="text-cyan-400">{currentItem.genre}</span>
