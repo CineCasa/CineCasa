@@ -222,7 +222,7 @@ const FilmesPorCategoria: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-black pb-20 pt-[70vh]">
+    <div className="min-h-screen bg-black pb-20">
       {/* Hero Banner - fixo no topo */}
       <HeroBanner pageType="movies" />
 

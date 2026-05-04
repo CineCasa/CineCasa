@@ -161,7 +161,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           // Buscar séries com qualquer imagem (poster, banner ou backdrop)
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id_n, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop')
+            .select('id_n, tmdb_id, titulo, descricao, year, rating, genre, poster, banner, backdrop')
             .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
 
           if (seriesError) throw seriesError;
@@ -197,7 +197,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 id: s.id_n,
                 tmdbId: s.tmdb_id,
                 title: s.titulo || 'Sem título',
-                description: s.overview || s.description || '',
+                description: s.overview || s.descricao || '',
                 year: s.year || '',
                 rating: s.rating || '',
                 genre: s.genre || '',
@@ -392,7 +392,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           <img
             src={currentItem.backdrop}
             alt={currentItem.title}
-            className="w-full h-full object-contain bg-black"
+            className="w-full h-full object-cover"
           />
         </motion.div>
       </AnimatePresence>
