@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Plus, Star, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { fetchTmdbMovie, fetchTmdbSeries, tmdbImageUrl } from '@/services/tmdb';
+import { fetchTmdbMovie, fetchTmdbSeries, tmdbImageUrl, tmdbBannerUrl } from '@/services/tmdb';
 
 interface BannerItem {
   id: string;
@@ -60,8 +59,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
       // Hierarquia TMDB: backdrop_path → poster_path
       const imagePath = data.backdrop_path || data.poster_path;
       if (imagePath) {
-        const imageUrl = tmdbImageUrl(imagePath, 'original');
-        console.log(`[HeroBanner] Imagem TMDB encontrada: ${imageUrl}`);
+        // Usar tmdbBannerUrl para máxima qualidade (original)
+        const imageUrl = tmdbBannerUrl(imagePath);
+        console.log(`[HeroBanner] Imagem TMDB alta qualidade encontrada: ${imageUrl}`);
         return imageUrl;
       }
       return null;
@@ -441,31 +441,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 </p>
               )}
 
-              {/* Botões */}
-              <div className="flex items-center gap-3 pt-4">
-                <button
-                  onClick={() => handlePlay(currentItem)}
-                  className="flex items-center gap-2 px-6 py-3 bg-[#00d9ff] hover:bg-[#00b8d9] text-black font-bold rounded-lg transition-all transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[#00d9ff] focus:ring-offset-2 focus:ring-offset-black"
-                >
-                  <Play size={20} fill="currentColor" />
-                  <span>Assistir agora</span>
-                </button>
-
-                <button
-                  onClick={() => handleMyList(currentItem)}
-                  className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg backdrop-blur-sm border border-white/20 transition-all transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
-                >
-                  <Plus size={20} />
-                  <span>Minha lista</span>
-                </button>
-
-                <button
-                  onClick={() => navigate(`/details/${currentItem.type === 'movie' ? 'cinema' : 'series'}/${currentItem.id}`)}
-                  className="flex items-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-lg backdrop-blur-sm border border-white/20 transition-all"
-                >
-                  <Info size={20} />
-                </button>
-              </div>
             </motion.div>
           </AnimatePresence>
         </div>

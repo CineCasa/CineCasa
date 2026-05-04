@@ -1,11 +1,49 @@
+// TMDB API Configuration
+// Token de Acesso de Leitura: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMjc1Y2U4ZTFhNmIzZDVkODc5YmIwOTA3ZTRmNTZhZCIsIm5iZiI6MTc2NzA1NjIxNS43MTI5OTk4LCJzdWIiOiI2OTUzMjM1NzFjNTI4MjJkM2JjYmRjYTYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.ZkuZDskKQh1Wx3TQnh4Nk2VIB6ARPsY-ImkTZ6BdM5k
+// Chave da API: b275ce8e1a6b3d5d879bb0907e4f56ad
 const TMDB_API_KEY = "b275ce8e1a6b3d5d879bb0907e4f56ad";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
-// Generate TMDB image URL
+// Tamanhos de imagem otimizados para diferentes usos
+export const TMDB_IMAGE_SIZES = {
+  // Para banners hero - alta qualidade
+  BACKDROP_ORIGINAL: 'original',
+  BACKDROP_W1280: 'w1280',
+  BACKDROP_W780: 'w780',
+  
+  // Para posters
+  POSTER_ORIGINAL: 'original',
+  POSTER_W780: 'w780',
+  POSTER_W500: 'w500',
+  POSTER_W342: 'w342',
+  POSTER_W185: 'w185',
+  
+  // Para thumbnails
+  STILL_W300: 'w300',
+  STILL_W185: 'w185',
+};
+
+// Generate TMDB image URL com alta qualidade para banners
 export const tmdbImageUrl = (path: string, size: string = 'w500'): string => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
+  return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
+};
+
+// URL otimizada para banners hero - usa original para máxima qualidade
+export const tmdbBannerUrl = (path: string): string => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  // Usar original para banners garantir qualidade máxima
+  return `${TMDB_IMAGE_BASE_URL}/${TMDB_IMAGE_SIZES.BACKDROP_ORIGINAL}${path}`;
+};
+
+// URL para posters com fallback de qualidade
+export const tmdbPosterUrl = (path: string, highQuality: boolean = false): string => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  const size = highQuality ? TMDB_IMAGE_SIZES.POSTER_W780 : TMDB_IMAGE_SIZES.POSTER_W500;
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 };
 
