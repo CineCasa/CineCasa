@@ -152,17 +152,6 @@ const Series: React.FC = () => {
       {/* Hero Banner - fixo no topo */}
       <HeroBanner pageType="series" />
 
-      {/* Título da Página */}
-      <div className="px-4 md:px-8 py-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-3">
-          <Tv className="text-[#00d9ff]" size={36} />
-          Todas as Séries
-        </h1>
-        <p className="text-gray-400 mt-2 text-lg">
-          Explore nossa coleção completa de séries por categoria
-        </p>
-      </div>
-
       {/* Categorias */}
       <div className="pt-4 space-y-8">
         {loading ? (
