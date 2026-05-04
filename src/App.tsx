@@ -257,12 +257,9 @@ const AppContent = () => {
               <TVNavbar />
             </div>
           )}
-          {/* Padding-top para compensar a navbar fixed */}
-          <div className={`${showNavbars ? 'pt-20 md:pt-24' : ''}`}>
-            <SpatialNavigationProvider>
-              <AppRoutes />
-            </SpatialNavigationProvider>
-          </div>
+          <SpatialNavigationProvider>
+            <AppRoutes />
+          </SpatialNavigationProvider>
         </KeyboardNavigation>
         <PlayerContainer />
       </NotificationProvider>

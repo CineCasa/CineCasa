@@ -339,7 +339,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   }
 
   return (
-    <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden ${className}`}>
+    <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-10 ${className}`}>
       {/* Background Image com AnimatePresence */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
