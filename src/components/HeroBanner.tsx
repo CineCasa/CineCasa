@@ -77,13 +77,19 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
         if (pageType === 'home' || pageType === 'movies') {
           // Buscar filmes com qualquer imagem (poster, banner ou backdrop)
+          console.log('[HeroBanner] Buscando filmes do Supabase...');
           const { data: movies, error: moviesError } = await supabase
             .from('cinema')
             .select('id, tmdb_id, titulo, overview, year, rating, genre, poster, banner, backdrop, country')
             .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null')
             .or('poster.neq.,banner.neq.,backdrop.neq.');
 
-          if (moviesError) throw moviesError;
+          if (moviesError) {
+            console.error('[HeroBanner] Erro ao buscar filmes:', moviesError);
+            throw moviesError;
+          }
+
+          console.log(`[HeroBanner] Total de filmes retornados do Supabase: ${movies?.length || 0}`);
 
           // Processar filmes com fallback assíncrono para TMDB
           const moviePromises = (movies as any[] || [])
@@ -92,7 +98,12 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
               const hasLocalImage = (m.backdrop && m.backdrop.trim() !== '') ||
                                    (m.banner && m.banner.trim() !== '') ||
                                    (m.poster && m.poster.trim() !== '');
-              return hasLocalImage || m.tmdb_id;
+              const hasTmdbId = !!m.tmdb_id;
+              const shouldInclude = hasLocalImage || hasTmdbId;
+              if (!shouldInclude) {
+                console.log(`[HeroBanner] Filme '${m.titulo}' ignorado - sem imagem local e sem tmdb_id`);
+              }
+              return shouldInclude;
             })
             .map(async (m: any) => {
               // Hierarquia de fallback local: backdrop → banner → poster
@@ -104,13 +115,27 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                     ? m.poster
                     : null;
 
+              let source = imageUrl ? 'local' : 'none';
+
               // Se não tiver imagem local, buscar no TMDB
               if (!imageUrl && m.tmdb_id) {
+                console.log(`[HeroBanner] Filme '${m.titulo}' - buscando imagem no TMDB (ID: ${m.tmdb_id})`);
                 imageUrl = await fetchTmdbImage(m.tmdb_id, 'movie');
+                if (imageUrl) {
+                  source = 'tmdb';
+                  console.log(`[HeroBanner] Filme '${m.titulo}' - imagem TMDB encontrada`);
+                } else {
+                  console.log(`[HeroBanner] Filme '${m.titulo}' - NENHUMA imagem encontrada no TMDB`);
+                }
               }
 
               // Só retorna se conseguiu alguma imagem
-              if (!imageUrl) return null;
+              if (!imageUrl) {
+                console.log(`[HeroBanner] Filme '${m.titulo}' - descartado (sem imagem)`);
+                return null;
+              }
+
+              console.log(`[HeroBanner] Filme '${m.titulo}' - incluído (fonte: ${source})`);
 
               return {
                 id: m.id,
@@ -127,6 +152,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
             });
 
           const movieItems = (await Promise.all(moviePromises)).filter(Boolean) as BannerItem[];
+          console.log(`[HeroBanner] Filmes com imagem válida: ${movieItems.length}`);
           allItems = [...allItems, ...movieItems];
         }
 
@@ -330,7 +356,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           <img
             src={currentItem.backdrop}
             alt={currentItem.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-black"
           />
         </motion.div>
       </AnimatePresence>
