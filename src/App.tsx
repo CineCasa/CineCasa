@@ -251,16 +251,9 @@ const AppContent = () => {
         )}
         <KeyboardNavigation>
           {showNavbars && (
-            <>
-              {/* TVNavbar para telas grandes (Desktop, TV, Projetor) */}
-              <div className="hidden lg:block">
-                <TVNavbar />
-              </div>
-              {/* PremiumNavbar para telas médias */}
-              <div className="hidden md:block lg:hidden">
-                <PremiumNavbar />
-              </div>
-            </>
+            <div className="hidden md:block">
+              <TVNavbar />
+            </div>
           )}
           <SpatialNavigationProvider>
             <AppRoutes />
