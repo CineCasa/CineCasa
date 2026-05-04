@@ -265,7 +265,7 @@ const FilmesPorCategoria: React.FC = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
                     onClick={() => handleFilmeClick(filme)}
-                    className="flex-shrink-0 w-[160px] md:w-[200px] lg:w-[240px] cursor-pointer group/card"
+                    className="flex-shrink-0 w-[calc(20%-0.8rem)] min-w-[160px] max-w-[220px] cursor-pointer group/card"
                   >
                     <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 shadow-lg transition-transform duration-300 group-hover/card:scale-105 group-hover/card:z-10">
                       {filme.poster ? (
