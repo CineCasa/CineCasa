@@ -50,6 +50,7 @@ interface Recommendation {
 
 const Details = () => {
   const { id, type } = useParams<{ id: string; type: string }>();
+  console.log('[Details] Rota acessada:', { id, type, pathname: window.location.pathname });
   const navigate = useNavigate();
   const { user } = useAuth();
   const heroRef = useRef<HTMLDivElement>(null);

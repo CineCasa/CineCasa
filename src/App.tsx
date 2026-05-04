@@ -60,6 +60,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // Usar apenas user?.id para evitar loop quando objeto user muda referência
   const userId = user?.id;
 
+  console.log('[ProtectedRoute] Verificando:', { pathname: location.pathname, authLoading, hasUser: !!userId });
+
   // Notificar quando auth estiver pronto - não bloqueia UI
   useEffect(() => {
     if (!authLoading && userId) {
@@ -69,9 +71,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   // Só redireciona se não estiver autenticado - nunca mostra loading screen
   if (!authLoading && !userId) {
+    console.log('[ProtectedRoute] Redirecionando para login - usuário não autenticado');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  console.log('[ProtectedRoute] Renderizando children');
   // Sempre renderiza children imediatamente - sistema não bloqueia
   return <>{children}</>;
 };
