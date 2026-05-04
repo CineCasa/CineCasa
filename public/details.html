@@ -64,60 +64,120 @@
 </head>
 <body>
   <div class="loading" id="loading"><div class="loading-spinner"></div></div>
-  <div class="modal-overlay" id="trailerModal"><div class="modal-content"><button class="modal-close focusable" id="closeModal">✕ Fechar</button><iframe class="modal-iframe" id="trailerFrame" allowfullscreen></iframe></div></div>
-  <nav class="navbar"><div class="logo">◉ CINECASA</div><button class="back-btn focusable" id="backBtn">← Voltar</button></nav>
+  <div class="modal-overlay" id="trailerModal">
+    <div class="modal-content">
+      <button class="modal-close focusable" id="closeModal">✕ FECHAR</button>
+      <iframe class="modal-iframe" id="trailerFrame" allowfullscreen></iframe>
+    </div>
+  </div>
+  
+  <nav class="navbar">
+    <div class="logo">◉ CINECASA</div>
+    <button class="back-btn focusable" id="backBtn" tabindex="0">← VOLTAR</button>
+  </nav>
+  
   <div class="hero" id="hero"></div>
+  
   <div class="content-wrapper">
     <div class="main-grid">
-      <div class="poster-section"><img class="poster" id="poster" src="" alt="Poster"></div>
+      <div class="poster-section">
+        <img class="poster" id="poster" src="" alt="Poster">
+      </div>
+      
       <div class="movie-info">
         <span class="badge" id="typeBadge">FILME</span>
         <h1 id="title">Carregando...</h1>
+        
         <div class="meta-row">
           <div class="rating"><span>★</span><span id="rating">0.0</span></div>
-          <span id="year">2024</span><span id="duration">-- min</span><span class="age-badge" id="ageBadge">L</span>
-          <img id="countryFlag" src="" alt="" style="width:24px;height:18px;border-radius:3px;display:none;">
+          <span id="year">2024</span>
+          <span id="duration">-- min</span>
+          <span class="age-badge" id="ageBadge">L</span>
+          <img id="countryFlag" class="country-flag" src="" alt="" style="width:28px;height:20px;display:none;">
         </div>
-        <div id="genres" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;"></div>
+        
+        <div id="genres" style="display:flex;gap:0.6rem;flex-wrap:wrap;margin-bottom:2rem;"></div>
+        
         <div class="main-actions">
-          <button class="btn-primary focusable" id="watchBtn"><span>▶</span> Assistir agora</button>
-          <button class="btn-secondary focusable" id="trailerBtn"><span>🎬</span> Trailer</button>
+          <button class="btn-primary focusable" id="watchBtn" tabindex="0">
+            <span>▶</span> ASSISTIR AGORA
+          </button>
+          <button class="btn-secondary focusable" id="trailerBtn" tabindex="0">
+            <span>🎬</span> TRAILER
+          </button>
         </div>
+        
         <div class="icon-actions">
-          <button class="icon-btn focusable" id="favBtn" title="Favoritos">❤️</button>
-          <button class="icon-btn focusable" id="laterBtn" title="Assistir depois">⏳</button>
-          <button class="icon-btn focusable" id="likeBtn" title="Gostei">👍</button>
-          <button class="icon-btn focusable" id="dislikeBtn" title="Não gostei">👎</button>
+          <button class="icon-btn focusable" id="favBtn" title="Favoritos" tabindex="0">❤️</button>
+          <button class="icon-btn focusable" id="laterBtn" title="Assistir depois" tabindex="0">⏳</button>
+          <button class="icon-btn focusable" id="likeBtn" title="Gostei" tabindex="0">👍</button>
+          <button class="icon-btn focusable" id="dislikeBtn" title="Não gostei" tabindex="0">👎</button>
         </div>
+        
         <p class="synopsis clamped" id="synopsis"></p>
-        <button class="show-more focusable" id="showMore">Ver mais</button>
-        <h2 class="section-title">🎭 Elenco Principal</h2>
+        <button class="show-more focusable" id="showMore" tabindex="0">VER MAIS</button>
+        
+        <h2 class="section-title">ELENCO PRINCIPAL</h2>
         <div class="cast-grid" id="castGrid"></div>
+        
         <div class="recommendations" id="recSection" style="display:none;">
-          <h2 class="section-title" id="recTitle">🎬 Continuações</h2>
+          <h2 class="section-title" id="recTitle">CONTINUAÇÕES</h2>
           <div class="rec-grid" id="recGrid"></div>
         </div>
       </div>
+      
       <div class="details-panel">
-        <h3>📋 Detalhes</h3>
-        <div class="detail-row"><span>🎬 Direção</span><span id="director">-</span></div>
-        <div class="detail-row"><span>✍️ Roteiro</span><span id="writers">-</span></div>
-        <div class="detail-row"><span>🏢 Produção</span><span id="production">-</span></div>
-        <div class="detail-row"><span>🎪 Estúdio</span><span id="studio">-</span></div>
-        <div class="detail-row"><span>📦 Distribuição</span><span id="distribution">-</span></div>
-        <div class="detail-row"><span>🗣️ Idiomas</span><span id="languages">-</span></div>
-        <div class="detail-row"><span>💬 Legendas</span><span>Português</span></div>
-        <div class="detail-row"><span>🎥 Qualidade</span><span>4K UHD • HDR10</span></div>
-        <div class="detail-row"><span>📅 Lançamento</span><span id="releaseDate">-</span></div>
-        <div class="detail-row"><span>💰 Orçamento</span><span id="budget">-</span></div>
-        <div class="detail-row"><span>💵 Receita</span><span id="revenue">-</span></div>
+        <h3>📋 DETALHES</h3>
+        <div class="detail-row">
+          <span class="detail-label">🎬 Direção</span>
+          <span class="detail-value" id="director">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">✍️ Roteiro</span>
+          <span class="detail-value" id="writers">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🏢 Produção</span>
+          <span class="detail-value" id="production">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🎪 Estúdio</span>
+          <span class="detail-value" id="studio">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">📦 Distribuição</span>
+          <span class="detail-value" id="distribution">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🗣️ Idiomas</span>
+          <span class="detail-value" id="languages">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">💬 Legendas</span>
+          <span class="detail-value">Português</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">🎥 Qualidade</span>
+          <span class="detail-value">4K UHD • HDR10</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">📅 Lançamento</span>
+          <span class="detail-value" id="releaseDate">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">💰 Orçamento</span>
+          <span class="detail-value" id="budget">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">💵 Receita</span>
+          <span class="detail-value" id="revenue">-</span>
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-const TMDB_API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjc3YjQwNDUwYzEyZTMwOGI1MjJiYzk4MGEzN2Y1ZSIsInN1YiI6IjYzNjA4MzI5MTA5ZGVjMDA3YzJiODQzZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.zstR6WPo8T1vFiTTUy6X0un-paY6AljxTLU2IJN8t-o';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const WORKER_URL = 'https://cinecasa-worker.cinecasa-worker.workers.dev';
 const TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p';
 let movieData = null;
 let focusableElements = [];
@@ -147,15 +207,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadMovieData() {
   try {
-    const endpoint = type === 'tv' ? `/tv/${tmdbId}` : `/movie/${tmdbId}`;
-    const response = await fetch(`${TMDB_BASE_URL}${endpoint}?append_to_response=credits,videos,release_dates,content_ratings,belongs_to_collection&language=pt-BR`, {
-      headers: { 'Authorization': `Bearer ${TMDB_API_KEY}`, 'Content-Type': 'application/json' }
+    const response = await fetch(`${WORKER_URL}/tmdb/details?tmdb=${tmdbId}&type=${type}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
+    
     if (!response.ok) throw new Error('Failed to fetch movie data');
     movieData = await response.json();
     renderMovieData();
-    if (movieData.belongs_to_collection) { loadCollection(movieData.belongs_to_collection.id); }
-    else { loadRecommendations(); }
+    
+    if (movieData.belongs_to_collection) { 
+      loadCollection(movieData.belongs_to_collection.id); 
+    } else { 
+      loadRecommendations(); 
+    }
+    
     document.getElementById('loading').style.display = 'none';
     updateFocusableElements();
   } catch (error) {
@@ -168,26 +234,27 @@ async function loadMovieData() {
 function renderMovieData() {
   const isTV = type === 'tv';
   const hero = document.getElementById('hero');
-  if (movieData.backdrop_path) { hero.style.backgroundImage = `url(${TMDB_IMAGE_URL}/original${movieData.backdrop_path})`; }
-  document.getElementById('typeBadge').textContent = isTV ? 'SÉRIE' : 'FILME';
-  document.getElementById('title').textContent = movieData.title || movieData.name || 'Sem título';
-  const poster = document.getElementById('poster');
-  if (movieData.poster_path) { poster.src = `${TMDB_IMAGE_URL}/w500${movieData.poster_path}`; }
-  else { poster.style.display = 'none'; }
-  document.getElementById('rating').textContent = movieData.vote_average ? movieData.vote_average.toFixed(1) : '0.0';
-  const date = movieData.release_date || movieData.first_air_date;
-  document.getElementById('year').textContent = date ? date.split('-')[0] : '-';
-  const runtime = movieData.runtime || (movieData.episode_run_time && movieData.episode_run_time[0]);
-  document.getElementById('duration').textContent = runtime ? `${runtime} min` : '-';
-  let ageRating = 'L';
-  if (!isTV && movieData.release_dates) {
-    const brRelease = movieData.release_dates.results.find(r => r.iso_3166_1 === 'BR');
-    if (brRelease && brRelease.release_dates[0]) { ageRating = brRelease.release_dates[0].certification || 'L'; }
-  } else if (isTV && movieData.content_ratings) {
-    const brRating = movieData.content_ratings.results.find(r => r.iso_3166_1 === 'BR');
-    if (brRating) ageRating = brRating.rating || 'L';
+  
+  if (movieData.backdrop_path) { 
+    hero.style.backgroundImage = `url(${TMDB_IMAGE_URL}/original${movieData.backdrop_path})`; 
   }
-  document.getElementById('ageBadge').textContent = ageRating || 'L';
+  
+  document.getElementById('typeBadge').textContent = isTV ? 'SÉRIE' : 'FILME';
+  document.getElementById('title').textContent = movieData.title || 'Sem título';
+  
+  const poster = document.getElementById('poster');
+  if (movieData.poster_path) { 
+    poster.src = `${TMDB_IMAGE_URL}/w500${movieData.poster_path}`; 
+  } else { 
+    poster.style.display = 'none'; 
+  }
+  
+  document.getElementById('rating').textContent = movieData.vote_average ? movieData.vote_average.toFixed(1) : '0.0';
+  const date = movieData.release_date;
+  document.getElementById('year').textContent = date ? date.split('-')[0] : '-';
+  document.getElementById('duration').textContent = movieData.runtime ? `${movieData.runtime} min` : '-';
+  document.getElementById('ageBadge').textContent = movieData.age_rating || 'L';
+  
   const country = movieData.production_countries && movieData.production_countries[0];
   if (country) {
     const flag = document.getElementById('countryFlag');
@@ -196,29 +263,29 @@ function renderMovieData() {
     flag.style.display = 'inline-block';
     flag.alt = country.name;
   }
+  
   const genresContainer = document.getElementById('genres');
   if (movieData.genres) {
     genresContainer.innerHTML = movieData.genres.map(g => `<span class="genre-tag">${g.name}</span>`).join('');
   }
+  
   document.getElementById('synopsis').textContent = movieData.overview || 'Sinopse não disponível';
+  
   const castGrid = document.getElementById('castGrid');
-  if (movieData.credits && movieData.credits.cast) {
-    const cast = movieData.credits.cast.slice(0, 15);
-    castGrid.innerHTML = cast.map((actor, i) => `
+  if (movieData.cast) {
+    castGrid.innerHTML = movieData.cast.map((actor, i) => `
       <div class="cast-member focusable" tabindex="0" data-index="${i}">
-        <img class="cast-img" src="${actor.profile_path ? TMDB_IMAGE_URL + '/w185' + actor.profile_path : 'https://via.placeholder.com/100x100/1a1a2e/00d9ff?text=?' }" alt="${actor.name}">
+        <img class="cast-img" src="${actor.profile_path ? TMDB_IMAGE_URL + '/w185' + actor.profile_path : 'https://via.placeholder.com/120x120/1a1a2e/00d9ff?text=?' }" alt="${actor.name}">
         <div class="cast-name">${actor.name}</div>
         <div class="cast-character">${actor.character}</div>
       </div>
     `).join('');
   }
-  const crew = movieData.credits && movieData.credits.crew ? movieData.credits.crew : [];
-  const director = crew.find(p => p.job === 'Director');
-  const writers = crew.filter(p => p.job === 'Screenplay' || p.job === 'Writer').map(p => p.name).join(', ');
+  
+  document.getElementById('director').textContent = movieData.directors ? movieData.directors.join(', ') : '-';
+  document.getElementById('writers').textContent = movieData.writers ? movieData.writers.join(', ') : '-';
   const production = movieData.production_companies && movieData.production_companies[0] ? movieData.production_companies[0].name : '-';
   const studio = movieData.production_companies ? movieData.production_companies.map(p => p.name).join(', ') : '-';
-  document.getElementById('director').textContent = director ? director.name : '-';
-  document.getElementById('writers').textContent = writers || '-';
   document.getElementById('production').textContent = production;
   document.getElementById('studio').textContent = studio;
   document.getElementById('distribution').textContent = production;
@@ -226,15 +293,28 @@ function renderMovieData() {
   document.getElementById('releaseDate').textContent = date ? new Date(date).toLocaleDateString('pt-BR') : '-';
   document.getElementById('budget').textContent = movieData.budget ? 'US$ ' + (movieData.budget / 1000000).toFixed(1) + 'M' : '-';
   document.getElementById('revenue').textContent = movieData.revenue ? 'US$ ' + (movieData.revenue / 1000000).toFixed(1) + 'M' : '-';
-  document.getElementById('watchBtn').onclick = () => { window.location.href = `watch.html?tmdb=${tmdbId}&type=${type}`; };
+  
+  document.getElementById('watchBtn').onclick = () => { 
+    window.location.href = `watch.html?tmdb=${tmdbId}&type=${type}`; 
+  };
+  
   const trailerBtn = document.getElementById('trailerBtn');
-  const trailer = movieData.videos && movieData.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
-  if (trailer) { trailerBtn.onclick = () => openTrailer(trailer.key); }
-  else { trailerBtn.style.opacity = '0.5'; trailerBtn.onclick = () => alert('Trailer não disponível'); }
+  if (movieData.trailer) { 
+    trailerBtn.onclick = () => openTrailer(movieData.trailer.key); 
+  } else { 
+    trailerBtn.style.opacity = '0.5'; 
+    trailerBtn.onclick = () => alert('Trailer não disponível'); 
+  }
+  
   document.getElementById('backBtn').onclick = () => window.history.back();
+  
   const synopsis = document.getElementById('synopsis');
   const showMore = document.getElementById('showMore');
-  showMore.onclick = () => { synopsis.classList.toggle('clamped'); showMore.textContent = synopsis.classList.contains('clamped') ? 'Ver mais' : 'Ver menos'; };
+  showMore.onclick = () => { 
+    synopsis.classList.toggle('clamped'); 
+    showMore.textContent = synopsis.classList.contains('clamped') ? 'VER MAIS' : 'VER MENOS'; 
+  };
+  
   setupIconButtons();
 }
 
@@ -255,43 +335,54 @@ function closeTrailer() {
 
 async function loadCollection(collectionId) {
   try {
-    const response = await fetch(`${TMDB_BASE_URL}/collection/${collectionId}?language=pt-BR`, {
-      headers: { 'Authorization': `Bearer ${TMDB_API_KEY}`, 'Content-Type': 'application/json' }
+    const response = await fetch(`${WORKER_URL}/tmdb/collection?collection=${collectionId}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
+    
     if (!response.ok) return;
     const collection = await response.json();
     const otherMovies = collection.parts.filter(m => m.id !== parseInt(tmdbId));
+    
     if (otherMovies.length > 0) {
-      document.getElementById('recTitle').textContent = '🎬 Continuações';
+      document.getElementById('recTitle').textContent = '🎬 CONTINUAÇÕES';
       document.getElementById('recSection').style.display = 'block';
-      renderRecommendations(otherMovies.slice(0, 5));
-    } else { loadRecommendations(); }
-  } catch (error) { loadRecommendations(); }
+      renderRecommendations(otherMovies.slice(0, 6));
+    } else { 
+      loadRecommendations(); 
+    }
+  } catch (error) { 
+    loadRecommendations(); 
+  }
 }
 
 async function loadRecommendations() {
   try {
-    const endpoint = type === 'tv' ? `/tv/${tmdbId}/recommendations` : `/movie/${tmdbId}/recommendations`;
-    const response = await fetch(`${TMDB_BASE_URL}${endpoint}?language=pt-BR`, {
-      headers: { 'Authorization': `Bearer ${TMDB_API_KEY}`, 'Content-Type': 'application/json' }
+    const response = await fetch(`${WORKER_URL}/tmdb/recommendations?tmdb=${tmdbId}&type=${type}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
     });
+    
     if (!response.ok) return;
     const data = await response.json();
+    
     if (data.results && data.results.length > 0) {
-      document.getElementById('recTitle').textContent = '💡 Sugestões para você';
+      document.getElementById('recTitle').textContent = '💡 SUGESTÕES PARA VOCÊ';
       document.getElementById('recSection').style.display = 'block';
-      renderRecommendations(data.results.slice(0, 5));
+      renderRecommendations(data.results.slice(0, 6));
     }
-  } catch (error) { console.error('Error loading recommendations:', error); }
+  } catch (error) { 
+    console.error('Error loading recommendations:', error); 
+  }
 }
 
 function renderRecommendations(movies) {
   const grid = document.getElementById('recGrid');
   grid.innerHTML = movies.map(m => `
-    <div class="rec-card focusable" tabindex="0" onclick="window.location.href='details.html?tmdb=${m.id}&type=${type}'">
-      <img class="rec-poster" src="${m.poster_path ? TMDB_IMAGE_URL + '/w342' + m.poster_path : 'https://via.placeholder.com/160x240/1a1a2e/00d9ff?text=?' }" alt="${m.title || m.name}">
-      <div class="rec-title">${m.title || m.name}</div>
-      <div class="rec-year">${(m.release_date || m.first_air_date || '').split('-')[0]}</div>
+    <div class="rec-card focusable" tabindex="0" onclick="window.location.href='details.html?tmdb=${m.id}&type=${m.type}'">
+      <img class="rec-poster" src="${m.poster_path ? TMDB_IMAGE_URL + '/w342' + m.poster_path : 'https://via.placeholder.com/180x270/1a1a2e/00d9ff?text=?' }" alt="${m.title}">
+      <div class="rec-title">${m.title}</div>
+      <div class="rec-year">${(m.release_date || '').split('-')[0]}</div>
     </div>
   `).join('');
   updateFocusableElements();
@@ -301,10 +392,20 @@ function setupIconButtons() {
   const buttons = ['favBtn', 'laterBtn', 'likeBtn', 'dislikeBtn'];
   buttons.forEach(id => {
     const btn = document.getElementById(id);
-    btn.onclick = () => {
+    btn.onclick = async () => {
       btn.classList.toggle('active');
       const endpoint = id === 'favBtn' ? '/list/favorite' : id === 'laterBtn' ? '/list/watchlater' : id === 'likeBtn' ? '/list/like' : '/list/dislike';
-      console.log(`POST ${endpoint}`, { tmdb_id: tmdbId });
+      
+      try {
+        const response = await fetch(`${WORKER_URL}${endpoint}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tmdb_id: tmdbId, type: type })
+        });
+        console.log(`POST ${endpoint}`, await response.json());
+      } catch (error) {
+        console.error('Error:', error);
+      }
     };
   });
 }
@@ -315,12 +416,16 @@ function setupNavigation() {
       if (e.key === 'Escape') closeTrailer();
       return;
     }
+    
     switch(e.key) {
       case 'ArrowRight': navigateFocus(1); break;
       case 'ArrowLeft': navigateFocus(-1); break;
       case 'ArrowDown': navigateSection(1); break;
       case 'ArrowUp': navigateSection(-1); break;
-      case 'Enter': activateFocused(); break;
+      case 'Enter': 
+      case ' ': activateFocused(); 
+        e.preventDefault(); 
+        break;
       case 'Escape': window.history.back(); break;
     }
   });
@@ -328,7 +433,10 @@ function setupNavigation() {
 
 function updateFocusableElements() {
   focusableElements = Array.from(document.querySelectorAll('.focusable'));
-  if (focusableElements.length > 0) { focusableElements[0].classList.add('focused'); }
+  if (focusableElements.length > 0) { 
+    focusableElements[0].focus();
+    focusableElements[0].classList.add('focused'); 
+  }
 }
 
 function navigateFocus(direction) {
@@ -336,16 +444,35 @@ function navigateFocus(direction) {
   focusableElements[currentFocusIndex].classList.remove('focused');
   currentFocusIndex = (currentFocusIndex + direction + focusableElements.length) % focusableElements.length;
   focusableElements[currentFocusIndex].classList.add('focused');
+  focusableElements[currentFocusIndex].focus();
   focusableElements[currentFocusIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function navigateSection(direction) {
-  const sections = ['backBtn', 'watchBtn', 'trailerBtn', 'favBtn', 'castGrid', 'recGrid'];
-  console.log('Section navigation:', direction);
+  const sections = document.querySelectorAll('.section-title');
+  const currentSection = getCurrentSection();
+  const newIndex = currentSection + direction;
+  
+  if (newIndex >= 0 && newIndex < sections.length) {
+    sections[newIndex].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function getCurrentSection() {
+  const sections = document.querySelectorAll('.section-title');
+  for (let i = 0; i < sections.length; i++) {
+    const rect = sections[i].getBoundingClientRect();
+    if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
+      return i;
+    }
+  }
+  return 0;
 }
 
 function activateFocused() {
-  if (focusableElements[currentFocusIndex]) { focusableElements[currentFocusIndex].click(); }
+  if (focusableElements[currentFocusIndex]) { 
+    focusableElements[currentFocusIndex].click(); 
+  }
 }
 </script>
 </body>

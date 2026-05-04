@@ -250,7 +250,7 @@ async function getTmdbRecommendations(params) {
     page: data.page,
     total_pages: data.total_pages,
     total_results: data.total_results,
-    results: data.results?.slice(0, 5).map(r => ({
+    results: data.results?.slice(0, 6).map(r => ({
       id: r.id,
       title: r.title || r.name,
       poster_path: r.poster_path,
