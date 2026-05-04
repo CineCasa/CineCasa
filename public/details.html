@@ -179,6 +179,8 @@
 <script>
 const WORKER_URL = 'https://cinecasa-worker.cinecasa-worker.workers.dev';
 const TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p';
+const SUPABASE_URL = 'https://eqhstnlsmfrwxhvcwoid.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxaHN0bmxzbWZyd3hodmN3b2lkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3MTg1NTcsImV4cCI6MjA4ODI5NDU1N30.6AmJi7zs-1QDnStIIN5bJGoFFhv4WveC1NUAHKI0Qlo';
 let movieData = null;
 let focusableElements = [];
 let currentFocusIndex = 0;
@@ -214,6 +216,13 @@ async function loadMovieData() {
     
     if (!response.ok) throw new Error('Failed to fetch movie data');
     movieData = await response.json();
+    
+    // Buscar trailer da tabela cinema
+    const cinemaTrailer = await fetchCinemaTrailer(tmdbId);
+    if (cinemaTrailer) {
+      movieData.cinemaTrailer = cinemaTrailer;
+    }
+    
     renderMovieData();
     
     if (movieData.belongs_to_collection) { 
@@ -228,6 +237,23 @@ async function loadMovieData() {
     console.error('Error loading movie:', error);
     alert('Erro ao carregar dados do filme');
     document.getElementById('loading').style.display = 'none';
+  }
+}
+
+async function fetchCinemaTrailer(tmdbId) {
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/cinema?select=trailer&tmdb_id=eq.${tmdbId}`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data && data[0] && data[0].trailer ? data[0].trailer : null;
+  } catch (error) {
+    console.error('Error fetching cinema trailer:', error);
+    return null;
   }
 }
 
@@ -300,8 +326,9 @@ function renderMovieData() {
   };
   
   const trailerBtn = document.getElementById('trailerBtn');
-  if (movieData.trailer) { 
-    trailerBtn.onclick = () => openTrailer(movieData.trailer.key); 
+  const trailerKey = movieData.cinemaTrailer || (movieData.trailer ? movieData.trailer.key : null);
+  if (trailerKey) { 
+    trailerBtn.onclick = () => openTrailer(trailerKey); 
   } else { 
     trailerBtn.style.opacity = '0.5'; 
     trailerBtn.onclick = () => alert('Trailer não disponível'); 
