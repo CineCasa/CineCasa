@@ -163,7 +163,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           // Buscar séries com qualquer imagem (poster, banner ou backdrop)
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop, country')
+            .select('id_n, tmdb_id, titulo, description, year, rating, genre, poster, banner, backdrop, country')
             .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
 
           if (seriesError) throw seriesError;
@@ -196,7 +196,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
               if (!imageUrl) return null;
 
               return {
-                id: s.id,
+                id: s.id_n,
                 tmdbId: s.tmdb_id,
                 title: s.titulo || 'Sem título',
                 description: s.overview || s.description || '',
@@ -210,6 +210,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
             });
 
           const seriesItems = (await Promise.all(seriesPromises)).filter(Boolean) as BannerItem[];
+          console.log(`[HeroBanner] Séries com imagem válida: ${seriesItems.length}`);
           allItems = [...allItems, ...seriesItems];
         }
 
