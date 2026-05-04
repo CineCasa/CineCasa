@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import LoadingScreen from "./components/LoadingScreen";
+import SplashScreen from "./components/SplashScreen";
 import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
 import { SpatialNavigationProvider } from "./components/SpatialNavigationProvider";
@@ -224,6 +225,7 @@ const PlayerContainer = () => {
 
 const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const location = useLocation();
   const { isPlayerOpen, closePlayer } = usePlayer();
   const { user } = useAuth();
@@ -270,7 +272,15 @@ const AppContent = () => {
   const showNavbars = !isLoginPage && !isPlayerPage;
 
   return (
-    <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
+    <>
+      {/* Splash Screen - Mostrar no carregamento inicial */}
+      {showSplash && (
+        <SplashScreen 
+          onComplete={() => setShowSplash(false)} 
+          minDuration={2500}
+        />
+      )}
+      <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
       <NotificationProvider>
         <NotificationContainer />
         {/* NewContentNotificationToast desabilitado - notificações de conteúdo desativadas */}
@@ -299,6 +309,7 @@ const AppContent = () => {
         onCancel={cancelExit}
       />
     </div>
+    </>
   );
 };
 
