@@ -130,27 +130,55 @@ const Details = () => {
   const fetchLocalData = async (itemId: string, itemType: string) => {
     try {
       const table = itemType === "cinema" ? "cinema" : "series";
-      const idColumn = itemType === "cinema" ? "id" : "id_n";
+      const numericId = Number(itemId);
       
-      const { data, error } = await supabase
+      console.log(`[fetchLocalData] Buscando em '${table}' para ID: ${itemId} (tipo: ${itemType})`);
+      
+      // Tentativa 1: Buscar por coluna 'id'
+      let { data, error } = await supabase
         .from(table)
-        .select("*, tmdb_id")
-        .eq(idColumn, Number(itemId))
+        .select("*")
+        .eq("id", numericId)
         .maybeSingle();
       
+      if (!data && !error && table === "series") {
+        // Tentativa 2: Para séries, tentar 'id_n' se 'id' falhar
+        console.log(`[fetchLocalData] Tentando coluna 'id_n' para série ${itemId}`);
+        const result = await supabase
+          .from(table)
+          .select("*")
+          .eq("id_n", numericId)
+          .maybeSingle();
+        data = result.data;
+        error = result.error;
+      }
+      
+      // Tentativa 3: Buscar por tmdb_id como fallback
+      if (!data && !error) {
+        console.log(`[fetchLocalData] Tentando buscar por tmdb_id: ${itemId}`);
+        const result = await supabase
+          .from(table)
+          .select("*")
+          .eq("tmdb_id", numericId)
+          .maybeSingle();
+        data = result.data;
+        error = result.error;
+      }
+      
       if (error) {
-        console.error("Erro:", error);
+        console.error("[fetchLocalData] Erro Supabase:", error);
         return null;
       }
       
       if (!data) {
-        console.warn("Nenhum dado encontrado para ID:", itemId);
+        console.warn(`[fetchLocalData] Nenhum dado encontrado em '${table}' para ID: ${itemId}`);
         return null;
       }
       
+      console.log(`[fetchLocalData] Dados encontrados:`, { titulo: data.titulo, tmdb_id: data.tmdb_id });
       return data;
     } catch (error) {
-      console.error("Erro:", error);
+      console.error("[fetchLocalData] Erro:", error);
       return null;
     }
   };
