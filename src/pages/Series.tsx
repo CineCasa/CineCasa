@@ -211,20 +211,6 @@ const Series: React.FC = () => {
               onMouseEnter={() => setHoveredRow(categoryName)}
               onMouseLeave={() => setHoveredRow(null)}
             >
-              {/* Título da Categoria */}
-              <div className="max-w-[1920px] mx-auto px-4 md:px-8 mb-3">
-                <h2 className="text-xl md:text-2xl font-bold text-white flex items-center gap-2">
-                  {categoryName}
-                  <span className="text-sm font-normal text-gray-500">
-                    ({categories[categoryName].length})
-                  </span>
-                  <ChevronRight 
-                    size={20} 
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-[#00d9ff]"
-                  />
-                </h2>
-              </div>
-
               {/* Container do Scroll Horizontal */}
               <div className="relative">
                 {/* Botão Scroll Left */}
