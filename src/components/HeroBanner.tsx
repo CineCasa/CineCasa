@@ -161,8 +161,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           // Buscar séries com qualquer imagem (poster, banner ou backdrop)
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id_n, tmdb_id, titulo, descricao, year, rating, genre, poster, banner, backdrop')
-            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
+            .select('id_n, tmdb_id, titulo, descricao, ano, rating, genero, poster, banner, capa')
+            .or('poster.not.is.null,banner.not.is.null,capa.not.is.null');
 
           if (seriesError) throw seriesError;
 
@@ -170,15 +170,15 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           const seriesPromises = (series as any[] || [])
             .filter((s: any) => {
               // Inclui se tiver imagem local OU tmdb_id para buscar
-              const hasLocalImage = (s.backdrop && s.backdrop.trim() !== '') ||
+              const hasLocalImage = (s.capa && s.capa.trim() !== '') ||
                                    (s.banner && s.banner.trim() !== '') ||
                                    (s.poster && s.poster.trim() !== '');
               return hasLocalImage || s.tmdb_id;
             })
             .map(async (s: any) => {
-              // Hierarquia de fallback local: backdrop → banner → poster
-              let imageUrl = (s.backdrop && s.backdrop.trim() !== '')
-                ? s.backdrop
+              // Hierarquia de fallback local: capa → banner → poster
+              let imageUrl = (s.capa && s.capa.trim() !== '')
+                ? s.capa
                 : (s.banner && s.banner.trim() !== '')
                   ? s.banner
                   : (s.poster && s.poster.trim() !== '')
@@ -198,9 +198,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 tmdbId: s.tmdb_id,
                 title: s.titulo || 'Sem título',
                 description: s.overview || s.descricao || '',
-                year: s.year || '',
+                year: s.ano || '',
                 rating: s.rating || '',
-                genre: s.genre || '',
+                genre: s.genero || '',
                 backdrop: imageUrl,
                 type: 'series' as const
               };
