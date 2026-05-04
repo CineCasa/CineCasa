@@ -88,6 +88,8 @@ const Series: React.FC = () => {
   const fetchSeries = async () => {
     try {
       setLoading(true);
+      console.log('[Series] Iniciando busca...');
+      
       const { data, error } = await supabase
         .from('series')
         .select(`
@@ -106,7 +108,13 @@ const Series: React.FC = () => {
         `)
         .order('id_n', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[Series] Erro Supabase:', error);
+        throw error;
+      }
+
+      console.log('[Series] Total de séries retornadas:', data?.length || 0);
+      console.log('[Series] Primeiras 3 séries:', data?.slice(0, 3));
 
       // Organizar séries por gênero
       const seriesPorGenero: Record<string, Serie[]> = {};
@@ -115,6 +123,8 @@ const Series: React.FC = () => {
       CATEGORIAS_ORDEM.forEach(cat => {
         seriesPorGenero[cat] = [];
       });
+      // Adicionar categoria 'Outros' para séries sem gênero definido
+      seriesPorGenero['Outros'] = [];
 
       // Contar temporadas para cada série
       const seriesWithSeasons = await Promise.all(
@@ -131,25 +141,37 @@ const Series: React.FC = () => {
         })
       );
 
+      console.log('[Series] Séries com temporadas:', seriesWithSeasons.length);
+
       seriesWithSeasons.forEach((serie: Serie) => {
         // Usar genero do banco ou 'Outros' se não tiver
-        const generos = serie.genero ? serie.genero.split(',').map((g: string) => g.trim()) : ['Outros'];
+        const generos = serie.genero ? serie.genero.split(',').map((g: string) => g.trim()).filter(g => g) : [];
         
-        generos.forEach((genero: string) => {
-          if (CATEGORIAS_ORDEM.includes(genero)) {
-            if (!seriesPorGenero[genero]) {
-              seriesPorGenero[genero] = [];
+        if (generos.length === 0) {
+          // Sem gênero definido, colocar em 'Outros'
+          seriesPorGenero['Outros'].push(serie);
+        } else {
+          generos.forEach((genero: string) => {
+            // Verificar se o gênero está na lista ou adicionar a 'Outros'
+            if (CATEGORIAS_ORDEM.includes(genero)) {
+              seriesPorGenero[genero].push(serie);
+            } else {
+              // Gênero não reconhecido, vai para 'Outros'
+              seriesPorGenero['Outros'].push(serie);
             }
-            seriesPorGenero[genero].push(serie);
-          } else if (genero === 'Outros') {
-            seriesPorGenero['Outros'].push(serie);
-          }
-        });
+          });
+        }
       });
+
+      // Log de categorias com séries
+      const categoriasComSeries = Object.entries(seriesPorGenero)
+        .filter(([_, series]) => series.length > 0)
+        .map(([cat, series]) => `${cat}: ${series.length}`);
+      console.log('[Series] Categorias com séries:', categoriasComSeries);
 
       setCategories(seriesPorGenero);
     } catch (error) {
-      console.error('Erro ao buscar séries:', error);
+      console.error('[Series] Erro ao buscar séries:', error);
     } finally {
       setLoading(false);
     }
