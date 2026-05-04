@@ -11,6 +11,7 @@ import KeyboardNavigation from "./components/KeyboardNavigation";
 import { SpatialNavigationProvider } from "./components/SpatialNavigationProvider";
 import MobileBottomNav from "./components/MobileBottomNav";
 import PremiumNavbar from "./components/PremiumNavbar";
+import TVNavbar from "./components/TVNavbar";
 import ScrollToTop from "./components/ScrollToTop";
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
 import YouTubePlayer from "./components/YouTubePlayer";
@@ -222,7 +223,18 @@ const AppContent = () => {
           <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
         )}
         <KeyboardNavigation>
-          {showNavbars && <PremiumNavbar />}
+          {showNavbars && (
+            <>
+              {/* TVNavbar para telas grandes (Desktop, TV, Projetor) */}
+              <div className="hidden lg:block">
+                <TVNavbar />
+              </div>
+              {/* PremiumNavbar para telas médias */}
+              <div className="hidden md:block lg:hidden">
+                <PremiumNavbar />
+              </div>
+            </>
+          )}
           <SpatialNavigationProvider>
             <AppRoutes />
           </SpatialNavigationProvider>
