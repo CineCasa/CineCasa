@@ -48,20 +48,7 @@ const ContinueWatching: React.FC<ContinueWatchingProps> = ({ items }) => {
                   <Play className="w-8 h-8 text-gray-400" />
                 </div>
               )}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
-                <div
-                  className="h-full bg-red-600"
-                  style={{ width: `${item.progress}%` }}
-                />
-              </div>
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Play className="w-12 h-12 text-white" />
-              </div>
             </div>
-            <p className="mt-2 text-sm font-medium truncate">{item.title}</p>
-            <p className="text-xs text-gray-400">
-              {Math.round(item.progress)}% concluído
-            </p>
           </Link>
         ))}
       </div>

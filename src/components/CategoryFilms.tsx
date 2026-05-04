@@ -46,15 +46,7 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ films, category }) => {
                 <Play className="w-8 h-8 text-gray-400" />
               </div>
             )}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Play className="w-12 h-12 text-white" />
-            </div>
-            <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-              {film.rating || 'N/A'}
-            </div>
           </div>
-          <p className="mt-2 text-sm font-medium truncate">{film.titulo}</p>
-          <p className="text-xs text-gray-400">{film.year}</p>
         </Link>
       ))}
     </div>
