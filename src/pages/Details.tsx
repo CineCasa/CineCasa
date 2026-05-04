@@ -210,18 +210,26 @@ const Details = () => {
   const fetchVideoUrl = async (searchId: string) => {
     try {
       const table = type === "cinema" ? "cinema" : "series";
-      
-      const { data: result } = await supabase
+      console.log(`[Details] Buscando vídeo em ${table} para ID:`, searchId);
+
+      const { data: result, error } = await supabase
         .from(table)
         .select("id, url, trailer, titulo, tmdb_id")
         .eq("id", Number(searchId))
         .maybeSingle();
 
+      if (error) {
+        console.error('[Details] Erro Supabase ao buscar vídeo:', error);
+        return null;
+      }
+
+      console.log('[Details] Resultado da busca:', { found: !!result, hasUrl: !!result?.url, hasTrailer: !!result?.trailer, title: result?.titulo });
+
       if (result?.url) return result.url;
       if (result?.trailer) return result.trailer;
       return null;
     } catch (error) {
-      console.error("Erro ao buscar vídeo:", error);
+      console.error("[Details] Erro ao buscar vídeo:", error);
       return null;
     }
   };
