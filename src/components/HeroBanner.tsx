@@ -51,57 +51,87 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
         let allItems: BannerItem[] = [];
 
         if (pageType === 'home' || pageType === 'movies') {
-          // Buscar filmes com backdrop
+          // Buscar filmes com qualquer imagem (poster, banner ou backdrop)
           const { data: movies, error: moviesError } = await supabase
             .from('cinema')
-            .select('id, tmdb_id, titulo, overview, year, rating, genre, backdrop, country')
-            .not('backdrop', 'is', null)
-            .neq('backdrop', '');
+            .select('id, tmdb_id, titulo, overview, year, rating, genre, poster, banner, backdrop, country')
+            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null')
+            .or('poster.neq.,banner.neq.,backdrop.neq.');
 
           if (moviesError) throw moviesError;
 
-          const movieItems = (movies || [])
-            .filter(m => m.backdrop && m.backdrop.trim() !== '')
-            .map(m => ({
-              id: m.id,
-              tmdbId: m.tmdb_id,
-              title: m.titulo || 'Sem título',
-              description: m.overview || '',
-              year: m.year || '',
-              rating: m.rating || '',
-              genre: m.genre || '',
-              backdrop: m.backdrop,
-              country: m.country,
-              type: 'movie' as const
-            }));
+          const movieItems = (movies as any[] || [])
+            .filter((m: any) => {
+              // Aceita qualquer filme que tenha pelo menos uma imagem
+              const hasBackdrop = m.backdrop && m.backdrop.trim() !== '';
+              const hasBanner = m.banner && m.banner.trim() !== '';
+              const hasPoster = m.poster && m.poster.trim() !== '';
+              return hasBackdrop || hasBanner || hasPoster;
+            })
+            .map((m: any) => {
+              // Hierarquia de fallback: backdrop → banner → poster
+              const imageUrl = (m.backdrop && m.backdrop.trim() !== '')
+                ? m.backdrop
+                : (m.banner && m.banner.trim() !== '')
+                  ? m.banner
+                  : m.poster;
+
+              return {
+                id: m.id,
+                tmdbId: m.tmdb_id,
+                title: m.titulo || 'Sem título',
+                description: m.overview || m.description || '',
+                year: m.year || '',
+                rating: m.rating || '',
+                genre: m.genre || '',
+                backdrop: imageUrl, // Sempre terá um valor válido
+                country: m.country,
+                type: 'movie' as const
+              };
+            });
 
           allItems = [...allItems, ...movieItems];
         }
 
         if (pageType === 'home' || pageType === 'series') {
-          // Buscar séries com banner
+          // Buscar séries com qualquer imagem (poster, banner ou backdrop)
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id, tmdb_id, titulo, overview, year, rating, genre, banner, country')
-            .not('banner', 'is', null)
-            .neq('banner', '');
+            .select('id, tmdb_id, titulo, overview, year, rating, genre, poster, banner, backdrop, country')
+            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null')
+            .or('poster.neq.,banner.neq.,backdrop.neq.');
 
           if (seriesError) throw seriesError;
 
-          const seriesItems = (series || [])
-            .filter(s => s.banner && s.banner.trim() !== '')
-            .map(s => ({
-              id: s.id,
-              tmdbId: s.tmdb_id,
-              title: s.titulo || 'Sem título',
-              description: s.overview || '',
-              year: s.year || '',
-              rating: s.rating || '',
-              genre: s.genre || '',
-              backdrop: s.banner,
-              country: s.country,
-              type: 'series' as const
-            }));
+          const seriesItems = (series as any[] || [])
+            .filter((s: any) => {
+              // Aceita qualquer série que tenha pelo menos uma imagem
+              const hasBackdrop = s.backdrop && s.backdrop.trim() !== '';
+              const hasBanner = s.banner && s.banner.trim() !== '';
+              const hasPoster = s.poster && s.poster.trim() !== '';
+              return hasBackdrop || hasBanner || hasPoster;
+            })
+            .map((s: any) => {
+              // Hierarquia de fallback: backdrop → banner → poster
+              const imageUrl = (s.backdrop && s.backdrop.trim() !== '')
+                ? s.backdrop
+                : (s.banner && s.banner.trim() !== '')
+                  ? s.banner
+                  : s.poster;
+
+              return {
+                id: s.id,
+                tmdbId: s.tmdb_id,
+                title: s.titulo || 'Sem título',
+                description: s.overview || s.description || '',
+                year: s.year || '',
+                rating: s.rating || '',
+                genre: s.genre || '',
+                backdrop: imageUrl, // Sempre terá um valor válido
+                country: s.country,
+                type: 'series' as const
+              };
+            });
 
           allItems = [...allItems, ...seriesItems];
         }
