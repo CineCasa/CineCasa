@@ -126,7 +126,7 @@ const Filmes: React.FC = () => {
   return (
     <div className="min-h-screen bg-black pb-20">
       {/* Hero Banner */}
-      <HeroBanner pageType="movies" className="mt-16" />
+      <HeroBanner pageType="movies" />
 
       {/* Título da Página */}
       <div className="px-4 md:px-8 py-6">

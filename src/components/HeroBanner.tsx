@@ -334,8 +334,22 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   }
 
   if (!currentItem) {
-    console.log('[HeroBanner] No items available - hiding component');
-    return null; // Não mostra nada se não há imagens
+    console.log('[HeroBanner] No items available - showing placeholder');
+    // Mostrar placeholder quando não há dados
+    return (
+      <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-10 ${className}`}>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-800" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🎬</div>
+            <h2 className="text-2xl font-bold text-white">CineCasa</h2>
+            <p className="text-gray-400 mt-2">Sua plataforma de streaming</p>
+          </div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-black via-black/50 to-transparent" />
+      </div>
+    );
   }
 
   return (
