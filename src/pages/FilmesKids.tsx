@@ -99,7 +99,7 @@ const FilmesKids: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black pb-20 pt-[70vh]">
-      {/* Hero Banner - fixo no topo */}
+      {/* Hero Banner */}
       <HeroBanner pageType="movies" />
 
       {/* Título da Página */}
