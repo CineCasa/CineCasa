@@ -84,43 +84,78 @@ const Filmes: React.FC = () => {
   const fetchFilmes = async () => {
     try {
       setLoading(true);
+      console.log('[Filmes] Iniciando busca...');
+      
       const { data, error } = await supabase
         .from('cinema')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[Filmes] Erro Supabase:', error);
+        throw error;
+      }
+
+      console.log('[Filmes] Total de filmes retornados:', data?.length || 0);
 
       // Organizar filmes por categoria
       const filmesPorCategoria: Record<string, Filme[]> = {};
       
+      // Inicializar categorias vazias
       CATEGORIAS_ORDEM.forEach(cat => {
         filmesPorCategoria[cat] = [];
       });
+      // Adicionar categoria 'Outros' para filmes sem categoria definida
+      filmesPorCategoria['Outros'] = [];
 
       (data || []).forEach((filme: any) => {
-        const categoria = filme.categoria || filme.category || 'Outros';
-        if (CATEGORIAS_ORDEM.includes(categoria)) {
-          if (!filmesPorCategoria[categoria]) {
-            filmesPorCategoria[categoria] = [];
-          }
-          filmesPorCategoria[categoria].push({
-            id: filme.id,
-            titulo: filme.titulo || filme.title,
-            poster: filme.poster,
-            banner: filme.banner,
-            year: filme.year || filme.ano,
-            rating: filme.rating || filme.nota,
-            category: categoria,
-            genre: filme.genero || filme.genre,
-            description: filme.descricao || filme.description || filme.overview
+        // Processar múltiplas categorias (separadas por vírgula)
+        const categoriaField = filme.categoria || filme.category || '';
+        const categorias = categoriaField 
+          ? categoriaField.split(',').map((c: string) => c.trim()).filter((c: string) => c)
+          : [];
+        
+        const filmeFormatado = {
+          id: filme.id,
+          titulo: filme.titulo || filme.title,
+          poster: filme.poster,
+          banner: filme.banner,
+          year: filme.year || filme.ano,
+          rating: filme.rating || filme.nota,
+          category: categoriaField,
+          genre: filme.genero || filme.genre,
+          description: filme.descricao || filme.description || filme.overview
+        };
+
+        if (categorias.length === 0) {
+          // Sem categoria definida, colocar em 'Outros'
+          filmesPorCategoria['Outros'].push(filmeFormatado);
+        } else {
+          // Adicionar o filme a CADA categoria definida
+          let addedToAny = false;
+          categorias.forEach((categoria: string) => {
+            if (CATEGORIAS_ORDEM.includes(categoria)) {
+              filmesPorCategoria[categoria].push(filmeFormatado);
+              addedToAny = true;
+            }
           });
+          
+          // Se nenhuma categoria válida, vai para 'Outros'
+          if (!addedToAny) {
+            filmesPorCategoria['Outros'].push(filmeFormatado);
+          }
         }
       });
 
+      // Log de categorias com filmes
+      const categoriasComFilmes = Object.entries(filmesPorCategoria)
+        .filter(([_, filmes]) => filmes.length > 0)
+        .map(([cat, filmes]) => `${cat}: ${filmes.length}`);
+      console.log('[Filmes] Categorias com filmes:', categoriasComFilmes);
+
       setCategories(filmesPorCategoria);
     } catch (error) {
-      console.error('Erro ao buscar filmes:', error);
+      console.error('[Filmes] Erro ao buscar filmes:', error);
     } finally {
       setLoading(false);
     }
