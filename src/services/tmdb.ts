@@ -1,8 +1,5 @@
-// TMDB API Configuration
-// Token de Acesso de Leitura: eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMjc1Y2U4ZTFhNmIzZDVkODc5YmIwOTA3ZTRmNTZhZCIsIm5iZiI6MTc2NzA1NjIxNS43MTI5OTk4LCJzdWIiOiI2OTUzMjM1NzFjNTI4MjJkM2JjYmRjYTYiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.ZkuZDskKQh1Wx3TQnh4Nk2VIB6ARPsY-ImkTZ6BdM5k
-// Chave da API: b275ce8e1a6b3d5d879bb0907e4f56ad
-const TMDB_API_KEY = "b275ce8e1a6b3d5d879bb0907e4f56ad";
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+// TMDB API Configuration via Cloudflare Worker
+const WORKER_URL = "https://cinecasa-worker.cinecasa-worker.workers.dev";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
 // Tamanhos de imagem otimizados para diferentes usos
@@ -50,7 +47,11 @@ export const tmdbPosterUrl = (path: string, highQuality: boolean = false): strin
 export const fetchTmdbDetails = async (tmdbId: string, type: "movie" | "tv") => {
   try {
     const res = await fetch(
-      `${TMDB_BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=videos,credits`
+      `${WORKER_URL}/tmdb/details?tmdb=${tmdbId}&type=${type}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
     if (!res.ok) return null;
     return res.json();
@@ -63,7 +64,11 @@ export const fetchTmdbDetails = async (tmdbId: string, type: "movie" | "tv") => 
 export const fetchTmdbSeason = async (tmdbId: string, seasonNumber: number) => {
   try {
     const res = await fetch(
-      `${TMDB_BASE_URL}/tv/${tmdbId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}&language=pt-BR`
+      `${WORKER_URL}/tmdb/season?tmdb=${tmdbId}&season=${seasonNumber}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
     if (!res.ok) return null;
     return res.json();
@@ -81,31 +86,6 @@ export const fetchTmdbSeries = async (tmdbId: string) => {
   return fetchTmdbDetails(tmdbId, "tv");
 };
 
-export const fetchTmdbDiscoverWatchProvider = async (providerId: number) => {
-  try {
-    const res = await fetch(
-      `${TMDB_BASE_URL}/discover/tv?api_key=${TMDB_API_KEY}&language=pt-BR&with_watch_providers=${providerId}&watch_region=BR&sort_by=popularity.desc&page=1`
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error(`Error fetching provider ${providerId}:`, error);
-    return null;
-  }
-};
-
-export const fetchTmdbTrendingWeek = async (type: "movie" | "tv") => {
-  try {
-    const res = await fetch(
-      `${TMDB_BASE_URL}/trending/${type}/week?api_key=${TMDB_API_KEY}&language=pt-BR`
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error(`Error fetching trending ${type}:`, error);
-    return null;
-  }
-};
 
 export const getTmdbTrailerUrl = (videos: any) => {
   if (!videos?.results?.length) return null;
@@ -116,55 +96,4 @@ export const getTmdbTrailerUrl = (videos: any) => {
   
   if (trailer) return `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&loop=1&playlist=${trailer.key}`;
   return null;
-};
-
-// Buscar imagens (backdrops) para hero banners
-export const fetchTmdbImages = async (tmdbId: string, type: "movie" | "tv") => {
-  try {
-    const res = await fetch(
-      `${TMDB_BASE_URL}/${type}/${tmdbId}/images?api_key=${TMDB_API_KEY}`
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch (error) {
-    console.error("Error fetching TMDB images:", error);
-    return null;
-  }
-};
-
-// Buscar backdrop específico - retorna o path do melhor backdrop disponível
-export const getTmdbBackdropPath = async (tmdbId: string, type: "movie" | "tv") => {
-  const data = await fetchTmdbImages(tmdbId, type);
-  if (!data?.backdrops?.length) return null;
-  
-  // Ordenar por vote_average e pegar o melhor
-  const sorted = data.backdrops.sort((a: any, b: any) => (b.vote_average || 0) - (a.vote_average || 0));
-  return sorted[0]?.file_path || null;
-};
-
-// Buscar detalhes completos com backdrop
-export const fetchTmdbDetailsWithBackdrop = async (tmdbId: string, type: "movie" | "tv") => {
-  try {
-    // Buscar detalhes + imagens em uma chamada
-    const res = await fetch(
-      `${TMDB_BASE_URL}/${type}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=images,videos,credits`
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    
-    // Retornar backdrop_path preferencialmente, senão pegar da lista de backdrops
-    let backdropPath = data.backdrop_path;
-    if (!backdropPath && data.images?.backdrops?.length > 0) {
-      const sorted = data.images.backdrops.sort((a: any, b: any) => (b.vote_average || 0) - (a.vote_average || 0));
-      backdropPath = sorted[0]?.file_path;
-    }
-    
-    return {
-      ...data,
-      backdrop_path: backdropPath
-    };
-  } catch (error) {
-    console.error("Error fetching TMDB details with backdrop:", error);
-    return null;
-  }
 };

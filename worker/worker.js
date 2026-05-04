@@ -38,6 +38,11 @@ export default {
         return await getTmdbRecommendations(url.searchParams);
       }
 
+      // Route: GET /tmdb/season?tmdb=ID&season=NUMBER
+      if (path === '/tmdb/season') {
+        return await getTmdbSeason(url.searchParams);
+      }
+
       // Route: POST /list/favorite
       if (path === '/list/favorite' && request.method === 'POST') {
         return await addToList(request, env, 'favorites');
@@ -219,6 +224,47 @@ async function getTmdbCollection(params) {
       release_date: p.release_date || p.first_air_date,
       vote_average: p.vote_average
     }))
+  });
+}
+
+// Get season details
+async function getTmdbSeason(params) {
+  const tmdbId = params.get('tmdb');
+  const seasonNumber = params.get('season');
+  
+  if (!tmdbId || !seasonNumber) {
+    return jsonResponse({ error: 'Missing tmdb ID or season number' }, 400);
+  }
+
+  const response = await fetch(`${TMDB_BASE_URL}/tv/${tmdbId}/season/${seasonNumber}?language=pt-BR`, {
+    headers: {
+      'Authorization': `Bearer ${TMDB_API_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    return jsonResponse({ error: 'TMDB API error' }, response.status);
+  }
+
+  const data = await response.json();
+
+  return jsonResponse({
+    id: data.id,
+    name: data.name,
+    overview: data.overview,
+    poster_path: data.poster_path,
+    air_date: data.air_date,
+    episode_count: data.episodes?.length || 0,
+    episodes: data.episodes?.map(e => ({
+      id: e.id,
+      episode_number: e.episode_number,
+      name: e.name,
+      overview: e.overview,
+      air_date: e.air_date,
+      runtime: e.runtime,
+      still_path: e.still_path
+    })) || []
   });
 }
 
