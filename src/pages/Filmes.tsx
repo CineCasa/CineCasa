@@ -279,34 +279,7 @@ const Filmes: React.FC = () => {
                             <Film className="w-12 h-12 text-gray-500" />
                           </div>
                         )}
-                        
-                        {/* Overlay no hover */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                              <Play size={20} className="text-white ml-0.5" fill="currentColor" />
-                            </div>
-                          </div>
-                          <h3 className="text-white font-bold text-sm line-clamp-2">
-                            {filme.titulo}
-                          </h3>
-                          {filme.year && (
-                            <p className="text-gray-300 text-xs mt-1">{filme.year}</p>
-                          )}
-                        </div>
-
-                        {/* Rating badge */}
-                        {filme.rating && filme.rating !== 'N/A' && (
-                          <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">
-                            {filme.rating}
-                          </div>
-                        )}
                       </div>
-                      
-                      {/* Título abaixo do card */}
-                      <p className="mt-2 text-sm text-gray-300 truncate group-hover/card:text-white transition-colors">
-                        {filme.titulo}
-                      </p>
                     </motion.div>
                   ))}
                 </div>

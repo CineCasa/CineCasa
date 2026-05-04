@@ -281,47 +281,7 @@ const Series: React.FC = () => {
                             <Tv className="w-12 h-12 text-gray-500" />
                           </div>
                         )}
-                        
-                        {/* Overlay no hover */}
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                              <Play size={20} className="text-white ml-0.5" fill="currentColor" />
-                            </div>
-                          </div>
-                          <h3 className="text-white font-bold text-sm line-clamp-2">
-                            {serie.titulo}
-                          </h3>
-                          {serie.ano && (
-                            <p className="text-gray-300 text-xs mt-1">{serie.ano}</p>
-                          )}
-                          {serie.seasons && (
-                            <p className="text-[#00d9ff] text-xs mt-1">{serie.seasons} temporada{serie.seasons > 1 ? 's' : ''}</p>
-                          )}
-                        </div>
-
-                        {/* Rating badge */}
-                        {serie.rating && serie.rating > 0 && (
-                          <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">
-                            {serie.rating.toFixed(1)}
-                          </div>
-                        )}
-
-                        {/* Seasons badge */}
-                        {serie.seasons && (
-                          <div className="absolute top-2 left-2 bg-[#00d9ff]/80 text-black text-xs font-bold px-1.5 py-0.5 rounded">
-                            {serie.seasons}T
-                          </div>
-                        )}
                       </div>
-                      
-                      {/* Título abaixo do card */}
-                      <p className="mt-2 text-sm text-gray-300 truncate group-hover/card:text-white transition-colors">
-                        {serie.titulo}
-                      </p>
-                      {serie.seasons && (
-                        <p className="text-xs text-gray-500">{serie.seasons} temporada{serie.seasons > 1 ? 's' : ''}</p>
-                      )}
                     </motion.div>
                   ))}
                 </div>
