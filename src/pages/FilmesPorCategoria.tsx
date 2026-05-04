@@ -6,6 +6,28 @@ import { tmdbImageUrl } from '@/services/tmdb';
 import { Film, ChevronLeft, ChevronRight, Play, Search } from 'lucide-react';
 import HeroBanner from '@/components/HeroBanner';
 
+// Componente para imagem com animação de loading
+const ImageWithLoading: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  return (
+    <div className="relative w-full h-full">
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gray-700 animate-pulse flex items-center justify-center z-10">
+          <div className="w-8 h-8 border-2 border-gray-500 border-t-[#00d9ff] rounded-full animate-spin"></div>
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        loading="lazy"
+        onLoad={() => setIsLoaded(true)}
+      />
+    </div>
+  );
+};
+
 interface Filme {
   id: string;
   titulo: string;
@@ -269,11 +291,9 @@ const FilmesPorCategoria: React.FC = () => {
                   >
                     <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 shadow-lg transition-transform duration-300 group-hover/card:scale-105 group-hover/card:z-10">
                       {filme.poster ? (
-                        <img
+                        <ImageWithLoading 
                           src={tmdbImageUrl(filme.poster, 'w500')}
                           alt={filme.titulo}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-700">
