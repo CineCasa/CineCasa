@@ -16,6 +16,8 @@ interface BannerItem {
   genre: string;
   backdrop: string;
   type: 'movie' | 'series';
+  country?: string;
+  ageRating?: string;
 }
 
 interface HeroBannerProps {
@@ -137,6 +139,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 return null;
               }
 
+              // Buscar metadados do TMDB para país e classificação
+              let country = undefined;
+              let ageRating = undefined;
+              if (m.tmdb_id) {
+                try {
+                  const tmdbData = await fetchTmdbMovie(m.tmdb_id);
+                  if (tmdbData) {
+                    country = tmdbData.production_countries?.[0]?.iso_3166_1;
+                    ageRating = tmdbData.adult ? '18+' : tmdbData.release_dates?.results?.[0]?.release_dates?.[0]?.certification;
+                  }
+                } catch (e) {
+                  // Ignorar erro ao buscar metadados
+                }
+              }
+
               console.log(`[HeroBanner] Filme '${m.titulo}' - incluído (fonte: ${source})`);
 
               return {
@@ -148,7 +165,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 rating: m.rating || '',
                 genre: m.genre || '',
                 backdrop: imageUrl,
-                type: 'movie' as const
+                type: 'movie' as const,
+                country,
+                ageRating
               };
             });
 
@@ -158,13 +177,15 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
         }
 
         if (pageType === 'home' || pageType === 'series') {
-          // Buscar séries com qualquer imagem (poster, banner ou backdrop)
+          // Buscar todas as séries
           const { data: series, error: seriesError } = await supabase
             .from('series')
             .select('id_n, tmdb_id, titulo, descricao, ano, rating, genero, poster, banner, capa')
-            .or('poster.not.is.null,banner.not.is.null,capa.not.is.null');
+            .limit(100);
 
           if (seriesError) throw seriesError;
+
+          console.log(`[HeroBanner] Total de séries retornadas do Supabase: ${series?.length || 0}`);
 
           // Processar séries com fallback assíncrono para TMDB
           const seriesPromises = (series as any[] || [])
@@ -193,6 +214,21 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
               // Só retorna se conseguiu alguma imagem
               if (!imageUrl) return null;
 
+              // Buscar metadados do TMDB para país e classificação
+              let country = undefined;
+              let ageRating = undefined;
+              if (s.tmdb_id) {
+                try {
+                  const tmdbData = await fetchTmdbSeries(s.tmdb_id);
+                  if (tmdbData) {
+                    country = tmdbData.production_countries?.[0]?.iso_3166_1;
+                    ageRating = tmdbData.adult ? '18+' : tmdbData.content_ratings?.results?.[0]?.rating;
+                  }
+                } catch (e) {
+                  // Ignorar erro ao buscar metadados
+                }
+              }
+
               return {
                 id: s.id_n,
                 tmdbId: s.tmdb_id,
@@ -202,7 +238,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 rating: s.rating || '',
                 genre: s.genero || '',
                 backdrop: imageUrl,
-                type: 'series' as const
+                type: 'series' as const,
+                country,
+                ageRating
               };
             });
 
@@ -354,7 +392,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   // Se não há dados, mostrar banner padrão
   if (!currentItem) {
     return (
-      <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-20 bg-gradient-to-br from-gray-900 via-black to-gray-800 ${className}`}>
+      <div className={`relative w-full aspect-[16/9] overflow-hidden z-20 bg-gradient-to-br from-gray-900 via-black to-gray-800 ${className}`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-6xl mb-4">🎬</div>
@@ -371,8 +409,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   return (
     <>
       {/* Banner com transformação baseada no scroll */}
-      <div 
-        className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-20 ${className}`}
+      <div
+        className={`relative w-full aspect-[16/9] overflow-hidden z-20 ${className}`}
       >
         {/* Background Image com AnimatePresence */}
       <AnimatePresence initial={false} custom={direction}>
@@ -422,9 +460,22 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
               {/* Meta info */}
               <div className="flex items-center gap-3 flex-wrap text-sm md:text-base text-gray-200">
+                {currentItem.country && (
+                  <img
+                    src={`https://flagcdn.com/w40/${currentItem.country.toLowerCase()}.png`}
+                    alt={currentItem.country}
+                    className="w-6 h-4 rounded object-cover shadow-sm"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                )}
                 {currentItem.year && <span>{currentItem.year}</span>}
                 {currentItem.genre && (
                   <span className="text-cyan-400">{currentItem.genre}</span>
+                )}
+                {currentItem.ageRating && (
+                  <span className="flex items-center gap-1 bg-red-600/90 text-white px-2 py-0.5 rounded font-semibold text-xs">
+                    {currentItem.ageRating}
+                  </span>
                 )}
                 {currentItem.rating && (
                   <span className="flex items-center gap-1 bg-yellow-500/90 text-black px-2 py-0.5 rounded font-semibold">
