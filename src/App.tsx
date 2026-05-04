@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -225,10 +225,14 @@ const PlayerContainer = () => {
 
 const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false);
+  const [hasShownSplash, setHasShownSplash] = useState(false);
   const location = useLocation();
   const { isPlayerOpen, closePlayer } = usePlayer();
   const { user } = useAuth();
+  
+  // Refs para tracking de autenticação
+  const previousUserRef = useRef(user);
   
   // Modo Projeção Cinema - telas 4K/200 polegadas
   const { isProjectionMode, isLargeScreen } = useProjectionMode();
@@ -241,6 +245,25 @@ const AppContent = () => {
   const isDetailsPage = location.pathname.startsWith("/details/");
   const isPlayerPage = isSeriesDetailsPage || isMovieDetailsPage || isContentPage || isDetailsPage || isPlayerOpen;
   const isLoggedIn = !!user;
+  
+  // Detectar quando usuário acabou de fazer login e mostrar splash
+  useEffect(() => {
+    const wasLoggedOut = !previousUserRef.current && user;
+    const isNotLoginPage = location.pathname !== '/login';
+    
+    // Se usuário acabou de logar e splash ainda não foi mostrado nesta sessão
+    if (wasLoggedOut && user && !hasShownSplash && isNotLoginPage) {
+      setShowSplash(true);
+    }
+    
+    previousUserRef.current = user;
+  }, [user, location.pathname, hasShownSplash]);
+  
+  // Handler para quando splash completa
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    setHasShownSplash(true);
+  };
   
   // Global Back Handler - navegação TV/Controle Remoto
   const { showExitConfirmation, confirmExit, cancelExit } = useGlobalBackHandler({
@@ -273,10 +296,10 @@ const AppContent = () => {
 
   return (
     <>
-      {/* Splash Screen - Mostrar no carregamento inicial */}
+      {/* Splash Screen - Mostrar após login */}
       {showSplash && (
         <SplashScreen 
-          onComplete={() => setShowSplash(false)} 
+          onComplete={handleSplashComplete} 
           minDuration={2500}
         />
       )}
