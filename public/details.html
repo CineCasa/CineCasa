@@ -295,7 +295,8 @@ function renderMovieData() {
   document.getElementById('revenue').textContent = movieData.revenue ? 'US$ ' + (movieData.revenue / 1000000).toFixed(1) + 'M' : '-';
   
   document.getElementById('watchBtn').onclick = () => { 
-    window.location.href = `watch.html?tmdb=${tmdbId}&type=${type}`; 
+    // Redireciona para o player do React
+    window.location.href = `/?watch=${tmdbId}&type=${type}`;
   };
   
   const trailerBtn = document.getElementById('trailerBtn');
@@ -306,7 +307,14 @@ function renderMovieData() {
     trailerBtn.onclick = () => alert('Trailer não disponível'); 
   }
   
-  document.getElementById('backBtn').onclick = () => window.history.back();
+  document.getElementById('backBtn').onclick = () => {
+    // Se vier da página /filmes, volta para /filmes
+    if (document.referrer.includes('/filmes') || window.location.href.includes('from=filmes')) {
+      window.location.href = '/filmes';
+    } else {
+      window.history.back();
+    }
+  };
   
   const synopsis = document.getElementById('synopsis');
   const showMore = document.getElementById('showMore');

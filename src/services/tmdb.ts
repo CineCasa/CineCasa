@@ -28,12 +28,12 @@ export const tmdbImageUrl = (path: string, size: string = 'w500'): string => {
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 };
 
-// URL otimizada para banners hero - usa original para máxima qualidade
+// URL otimizada para banners hero - usa original para máxima qualidade (1080p+)
 export const tmdbBannerUrl = (path: string): string => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  // Usar original para banners garantir qualidade máxima
-  return `${TMDB_IMAGE_BASE_URL}/${TMDB_IMAGE_SIZES.BACKDROP_ORIGINAL}${path}`;
+  // Usar original para banners garantir qualidade máxima (acima de 1080p)
+  return `${TMDB_IMAGE_BASE_URL}/original${path}`;
 };
 
 // URL para posters com fallback de qualidade
