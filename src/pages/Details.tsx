@@ -60,6 +60,7 @@ const Details = () => {
   const [isTrailerMode, setIsTrailerMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const { openPlayer } = usePlayer();
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);

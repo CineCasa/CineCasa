@@ -84,8 +84,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           const { data: movies, error: moviesError } = await supabase
             .from('cinema')
             .select('id, tmdb_id, titulo, overview, year, rating, genre, poster, banner, backdrop, country')
-            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null')
-            .or('poster.neq.,banner.neq.,backdrop.neq.');
+            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
 
           if (moviesError) {
             console.error('[HeroBanner] Erro ao buscar filmes:', moviesError);
@@ -164,8 +163,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           const { data: series, error: seriesError } = await supabase
             .from('series')
             .select('id, tmdb_id, titulo, overview, year, rating, genre, poster, banner, backdrop, country')
-            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null')
-            .or('poster.neq.,banner.neq.,backdrop.neq.');
+            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
 
           if (seriesError) throw seriesError;
 
