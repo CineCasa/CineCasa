@@ -87,7 +87,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
           // Processar filmes com fallback assíncrono para TMDB
           const moviePromises = (movies as any[] || [])
-            .filter((m: any) => m.tmdb_id) // Precisa ter tmdb_id para fallback TMDB
+            .filter((m: any) => {
+              // Inclui se tiver imagem local OU tmdb_id para buscar
+              const hasLocalImage = (m.backdrop && m.backdrop.trim() !== '') ||
+                                   (m.banner && m.banner.trim() !== '') ||
+                                   (m.poster && m.poster.trim() !== '');
+              return hasLocalImage || m.tmdb_id;
+            })
             .map(async (m: any) => {
               // Hierarquia de fallback local: backdrop → banner → poster
               let imageUrl = (m.backdrop && m.backdrop.trim() !== '')
@@ -136,7 +142,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
           // Processar séries com fallback assíncrono para TMDB
           const seriesPromises = (series as any[] || [])
-            .filter((s: any) => s.tmdb_id) // Precisa ter tmdb_id para fallback TMDB
+            .filter((s: any) => {
+              // Inclui se tiver imagem local OU tmdb_id para buscar
+              const hasLocalImage = (s.backdrop && s.backdrop.trim() !== '') ||
+                                   (s.banner && s.banner.trim() !== '') ||
+                                   (s.poster && s.poster.trim() !== '');
+              return hasLocalImage || s.tmdb_id;
+            })
             .map(async (s: any) => {
               // Hierarquia de fallback local: backdrop → banner → poster
               let imageUrl = (s.backdrop && s.backdrop.trim() !== '')
@@ -294,18 +306,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   }
 
   if (!currentItem) {
-    console.log('[HeroBanner] No items available - showing fallback');
-    return (
-      <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-800 ${className}`}>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-gray-500">
-            <p className="text-lg">Nenhum banner disponível</p>
-            <p className="text-sm mt-2">Adicione filmes/séries com backdrop no Supabase</p>
-          </div>
-        </div>
-      </div>
-    );
+    console.log('[HeroBanner] No items available - hiding component');
+    return null; // Não mostra nada se não há imagens
   }
 
   return (
