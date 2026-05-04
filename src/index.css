@@ -1109,3 +1109,58 @@ html, body {
   box-shadow: 0 0 20px rgba(0, 217, 255, 0.7);
   transform: scale(1.05);
 }
+
+/* Video.js Custom Styles */
+.video-js {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #000 !important;
+}
+
+.video-js .vjs-control-bar {
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent) !important;
+  height: 4em !important;
+}
+
+.video-js .vjs-big-play-button {
+  background: rgba(229, 57, 53, 0.9) !important;
+  border: none !important;
+  border-radius: 50% !important;
+  width: 80px !important;
+  height: 80px !important;
+  line-height: 80px !important;
+  font-size: 40px !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.video-js .vjs-big-play-button:hover {
+  background: rgba(229, 57, 53, 1) !important;
+  transform: translate(-50%, -50%) scale(1.1) !important;
+}
+
+.video-js .vjs-control:focus {
+  outline: 2px solid #00d9ff !important;
+  outline-offset: 2px !important;
+}
+
+.video-js .vjs-slider:focus {
+  outline: 2px solid #00d9ff !important;
+}
+
+.video-js .vjs-play-progress {
+  background-color: #E53935 !important;
+}
+
+.video-js .vjs-volume-level {
+  background-color: #00d9ff !important;
+}
+
+.video-js .vjs-progress-holder .vjs-play-progress {
+  background-color: #E53935 !important;
+}
+
+.video-js.vjs-youtube .vjs-control-bar {
+  background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.4), transparent) !important;
+}

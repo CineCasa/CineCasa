@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
+// Importar plugins adicionais para compatibilidade
+import 'videojs-youtube';
 
 interface VideoJSPlayerProps {
   url: string;
@@ -32,24 +34,45 @@ export default function VideoJSPlayer({
     videoElement.classList.add('vjs-big-play-centered');
     videoRef.current.appendChild(videoElement);
 
-    const player = videojs(videoElement, {
+    // Detectar tipo de vídeo e configurar fonte apropriada
+    const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+    const videoType = getVideoType(url);
+
+    const playerOptions: any = {
       html5: {
         vhs: {
           overrideNative: true,
           limitRenditionByPlayerDimensions: true,
-          useDevicePixelRatio: true
-        }
+          useDevicePixelRatio: true,
+          smoothQualityChange: true,
+          handlePartialData: true
+        },
+        nativeAudioTracks: false,
+        nativeVideoTracks: false
       },
       controls: true,
       fluid: true,
       responsive: true,
       preload: 'auto',
       poster: poster,
+      playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
+      techOrder: isYouTube ? ['youtube', 'html5'] : ['html5'],
       sources: [{
         src: url,
-        type: getVideoType(url)
-      }]
-    }, () => {
+        type: videoType
+      }],
+      youtube: {
+        ytControls: 0,
+        customVars: {
+          wmode: 'transparent',
+          rel: 0,
+          showinfo: 0,
+          modestbranding: 1
+        }
+      }
+    };
+
+    const player = videojs(videoElement, playerOptions, () => {
       console.log('[VideoJS] Player ready');
       if (resumeFrom > 0) {
         player.currentTime(resumeFrom);
@@ -109,9 +132,20 @@ export default function VideoJSPlayer({
 }
 
 function getVideoType(url: string): string {
+  // YouTube URLs
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    return 'video/youtube';
+  }
+  // HLS streams
   if (url.includes('.m3u8')) return 'application/x-mpegURL';
+  // DASH streams
   if (url.includes('.mpd')) return 'application/dash+xml';
+  // MP4 videos
   if (url.includes('.mp4')) return 'video/mp4';
+  // WebM videos
   if (url.includes('.webm')) return 'video/webm';
+  // OGG videos
+  if (url.includes('.ogv') || url.includes('.ogg')) return 'video/ogg';
+  // Default to MP4
   return 'video/mp4';
 }
