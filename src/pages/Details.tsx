@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronLeft, Play, ThumbsUp, Share2, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import YouTubePlayer from "@/components/YouTubePlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
+import { usePlayer } from "@/contexts/PlayerContext";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { WatchlistButton } from "@/components/WatchlistButton";
 import CastSection from "@/components/CastSection";
@@ -56,10 +56,10 @@ const Details = () => {
   
   const [data, setData] = useState<MovieData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [isTrailerMode, setIsTrailerMode] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+  const { openPlayer } = usePlayer();
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
@@ -498,7 +498,19 @@ const Details = () => {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="flex flex-wrap items-center gap-3 md:gap-4 pt-2">
                 {/* Botão Assistir - Gradiente Azul Neon Vibrante */}
                 <button
-                  onClick={() => { if (videoUrl) { setIsTrailerMode(false); setIsPlayerOpen(true); } }}
+                  onClick={() => {
+                    if (videoUrl && data) {
+                      setIsTrailerMode(false);
+                      openPlayer({
+                        id: data.id,
+                        title: data.title,
+                        type: type === 'cinema' ? 'movie' : 'series',
+                        videoUrl: videoUrl,
+                        poster: data.poster_path || data.backdrop_path,
+                        year: data.release_date || data.first_air_date
+                      });
+                    }
+                  }}
                   disabled={!videoUrl}
                   className={`relative flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base transition-all duration-300 overflow-hidden group ${videoUrl ? "hover:scale-105" : "cursor-not-allowed"}`}
                 >
@@ -529,8 +541,17 @@ const Details = () => {
                       alert('Trailer não disponível para este conteúdo.');
                       return;
                     }
-                    setIsTrailerMode(true);
-                    setIsPlayerOpen(true);
+                    if (data) {
+                      setIsTrailerMode(true);
+                      openPlayer({
+                        id: data.id,
+                        title: `${data.title} - Trailer`,
+                        type: type === 'cinema' ? 'movie' : 'series',
+                        videoUrl: trailerUrl,
+                        poster: data.poster_path || data.backdrop_path,
+                        year: data.release_date || data.first_air_date
+                      });
+                    }
                   }}
                   className="relative flex items-center gap-2 md:gap-3 px-6 md:px-8 py-2.5 md:py-3 rounded-[20px] font-semibold text-sm md:text-base bg-[#FF0000] text-white hover:bg-[#CC0000] hover:scale-105 transition-all duration-300 group overflow-hidden shadow-lg shadow-red-500/30"
                 >
