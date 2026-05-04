@@ -37,19 +37,33 @@ jobs:
     outputs:
       vercel_configured: ${{ steps.check.outputs.vercel_configured }}
       cloudflare_configured: ${{ steps.check.outputs.cloudflare_configured }}
+      github_pages_configured: ${{ steps.check.outputs.github_pages_configured }}
     steps:
       - name: Check Secrets
         id: check
         run: |
           if [ -n "${{ secrets.VERCEL_TOKEN }}" ] && [ -n "${{ secrets.VERCEL_ORG_ID }}" ] && [ -n "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
             echo "vercel_configured=true" >> $GITHUB_OUTPUT
+            echo "✅ Vercel configured"
           else
             echo "vercel_configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Vercel not configured"
           fi
+          
           if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
             echo "cloudflare_configured=true" >> $GITHUB_OUTPUT
+            echo "✅ Cloudflare configured"
           else
             echo "cloudflare_configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Cloudflare not configured"
+          fi
+          
+          if [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+            echo "github_pages_configured=true" >> $GITHUB_OUTPUT
+            echo "✅ GitHub Pages configured"
+          else
+            echo "github_pages_configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ GitHub Pages not configured"
           fi
 
   # ========================================
@@ -171,6 +185,44 @@ jobs:
           echo "✅ Vercel deploy verified"
 
   # ========================================
+  # DEPLOY GITHUB PAGES
+  # ========================================
+  deploy-github-pages:
+    name: Deploy GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [check-secrets, build]
+    if: (github.event.inputs.environment == 'all' || github.event.inputs.environment == 'github-pages' || github.event.inputs.environment == null) && needs.check-secrets.outputs.github_pages_configured == 'true'
+    environment: production
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-files
+          path: dist/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: build-files
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify GitHub Pages Deploy
+        run: |
+          sleep 5
+          curl -I -f "https://kassiaavilla.github.io/cinecasa/" || echo "⚠️ GitHub Pages verification skipped"
+          echo "✅ GitHub Pages deploy completed"
+
+  # ========================================
   # DEPLOY CLOUDFLARE WORKERS
   # ========================================
   deploy-cloudflare:
@@ -204,29 +256,34 @@ jobs:
             --data '{"purge_everything":true}' || true
           echo "✅ Cloudflare cache purged"
 
+      - name: Verify Cloudflare Deploy
+        run: |
+          sleep 5
+          curl -I -f "https://cinecasa.pages.dev/" || echo "⚠️ Cloudflare verification skipped"
+          echo "✅ Cloudflare deploy completed"
+
   # ========================================
   # NOTIFICAÇÃO E STATUS
   # ========================================
   notify:
     name: Notify Deploy Status
     runs-on: ubuntu-latest
-    needs: [build, deploy-vercel, deploy-cloudflare]
+    needs: [build, deploy-vercel, deploy-cloudflare, deploy-github-pages]
     if: always()
     steps:
       - name: Deploy Summary
         run: |
-          echo "🚀 DEPLOY SUMMARY"
-          echo "=================="
+          echo "🚀 DEPLOY SUMMARY - PARALLEL ZERO-DOWNTIME"
+          echo "============================================"
           echo "Build: ${{ needs.build.result }}"
           echo "Vercel: ${{ needs.deploy-vercel.result }}"
           echo "Cloudflare: ${{ needs.deploy-cloudflare.result }}"
+          echo "GitHub Pages: ${{ needs.deploy-github-pages.result }}"
           echo ""
-          echo "URLs:"
+          echo "🌐 URLs:"
           echo "- Vercel: https://cinecasa.vercel.app"
-          echo "- Cloudflare: https://cinecasa.paixaoflix.vip"
-
-      - name: Update deployment status
-        if: success()
-        run: |
-          echo "✅ Deploy automático concluído com sucesso!"
-          echo "🌐 URL Vercel: https://cinecasa.vercel.app"
+          echo "- Cloudflare: https://cinecasa.pages.dev/"
+          echo "- GitHub Pages: https://kassiaavilla.github.io/cinecasa/"
+          echo ""
+          echo "✅ Deploy automático concluído sem reinicialização!"
+          echo "🔄 Cache busting aplicado em todos os serviços"

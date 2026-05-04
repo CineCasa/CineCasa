@@ -29,6 +29,7 @@ import { useAuth } from '../components/AuthProvider';
 import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
 import CineNoiteSection from '../components/CineNoiteSection';
+import HeroBanner from '../components/HeroBanner';
 // Mock data para demonstração
 const mockHeroContent = {
   title: "A ORIGEM DO AMANHÃ",
@@ -466,6 +467,9 @@ const PremiumHome: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
+      {/* Hero Banner - YouTube Style */}
+      <HeroBanner pageType="home" />
+
       {/* Continue Watching - Logo após o Banner */}
       {(() => {
         console.log('[PremiumHome] Continue Watching - isLoading:', isLoadingContinue, 'items:', continueWatchingItems.length, 'user:', user?.id);

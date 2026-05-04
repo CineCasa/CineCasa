@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { tmdbImageUrl } from '@/services/tmdb';
 import { Film, ChevronLeft, ChevronRight, Play, Search } from 'lucide-react';
+import HeroBanner from '@/components/HeroBanner';
 
 interface Filme {
   id: string;
@@ -225,68 +226,8 @@ const FilmesPorCategoria: React.FC = () => {
         </div>
       </div>
 
-      {/* Hero - Primeira categoria em destaque */}
-      {categoriasComFilmes.length > 0 && categories[categoriasComFilmes[0]].length > 0 && (
-        <div className="relative h-[70vh] mt-16">
-          {(() => {
-            const destaque = categories[categoriasComFilmes[0]][0];
-            return (
-              <>
-                <div className="absolute inset-0">
-                  {destaque.banner ? (
-                    <img
-                      src={tmdbImageUrl(destaque.banner, 'original')}
-                      alt={destaque.titulo}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : destaque.poster ? (
-                    <img
-                      src={tmdbImageUrl(destaque.poster, 'w780')}
-                      alt={destaque.titulo}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-red-900 to-black" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
-                </div>
-                
-                <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-                  <div className="max-w-2xl">
-                    <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold rounded mb-4">
-                      {categoriasComFilmes[0]}
-                    </span>
-                    <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-                      {destaque.titulo}
-                    </h1>
-                    <div className="flex items-center gap-4 mb-4 text-gray-300">
-                      {destaque.year && <span>{destaque.year}</span>}
-                      {destaque.rating && destaque.rating !== 'N/A' && (
-                        <span className="bg-yellow-500 text-black px-2 py-0.5 rounded text-sm font-bold">
-                          {destaque.rating}
-                        </span>
-                      )}
-                    </div>
-                    {destaque.description && (
-                      <p className="text-gray-300 text-lg mb-6 line-clamp-3">
-                        {destaque.description}
-                      </p>
-                    )}
-                    <button
-                      onClick={() => handleFilmeClick(destaque)}
-                      className="flex items-center gap-2 px-6 py-3 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors"
-                    >
-                      <Play size={20} fill="currentColor" />
-                      Assistir Agora
-                    </button>
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      )}
+      {/* Hero Banner - YouTube Style */}
+      <HeroBanner pageType="movies" className="mt-16" />
 
       {/* Rows de Categorias */}
       <div className="pt-8 space-y-8">

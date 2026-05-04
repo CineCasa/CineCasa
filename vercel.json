@@ -51,6 +51,14 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Build-Version",
+          "value": "${VITE_BUILD_VERSION}"
+        },
+        {
+          "key": "X-Build-Hash",
+          "value": "${VITE_BUILD_HASH}"
         }
       ]
     }
