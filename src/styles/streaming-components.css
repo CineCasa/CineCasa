@@ -43,6 +43,46 @@
     display: none;
   }
 
+  /* Carousel Container - 5 cards per view with horizontal scroll */
+  .carousel-container {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    padding: 0.5rem 0;
+    width: 100%;
+  }
+
+  .carousel-container > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  /* Ensure exactly 5 cards visible per row on desktop */
+  @media (min-width: 1024px) {
+    .carousel-container {
+      gap: 1rem;
+    }
+  }
+
+  /* 5 cards per view calculation */
+  .five-cards-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0.5rem 0;
+  }
+
+  .five-cards-row > * {
+    flex: 0 0 calc(20% - 0.8rem);
+    min-width: 160px;
+    max-width: 220px;
+    scroll-snap-align: start;
+  }
+
   /* Fontes cinematográficas */
   .font-titles {
     font-family: var(--font-titles);
