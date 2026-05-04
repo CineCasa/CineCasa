@@ -108,6 +108,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
         // Embaralhar itens
         const shuffled = shuffleArray(allItems);
+        console.log(`[HeroBanner] Loaded ${shuffled.length} items for pageType=${pageType}`);
         setItems(shuffled);
         setCurrentIndex(0);
       } catch (error) {
@@ -226,7 +227,18 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   }
 
   if (!currentItem) {
-    return null;
+    console.log('[HeroBanner] No items available - showing fallback');
+    return (
+      <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-800 ${className}`}>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <p className="text-lg">Nenhum banner disponível</p>
+            <p className="text-sm mt-2">Adicione filmes/séries com backdrop no Supabase</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
