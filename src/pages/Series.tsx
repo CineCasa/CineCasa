@@ -7,15 +7,18 @@ import { Tv, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import HeroBanner from '@/components/HeroBanner';
 
 interface Serie {
-  id: string;
+  id_n: string;
   titulo: string;
-  poster: string;
+  descricao?: string;
+  ano?: number;
+  tmdb_id?: number;
+  capa?: string;
+  poster?: string;
   banner?: string;
-  year?: string;
-  rating?: string;
-  category?: string;
-  genre?: string;
-  description?: string;
+  trailer?: string;
+  genero?: string;
+  classificacao?: string;
+  rating?: number;
   seasons?: number;
 }
 
@@ -87,40 +90,64 @@ const Series: React.FC = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('series')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select(`
+          id_n,
+          titulo,
+          descricao,
+          ano,
+          tmdb_id,
+          capa,
+          poster,
+          banner,
+          trailer,
+          genero,
+          classificacao,
+          rating
+        `)
+        .order('id_n', { ascending: false });
 
       if (error) throw error;
 
-      // Organizar séries por categoria
-      const seriesPorCategoria: Record<string, Serie[]> = {};
+      // Organizar séries por gênero
+      const seriesPorGenero: Record<string, Serie[]> = {};
       
+      // Inicializar categorias vazias
       CATEGORIAS_ORDEM.forEach(cat => {
-        seriesPorCategoria[cat] = [];
+        seriesPorGenero[cat] = [];
       });
 
-      (data || []).forEach((serie: any) => {
-        const categoria = serie.categoria || serie.category || 'Outros';
-        if (CATEGORIAS_ORDEM.includes(categoria)) {
-          if (!seriesPorCategoria[categoria]) {
-            seriesPorCategoria[categoria] = [];
+      // Contar temporadas para cada série
+      const seriesWithSeasons = await Promise.all(
+        (data || []).map(async (serie: any) => {
+          const { count } = await supabase
+            .from('temporadas')
+            .select('*', { count: 'exact', head: true })
+            .eq('serie_id', serie.id_n);
+          
+          return {
+            ...serie,
+            seasons: count || 0
+          };
+        })
+      );
+
+      seriesWithSeasons.forEach((serie: Serie) => {
+        // Usar genero do banco ou 'Outros' se não tiver
+        const generos = serie.genero ? serie.genero.split(',').map((g: string) => g.trim()) : ['Outros'];
+        
+        generos.forEach((genero: string) => {
+          if (CATEGORIAS_ORDEM.includes(genero)) {
+            if (!seriesPorGenero[genero]) {
+              seriesPorGenero[genero] = [];
+            }
+            seriesPorGenero[genero].push(serie);
+          } else if (genero === 'Outros') {
+            seriesPorGenero['Outros'].push(serie);
           }
-          seriesPorCategoria[categoria].push({
-            id: serie.id,
-            titulo: serie.titulo || serie.title,
-            poster: serie.poster,
-            banner: serie.banner,
-            year: serie.year || serie.ano,
-            rating: serie.rating || serie.nota,
-            category: categoria,
-            genre: serie.genero || serie.genre,
-            description: serie.descricao || serie.description || serie.overview,
-            seasons: serie.seasons || serie.temporadas || serie.number_of_seasons
-          });
-        }
+        });
       });
 
-      setCategories(seriesPorCategoria);
+      setCategories(seriesPorGenero);
     } catch (error) {
       console.error('Erro ao buscar séries:', error);
     } finally {
@@ -140,7 +167,7 @@ const Series: React.FC = () => {
   };
 
   const handleSerieClick = (serie: Serie) => {
-    navigate(`/details/series/${serie.id}`);
+    navigate(`/details/series/${serie.id_n}`);
   };
 
   const categoriasComSeries = CATEGORIAS_ORDEM.filter(
@@ -228,7 +255,7 @@ const Series: React.FC = () => {
                 >
                   {categories[categoryName].map((serie, index) => (
                     <motion.div
-                      key={serie.id}
+                      key={serie.id_n}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -236,9 +263,9 @@ const Series: React.FC = () => {
                       className="flex-shrink-0 w-[calc(20%-0.8rem)] min-w-[160px] max-w-[220px] cursor-pointer group/card"
                     >
                       <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 shadow-lg transition-transform duration-300 group-hover/card:scale-105 group-hover/card:z-10">
-                        {serie.poster ? (
+                        {serie.capa || serie.poster ? (
                           <ImageWithLoading 
-                            src={tmdbImageUrl(serie.poster, 'w500')}
+                            src={tmdbImageUrl(serie.capa || serie.poster || '', 'w500')}
                             alt={serie.titulo}
                           />
                         ) : (
@@ -257,8 +284,8 @@ const Series: React.FC = () => {
                           <h3 className="text-white font-bold text-sm line-clamp-2">
                             {serie.titulo}
                           </h3>
-                          {serie.year && (
-                            <p className="text-gray-300 text-xs mt-1">{serie.year}</p>
+                          {serie.ano && (
+                            <p className="text-gray-300 text-xs mt-1">{serie.ano}</p>
                           )}
                           {serie.seasons && (
                             <p className="text-[#00d9ff] text-xs mt-1">{serie.seasons} temporada{serie.seasons > 1 ? 's' : ''}</p>
@@ -266,9 +293,9 @@ const Series: React.FC = () => {
                         </div>
 
                         {/* Rating badge */}
-                        {serie.rating && serie.rating !== 'N/A' && (
+                        {serie.rating && serie.rating > 0 && (
                           <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">
-                            {serie.rating}
+                            {serie.rating.toFixed(1)}
                           </div>
                         )}
 

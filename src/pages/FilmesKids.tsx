@@ -102,17 +102,6 @@ const FilmesKids: React.FC = () => {
       {/* Hero Banner */}
       <HeroBanner pageType="movies" />
 
-      {/* Título da Página */}
-      <div className="px-4 md:px-8 py-6">
-        <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-3">
-          <Baby className="text-[#00d9ff]" size={36} />
-          Filmes Infantis
-        </h1>
-        <p className="text-gray-400 mt-2 text-lg">
-          Diversão garantida para a criançada! 🎈🎨🧸
-        </p>
-      </div>
-
       {/* Lista de Filmes */}
       <div className="pt-4">
         {loading ? (
