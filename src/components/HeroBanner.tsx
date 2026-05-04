@@ -33,6 +33,9 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [direction, setDirection] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+  const [showStickyNav, setShowStickyNav] = useState(false);
+  const lastScrollY = useRef(0);
 
   // Shuffle array (Fisher-Yates)
   const shuffleArray = useCallback((array: BannerItem[]) => {
@@ -241,6 +244,29 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
     return () => clearInterval(interval);
   }, [items.length]);
 
+  // Efeito de scroll - esconde banner e mostra navbar sticky
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const bannerHeight = 600; // Altura aproximada do banner
+      
+      // Mostrar navbar sticky quando rolar além do banner
+      setShowStickyNav(currentScrollY > bannerHeight * 0.5);
+      
+      // Esconder banner quando rolar além dele
+      if (currentScrollY > bannerHeight * 0.8) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handlePrev = () => {
     setDirection(-1);
     setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
@@ -353,8 +379,16 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   }
 
   return (
-    <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-10 ${className}`}>
-      {/* Background Image com AnimatePresence */}
+    <>
+      {/* Banner com transformação baseada no scroll */}
+      <div 
+        className={`fixed top-0 left-0 right-0 w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-20 transition-transform duration-500 ease-in-out ${className}`}
+        style={{ 
+          transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+          opacity: isVisible ? 1 : 0
+        }}
+      >
+        {/* Background Image com AnimatePresence */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={currentItem.id}
@@ -487,6 +521,44 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
         </>
       )}
     </div>
+
+      {/* Navbar Sticky - aparece quando banner some */}
+      {showStickyNav && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className="fixed top-0 left-0 right-0 z-30 bg-black/90 backdrop-blur-md border-b border-white/10 px-4 md:px-8 py-4"
+        >
+          <div className="max-w-[1920px] mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-[#00d9ff] font-bold text-xl">◉ CINECASA</span>
+              <nav className="hidden md:flex items-center gap-6 ml-8">
+                <button onClick={() => navigate('/')} className="text-white hover:text-[#00d9ff] transition-colors">Início</button>
+                <button onClick={() => navigate('/filmes')} className="text-white hover:text-[#00d9ff] transition-colors">Filmes</button>
+                <button onClick={() => navigate('/series')} className="text-white hover:text-[#00d9ff] transition-colors">Séries</button>
+                <button onClick={() => navigate('/favorites')} className="text-white hover:text-[#00d9ff] transition-colors">Favoritos</button>
+              </nav>
+            </div>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => navigate('/search')} 
+                className="text-white hover:text-[#00d9ff] transition-colors"
+              >
+                Buscar
+              </button>
+              <button 
+                onClick={() => navigate('/profile')} 
+                className="text-white hover:text-[#00d9ff] transition-colors"
+              >
+                Perfil
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </>
   );
 };
 

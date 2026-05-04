@@ -222,9 +222,9 @@ const FilmesPorCategoria: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-black pb-20">
-      {/* Hero Banner - YouTube Style */}
-      <HeroBanner pageType="movies" className="mt-16" />
+    <div className="min-h-screen bg-black pb-20 pt-[70vh]">
+      {/* Hero Banner - fixo no topo */}
+      <HeroBanner pageType="movies" />
 
       {/* Rows de Categorias */}
       <div className="pt-8 space-y-8">

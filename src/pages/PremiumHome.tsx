@@ -466,8 +466,8 @@ const PremiumHome: React.FC = () => {
   };
 
   return (
-    <div className="streaming-container min-h-screen bg-black">
-      {/* Hero Banner - YouTube Style */}
+    <div className="streaming-container min-h-screen bg-black pt-[70vh]">
+      {/* Hero Banner - fixo no topo */}
       <HeroBanner pageType="home" />
 
       {/* Continue Watching - Logo após o Banner */}
