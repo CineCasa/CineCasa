@@ -350,9 +350,30 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
   console.log('[HeroBanner] Renderizando:', { isLoading, itemsCount: items.length, hasCurrentItem: !!currentItem, pageType });
 
-  // Não renderiza nada durante loading ou quando não há dados
-  if (isLoading || !currentItem) {
-    return null;
+  // Durante loading, mostrar skeleton
+  if (isLoading) {
+    return (
+      <div className={`fixed top-0 left-0 right-0 w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-20 bg-gradient-to-br from-gray-900 to-black animate-pulse ${className}`}>
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+      </div>
+    );
+  }
+
+  // Se não há dados, mostrar banner padrão
+  if (!currentItem) {
+    return (
+      <div className={`fixed top-0 left-0 right-0 w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-20 bg-gradient-to-br from-gray-900 via-black to-gray-800 ${className}`}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🎬</div>
+            <h2 className="text-2xl font-bold text-white">CineCasa</h2>
+            <p className="text-gray-400 mt-2">Sua plataforma de streaming</p>
+          </div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-black via-black/50 to-transparent" />
+      </div>
+    );
   }
 
   return (
