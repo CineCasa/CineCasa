@@ -4,6 +4,7 @@ import { Play, Plus, Star, Info, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { fetchTmdbMovie, fetchTmdbSeries, tmdbImageUrl } from '@/services/tmdb';
 
 interface BannerItem {
   id: string;
@@ -43,6 +44,30 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
     return shuffled;
   }, []);
 
+  // Buscar imagem do TMDB como último fallback
+  const fetchTmdbImage = useCallback(async (tmdbId: string, type: 'movie' | 'series'): Promise<string | null> => {
+    try {
+      console.log(`[HeroBanner] Buscando imagem TMDB para ${type} ${tmdbId}`);
+      const data = type === 'movie'
+        ? await fetchTmdbMovie(tmdbId)
+        : await fetchTmdbSeries(tmdbId);
+
+      if (!data) return null;
+
+      // Hierarquia TMDB: backdrop_path → poster_path
+      const imagePath = data.backdrop_path || data.poster_path;
+      if (imagePath) {
+        const imageUrl = tmdbImageUrl(imagePath, 'original');
+        console.log(`[HeroBanner] Imagem TMDB encontrada: ${imageUrl}`);
+        return imageUrl;
+      }
+      return null;
+    } catch (error) {
+      console.error('[HeroBanner] Erro ao buscar imagem TMDB:', error);
+      return null;
+    }
+  }, []);
+
   // Buscar dados do Supabase
   useEffect(() => {
     const fetchBanners = async () => {
@@ -60,21 +85,26 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
           if (moviesError) throw moviesError;
 
-          const movieItems = (movies as any[] || [])
-            .filter((m: any) => {
-              // Aceita qualquer filme que tenha pelo menos uma imagem
-              const hasBackdrop = m.backdrop && m.backdrop.trim() !== '';
-              const hasBanner = m.banner && m.banner.trim() !== '';
-              const hasPoster = m.poster && m.poster.trim() !== '';
-              return hasBackdrop || hasBanner || hasPoster;
-            })
-            .map((m: any) => {
-              // Hierarquia de fallback: backdrop → banner → poster
-              const imageUrl = (m.backdrop && m.backdrop.trim() !== '')
+          // Processar filmes com fallback assíncrono para TMDB
+          const moviePromises = (movies as any[] || [])
+            .filter((m: any) => m.tmdb_id) // Precisa ter tmdb_id para fallback TMDB
+            .map(async (m: any) => {
+              // Hierarquia de fallback local: backdrop → banner → poster
+              let imageUrl = (m.backdrop && m.backdrop.trim() !== '')
                 ? m.backdrop
                 : (m.banner && m.banner.trim() !== '')
                   ? m.banner
-                  : m.poster;
+                  : (m.poster && m.poster.trim() !== '')
+                    ? m.poster
+                    : null;
+
+              // Se não tiver imagem local, buscar no TMDB
+              if (!imageUrl && m.tmdb_id) {
+                imageUrl = await fetchTmdbImage(m.tmdb_id, 'movie');
+              }
+
+              // Só retorna se conseguiu alguma imagem
+              if (!imageUrl) return null;
 
               return {
                 id: m.id,
@@ -84,12 +114,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 year: m.year || '',
                 rating: m.rating || '',
                 genre: m.genre || '',
-                backdrop: imageUrl, // Sempre terá um valor válido
+                backdrop: imageUrl,
                 country: m.country,
                 type: 'movie' as const
               };
             });
 
+          const movieItems = (await Promise.all(moviePromises)).filter(Boolean) as BannerItem[];
           allItems = [...allItems, ...movieItems];
         }
 
@@ -103,21 +134,26 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
           if (seriesError) throw seriesError;
 
-          const seriesItems = (series as any[] || [])
-            .filter((s: any) => {
-              // Aceita qualquer série que tenha pelo menos uma imagem
-              const hasBackdrop = s.backdrop && s.backdrop.trim() !== '';
-              const hasBanner = s.banner && s.banner.trim() !== '';
-              const hasPoster = s.poster && s.poster.trim() !== '';
-              return hasBackdrop || hasBanner || hasPoster;
-            })
-            .map((s: any) => {
-              // Hierarquia de fallback: backdrop → banner → poster
-              const imageUrl = (s.backdrop && s.backdrop.trim() !== '')
+          // Processar séries com fallback assíncrono para TMDB
+          const seriesPromises = (series as any[] || [])
+            .filter((s: any) => s.tmdb_id) // Precisa ter tmdb_id para fallback TMDB
+            .map(async (s: any) => {
+              // Hierarquia de fallback local: backdrop → banner → poster
+              let imageUrl = (s.backdrop && s.backdrop.trim() !== '')
                 ? s.backdrop
                 : (s.banner && s.banner.trim() !== '')
                   ? s.banner
-                  : s.poster;
+                  : (s.poster && s.poster.trim() !== '')
+                    ? s.poster
+                    : null;
+
+              // Se não tiver imagem local, buscar no TMDB
+              if (!imageUrl && s.tmdb_id) {
+                imageUrl = await fetchTmdbImage(s.tmdb_id, 'series');
+              }
+
+              // Só retorna se conseguiu alguma imagem
+              if (!imageUrl) return null;
 
               return {
                 id: s.id,
@@ -127,12 +163,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
                 year: s.year || '',
                 rating: s.rating || '',
                 genre: s.genre || '',
-                backdrop: imageUrl, // Sempre terá um valor válido
+                backdrop: imageUrl,
                 country: s.country,
                 type: 'series' as const
               };
             });
 
+          const seriesItems = (await Promise.all(seriesPromises)).filter(Boolean) as BannerItem[];
           allItems = [...allItems, ...seriesItems];
         }
 
