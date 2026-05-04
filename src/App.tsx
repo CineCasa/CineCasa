@@ -64,38 +64,62 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   console.log('[ProtectedRoute] Verificando:', { pathname: location.pathname, authLoading, hasUser: !!userId });
 
-  // Notificar quando auth estiver pronto - não bloqueia UI
+  // Notificar quando auth estiver pronto
   useEffect(() => {
-    if (!authLoading && userId) {
+    if (!authLoading) {
       setAuthReady(true);
     }
   }, [authLoading, userId, setAuthReady]);
 
-  // Só redireciona se não estiver autenticado - nunca mostra loading screen
-  if (!authLoading && !userId) {
+  // Mostrar loading enquanto verifica autenticação
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#00d9ff] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Redireciona para login se não autenticado
+  if (!userId) {
     console.log('[ProtectedRoute] Redirecionando para login - usuário não autenticado');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  console.log('[ProtectedRoute] Renderizando children');
-  // Sempre renderiza children imediatamente - sistema não bloqueia
+  console.log('[ProtectedRoute] Renderizando children - usuário autenticado');
   return <>{children}</>;
 };
 
 // Componente para redirecionar usuário logado da página de login para home
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
   
   // Usar user?.id para verificação estável
   const userId = user?.id;
   
-  // Nunca bloquear UI com loading - sempre renderizar imediatamente
-  if (userId) {
-    // Se já está logado, redireciona para home
-    return <Navigate to="/" replace />;
+  // Mostrar loading enquanto verifica autenticação
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#00d9ff] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60">Carregando...</p>
+        </div>
+      </div>
+    );
   }
   
-  // Renderiza children imediatamente mesmo durante loading
+  // Se já está logado, redireciona para home ou para a página anterior
+  if (userId) {
+    const from = location.state?.from?.pathname || '/';
+    return <Navigate to={from} replace />;
+  }
+  
+  // Renderiza página de login se não estiver autenticado
   return <>{children}</>;
 };
 
