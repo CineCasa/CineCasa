@@ -323,6 +323,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
   const currentItem = items[currentIndex];
 
+  console.log('[HeroBanner] Renderizando:', { isLoading, itemsCount: items.length, hasCurrentItem: !!currentItem, pageType });
+
   if (isLoading) {
     return (
       <div className={`relative w-full aspect-video bg-gradient-to-br from-gray-900 to-black animate-pulse ${className}`}>
