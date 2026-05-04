@@ -34,6 +34,16 @@ export default function TVNavbar() {
   const location = useLocation();
   const navRef = useRef<HTMLElement>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Detectar scroll para ativar efeito vidro
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Determina qual item está ativo baseado na rota atual
   const isActive = useCallback((path: string): boolean => {
@@ -115,7 +125,7 @@ export default function TVNavbar() {
     <nav 
       ref={navRef}
       data-nav-region="navbar"
-      className="tv-navbar-cinecasa"
+      className={`tv-navbar-cinecasa ${isScrolled ? 'tv-navbar-glass' : ''}`}
       aria-label="Navegação principal"
     >
       {/* Logo */}

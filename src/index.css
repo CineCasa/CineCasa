@@ -962,7 +962,7 @@ html, body {
 
 /* TV NAVBAR STYLES */
 .tv-navbar-cinecasa {
-  background-color: #050a12;
+  background: linear-gradient(to bottom, rgba(5, 10, 18, 0.95), rgba(5, 10, 18, 0.8));
   border-bottom: 1px solid rgba(0, 217, 255, 0.2);
   padding: 1rem 2rem;
   display: flex;
@@ -974,6 +974,16 @@ html, body {
   right: 0;
   z-index: 1000;
   backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+/* Efeito Vidro (Glassmorphism) ao rolar */
+.tv-navbar-glass {
+  background: rgba(5, 10, 18, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.3) !important;
+  box-shadow: 0 4px 30px rgba(0, 217, 255, 0.1) !important;
 }
 
 .tv-nav-item {
