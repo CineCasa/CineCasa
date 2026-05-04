@@ -15,6 +15,7 @@ import TVNavbar from "./components/TVNavbar";
 import ScrollToTop from "./components/ScrollToTop";
 import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
 import YouTubePlayer from "./components/YouTubePlayer";
+import VideoJSPlayer from "./components/VideoJSPlayer";
 import PremiumHome from "./pages/PremiumHome";
 import FilmesPorCategoria from "./pages/FilmesPorCategoria";
 import FilmesCategorias from "./pages/FilmesCategorias";
@@ -152,12 +153,34 @@ const AppRoutes = () => {
 
 const PlayerContainer = () => {
   const { isPlayerOpen, currentItem, closePlayer } = usePlayer();
-  
+
   if (!isPlayerOpen || !currentItem) return null;
-  
+
+  const videoUrl = currentItem.videoUrl || '';
+  const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
+
+  console.log('[PlayerContainer] Abrindo player:', { isYouTube, videoUrl: videoUrl.substring(0, 50) + '...' });
+
+  if (isYouTube) {
+    return (
+      <YouTubePlayer
+        url={videoUrl}
+        title={currentItem.title}
+        poster={currentItem.poster}
+        onClose={closePlayer}
+        contentId={currentItem.id}
+        contentType={currentItem.type}
+        episodeId={currentItem.episodeId}
+        seasonNumber={currentItem.seasonNumber}
+        episodeNumber={currentItem.episodeNumber}
+        resumeFrom={currentItem.resumeFrom}
+      />
+    );
+  }
+
   return (
-    <YouTubePlayer
-      url={currentItem.videoUrl || ''}
+    <VideoJSPlayer
+      url={videoUrl}
       title={currentItem.title}
       poster={currentItem.poster}
       onClose={closePlayer}
