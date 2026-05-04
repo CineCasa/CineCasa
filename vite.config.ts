@@ -26,6 +26,7 @@ export default defineConfig(({ mode }) => ({
     sourcemap: true,
     minify: 'esbuild',
     target: 'es2020',
+    chunkSizeWarningLimit: 1000,
     // Copy _redirects file after build
     rollupOptions: {
       plugins: [
