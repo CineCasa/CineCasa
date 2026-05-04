@@ -17,6 +17,7 @@ import { PlayerProvider, usePlayer } from "./contexts/PlayerContext";
 import YouTubePlayer from "./components/YouTubePlayer";
 import VideoJSPlayer from "./components/VideoJSPlayer";
 import PremiumHome from "./pages/PremiumHome";
+import Filmes from "./pages/Filmes";
 import FilmesPorCategoria from "./pages/FilmesPorCategoria";
 import FilmesCategorias from "./pages/FilmesCategorias";
 import Favorites from "./pages/Favorites";
@@ -125,7 +126,8 @@ const AppRoutes = () => {
       {/* Rotas protegidas - Requerem autenticação */}
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
       <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
-      <Route path="/filmes" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
+      <Route path="/filmes" element={<ProtectedRoute><Filmes /></ProtectedRoute>} />
+      <Route path="/filmes-todos" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />
