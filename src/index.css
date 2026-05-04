@@ -1123,7 +1123,7 @@ html, body {
 }
 
 .video-js .vjs-big-play-button {
-  background: rgba(229, 57, 53, 0.9) !important;
+  background: #00d9ff !important;
   border: none !important;
   border-radius: 50% !important;
   width: 80px !important;
@@ -1133,10 +1133,15 @@ html, body {
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
+  color: #000000 !important;
+}
+
+.video-js .vjs-big-play-button .vjs-icon-placeholder:before {
+  color: #000000 !important;
 }
 
 .video-js .vjs-big-play-button:hover {
-  background: rgba(229, 57, 53, 1) !important;
+  background: #00ffff !important;
   transform: translate(-50%, -50%) scale(1.1) !important;
 }
 
