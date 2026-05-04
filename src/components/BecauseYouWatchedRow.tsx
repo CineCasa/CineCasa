@@ -33,7 +33,7 @@ export const BecauseYouWatchedRow: React.FC<BecauseYouWatchedRowProps> = ({ genr
         {items.map((item) => (
           <Link
             key={item.id}
-            to={`/details/${item.id}?type=${item.type}`}
+            to={`/details/${item.type}/${item.id}`}
             className="flex-shrink-0 w-40 group"
           >
             <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">

@@ -31,7 +31,7 @@ const CategoryFilms: React.FC<CategoryFilmsProps> = ({ films, category }) => {
       {films.map((film) => (
         <Link
           key={film.id}
-          to={`/details/${film.id}?type=movie`}
+          to={`/details/movie/${film.id}`}
           className="group"
         >
           <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">

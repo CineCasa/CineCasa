@@ -22,7 +22,7 @@ const LazyCard: React.FC<LazyCardProps> = ({
 }) => {
   return (
     <Link
-      to={`/details/${id}?type=${type}`}
+      to={`/details/${type}/${id}`}
       className="flex-shrink-0 w-[calc(20%-0.8rem)] min-w-[160px] max-w-[220px] group"
     >
       <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
