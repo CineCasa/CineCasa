@@ -26,7 +26,7 @@ import Favorites from "./pages/Favorites";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Content from "./pages/Content";
-import Details from "./pages/Details";
+import DetailsNew from "./pages/DetailsNew";
 import MovieDetails from "./pages/MovieDetails";
 import ImageCleanup from "./pages/ImageCleanup";
 import NotificationSettings from "./pages/NotificationSettings";
@@ -157,7 +157,7 @@ const AppRoutes = () => {
       <Route path="/filmes-todos" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
             <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
-            <Route path="/details/:type/:id" element={<ProtectedRoute><Details /></ProtectedRoute>} />
+            <Route path="/details/:type/:id" element={<ProtectedRoute><DetailsNew /></ProtectedRoute>} />
       <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />
       <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
       <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
