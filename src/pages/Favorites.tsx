@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { fetchTmdbMovie, fetchTmdbSeries, tmdbImageUrl } from "@/services/tmdb";
 import { toast } from "sonner";
 
-// Extended favorite item with hydrated TMDB data
 interface HydratedFavorite extends FavoriteItem {
   tmdbData?: {
     poster?: string;
@@ -22,47 +21,44 @@ interface HydratedFavorite extends FavoriteItem {
 const Favorites = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { favorites: rawFavorites, loading, fetchFavorites, removeFromFavorites } = useFavorites();
+  // Bug #4 corrigido: nomes corretos do hook useFavorites
+  const { favorites: rawFavorites, loading, refresh, removeFavorite } = useFavorites();
   const [favorites, setFavorites] = useState<HydratedFavorite[]>([]);
   const [hydrating, setHydrating] = useState(false);
   const firstCardRef = useRef<HTMLDivElement>(null);
 
-  // Derived state (declarado antes dos useEffects que os usam)
   const isEmpty = favorites.length === 0 && !loading;
   const isLoading = loading || hydrating;
 
-  // Hydrate favorites with TMDB data
   const hydrateFavorites = useCallback(async (items: FavoriteItem[]) => {
     if (!items.length) return;
-    
+
     setHydrating(true);
     const hydrated = await Promise.all(
       items.map(async (item) => {
-        // Try to get TMDB ID from content_id or use it directly
         const tmdbId = item.content_id.toString();
-        
-        let tmdbData = {};
+        let tmdbData: HydratedFavorite['tmdbData'] = {};
         try {
           if (item.content_type === 'movie') {
             const data = await fetchTmdbMovie(tmdbId);
             if (data) {
               tmdbData = {
-                poster: data.poster_path ? tmdbImageUrl(data.poster_path, 'w500') : item.poster,
-                backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, 'w780') : item.banner,
+                poster: data.poster_path ? tmdbImageUrl(data.poster_path, 'w500') : item.poster || undefined,
+                backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, 'w780') : item.banner || undefined,
                 rating: data.vote_average,
-                year: data.release_date?.split('-')[0] || item.year,
-                overview: data.overview
+                year: data.release_date?.split('-')[0] || item.year || undefined,
+                overview: data.overview,
               };
             }
           } else {
             const data = await fetchTmdbSeries(tmdbId);
             if (data) {
               tmdbData = {
-                poster: data.poster_path ? tmdbImageUrl(data.poster_path, 'w500') : item.poster,
-                backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, 'w780') : item.banner,
+                poster: data.poster_path ? tmdbImageUrl(data.poster_path, 'w500') : item.poster || undefined,
+                backdrop: data.backdrop_path ? tmdbImageUrl(data.backdrop_path, 'w780') : item.banner || undefined,
                 rating: data.vote_average,
-                year: data.first_air_date?.split('-')[0] || item.year,
-                overview: data.overview
+                year: data.first_air_date?.split('-')[0] || item.year || undefined,
+                overview: data.overview,
               };
             }
           }
@@ -73,342 +69,203 @@ const Favorites = () => {
         return {
           ...item,
           tmdbData,
-          poster: tmdbData.poster || item.poster || '/placeholder-movie.jpg',
-          year: tmdbData.year || item.year
+          poster: tmdbData?.poster || item.poster || '/placeholder-movie.jpg',
+          year: tmdbData?.year || item.year,
         };
       })
     );
-    
+
     setFavorites(hydrated);
     setHydrating(false);
   }, []);
 
-  // Initial load and hydration
   useEffect(() => {
-    if (user && rawFavorites.length > 0) {
+    if (rawFavorites.length > 0) {
       hydrateFavorites(rawFavorites);
     } else {
-      setFavorites(rawFavorites);
+      setFavorites([]);
     }
-  }, [user, rawFavorites, hydrateFavorites]);
+  }, [rawFavorites, hydrateFavorites]);
 
-  // Focar no primeiro card quando a página carregar e dados estiverem prontos
-  useEffect(() => {
-    if (!isLoading && favorites.length > 0 && firstCardRef.current) {
-      // Aguardar DOM estar pronto
-      setTimeout(() => {
-        const navbarHeight = 94; // Altura da navbar fixa
-        const elementPosition = firstCardRef.current!.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - navbarHeight - 8; // 8px de margem extra
-        
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-        
-        // Adicionar destaque visual temporário no primeiro card
-        firstCardRef.current!.classList.add('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
-        
-        // Remover o destaque após 2 segundos
-        setTimeout(() => {
-          firstCardRef.current?.classList.remove('ring-2', 'ring-cyan-500', 'ring-offset-2', 'ring-offset-black');
-        }, 2000);
-      }, 100);
-    }
-  }, [isLoading, favorites.length]);
-
-  // Optimistic removal with animation
   const handleRemove = async (item: HydratedFavorite) => {
-    // Optimistic update - mark as removing
-    setFavorites(prev => 
+    // Animação de remoção
+    setFavorites(prev =>
       prev.map(f => f.id === item.id ? { ...f, isRemoving: true } : f)
     );
-
-    // Wait for animation
     setTimeout(async () => {
-      const success = await removeFromFavorites(item.content_id, item.content_type);
-      if (!success) {
-        // Revert if failed
-        setFavorites(prev => 
-          prev.map(f => f.id === item.id ? { ...f, isRemoving: false } : f)
-        );
-      }
+      // Bug #4 corrigido: usa removeFavorite (nome correto)
+      await removeFavorite(item.content_id);
+      setFavorites(prev => prev.filter(f => f.id !== item.id));
     }, 300);
   };
 
-  // Navigate to content
-  const handleNavigate = (item: HydratedFavorite) => {
-    if (item.content_type === 'movie') {
-      navigate(`/details/cinema/${item.content_id}`);
-    } else {
-      navigate(`/details/series/${item.content_id}`);
-    }
+  const handleCardClick = (item: HydratedFavorite) => {
+    const routeType = item.content_type === 'movie' ? 'cinema' : 'series';
+    navigate(`/details/${routeType}/${item.content_id}`);
   };
 
-  // Get gradient based on index for visual variety
-  const getGradient = (index: number) => {
-    const gradients = [
-      'from-cyan-500/20 to-blue-500/20',
-      'from-purple-500/20 to-pink-500/20',
-      'from-green-500/20 to-emerald-500/20',
-      'from-orange-500/20 to-red-500/20',
-      'from-yellow-500/20 to-amber-500/20',
-      'from-indigo-500/20 to-violet-500/20'
-    ];
-    return gradients[index % gradients.length];
-  };
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
+        <div className="text-center">
+          <Heart className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+          <p className="text-xl font-semibold mb-2">Faça login para ver seus favoritos</p>
+          <button
+            onClick={() => navigate('/login')}
+            className="mt-4 px-6 py-2 bg-[#00d9ff] text-black font-bold rounded-xl hover:bg-[#00c4e6] transition-colors"
+          >
+            Fazer login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-x-hidden">
-      {/* ============================================
-          CAMADA 0: FUNDO - Imagem da família com efeito acolhedor
-          ============================================ */}
-      <div className="fixed inset-0 z-0">
-        {/* Background Image - Família CineCasa */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: `url('/imagem pagina de login.png')`,
-            filter: 'blur(8px) brightness(1.1) saturate(1.05)',
-            transform: 'scale(1.05)'
-          }}
-        />
-        {/* Vignette suave para foco no conteúdo */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.85) 100%)'
-          }}
-        />
-        {/* Gradientes adicionais para legibilidade */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent" />
-      </div>
-
-      {/* ============================================
-          CAMADA 1 & 2: CONTEÚDO E INTERFACE
-          ============================================ */}
-      <div className="relative z-10 min-h-screen pt-[94px] pb-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="mb-8"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-cyan-500/20 rounded-lg border border-cyan-500/30">
-                <Heart className="w-6 h-6 text-cyan-400 fill-cyan-400" />
-              </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>
-                Meus Favoritos
-              </h1>
-            </div>
-            <p className="text-white/60 text-sm md:text-base ml-12">
-              {favorites.length > 0 ? `${favorites.length} título${favorites.length > 1 ? 's' : ''} na sua lista` : 'Sua coleção pessoal'}
-            </p>
-          </motion.div>
-
-          {/* Loading State */}
-          {isLoading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 animate-pulse">
-                  <div className="flex gap-4">
-                    <div className="w-24 h-36 md:w-32 md:h-48 bg-white/10 rounded-lg flex-shrink-0" />
-                    <div className="flex-1 space-y-3 py-2">
-                      <div className="h-6 bg-white/10 rounded w-3/4" />
-                      <div className="h-4 bg-white/10 rounded w-1/2" />
-                      <div className="h-4 bg-white/10 rounded w-1/3" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!isLoading && isEmpty && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="flex flex-col items-center justify-center py-20 md:py-32"
-            >
-              <div className="bg-black/40 backdrop-blur-md border border-cyan-500/20 rounded-2xl p-8 md:p-12 text-center max-w-md">
-                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center border border-cyan-500/30">
-                  <Heart className="w-10 h-10 text-cyan-400" />
-                </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                  Sua lista está vazia
-                </h2>
-                <p className="text-white/60 mb-8 max-w-xs mx-auto">
-                  Que tal explorar novos títulos? Adicione filmes e séries para assistir mais tarde.
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <div className="pt-16 md:pt-8 px-4 md:px-8 pb-6 border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Heart className="w-8 h-8 text-red-500 fill-red-500" />
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold">Meus Favoritos</h1>
+              {!isLoading && (
+                <p className="text-sm text-gray-400">
+                  {favorites.length} {favorites.length === 1 ? 'item' : 'itens'}
                 </p>
-                <button
-                  onClick={() => navigate('/home')}
-                  className="group inline-flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/20"
-                >
-                  <span>Explorar Títulos</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Favorites Grid */}
-          {!isLoading && favorites.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AnimatePresence mode="popLayout">
-                {favorites.map((item, index) => (
-                  <motion.div
-                    key={item.id}
-                    ref={index === 0 ? firstCardRef : null}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ 
-                      opacity: item.isRemoving ? 0 : 1, 
-                      y: item.isRemoving ? -20 : 0,
-                      scale: item.isRemoving ? 0.9 : 1
-                    }}
-                    exit={{ opacity: 0, scale: 0.9, y: -20 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="group"
-                  >
-                    {/* Glassmorphism Card */}
-                    <div 
-                      className="relative bg-black/40 backdrop-blur-md border border-cyan-500/20 rounded-xl overflow-hidden transition-all duration-300 hover:border-cyan-400/50 hover:-translate-y-1 hover:shadow-lg hover:shadow-cyan-500/10"
-                    >
-                      <div className="flex gap-4 p-4">
-                        {/* Poster Image */}
-                        <div 
-                          className="relative w-24 h-36 md:w-32 md:h-48 flex-shrink-0 rounded-lg overflow-hidden shadow-lg cursor-pointer"
-                          onClick={() => handleNavigate(item)}
-                        >
-                          <img
-                            src={item.poster || '/placeholder-movie.jpg'}
-                            alt={item.titulo || 'Sem título'}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                            loading="lazy"
-                          />
-                          {/* Gradient overlay on hover */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          
-                          {/* Play icon on hover */}
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="bg-cyan-500/90 p-2 rounded-full">
-                              <Play className="w-5 h-5 text-black fill-black" />
-                            </div>
-                          </div>
-
-                          {/* Type Badge */}
-                          <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded text-xs font-medium text-white flex items-center gap-1">
-                            {item.content_type === 'movie' ? (
-                              <><Film className="w-3 h-3" /> Filme</>
-                            ) : (
-                              <><Tv className="w-3 h-3" /> Série</>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Content Info */}
-                        <div className="flex-1 min-w-0 flex flex-col">
-                          {/* Title */}
-                          <h3 
-                            className="text-lg md:text-xl font-bold text-white mb-2 line-clamp-2 cursor-pointer hover:text-cyan-300 transition-colors"
-                            onClick={() => handleNavigate(item)}
-                            style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
-                          >
-                            {item.titulo || 'Sem título'}
-                          </h3>
-
-                          {/* Metadata */}
-                          <div className="flex flex-wrap items-center gap-2 mb-3">
-                            {/* Rating */}
-                            {(item.tmdbData?.rating || item.rating) && (
-                              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r ${getGradient(index)} border border-white/10`}>
-                                <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                <span className="text-xs font-semibold text-white">
-                                  {item.tmdbData?.rating?.toFixed(1) || item.rating}
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Year */}
-                            {(item.tmdbData?.year || item.year) && (
-                              <div className="flex items-center gap-1 text-white/60 text-xs">
-                                <Calendar className="w-3 h-3" />
-                                <span>{item.tmdbData?.year || item.year}</span>
-                              </div>
-                            )}
-
-                            {/* Genre */}
-                            {item.genero && (
-                              <span className="text-xs text-cyan-300/80 px-2 py-0.5 bg-cyan-500/10 rounded-full border border-cyan-500/20">
-                                {item.genero.split(',')[0]}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Overview (if available) */}
-                          {item.tmdbData?.overview && (
-                            <p className="text-white/50 text-sm line-clamp-2 mb-auto">
-                              {item.tmdbData.overview}
-                            </p>
-                          )}
-
-                          {/* Action Buttons */}
-                          <div className="flex items-center gap-2 mt-auto pt-3">
-                            <button
-                              onClick={() => handleNavigate(item)}
-                              className="flex-1 flex items-center justify-center gap-2 bg-[#00A8E1]/20 hover:bg-[#00A8E1]/30 text-[#00D4FF] font-medium py-2 px-4 rounded-lg transition-all duration-300 border border-[#00A8E1]/30 hover:border-[#00D4FF]/50"
-                            >
-                              <Play className="w-4 h-4" />
-                              <span className="text-sm">Assistir</span>
-                            </button>
-
-                            {/* Remove Button with Heart Icon */}
-                            <button
-                              onClick={() => handleRemove(item)}
-                              disabled={item.isRemoving}
-                              className="group/remove p-2 bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/50 rounded-lg transition-all duration-300"
-                              title="Remover da lista"
-                            >
-                              <Heart 
-                                className={`w-5 h-5 text-cyan-400 fill-cyan-400 group-hover/remove:text-red-400 group-hover/remove:fill-red-400 transition-all duration-300 ${item.isRemoving ? 'scale-0' : 'scale-100'}`} 
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Neon glow effect on hover */}
-                      <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-500/5 to-blue-500/5" />
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+              )}
             </div>
-          )}
-
-          {/* Footer note */}
-          {!isLoading && favorites.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mt-12 text-center"
+          </div>
+          {favorites.length > 0 && (
+            <button
+              onClick={() => refresh()}
+              className="text-sm text-gray-400 hover:text-white transition-colors"
             >
-              <p className="text-white/40 text-sm">
-                Clique no coração para remover itens da sua lista
-              </p>
-            </motion.div>
+              Atualizar
+            </button>
           )}
         </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        {/* Loading */}
+        {isLoading && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[2/3] bg-gray-800 rounded-lg mb-2" />
+                <div className="h-3 bg-gray-800 rounded w-3/4 mb-1" />
+                <div className="h-3 bg-gray-800 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!isLoading && isEmpty && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center py-24 gap-4"
+          >
+            <Heart className="w-20 h-20 text-gray-700" />
+            <h2 className="text-xl font-semibold text-gray-300">Nenhum favorito ainda</h2>
+            <p className="text-gray-500 text-center max-w-md">
+              Explore filmes e séries e adicione seus favoritos clicando no ícone de coração.
+            </p>
+            <button
+              onClick={() => navigate('/')}
+              className="mt-4 flex items-center gap-2 px-6 py-3 bg-[#00d9ff] text-black font-bold rounded-xl hover:bg-[#00c4e6] transition-colors"
+            >
+              Explorar conteúdo <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+
+        {/* Grid de favoritos */}
+        {!isLoading && !isEmpty && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <AnimatePresence>
+              {favorites.map((item, index) => (
+                <motion.div
+                  key={item.id}
+                  ref={index === 0 ? firstCardRef : undefined}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: item.isRemoving ? 0 : 1, scale: item.isRemoving ? 0.8 : 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                  className="group relative cursor-pointer"
+                >
+                  {/* Card */}
+                  <div
+                    className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800 mb-2"
+                    onClick={() => handleCardClick(item)}
+                  >
+                    <img
+                      src={item.poster || '/placeholder-movie.jpg'}
+                      alt={item.titulo || 'Favorito'}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/placeholder-movie.jpg';
+                      }}
+                    />
+
+                    {/* Type badge */}
+                    <div className="absolute top-2 left-2">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                        item.content_type === 'movie'
+                          ? 'bg-blue-600/90 text-white'
+                          : 'bg-purple-600/90 text-white'
+                      }`}>
+                        {item.content_type === 'movie' ? (
+                          <span className="flex items-center gap-1"><Film className="w-3 h-3" /> Filme</span>
+                        ) : (
+                          <span className="flex items-center gap-1"><Tv className="w-3 h-3" /> Série</span>
+                        )}
+                      </span>
+                    </div>
+
+                    {/* Overlay com ações */}
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleCardClick(item); }}
+                        className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                      >
+                        <Play className="w-5 h-5 text-black ml-0.5" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRemove(item); }}
+                        className="w-10 h-10 bg-red-500/90 rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5 text-white" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <h3 className="text-sm font-medium text-white line-clamp-2 leading-tight mb-1">
+                    {item.titulo || 'Sem título'}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    {(item.tmdbData?.year || item.year) && (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {item.tmdbData?.year || item.year}
+                      </span>
+                    )}
+                    {item.tmdbData?.rating && (
+                      <span className="flex items-center gap-1 text-yellow-400">
+                        <Star className="w-3 h-3 fill-yellow-400" />
+                        {item.tmdbData.rating.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   );

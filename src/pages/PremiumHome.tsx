@@ -30,371 +30,11 @@ import ContinueWatching from '../components/ContinueWatching';
 import { BecauseYouWatchedRow } from '../components/BecauseYouWatchedRow';
 import CineNoiteSection from '../components/CineNoiteSection';
 import HeroBanner from '../components/HeroBanner';
-// Mock data para demonstração
-const mockHeroContent = {
-  title: "A ORIGEM DO AMANHÃ",
-  description: "Em um futuro distante, a humanidade enfrenta sua maior crise quando uma ameaça alienígena coloca em risco a existência da Terra. Uma equipe de elite deve viajar através do tempo para descobrir a origem do ataque e salvar o futuro da humanidade.",
-  backdrop: "/api/placeholder/1920/1080",
-  year: "2026",
-  rating: "8.5",
-  duration: "2h 28min"
-};
-
-const mockContinueWatching = [
-  {
-    id: "1",
-    title: "Guardiões da Galáxia Vol. 3",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    progress: 65,
-    year: "2023",
-    rating: "8.2"
-  },
-  {
-    id: "2", 
-    title: "The Last of Us",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    progress: 40,
-    year: "2023",
-    rating: "9.0"
-  },
-  {
-    id: "3",
-    title: "Oppenheimer",
-    poster: "/api/placeholder/300/450", 
-    type: "movie" as const,
-    progress: 85,
-    year: "2023",
-    rating: "8.4"
-  },
-  {
-    id: "4",
-    title: "House of the Dragon",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    progress: 30,
-    year: "2022",
-    rating: "8.6"
-  }
-];
-
-const mockNewReleases = [
-  {
-    id: "5",
-    title: "Duna: Parte Dois",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2024",
-    rating: "8.8",
-    isNew: true
-  },
-  {
-    id: "6",
-    title: "The Bear - Temporada 3",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    year: "2024",
-    rating: "8.7",
-    isNew: true
-  },
-  {
-    id: "7",
-    title: "Godzilla x Kong",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2024",
-    rating: "7.9",
-    isNew: true
-  }
-];
-
-const mockExclusiveContent = [
-  {
-    id: "8",
-    title: "Mistérios de CineCasa",
-    poster: "/api/placeholder/300/450",
-    type: "series" as const,
-    year: "2024",
-    rating: "8.1"
-  },
-  {
-    id: "9",
-    title: "Ação Imediata",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2024",
-    rating: "7.8"
-  }
-];
-
-const mockRomanceInspiration = [
-  {
-    id: "10",
-    title: "O Amor nos Tempos da Cholera",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2007",
-    rating: "7.3"
-  },
-  {
-    id: "11",
-    title: "Como Eu Era Antes de Você",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2016",
-    rating: "7.4"
-  },
-  {
-    id: "12",
-    title: "Antes do Amanhecer",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "1995",
-    rating: "8.1"
-  },
-  {
-    id: "13",
-    title: "A Notebook - Diário de uma Paixão",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2004",
-    rating: "7.8"
-  },
-  {
-    id: "14",
-    title: "Orgulho e Preconceito",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2005",
-    rating: "7.8"
-  }
-];
-
-const mockPrepareAPipoca = [
-  {
-    id: "15",
-    title: "Velozes e Furiosos 10",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "6.0"
-  },
-  {
-    id: "16",
-    title: "Missão Impossível: Acerto de Contas",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "7.8"
-  },
-  {
-    id: "17",
-    title: "Guardiões da Galáxia Vol. 3",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "7.9"
-  },
-  {
-    id: "18",
-    title: "John Wick 4: Baba Yaga",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "7.7"
-  },
-  {
-    id: "19",
-    title: "Duna: Parte Dois",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2024",
-    rating: "8.5"
-  }
-];
-
-const mockComoEBomSerCrianca = [
-  {
-    id: "20",
-    title: "Divertida Mente 2",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2024",
-    rating: "7.6"
-  },
-  {
-    id: "21",
-    title: "Moana 2",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2024",
-    rating: "7.0"
-  },
-  {
-    id: "22",
-    title: "Kung Fu Panda 4",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2024",
-    rating: "6.7"
-  },
-  {
-    id: "23",
-    title: "O Rei Leão",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2019",
-    rating: "6.8"
-  },
-  {
-    id: "24",
-    title: "Frozen II",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2019",
-    rating: "6.8"
-  }
-];
-
-
-const mockVencedoresOscar = [
-  {
-    id: "30",
-    title: "Oppenheimer",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "8.4"
-  },
-  {
-    id: "31",
-    title: "Pobres Criaturas",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "7.9"
-  },
-  {
-    id: "32",
-    title: "Anatomia de uma Queda",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "7.6"
-  },
-  {
-    id: "33",
-    title: "American Fiction",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "7.5"
-  },
-  {
-    id: "34",
-    title: "Zona de Interesse",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2023",
-    rating: "7.4"
-  }
-];
-
-const mockTravesseiroEdredon = [
-  {
-    id: "35",
-    title: "Amelie Poulain",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2001",
-    rating: "8.3"
-  },
-  {
-    id: "36",
-    title: "Antes do Amanhecer",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "1995",
-    rating: "8.1"
-  },
-  {
-    id: "37",
-    title: "A Vida é Bela",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "1997",
-    rating: "8.6"
-  },
-  {
-    id: "38",
-    title: "As Aventuras de Pi",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2012",
-    rating: "7.9"
-  },
-  {
-    id: "39",
-    title: "Chef",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2014",
-    rating: "7.3"
-  }
-];
-
-const mockPoderiaSerMelhor = [
-  {
-    id: "40",
-    title: "The Room",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2003",
-    rating: "3.7"
-  },
-  {
-    id: "41",
-    title: "Sharknado",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2013",
-    rating: "3.3"
-  },
-  {
-    id: "42",
-    title: "Birdemic",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "2010",
-    rating: "1.8"
-  },
-  {
-    id: "43",
-    title: "Troll 2",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "1990",
-    rating: "2.9"
-  },
-  {
-    id: "44",
-    title: "Plan 9 from Outer Space",
-    poster: "/api/placeholder/300/450",
-    type: "movie" as const,
-    year: "1957",
-    rating: "4.0"
-  }
-];
-
 const PremiumHome: React.FC = () => {
-  console.log('[PremiumHome] Componente iniciando renderização');
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Sempre inicia no topo da página (banner) quando a home é carregada
   useEffect(() => {
-    console.log('[PremiumHome] useEffect scrollTo executado');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
@@ -443,27 +83,15 @@ const PremiumHome: React.FC = () => {
     return unique.slice(0, limit);
   };
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    console.log("Searching for:", query);
-  };
 
   const handleCardClick = (item: any) => {
-    console.log("🎯 PremiumHome - Card clicado:", item);
     const typePath = item.type === 'movie' ? 'cinema' : 'series';
     // Usar o ID do banco de dados (prioridade) em vez do tmdbId
     const id = item.id || item.tmdbId;
-    console.log("🧭 Navegando para:", `/details/${typePath}/${id}`, "com:", { tmdbId: item.tmdbId, id: item.id, finalId: id });
     navigate(`/details/${typePath}/${id}`);
   };
 
-  const handleHeroPlay = () => {
-    console.log("Playing hero content");
-  };
 
-  const handleHeroDetails = () => {
-    console.log("Showing hero details");
-  };
 
   return (
     <div className="streaming-container min-h-screen bg-black">
@@ -471,10 +99,6 @@ const PremiumHome: React.FC = () => {
       <HeroBanner pageType="home" />
 
       {/* Continue Watching - Logo após o Banner */}
-      {(() => {
-        console.log('[PremiumHome] Continue Watching - isLoading:', isLoadingContinue, 'items:', continueWatchingItems.length, 'user:', user?.id);
-        return null;
-      })()}
       {!isLoadingContinue ? (
         <div className="relative z-40 mt-6 mb-4">
           {continueWatchingItems.length > 0 ? (
@@ -492,7 +116,6 @@ const PremiumHome: React.FC = () => {
                 episodeNumber: item.episodeNumber
               }))}
               onRemove={(id, type, episodeId) => {
-                console.log("Removendo item:", id, type, episodeId);
               }}
             />
           ) : (

@@ -39,41 +39,30 @@ import { NotificationProvider } from "@/hooks/useNotifications.tsx";
 import { NotificationContainer } from "./components/MovieNotifications";
 import { NotificationsPage } from "./components/NotificationsPage";
 import PublicNotifications from "./pages/PublicNotifications";
-import { NewContentNotificationToast } from "./components/NewContentNotificationToast";
 import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useGlobalBackHandler } from "./hooks/useGlobalBackHandler";
 import { useGlobalTVNavigation } from "./hooks/useGlobalTVNavigation";
 import { ExitConfirmationModal } from "./components/ExitConfirmationModal";
 import { useProjectionMode } from "./hooks/useProjectionMode";
-import { useSilentUpdate } from "@/hooks/useSilentUpdate";
-import { useForceUpdate } from "@/hooks/useForceUpdate";
 import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
-import { useAutoUpdate } from "@/hooks/useAutoUpdate";
 import { useMobileViewportHeight } from "@/hooks/useMobileViewportHeight";
 import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
 const queryClient = new QueryClient();
 
-// Componente para proteger rotas - redireciona para login se não autenticado
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const { setAuthReady } = useAppLoading();
   const location = useLocation();
-  
-  // Usar apenas user?.id para evitar loop quando objeto user muda referência
   const userId = user?.id;
 
-  console.log('[ProtectedRoute] Verificando:', { pathname: location.pathname, authLoading, hasUser: !!userId });
-
-  // Notificar quando auth estiver pronto
   useEffect(() => {
     if (!authLoading) {
       setAuthReady(true);
     }
-  }, [authLoading, userId, setAuthReady]);
+  }, [authLoading, setAuthReady]);
 
-  // Mostrar loading enquanto verifica autenticação
   if (authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -85,25 +74,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  // Redireciona para login se não autenticado
   if (!userId) {
-    console.log('[ProtectedRoute] Redirecionando para login - usuário não autenticado');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  console.log('[ProtectedRoute] Renderizando children - usuário autenticado');
   return <>{children}</>;
 };
 
-// Componente para redirecionar usuário logado da página de login para home
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
-  
-  // Usar user?.id para verificação estável
   const userId = user?.id;
-  
-  // Mostrar loading enquanto verifica autenticação
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -114,67 +96,44 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
-  
-  // Se já está logado, redireciona para home ou para a página anterior
+
   if (userId) {
     const from = location.state?.from?.pathname || '/';
     return <Navigate to={from} replace />;
   }
-  
-  // Renderiza página de login se não estiver autenticado
+
   return <>{children}</>;
 };
 
 const AppRoutes = () => {
-  const location = useLocation();
-  const { user } = useAuth();
-  // Usar user?.id para verificação estável
-  const userId = user?.id;
-  console.log('[AppRoutes] Rota atual:', location.pathname, 'Usuário logado:', !!userId);
-  
   return (
     <>
       <ScrollToTop />
       <Routes>
-        {/* Rota pública - Login (redireciona para home se já logado) */}
-      <Route 
-        path="/login" 
-        element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        } 
-      />
-      
-      {/* Rota pública - Novidades (acessível sem login) */}
-      <Route path="/novidades" element={<PublicNotifications />} />
-      
-      {/* Rotas protegidas - Requerem autenticação */}
-      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-      <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
-      <Route path="/filmes" element={<ProtectedRoute><Filmes /></ProtectedRoute>} />
-      <Route path="/series" element={<ProtectedRoute><Series /></ProtectedRoute>} />
-      <Route path="/filmes-todos" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
-            <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
-            <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
-            <Route path="/details/:type/:id" element={<ProtectedRoute><DetailsNew /></ProtectedRoute>} />
-      <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />
-      <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
-      <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
-      <Route path="/image-cleanup" element={<ProtectedRoute><ImageCleanup /></ProtectedRoute>} />
-      <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
-      <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-      <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-      <Route path="/profiles" element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/devices" element={<ProtectedRoute><DeviceManagement /></ProtectedRoute>} />
-      <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
-      
-      {/* Home - Protegida, redireciona para login se não autenticado */}
-      <Route path="/" element={<ProtectedRoute><PremiumHome /></ProtectedRoute>} />
-      
-      {/* Rota padrão - sempre redireciona para Home (que trata autenticação) */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/novidades" element={<PublicNotifications />} />
+
+        <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+        <Route path="/filmes-categorias" element={<ProtectedRoute><FilmesCategorias /></ProtectedRoute>} />
+        <Route path="/filmes" element={<ProtectedRoute><Filmes /></ProtectedRoute>} />
+        <Route path="/series" element={<ProtectedRoute><Series /></ProtectedRoute>} />
+        <Route path="/filmes-todos" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
+        <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
+        <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
+        <Route path="/details/:type/:id" element={<ProtectedRoute><DetailsNew /></ProtectedRoute>} />
+        <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />
+        <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
+        <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+        <Route path="/image-cleanup" element={<ProtectedRoute><ImageCleanup /></ProtectedRoute>} />
+        <Route path="/settings/notifications" element={<ProtectedRoute><NotificationSettings /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+        <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+        <Route path="/profiles" element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/devices" element={<ProtectedRoute><DeviceManagement /></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+        <Route path="/" element={<ProtectedRoute><PremiumHome /></ProtectedRoute>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
@@ -187,8 +146,6 @@ const PlayerContainer = () => {
 
   const videoUrl = currentItem.videoUrl || '';
   const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
-
-  console.log('[PlayerContainer] Abrindo player:', { isYouTube, videoUrl: videoUrl.substring(0, 50) + '...' });
 
   if (isYouTube) {
     return (
@@ -226,112 +183,86 @@ const PlayerContainer = () => {
 const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
-  const [hasShownSplash, setHasShownSplash] = useState(false);
   const location = useLocation();
   const { isPlayerOpen, closePlayer } = usePlayer();
   const { user } = useAuth();
-  
-  // Refs para tracking de autenticação
-  const previousUserRef = useRef(user);
-  
-  // Modo Projeção Cinema - telas 4K/200 polegadas
+  const previousUserIdRef = useRef<string | undefined>(undefined);
+  const hasShownSplashRef = useRef(false);
+
   const { isProjectionMode, isLargeScreen } = useProjectionMode();
-  
-  console.log('[AppContent] Projection Mode:', isProjectionMode, 'Large Screen:', isLargeScreen);
+
   const isLoginPage = location.pathname === "/login";
   const isSeriesDetailsPage = location.pathname.startsWith("/series-details/");
   const isMovieDetailsPage = location.pathname.startsWith("/movie-details/");
   const isContentPage = location.pathname.startsWith("/content/");
   const isDetailsPage = location.pathname.startsWith("/details/");
   const isPlayerPage = isSeriesDetailsPage || isMovieDetailsPage || isContentPage || isDetailsPage || isPlayerOpen;
-  const isLoggedIn = !!user;
-  
-  // Detectar quando usuário acabou de fazer login e mostrar splash
+
+  // Mostrar splash apenas uma vez por sessão após login
   useEffect(() => {
-    const wasLoggedOut = !previousUserRef.current && user;
-    const isNotLoginPage = location.pathname !== '/login';
-    
-    // Se usuário acabou de logar e splash ainda não foi mostrado nesta sessão
-    if (wasLoggedOut && user && !hasShownSplash && isNotLoginPage) {
+    const currentUserId = user?.id;
+    const wasLoggedOut = !previousUserIdRef.current && !!currentUserId;
+
+    if (wasLoggedOut && !hasShownSplashRef.current && location.pathname !== '/login') {
       setShowSplash(true);
+      hasShownSplashRef.current = true;
     }
-    
-    previousUserRef.current = user;
-  }, [user, location.pathname, hasShownSplash]);
-  
-  // Handler para quando splash completa
+
+    previousUserIdRef.current = currentUserId;
+  }, [user?.id, location.pathname]);
+
   const handleSplashComplete = () => {
     setShowSplash(false);
-    setHasShownSplash(true);
   };
-  
-  // Global Back Handler - navegação TV/Controle Remoto
+
   const { showExitConfirmation, confirmExit, cancelExit } = useGlobalBackHandler({
     isPlayerOpen,
     onClosePlayer: closePlayer,
     onExitApp: () => {
-      // Tentar fechar o app ou redirecionar para uma página de agradecimento
-      window.location.href = '/logout';
+      window.location.href = '/login';
     },
   });
-  
-  // Inicializar navegação global por controle remoto (Android TV, webOS, etc)
+
   useGlobalTVNavigation();
-  
-  // Inicializar limpeza automática de cache - garante atualizações sempre
   useAutoCacheCleanup();
-
-  // DESATIVADO: Hooks de auto-update causando loop de reinicialização
-  // useForceUpdate();
-  // useAutoUpdate(30000);
-  // useSilentUpdate({ checkInterval: 5 * 60 * 1000 });
-
-  // Hook para corrigir viewport em dispositivos móveis
   useMobileViewportHeight();
-  
-  console.log('[AppContent] pathname:', location.pathname, 'isLoginPage:', isLoginPage, 'isPlayerOpen:', isPlayerOpen);
 
-  // Quando player está aberto ou em páginas de detalhes, esconder ambas as barras de navegação
   const showNavbars = !isLoginPage && !isPlayerPage;
 
   return (
     <>
-      {/* Splash Screen - Mostrar após login */}
       {showSplash && (
-        <SplashScreen 
-          onComplete={handleSplashComplete} 
+        <SplashScreen
+          onComplete={handleSplashComplete}
           minDuration={2500}
         />
       )}
       <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
-      <NotificationProvider>
-        <NotificationContainer />
-        {/* NewContentNotificationToast desabilitado - notificações de conteúdo desativadas */}
-        {showNotificationPrompt && (
-          <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
-        )}
-        <KeyboardNavigation>
-          {showNavbars && (
-            <div className="hidden md:block">
-              <TVNavbar />
-            </div>
+        <NotificationProvider>
+          <NotificationContainer />
+          {showNotificationPrompt && (
+            <NotificationPermissionPrompt onClose={() => setShowNotificationPrompt(false)} />
           )}
-          <SpatialNavigationProvider>
-            <AppRoutes />
-          </SpatialNavigationProvider>
-        </KeyboardNavigation>
-        <PlayerContainer />
-      </NotificationProvider>
-      {showNavbars && <MobileBottomNav />}
-      <PWAInstallPrompt />
-      
-      {/* Modal de Confirmação de Saída - Global Back Handler */}
-      <ExitConfirmationModal
-        isOpen={showExitConfirmation}
-        onConfirm={confirmExit}
-        onCancel={cancelExit}
-      />
-    </div>
+          <KeyboardNavigation>
+            {showNavbars && (
+              <div className="hidden md:block">
+                <TVNavbar />
+              </div>
+            )}
+            <SpatialNavigationProvider>
+              <AppRoutes />
+            </SpatialNavigationProvider>
+          </KeyboardNavigation>
+          <PlayerContainer />
+        </NotificationProvider>
+        {showNavbars && <MobileBottomNav />}
+        <PWAInstallPrompt />
+        <ExitConfirmationModal
+          isOpen={showExitConfirmation}
+          onConfirm={confirmExit}
+          onCancel={cancelExit}
+        />
+      </div>
     </>
   );
 };
