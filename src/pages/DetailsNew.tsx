@@ -6,7 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { fetchTmdbDetails } from "@/services/tmdb";
 
-const C = { bg: "#070A10", neon: "#00B7FF", neon2: "#00E5FF", text: "#EAF6FF", glass: "rgba(10,18,40,0.6)", glassB: "rgba(0,183,255,0.2)" };
+const C = { bg: "#070A10", neon: "#00B7FF", neon2: "#00E5FF", text: "#EAF6FF", glass: "rgba(10,18,40,0.6)", glassB: "rgba(0,183,255,0.2)", logo: "#00d9ff", youtubeRed: "#FF0000" };
 
 const DetailsNew = () => {
   const { id, type } = useParams(), navigate = useNavigate(), { user } = useAuth(), { toast } = useToast();
@@ -102,7 +102,7 @@ const DetailsNew = () => {
       <section style={{ position: "relative", width: "100vw", aspectRatio: "16/9", minHeight: "520px", maxHeight: "760px", overflow: "hidden", backgroundImage: `url(${backdrop})`, backgroundSize: "cover", backgroundPosition: "center" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.62) 45%, rgba(0,0,0,0.22) 70%, rgba(0,0,0,0) 100%)" }} />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "220px", background: "linear-gradient(to bottom, rgba(0,0,0,0), #070A10)", zIndex: 4 }} />
-        <button onClick={() => navigate(-1)} style={{ position: "absolute", top: "20px", left: "20px", zIndex: 20, background: "rgba(0,0,0,0.5)", border: "none", borderRadius: "50%", width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "white" }}><ChevronLeft size={24} /></button>
+        <button onClick={() => navigate('/')} style={{ position: "absolute", top: "20px", left: "20px", zIndex: 20, background: "rgba(0,0,0,0.5)", border: "none", borderRadius: "50%", width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "white" }}><ChevronLeft size={24} /></button>
         <div style={{ position: "absolute", left: "28px", right: "28px", bottom: "80px", zIndex: 10, display: "grid", gridTemplateColumns: "1.2fr 0.8fr", gap: "22px", alignItems: "end" }}>
           <div>
             <span style={{ display: "inline-block", background: "rgba(0,183,255,0.15)", border: "1px solid rgba(0,183,255,0.25)", color: C.neon, padding: "6px 12px", borderRadius: "12px", fontWeight: 800, fontSize: "12px", textTransform: "uppercase" }}>{type === "series" ? "Série" : "Filme"}</span>
@@ -121,9 +121,9 @@ const DetailsNew = () => {
             <p style={{ marginTop: "14px", fontSize: "15px", lineHeight: 1.5, opacity: 0.88, maxWidth: "720px" }}>{data.overview}</p>
             <div style={{ marginTop: "18px", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
               <button onClick={() => navigate(`/watch/${type}/${id}`)} style={{ background: `linear-gradient(90deg, ${C.neon}, ${C.neon2})`, color: "black", border: "none", borderRadius: "16px", padding: "14px 20px", fontSize: "15px", fontWeight: 900, cursor: "pointer", boxShadow: "0 0 30px rgba(0,183,255,0.35)", display: "flex", alignItems: "center", gap: "8px" }}><Play size={18} fill="black" /> Assistir agora</button>
-              <button style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(16px)", color: "white", borderRadius: "16px", padding: "14px 20px", fontSize: "15px", fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>🎬 Trailer</button>
+              <button onClick={() => data?.trailer ? window.open(data.trailer, '_blank') : toast({title: "Trailer não disponível"})} style={{ background: "#FF0000", border: "none", color: "white", borderRadius: "16px", padding: "14px 20px", fontSize: "15px", fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 4px 15px rgba(255,0,0,0.4)" }}><Play size={18} fill="white" /> Trailer</button>
               <div style={{ display: "flex", gap: "12px", marginLeft: "12px" }}>
-                <button onClick={toggleFav} style={{ background: C.glass, border: `1px solid ${C.glassB}`, backdropFilter: "blur(14px)", color: isFav ? "#ff3366" : "white", borderRadius: "18px", padding: "10px 12px", cursor: "pointer", fontWeight: 900, display: "flex", flexDirection: "column", alignItems: "center", width: "82px", gap: "6px" }}><Heart size={18} fill={isFav ? "#ff3366" : "none"} /><span style={{ fontSize: "11px", opacity: 0.85 }}>Favoritos</span></button>
+                <button onClick={toggleFav} style={{ background: C.glass, border: `1px solid ${C.glassB}`, backdropFilter: "blur(14px)", color: isFav ? C.logo : "white", borderRadius: "18px", padding: "10px 12px", cursor: "pointer", fontWeight: 900, display: "flex", flexDirection: "column", alignItems: "center", width: "82px", gap: "6px" }}><Heart size={18} fill={isFav ? C.logo : "none"} /><span style={{ fontSize: "11px", opacity: 0.85 }}>Favoritos</span></button>
                 <button onClick={toggleWatch} style={{ background: C.glass, border: `1px solid ${C.glassB}`, backdropFilter: "blur(14px)", color: isWatch ? C.neon : "white", borderRadius: "18px", padding: "10px 12px", cursor: "pointer", fontWeight: 900, display: "flex", flexDirection: "column", alignItems: "center", width: "82px", gap: "6px" }}><Clock size={18} /><span style={{ fontSize: "11px", opacity: 0.85 }}>Depois</span></button>
                 <button style={{ background: C.glass, border: `1px solid ${C.glassB}`, backdropFilter: "blur(14px)", color: "white", borderRadius: "18px", padding: "10px 12px", cursor: "pointer", fontWeight: 900, display: "flex", flexDirection: "column", alignItems: "center", width: "82px", gap: "6px" }}><ThumbsUp size={18} /><span style={{ fontSize: "11px", opacity: 0.85 }}>Like</span></button>
               </div>
