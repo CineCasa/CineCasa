@@ -86,7 +86,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           const { data: movies, error: moviesError } = await supabase
             .from('cinema')
             .select('id, tmdb_id, titulo, description, year, rating, category, poster')
-            .not('poster', 'is', null');
+            .not('poster', 'is', null);
 
           if (moviesError) {
             console.error('[HeroBanner] Erro ao buscar filmes:', moviesError);
