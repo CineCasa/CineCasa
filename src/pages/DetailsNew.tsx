@@ -4,7 +4,7 @@ import { Play, Heart, Clock, ThumbsUp, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
-import { fetchTmdbMovie } from "@/services/tmdb";
+import { fetchTmdbDetails } from "@/services/tmdb";
 
 const C = { bg: "#070A10", neon: "#00B7FF", neon2: "#00E5FF", text: "#EAF6FF", glass: "rgba(10,18,40,0.6)", glassB: "rgba(0,183,255,0.2)" };
 
@@ -17,26 +17,38 @@ const DetailsNew = () => {
     (async () => {
       setLoad(true);
       try {
-        const table = type === "series" ? "series" : "cinema";
-        const { data: local } = await supabase.from(table).select("*").eq("id", id).single();
+        const isSeries = type === "series";
+        const table = isSeries ? "series" : "cinema";
+        const idCol = isSeries ? "id_n" : "id";
+        const { data: local } = await supabase.from(table).select("*").eq(idCol as any, Number(id)).single();
         if (local?.tmdb_id) {
-          const tmdb = await fetchTmdbMovie(local.tmdb_id, type === "series" ? "tv" : "movie");
+          const tmdb = await fetchTmdbDetails(local.tmdb_id, isSeries ? "tv" : "movie");
           if (tmdb) {
             const d = tmdb.credits?.crew?.find((c: any) => c.job === "Director")?.name;
             const w = tmdb.credits?.crew?.find((c: any) => c.job === "Writer")?.name;
             const s = tmdb.production_companies?.[0]?.name;
             const cert = tmdb.release_dates?.results?.find((r: any) => r.iso_3166_1 === "BR")?.release_dates?.[0]?.certification;
-            setData({ ...local, ...tmdb, title: tmdb.title || tmdb.name || local.titulo, backdrop_path: tmdb.backdrop_path || local.banner, year: tmdb.release_date?.substring(0,4) || tmdb.first_air_date?.substring(0,4), director: d, writer: w, studio: s, certification: cert });
+            const localData = local as any;
+            const localYear = localData.year || localData.ano;
+            const localBanner = localData.banner;
+            setData({ ...localData, ...tmdb, title: tmdb.title || tmdb.name || localData.titulo, backdrop_path: tmdb.backdrop_path || localBanner, year: tmdb.release_date?.substring(0,4) || tmdb.first_air_date?.substring(0,4) || localYear, director: d, writer: w, studio: s, certification: cert });
             setCast(tmdb.credits?.cast?.slice(0,15) || []);
-          } else setData({ ...local, title: local.titulo, year: local.year });
-        } else setData({ ...local, title: local.titulo, year: local.year });
-        const { data: r } = await supabase.from(table).select("id, titulo, poster, rating").neq("id", id).limit(10);
-        setRecs(r?.map((i: any) => ({ id: i.id, title: i.titulo, poster: i.poster, rating: i.rating, type: table })) || []);
+          } else {
+            const localData = local as any;
+            const localYear = localData.year || localData.ano;
+            setData({ ...localData, title: localData.titulo, year: localYear });
+          }
+        } else {
+          const localData = local as any;
+          const localYear = localData.year || localData.ano;
+          setData({ ...localData, title: localData.titulo, year: localYear });
+        }
+        const { data: r } = await supabase.from(table).select("*").neq(idCol as any, Number(id)).limit(10);
+        setRecs(r?.map((i: any) => ({ id: i.id || i.id_n, title: i.titulo, poster: i.poster || i.capa, rating: i.rating, type: table })) || []);
         if (user) {
-          const { data: f } = await supabase.from("favorites").select("id").eq("user_id", user.id).eq("content_id", local.id).eq("content_type", table).single();
+          const localId = (local as any).id || (local as any).id_n;
+          const { data: f } = await supabase.from("favorites").select("id").eq("user_id", user.id).eq("content_id", Number(localId)).eq("content_type", table).single();
           setIsFav(!!f);
-          const { data: w } = await supabase.from("watchlist").select("id").eq("user_id", user.id).eq("content_id", local.id).eq("content_type", table).single();
-          setIsWatch(!!w);
         }
       } catch (e) { console.error(e); }
       setLoad(false);
@@ -46,15 +58,33 @@ const DetailsNew = () => {
   const toggleFav = async () => {
     if (!user || !data) return toast({ title: "Faça login primeiro" });
     const table = type === "series" ? "series" : "cinema";
-    if (isFav) { await supabase.from("favorites").delete().eq("user_id", user.id).eq("content_id", data.id).eq("content_type", table); setIsFav(false); toast({ title: "Removido dos favoritos" }); }
-    else { await supabase.from("favorites").insert({ user_id: user.id, content_id: data.id, content_type: table, titulo: data.title, poster: data.poster_path }); setIsFav(true); toast({ title: "Adicionado aos favoritos" }); }
+    const dataId = data.id || data.id_n;
+    if (isFav) { 
+      await supabase.from("favorites").delete().eq("user_id", user.id).eq("content_id", Number(dataId)).eq("content_type", table); 
+      setIsFav(false); 
+      toast({ title: "Removido dos favoritos" }); 
+    }
+    else { 
+      await supabase.from("favorites").insert({ user_id: user.id, content_id: Number(dataId), content_type: table, titulo: data.title, poster: data.poster_path || data.poster || data.capa }); 
+      setIsFav(true); 
+      toast({ title: "Adicionado aos favoritos" }); 
+    }
   };
 
   const toggleWatch = async () => {
     if (!user || !data) return toast({ title: "Faça login primeiro" });
+    const dataId = data.id || data.id_n;
     const table = type === "series" ? "series" : "cinema";
-    if (isWatch) { await supabase.from("watchlist").delete().eq("user_id", user.id).eq("content_id", data.id).eq("content_type", table); setIsWatch(false); toast({ title: "Removido da lista" }); }
-    else { await supabase.from("watchlist").insert({ user_id: user.id, content_id: data.id, content_type: table, titulo: data.title, poster: data.poster_path }); setIsWatch(true); toast({ title: "Adicionado à lista" }); }
+    if (isWatch) { 
+      await (supabase as any).from("watchlist").delete().eq("user_id", user.id).eq("content_id", Number(dataId)).eq("content_type", table); 
+      setIsWatch(false); 
+      toast({ title: "Removido da lista" }); 
+    }
+    else { 
+      await (supabase as any).from("watchlist").insert({ user_id: user.id, content_id: Number(dataId), content_type: table, titulo: data.title, poster: data.poster_path || data.poster || data.capa }); 
+      setIsWatch(true); 
+      toast({ title: "Adicionado à lista" }); 
+    }
   };
 
   const age = (c?: string) => { if (!c) return {a:"L",r:"Livre"}; const x=c.toUpperCase(); if(x.includes("12"))return{a:"12",r:"Conteúdo moderado"}; if(x.includes("14"))return{a:"14",r:"Violência moderada"}; if(x.includes("16")||x.includes("R"))return{a:"16",r:"Violência intensa"}; if(x.includes("18"))return{a:"18",r:"Conteúdo adulto"}; return{a:"L",r:"Livre"}; };
