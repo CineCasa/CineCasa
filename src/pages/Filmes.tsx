@@ -163,12 +163,39 @@ const Filmes: React.FC = () => {
 
   const scrollRow = (categoryName: string, direction: 'left' | 'right') => {
     const row = rowRefs.current[categoryName];
-    if (row) {
-      const scrollAmount = window.innerWidth * 0.8;
-      row.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
+    if (!row) return;
+
+    const scrollAmount = window.innerWidth * 0.8;
+    const currentScroll = row.scrollLeft;
+    const maxScroll = row.scrollWidth - row.clientWidth;
+
+    // Scroll infinito como Netflix
+    if (direction === 'right') {
+      if (currentScroll >= maxScroll - 100) {
+        // Se chegou ao final, volta para o início suavemente
+        row.scrollTo({
+          left: 0,
+          behavior: 'smooth'
+        });
+      } else {
+        row.scrollBy({
+          left: scrollAmount,
+          behavior: 'smooth'
+        });
+      }
+    } else {
+      if (currentScroll <= 100) {
+        // Se chegou ao início, vai para o final suavemente
+        row.scrollTo({
+          left: maxScroll,
+          behavior: 'smooth'
+        });
+      } else {
+        row.scrollBy({
+          left: -scrollAmount,
+          behavior: 'smooth'
+        });
+      }
     }
   };
 
