@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
 import { usePlayer } from "@/contexts/PlayerContext";
-import { fetchTmdbMovie } from "@/services/tmdb";
+import { fetchTmdbDetails } from "@/services/tmdb";
 
 const C = {
   bg: "#070A10",
@@ -50,7 +50,7 @@ const DetailsNew = () => {
         }
 
         if (local?.tmdb_id) {
-          const tmdb = await fetchTmdbMovie(local.tmdb_id, type === "series" ? "tv" : "movie");
+          const tmdb = await fetchTmdbDetails(local.tmdb_id, type === "series" ? "tv" : "movie");
           if (tmdb) {
             const d = tmdb.credits?.crew?.find((c: any) => c.job === "Director")?.name;
             const w = tmdb.credits?.crew?.find((c: any) => c.job === "Writer")?.name;
