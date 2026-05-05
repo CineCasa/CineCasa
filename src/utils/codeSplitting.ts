@@ -5,7 +5,6 @@ export const LazyAdmin = lazy(() => import('@/pages/Admin'));
 export const LazyAdvancedSearch = lazy(() => import('@/pages/AdvancedSearch'));
 export const LazyStreamingHome = lazy(() => import('@/pages/StreamingHome'));
 export const LazyFavorites = lazy(() => import('@/pages/Favorites'));
-export const LazyTVLive = lazy(() => import('@/pages/TvAoVivo'));
 
 // Lazy loading para componentes de conteúdo
 export const LazyDynamicCategoryRow = lazy(() => import('@/components/DynamicCategoryRow'));
@@ -23,7 +22,6 @@ export const preloadRoute = (routePath: string) => {
     '/search': () => import('@/pages/AdvancedSearch'),
     '/home': () => import('@/pages/StreamingHome'),
     '/favorites': () => import('@/pages/Favorites'),
-    '/tv-live': () => import('@/pages/TvAoVivo'),
     '/details': () => import('@/pages/Details'),
   };
 
@@ -71,7 +69,6 @@ export const CHUNK_NAMES = {
   'search': 'Advanced Search',
   'home': 'Streaming Home',
   'favorites': 'Favorites',
-  'tv-live': 'TV Live',
   'details': 'Content Details',
   'category-row': 'Category Components',
   'filter-system': 'Filter Components',
