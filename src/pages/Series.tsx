@@ -20,8 +20,9 @@ interface Serie {
   rating?: number;
 }
 
-// Ordem das categorias
+// Ordem das categorias - Todas as Séries primeiro para garantir que apareça
 const CATEGORIAS_ORDEM = [
+  'Todas as Séries',
   'Lançamento 2026',
   'Lançamento 2025',
   'Ação',
@@ -132,6 +133,9 @@ const Series: React.FC = () => {
 
       // Usar dados diretamente sem contar temporadas (mais rápido)
       (data || []).forEach((serie: Serie) => {
+        // Adicionar a 'Todas as Séries' primeiro
+        seriesPorGenero['Todas as Séries'].push(serie);
+        
         // Usar genero do banco ou 'Outros' se não tiver
         const generos = serie.genero ? serie.genero.split(',').map((g: string) => g.trim()).filter(g => g) : [];
         
