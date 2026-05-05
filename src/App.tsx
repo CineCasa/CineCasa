@@ -215,15 +215,15 @@ const AppContent = () => {
     setShowSplash(false);
   };
 
-  const { showExitConfirmation, confirmExit, cancelExit } = useGlobalBackHandler({
-    isPlayerOpen,
-    onClosePlayer: closePlayer,
-    onExitApp: () => {
-      window.location.href = '/login';
-    },
-  });
+  // const { showExitConfirmation, confirmExit, cancelExit } = useGlobalBackHandler({
+  //   isPlayerOpen,
+  //   onClosePlayer: closePlayer,
+  //   onExitApp: () => {
+  //     window.location.href = '/login';
+  //   },
+  // });
 
-  useGlobalTVNavigation();
+  // useGlobalTVNavigation();
   useAutoCacheCleanup();
   useMobileViewportHeight();
 
@@ -257,11 +257,11 @@ const AppContent = () => {
         </NotificationProvider>
         {showNavbars && <MobileBottomNav />}
         <PWAInstallPrompt />
-        <ExitConfirmationModal
+        {/* <ExitConfirmationModal
           isOpen={showExitConfirmation}
           onConfirm={confirmExit}
           onCancel={cancelExit}
-        />
+        /> */}
       </div>
     </>
   );
