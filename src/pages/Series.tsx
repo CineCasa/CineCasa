@@ -111,7 +111,14 @@ const Series: React.FC = () => {
       }
 
       console.log('[Series] Total de séries retornadas:', data?.length || 0);
-      console.log('[Series] Primeiras 3 séries:', data?.slice(0, 3));
+      console.log('[Series] Dados brutos:', JSON.stringify(data?.slice(0, 3)));
+      
+      // Se não há dados, mostrar erro
+      if (!data || data.length === 0) {
+        console.error('[Series] Nenhuma série retornada do banco!');
+        setCategories({ 'Todas as Séries': [] });
+        return;
+      }
 
       // Organizar séries por gênero
       const seriesPorGenero: Record<string, Serie[]> = {};
@@ -123,24 +130,8 @@ const Series: React.FC = () => {
       // Adicionar categoria 'Outros' para séries sem gênero definido
       seriesPorGenero['Outros'] = [];
 
-      // Contar temporadas para cada série
-      const seriesWithSeasons = await Promise.all(
-        (data || []).map(async (serie: any) => {
-          const { count } = await supabase
-            .from('temporadas')
-            .select('*', { count: 'exact', head: true })
-            .eq('serie_id', serie.id_n);
-          
-          return {
-            ...serie,
-            seasons: count || 0
-          };
-        })
-      );
-
-      console.log('[Series] Séries com temporadas:', seriesWithSeasons.length);
-
-      seriesWithSeasons.forEach((serie: Serie) => {
+      // Usar dados diretamente sem contar temporadas (mais rápido)
+      (data || []).forEach((serie: Serie) => {
         // Usar genero do banco ou 'Outros' se não tiver
         const generos = serie.genero ? serie.genero.split(',').map((g: string) => g.trim()).filter(g => g) : [];
         
