@@ -401,9 +401,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
   return (
     <>
-      {/* Banner com transformação baseada no scroll */}
+      {/* Banner - 16:9 perfeito, responsivo para todas as telas */}
       <div
-        className={`relative w-full aspect-[16/9] overflow-hidden z-20 ${className}`}
+        className={`relative w-full z-20 ${className}`}
+        style={{ aspectRatio: '16/9', minHeight: '300px', maxHeight: '85vh' }}
       >
         {/* Background Image com AnimatePresence */}
       <AnimatePresence initial={false} custom={direction}>
@@ -418,12 +419,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
             x: { type: "spring", stiffness: 300, damping: 30 },
             opacity: { duration: 0.5 }
           }}
-          className="absolute inset-0"
+          className="absolute inset-0 w-full h-full"
         >
           <img
             src={currentItem.backdrop}
             alt={currentItem.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-center"
+            style={{ objectPosition: 'center 20%' }}
           />
         </motion.div>
       </AnimatePresence>
