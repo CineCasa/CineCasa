@@ -95,36 +95,38 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
 
           console.log(`[HeroBanner] Total de filmes retornados do Supabase: ${movies?.length || 0}`);
 
-          // Processar filmes com fallback assíncrono para TMDB
+          // Processar filmes - buscar backdrop do TMDB para banner
           const moviePromises = (movies as any[] || [])
             .filter((m: any) => {
-              // Inclui se tiver imagem local OU tmdb_id para buscar
-              const hasLocalImage = (m.poster && m.poster.trim() !== '');
+              // Inclui se tiver tmdb_id para buscar backdrop, ou poster local como fallback
               const hasTmdbId = !!m.tmdb_id;
-              const shouldInclude = hasLocalImage || hasTmdbId;
+              const hasLocalImage = (m.poster && m.poster.trim() !== '');
+              const shouldInclude = hasTmdbId || hasLocalImage;
               if (!shouldInclude) {
-                console.log(`[HeroBanner] Filme '${m.titulo}' ignorado - sem imagem local e sem tmdb_id`);
+                console.log(`[HeroBanner] Filme '${m.titulo}' ignorado - sem tmdb_id e sem imagem local`);
               }
               return shouldInclude;
             })
             .map(async (m: any) => {
-              // Usar poster como imagem local
-              let imageUrl = (m.poster && m.poster.trim() !== '')
-                ? m.poster
-                : null;
+              // Prioridade: backdrop do TMDB (melhor para banner)
+              let imageUrl = null;
+              let source = 'none';
 
-              let source = imageUrl ? 'local' : 'none';
-
-              // Se não tiver imagem local, buscar no TMDB
-              if (!imageUrl && m.tmdb_id) {
-                console.log(`[HeroBanner] Filme '${m.titulo}' - buscando imagem no TMDB (ID: ${m.tmdb_id})`);
+              // SEMPRE buscar no TMDB primeiro para obter backdrop de alta qualidade
+              if (m.tmdb_id) {
+                console.log(`[HeroBanner] Filme '${m.titulo}' - buscando backdrop no TMDB (ID: ${m.tmdb_id})`);
                 imageUrl = await fetchTmdbImage(m.tmdb_id, 'movie');
                 if (imageUrl) {
                   source = 'tmdb';
-                  console.log(`[HeroBanner] Filme '${m.titulo}' - imagem TMDB encontrada`);
-                } else {
-                  console.log(`[HeroBanner] Filme '${m.titulo}' - NENHUMA imagem encontrada no TMDB`);
+                  console.log(`[HeroBanner] Filme '${m.titulo}' - backdrop TMDB encontrado`);
                 }
+              }
+
+              // Fallback: usar poster local apenas se não conseguir do TMDB
+              if (!imageUrl && m.poster && m.poster.trim() !== '') {
+                imageUrl = m.poster;
+                source = 'local';
+                console.log(`[HeroBanner] Filme '${m.titulo}' - usando poster local como fallback`);
               }
 
               // Só retorna se conseguiu alguma imagem
