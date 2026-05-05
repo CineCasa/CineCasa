@@ -20,9 +20,12 @@ const LazyCard: React.FC<LazyCardProps> = ({
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
+  // Mapear tipo para a rota correta (cinema para filmes, series para séries)
+  const routeType = type === 'movie' ? 'cinema' : 'series';
+  
   return (
     <Link
-      to={`/details/${type}/${id}`}
+      to={`/details/${routeType}/${id}`}
       className="flex-shrink-0 w-[calc(20%-0.8rem)] min-w-[160px] max-w-[220px] group"
     >
       <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 shadow-lg shadow-black/40 group-hover:shadow-xl group-hover:shadow-black/50 transition-shadow duration-300">
