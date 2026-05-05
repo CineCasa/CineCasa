@@ -141,7 +141,7 @@ const Favorites = () => {
     if (item.content_type === 'movie') {
       navigate(`/details/cinema/${item.content_id}`);
     } else {
-      navigate(`/series-details/${item.content_id}`);
+      navigate(`/details/series/${item.content_id}`);
     }
   };
 

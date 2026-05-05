@@ -177,7 +177,7 @@ const FilmesPorCategoria: React.FC = () => {
   };
 
   const handleFilmeClick = (filme: Filme) => {
-    navigate(`/details/movie/${filme.id}`);
+    navigate(`/details/cinema/${filme.id}`);
   };
 
   const handleSearch = (e: React.FormEvent) => {
