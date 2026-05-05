@@ -180,7 +180,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           // Buscar todas as séries
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id_n, tmdb_id, titulo, descricao, ano, rating, genero, poster, banner, capa')
+            .select('id, tmdb_id, titulo, trailer, identificador_archive, type, rating, capa, banner, poster')
             .limit(100);
 
           if (seriesError) throw seriesError;
@@ -230,13 +230,13 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
               }
 
               return {
-                id: s.id_n,
+                id: s.id,
                 tmdbId: s.tmdb_id,
                 title: s.titulo || 'Sem título',
-                description: s.overview || s.descricao || '',
-                year: s.ano || '',
+                description: '', // não existe na tabela series
+                year: '', // não existe na tabela series
                 rating: s.rating || '',
-                genre: s.genero || '',
+                genre: '', // não existe na tabela series
                 backdrop: imageUrl,
                 type: 'series' as const,
                 country,
