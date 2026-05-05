@@ -20,9 +20,8 @@ interface Serie {
   rating?: number;
 }
 
-// Ordem das categorias - Todas as Séries primeiro para garantir que apareça
+// Ordem das categorias conforme definido no banco de dados
 const CATEGORIAS_ORDEM = [
-  'Todas as Séries',
   'Lançamento 2026',
   'Lançamento 2025',
   'Ação',
@@ -131,12 +130,9 @@ const Series: React.FC = () => {
       // Adicionar categoria 'Outros' para séries sem gênero definido
       seriesPorGenero['Outros'] = [];
 
-      // Usar dados diretamente sem contar temporadas (mais rápido)
+      // Usar dados diretamente conforme categorias do banco de dados
       (data || []).forEach((serie: Serie) => {
-        // Adicionar a 'Todas as Séries' primeiro
-        seriesPorGenero['Todas as Séries'].push(serie);
-        
-        // Usar genero do banco ou 'Outros' se não tiver
+        // Usar genero da coluna 'genero' do banco de dados
         const generos = serie.genero ? serie.genero.split(',').map((g: string) => g.trim()).filter(g => g) : [];
         
         if (generos.length === 0) {
@@ -144,7 +140,7 @@ const Series: React.FC = () => {
           seriesPorGenero['Outros'].push(serie);
         } else {
           generos.forEach((genero: string) => {
-            // Verificar se o gênero está na lista ou adicionar a 'Outros'
+            // Verificar se o gênero está na lista de categorias
             if (CATEGORIAS_ORDEM.includes(genero)) {
               seriesPorGenero[genero].push(serie);
             } else {
