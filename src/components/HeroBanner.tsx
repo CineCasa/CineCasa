@@ -376,7 +376,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   // Durante loading, mostrar skeleton
   if (isLoading) {
     return (
-      <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden z-20 bg-gradient-to-br from-gray-900 to-black animate-pulse ${className}`}>
+      <div className={`relative w-full aspect-[16/9] min-h-[320px] max-h-[680px] overflow-hidden bg-gradient-to-br from-gray-900 to-black animate-pulse ${className}`}>
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
       </div>
     );
@@ -385,7 +385,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
   // Se não há dados, mostrar banner padrão
   if (!currentItem) {
     return (
-      <div className={`relative w-full aspect-[16/9] overflow-hidden z-20 bg-gradient-to-br from-gray-900 via-black to-gray-800 ${className}`}>
+      <div className={`relative w-full aspect-[16/9] overflow-hidden bg-gradient-to-br from-gray-900 via-black to-gray-800 ${className}`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
             <div className="text-6xl mb-4">🎬</div>
@@ -403,7 +403,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
     <>
       {/* Banner - 16:9 perfeito, responsivo para todas as telas */}
       <div
-        className={`relative w-full z-20 ${className}`}
+        className={`relative w-full ${className}`}
         style={{ aspectRatio: '16/9', minHeight: '300px', maxHeight: '85vh' }}
       >
         {/* Background Image com AnimatePresence */}

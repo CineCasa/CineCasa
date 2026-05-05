@@ -95,8 +95,10 @@ const PremiumHome: React.FC = () => {
 
   return (
     <div className="streaming-container min-h-screen bg-black">
-      {/* Hero Banner - fixo no topo */}
-      <HeroBanner pageType="home" />
+      {/* Hero Banner - fixo no topo, começa após a navbar */}
+      <div className="pt-[80px]">
+        <HeroBanner pageType="home" />
+      </div>
 
       {/* Continue Watching - Logo após o Banner */}
       {!isLoadingContinue ? (
