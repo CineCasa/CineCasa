@@ -248,6 +248,11 @@ const Series: React.FC = () => {
               onMouseEnter={() => setHoveredRow(categoryName)}
               onMouseLeave={() => setHoveredRow(null)}
             >
+              {/* Título da Categoria */}
+              <div className="px-4 md:px-8 mb-4">
+                <h2 className="text-xl md:text-2xl font-bold text-white font-titles">{categoryName}</h2>
+              </div>
+
               {/* Container do Scroll Horizontal */}
               <div className="relative">
                 {/* Botão Scroll Left */}
