@@ -25,7 +25,7 @@ const LazyCard: React.FC<LazyCardProps> = ({
       to={`/details/${type}/${id}`}
       className="flex-shrink-0 w-[calc(20%-0.8rem)] min-w-[160px] max-w-[220px] group"
     >
-      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
+      <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 shadow-lg shadow-black/40 group-hover:shadow-xl group-hover:shadow-black/50 transition-shadow duration-300">
         {poster ? (
           <>
             {/* Loading placeholder */}

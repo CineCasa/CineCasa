@@ -23,7 +23,7 @@ export default function PremiumNavbar() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-black/80 backdrop-blur-lg z-50 hidden md:block">
+    <nav className="fixed top-0 left-0 right-0 bg-black/80 backdrop-blur-lg z-50 hidden md:block border-b-0">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <button

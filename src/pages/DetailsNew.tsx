@@ -20,7 +20,7 @@ const DetailsNew = () => {
         const isSeries = type === "series";
         const table = isSeries ? "series" : "cinema";
         const idCol = isSeries ? "id_n" : "id";
-        const { data: local } = await supabase.from(table).select("*").eq(idCol as any, Number(id)).single();
+        const { data: local } = await (supabase as any).from(table).select("*").eq(idCol, Number(id)).single();
         if (local?.tmdb_id) {
           const tmdb = await fetchTmdbDetails(local.tmdb_id, isSeries ? "tv" : "movie");
           if (tmdb) {
@@ -43,11 +43,11 @@ const DetailsNew = () => {
           const localYear = localData.year || localData.ano;
           setData({ ...localData, title: localData.titulo, year: localYear });
         }
-        const { data: r } = await supabase.from(table).select("*").neq(idCol as any, Number(id)).limit(10);
+        const { data: r } = await (supabase as any).from(table).select("*").neq(idCol, Number(id)).limit(10);
         setRecs(r?.map((i: any) => ({ id: i.id || i.id_n, title: i.titulo, poster: i.poster || i.capa, rating: i.rating, type: table })) || []);
         if (user) {
           const localId = (local as any).id || (local as any).id_n;
-          const { data: f } = await supabase.from("favorites").select("id").eq("user_id", user.id).eq("content_id", Number(localId)).eq("content_type", table).single();
+          const { data: f } = await (supabase as any).from("favorites").select("id").eq("user_id", user.id).eq("content_id", Number(localId)).eq("content_type", table).single();
           setIsFav(!!f);
         }
       } catch (e) { console.error(e); }

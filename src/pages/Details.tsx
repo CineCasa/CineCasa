@@ -99,10 +99,11 @@ const Details = () => {
 
       const table = searchType === "cinema" ? "cinema" : "series";
       const idColumn = searchType === "cinema" ? "id" : "id_n";
+      const genreColumn = searchType === "cinema" ? "genre" : "genero";
       
       const { data: supabaseData, error } = await supabase
         .from(table)
-        .select("id, titulo, poster, rating, year, genero")
+        .select(`id, titulo, poster, rating, year, ${genreColumn}`)
         .neq(idColumn, numericId)
         .limit(12);
 

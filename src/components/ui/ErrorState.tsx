@@ -218,22 +218,33 @@ export function AuthError({ onLogin }: { onLogin?: () => void }) {
   );
 }
 
-export function NotFoundError({ onGoHome }: { onGoHome?: () => void }) {
+export function NotFoundError({ onGoHome, onGoBack }: { onGoHome?: () => void; onGoBack?: () => void }) {
   return (
     <ErrorState
       variant="default"
       icon={<AlertCircle />}
       title="Página não encontrada"
       message="O conteúdo que você procura não está disponível."
-      description="Verifique o endereço ou volte para a página inicial."
+      description="Verifique o endereço ou volte para a página anterior."
       actions={
-        <button
-          onClick={onGoHome}
-          className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <Home className="w-4 h-4 mr-2" />
-          Página Inicial
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          {onGoBack && (
+            <button
+              onClick={onGoBack}
+              className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center justify-center"
+            >
+              <RefreshCw className="w-4 h-4 mr-2 rotate-180" />
+              Voltar
+            </button>
+          )}
+          <button
+            onClick={onGoHome}
+            className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Página Inicial
+          </button>
+        </div>
       }
     />
   );

@@ -44,7 +44,7 @@ export const useWatchlistSection = (userId?: string): UseWatchlistSectionReturn 
       // Ordenar por created_at DESC e limitar a 5 itens
       const { data, error: supabaseError } = await supabase
         .from('watchlist')
-        .select('id, content_id, content_type, titulo, poster, banner, rating, year, genero, created_at')
+        .select('id, content_id, content_type, titulo, poster, banner, rating, year, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
         .limit(5);
