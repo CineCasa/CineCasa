@@ -7,21 +7,48 @@ import { Tv, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import HeroBanner from '@/components/HeroBanner';
 
 interface Serie {
-  id: number;
+  id_n: number;
   titulo: string;
-  tmdb_id?: string;
-  trailer?: string;
-  identificador_archive?: string;
-  type?: string;
-  rating?: number;
+  descricao?: string;
+  ano?: number;
+  tmdb_id?: number;
   capa?: string;
-  poster?: string;
   banner?: string;
+  trailer?: string;
+  genero?: string;
+  classificacao?: string;
+  rating?: number;
+  poster?: string;
 }
 
-// Categorias simplificadas
+// Ordem das categorias
 const CATEGORIAS_ORDEM = [
-  'Todas as Séries'
+  'Lançamento 2026',
+  'Lançamento 2025',
+  'Ação',
+  'Aventura',
+  'Infantil',
+  'Finanças',
+  'Anime',
+  'Animação',
+  'Comédia',
+  'Drama',
+  'Dorama',
+  'Clássicos',
+  'Negritude',
+  'Crime',
+  'Policial',
+  'Família',
+  'Musical',
+  'Documentário',
+  'Faroeste',
+  'Ficção',
+  'Nacional',
+  'Religioso',
+  'Romance',
+  'Terror',
+  'Suspense',
+  'Adulto'
 ];
 
 // Componente para imagem com animação de loading
@@ -65,18 +92,20 @@ const Series: React.FC = () => {
       const { data, error } = await supabase
         .from('series')
         .select(`
-          id,
+          id_n,
           titulo,
+          descricao,
+          ano,
           tmdb_id,
-          trailer,
-          identificador_archive,
-          type,
-          rating,
           capa,
           poster,
-          banner
+          banner,
+          trailer,
+          genero,
+          classificacao,
+          rating
         `)
-        .order('id', { ascending: false });
+        .order('id_n', { ascending: false });
 
       if (error) {
         console.error('[Series] Erro Supabase:', error);
@@ -86,15 +115,58 @@ const Series: React.FC = () => {
       console.log('[Series] Total de séries retornadas:', data?.length || 0);
       console.log('[Series] Primeiras 3 séries:', data?.slice(0, 3));
 
-      // Organizar todas as séries em uma única categoria
-      const seriesPorGenero: Record<string, Serie[]> = {
-        'Todas as Séries': (data || []).map((serie: any) => ({
-          ...serie,
-          seasons: 0 // não temos como contar temporadas sem a coluna correta
-        }))
-      };
+      // Organizar séries por gênero
+      const seriesPorGenero: Record<string, Serie[]> = {};
+      
+      // Inicializar categorias vazias
+      CATEGORIAS_ORDEM.forEach(cat => {
+        seriesPorGenero[cat] = [];
+      });
+      // Adicionar categoria 'Outros' para séries sem gênero definido
+      seriesPorGenero['Outros'] = [];
 
-      console.log('[Series] Categorias com séries:', Object.keys(seriesPorGenero));
+      // Contar temporadas para cada série
+      const seriesWithSeasons = await Promise.all(
+        (data || []).map(async (serie: any) => {
+          const { count } = await supabase
+            .from('temporadas')
+            .select('*', { count: 'exact', head: true })
+            .eq('serie_id', serie.id_n);
+          
+          return {
+            ...serie,
+            seasons: count || 0
+          };
+        })
+      );
+
+      console.log('[Series] Séries com temporadas:', seriesWithSeasons.length);
+
+      seriesWithSeasons.forEach((serie: Serie) => {
+        // Usar genero do banco ou 'Outros' se não tiver
+        const generos = serie.genero ? serie.genero.split(',').map((g: string) => g.trim()).filter(g => g) : [];
+        
+        if (generos.length === 0) {
+          // Sem gênero definido, colocar em 'Outros'
+          seriesPorGenero['Outros'].push(serie);
+        } else {
+          generos.forEach((genero: string) => {
+            // Verificar se o gênero está na lista ou adicionar a 'Outros'
+            if (CATEGORIAS_ORDEM.includes(genero)) {
+              seriesPorGenero[genero].push(serie);
+            } else {
+              // Gênero não reconhecido, vai para 'Outros'
+              seriesPorGenero['Outros'].push(serie);
+            }
+          });
+        }
+      });
+
+      // Log de categorias com séries
+      const categoriasComSeries = Object.entries(seriesPorGenero)
+        .filter(([_, series]) => series.length > 0)
+        .map(([cat, series]) => `${cat}: ${series.length}`);
+      console.log('[Series] Categorias com séries:', categoriasComSeries);
 
       setCategories(seriesPorGenero);
     } catch (error) {

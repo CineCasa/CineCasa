@@ -180,7 +180,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           // Buscar todas as séries
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id, tmdb_id, titulo, trailer, identificador_archive, type, rating, capa, banner, poster')
+            .select('id_n, titulo, descricao, ano, tmdb_id, capa, banner, trailer, genero, classificacao, rating, poster')
             .limit(100);
 
           if (seriesError) throw seriesError;
@@ -230,17 +230,17 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
               }
 
               return {
-                id: s.id,
+                id: s.id_n,
                 tmdbId: s.tmdb_id,
                 title: s.titulo || 'Sem título',
-                description: '', // não existe na tabela series
-                year: '', // não existe na tabela series
-                rating: s.rating || '',
-                genre: '', // não existe na tabela series
+                description: s.descricao || '',
+                year: s.ano?.toString() || '',
+                rating: s.rating?.toString() || '',
+                genre: s.genero || '',
                 backdrop: imageUrl,
                 type: 'series' as const,
                 country,
-                ageRating
+                ageRating: s.classificacao
               };
             });
 
