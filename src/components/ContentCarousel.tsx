@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import PremiumCard from './PremiumCard';
 import LazyCard from './LazyCard';
@@ -31,6 +31,38 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
   isLoading = false
 }) => {
   const carouselRef = useRef<HTMLDivElement>(null);
+  const [isLooping, setIsLooping] = useState(false);
+
+  // Duplicar itens para loop infinito
+  const duplicatedItems = [...items, ...items, ...items];
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    const handleScroll = () => {
+      if (isLooping) return;
+
+      const scrollLeft = carousel.scrollLeft;
+      const scrollWidth = carousel.scrollWidth / 3; // Dividido por 3 porque temos 3 cópias
+
+      // Se chegou ao final da primeira cópia, volta para o início instantaneamente
+      if (scrollLeft >= scrollWidth) {
+        setIsLooping(true);
+        carousel.scrollLeft = scrollLeft % scrollWidth;
+        setTimeout(() => setIsLooping(false), 50);
+      }
+      // Se chegou ao início da segunda cópia, vai para o final da primeira
+      else if (scrollLeft < 0) {
+        setIsLooping(true);
+        carousel.scrollLeft = scrollWidth + scrollLeft;
+        setTimeout(() => setIsLooping(false), 50);
+      }
+    };
+
+    carousel.addEventListener('scroll', handleScroll);
+    return () => carousel.removeEventListener('scroll', handleScroll);
+  }, [isLooping]);
 
   return (
     <div className="mb-12">
@@ -45,17 +77,18 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
       <div className="relative" data-nav-region="carousel">
         <div
           ref={carouselRef}
-          className="carousel-container px-2 sm:px-4 md:px-6"
+          className="carousel-container px-2 sm:px-4 md:px-6 scrollbar-hide"
         >
-          {items.map((item, index) => {
+          {duplicatedItems.map((item, index) => {
             // Garantir que sempre tenha uma key válida
             const safeId = item.id || item.tmdbId || `${item.title}-${index}`;
+            const originalIndex = index % items.length;
             return (
               <LazyCard
-                key={safeId}
+                key={`${safeId}-${index}`}
                 {...item}
                 id={safeId}
-                index={index}
+                index={originalIndex}
                 onClick={() => onCardClick?.(item)}
               />
             );

@@ -43,16 +43,20 @@
     display: none;
   }
 
-  /* Carousel Container - 5 cards per view without horizontal scroll */
+  /* Carousel Container - 5 cards per view with horizontal scroll */
   .carousel-container {
     display: flex;
-    flex-wrap: wrap;
     gap: 1rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
     padding: 0.5rem 0;
     width: 100%;
   }
 
   .carousel-container > * {
+    scroll-snap-align: start;
     flex-shrink: 0;
   }
 
@@ -66,8 +70,9 @@
   /* 5 cards per view calculation */
   .five-cards-row {
     display: flex;
-    flex-wrap: wrap;
     gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
     padding: 0.5rem 0;
   }
 
@@ -75,6 +80,7 @@
     flex: 0 0 calc(20% - 0.8rem);
     min-width: 160px;
     max-width: 220px;
+    scroll-snap-align: start;
   }
 
   /* Fontes cinematográficas */
@@ -308,13 +314,21 @@
   /* Carrossel horizontal */
   .carousel-container {
     display: flex;
-    flex-wrap: wrap;
     gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
     padding: 1rem 0;
+  }
+
+  .carousel-container::-webkit-scrollbar {
+    display: none;
   }
 
   .carousel-item {
     flex: 0 0 auto;
+    scroll-snap-align: start;
   }
 
   /* Grid responsiva */

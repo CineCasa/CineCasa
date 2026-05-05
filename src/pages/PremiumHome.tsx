@@ -432,7 +432,7 @@ const PremiumHome: React.FC = () => {
   const isCineNoiteVisible = currentTime >= (23 * 60 + 58) || currentTime <= (5 * 60 + 59);
 
   // Sistema para evitar duplicatas apenas DENTRO de cada seção (não entre seções)
-  const filterUniqueItems = (items: any[], limit: number = 5) => {
+  const filterUniqueItems = (items: any[], limit: number = 20) => {
     const usedIds = new Set<string>();
     const unique = items.filter(item => {
       const id = item.tmdbId || item.id;
