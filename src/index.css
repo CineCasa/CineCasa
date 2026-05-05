@@ -342,11 +342,10 @@ html, body {
     text-shadow: 0 2px 8px rgba(0,0,0,0.7);
   }
 
-  :focus-visible {
-    outline: 3px solid #00ffff !important;
-    outline-offset: 3px;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6) !important;
-    border-radius: 8px;
+  /* Remover todos os outlines de foco */
+  :focus, :focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   /* 4K/Projetor scaling - specific for very large screens */
@@ -617,36 +616,22 @@ html, body {
    TV MODE - CURSOR HIDING
    ============================================ */
 
-/* Esconder cursor por padrão em TVs/Desktop (navegação por controle) */
-@media (min-width: 1024px) {
-  html, body {
-    cursor: none;
-  }
-  
-  /* Mostrar cursor apenas em elementos interativos quando em uso desktop */
-  body.has-mouse a,
-  body.has-mouse button,
-  body.has-mouse [data-navigable="true"] {
-    cursor: pointer;
-  }
-  
-  /* Quando mouse estiver ativo, mostrar cursor em tudo */
-  body.has-mouse {
-    cursor: auto;
-  }
+/* Cursor sempre visível em todas as telas */
+html, body {
+  cursor: auto !important;
+}
+
+a, button, [data-navigable="true"], input, select, textarea {
+  cursor: pointer !important;
 }
 
 /* Classes específicas para controle de cursor */
+/* TV mode com cursor sempre visível */
 .tv-mode {
-  cursor: none !important;
+  cursor: auto !important;
 }
 
 .tv-mode * {
-  cursor: none !important;
-}
-
-.tv-mode.has-mouse,
-.tv-mode.has-mouse * {
   cursor: auto !important;
 }
 
