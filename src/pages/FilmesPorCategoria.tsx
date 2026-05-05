@@ -318,7 +318,7 @@ const FilmesPorCategoria: React.FC = () => {
 
                       {/* Rating badge */}
                       {filme.rating && filme.rating !== 'N/A' && (
-                        <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded">
+                        <div className="absolute top-2 right-2 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded z-20">
                           {filme.rating}
                         </div>
                       )}

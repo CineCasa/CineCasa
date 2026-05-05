@@ -213,17 +213,13 @@ const Favorites = () => {
                     />
 
                     {/* Type badge */}
-                    <div className="absolute top-2 left-2">
+                    <div className="absolute top-2 left-2 z-20">
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
                         item.content_type === 'movie'
                           ? 'bg-blue-600/90 text-white'
                           : 'bg-purple-600/90 text-white'
                       }`}>
-                        {item.content_type === 'movie' ? (
-                          <span className="flex items-center gap-1"><Film className="w-3 h-3" /> Filme</span>
-                        ) : (
-                          <span className="flex items-center gap-1"><Tv className="w-3 h-3" /> Série</span>
-                        )}
+                        {item.content_type === 'movie' ? 'Filme' : 'Série'}
                       </span>
                     </div>
 

@@ -94,7 +94,7 @@ const ContinueWatching: React.FC<ContinueWatchingProps> = ({ items, onRemove }) 
 
               {/* Badge episódio */}
               {item.type === 'series' && item.episodeNumber && (
-                <div className="absolute top-2 left-2">
+                <div className="absolute top-2 left-2 z-20">
                   <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-black/70 text-white">
                     T{item.seasonNumber || 1} E{item.episodeNumber}
                   </span>
