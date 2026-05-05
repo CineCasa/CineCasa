@@ -85,8 +85,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           console.log('[HeroBanner] Buscando filmes do Supabase...');
           const { data: movies, error: moviesError } = await supabase
             .from('cinema')
-            .select('id, tmdb_id, titulo, description, year, rating, genre, genero, poster, banner, backdrop')
-            .or('poster.not.is.null,banner.not.is.null,backdrop.not.is.null');
+            .select('id, tmdb_id, titulo, description, year, rating, genre, genero, poster')
+            .not('poster', 'is', null);
 
           if (moviesError) {
             console.error('[HeroBanner] Erro ao buscar filmes:', moviesError);
@@ -99,9 +99,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           const moviePromises = (movies as any[] || [])
             .filter((m: any) => {
               // Inclui se tiver imagem local OU tmdb_id para buscar
-              const hasLocalImage = (m.backdrop && m.backdrop.trim() !== '') ||
-                                   (m.banner && m.banner.trim() !== '') ||
-                                   (m.poster && m.poster.trim() !== '');
+              const hasLocalImage = (m.poster && m.poster.trim() !== '');
               const hasTmdbId = !!m.tmdb_id;
               const shouldInclude = hasLocalImage || hasTmdbId;
               if (!shouldInclude) {
@@ -110,14 +108,10 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
               return shouldInclude;
             })
             .map(async (m: any) => {
-              // Hierarquia de fallback local: backdrop → banner → poster
-              let imageUrl = (m.backdrop && m.backdrop.trim() !== '')
-                ? m.backdrop
-                : (m.banner && m.banner.trim() !== '')
-                  ? m.banner
-                  : (m.poster && m.poster.trim() !== '')
-                    ? m.poster
-                    : null;
+              // Usar poster como imagem local
+              let imageUrl = (m.poster && m.poster.trim() !== '')
+                ? m.poster
+                : null;
 
               let source = imageUrl ? 'local' : 'none';
 
@@ -180,7 +174,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
           // Buscar todas as séries
           const { data: series, error: seriesError } = await supabase
             .from('series')
-            .select('id_n, titulo, descricao, ano, tmdb_id, capa, banner, trailer, genero, classificacao, rating, poster')
+            .select('id_n, titulo, descricao, ano, tmdb_id, capa, poster, trailer, genero, classificacao, rating')
             .limit(100);
 
           if (seriesError) throw seriesError;
@@ -192,19 +186,16 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
             .filter((s: any) => {
               // Inclui se tiver imagem local OU tmdb_id para buscar
               const hasLocalImage = (s.capa && s.capa.trim() !== '') ||
-                                   (s.banner && s.banner.trim() !== '') ||
                                    (s.poster && s.poster.trim() !== '');
               return hasLocalImage || s.tmdb_id;
             })
             .map(async (s: any) => {
-              // Hierarquia de fallback local: capa → banner → poster
+              // Hierarquia de fallback local: capa → poster
               let imageUrl = (s.capa && s.capa.trim() !== '')
                 ? s.capa
-                : (s.banner && s.banner.trim() !== '')
-                  ? s.banner
-                  : (s.poster && s.poster.trim() !== '')
-                    ? s.poster
-                    : null;
+                : (s.poster && s.poster.trim() !== '')
+                  ? s.poster
+                  : null;
 
               // Se não tiver imagem local, buscar no TMDB
               if (!imageUrl && s.tmdb_id) {

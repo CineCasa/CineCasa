@@ -13,12 +13,11 @@ interface Serie {
   ano?: number;
   tmdb_id?: number;
   capa?: string;
-  banner?: string;
+  poster?: string;
   trailer?: string;
   genero?: string;
   classificacao?: string;
   rating?: number;
-  poster?: string;
 }
 
 // Ordem das categorias
@@ -99,7 +98,6 @@ const Series: React.FC = () => {
           tmdb_id,
           capa,
           poster,
-          banner,
           trailer,
           genero,
           classificacao,
