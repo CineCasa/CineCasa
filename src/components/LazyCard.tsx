@@ -10,13 +10,16 @@ interface LazyCardProps {
   year?: string;
   rating?: string;
   type: 'movie' | 'series';
+  index?: number;
+  onClick?: () => void;
 }
 
 const LazyCard: React.FC<LazyCardProps> = ({ 
   id, 
   title, 
   poster, 
-  type 
+  type,
+  onClick
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
