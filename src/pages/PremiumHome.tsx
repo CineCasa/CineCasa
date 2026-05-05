@@ -38,7 +38,7 @@ const PremiumHome: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const { items: continueWatchingItems, isLoading: isLoadingContinue } = useContinueWatching();
+  const { items: continueWatchingItems, isLoading: isLoadingContinue, removeItem } = useContinueWatching();
   const { user } = useAuth();
   const { lancamentos, isLoading: isLoadingLancamentos } = useLancamentos(user?.email);
   const { recomendacoes, isLoading: isLoadingRecomendacoes, topGenres } = useRecomendacoes(user?.email);
@@ -116,6 +116,8 @@ const PremiumHome: React.FC = () => {
                 episodeNumber: item.episodeNumber
               }))}
               onRemove={(id, type, episodeId) => {
+                // Bug #13 corrigido: onRemove agora chama removeItem do hook
+                removeItem(id, type, episodeId);
               }}
             />
           ) : (

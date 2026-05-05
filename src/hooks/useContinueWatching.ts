@@ -18,6 +18,7 @@ interface UseContinueWatchingReturn {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  removeItem: (id: string, type: string, episodeId?: string) => Promise<void>;
 }
 
 export const useContinueWatching = (): UseContinueWatchingReturn => {
@@ -101,6 +102,24 @@ export const useContinueWatching = (): UseContinueWatchingReturn => {
     await fetchContinueWatching();
   }, [fetchContinueWatching]);
 
+  const removeItem = useCallback(async (id: string, type: string, episodeId?: string) => {
+    try {
+      // Remover do localStorage
+      const localProgress = localStorage.getItem('watch_progress');
+      if (localProgress) {
+        const parsed = JSON.parse(localProgress);
+        const contentId = id.replace('local-', '').replace('rpc-', '');
+        delete parsed[contentId];
+        localStorage.setItem('watch_progress', JSON.stringify(parsed));
+      }
+
+      // Remover do estado local
+      setItems(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      console.error('[useContinueWatching] Erro ao remover item:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchContinueWatching();
   }, [fetchContinueWatching]);
@@ -110,6 +129,7 @@ export const useContinueWatching = (): UseContinueWatchingReturn => {
     isLoading,
     error,
     refresh,
+    removeItem,
   };
 };
 
