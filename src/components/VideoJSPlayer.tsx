@@ -19,9 +19,11 @@ import {
   MoreVertical,
   Rewind,
   FastForward,
-  Cast
+  Cast,
+  Users
 } from 'lucide-react';
 import screenCastService, { CastDevice } from '../services/screenCastService';
+import WatchTogether from './WatchTogether';
 
 interface VideoJSPlayerProps {
   url: string;
@@ -38,6 +40,9 @@ interface VideoJSPlayerProps {
   onPrevious?: () => void;
   hasNext?: boolean;
   hasPrevious?: boolean;
+  watchTogetherRoom?: string;
+  isHost?: boolean;
+  username?: string;
 }
 
 interface QualityLevel {
@@ -63,7 +68,10 @@ export default function VideoJSPlayer({
   onNext,
   onPrevious,
   hasNext = false,
-  hasPrevious = false
+  hasPrevious = false,
+  watchTogetherRoom,
+  isHost = false,
+  username = 'Guest'
 }: VideoJSPlayerProps) {
   const videoRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
@@ -93,6 +101,7 @@ export default function VideoJSPlayer({
   const [castDevices, setCastDevices] = useState<CastDevice[]>([]);
   const [isCasting, setIsCasting] = useState(false);
   const [showCastMenu, setShowCastMenu] = useState(false);
+  const [watchTogetherEnabled, setWatchTogetherEnabled] = useState(false);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -327,6 +336,38 @@ export default function VideoJSPlayer({
     await screenCastService.disconnect();
     setShowCastMenu(false);
   }, []);
+
+  const handlePlaybackCommand = useCallback((command: 'play' | 'pause' | 'seek', data?: any) => {
+    if (!playerRef.current) return;
+    
+    switch (command) {
+      case 'play':
+        playerRef.current.play();
+        break;
+      case 'pause':
+        playerRef.current.pause();
+        break;
+      case 'seek':
+        if (data?.currentTime !== undefined) {
+          playerRef.current.currentTime(data.currentTime);
+        }
+        break;
+    }
+  }, []);
+
+  // Sync playback when host
+  useEffect(() => {
+    if (!isHost || !watchTogetherEnabled || !playerRef.current) return;
+
+    const syncPlayback = async () => {
+      if (isPlaying) {
+        // Send play command
+        // This would be handled by the WatchTogether component
+      }
+    };
+
+    syncPlayback();
+  }, [isPlaying, currentTime, isHost, watchTogetherEnabled]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -676,6 +717,17 @@ export default function VideoJSPlayer({
                 </div>
               )}
 
+              {/* Watch Together */}
+              {watchTogetherRoom && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setWatchTogetherEnabled(!watchTogetherEnabled); }} 
+                  className={`text-white hover:text-gray-300 transition-colors p-1 ${watchTogetherEnabled ? 'text-purple-400' : ''}`}
+                  title="Assistir juntos"
+                >
+                  <Users size={22} />
+                </button>
+              )}
+
               {/* Settings */}
               <div className="relative">
                 <button 
@@ -808,6 +860,19 @@ export default function VideoJSPlayer({
       <div className="absolute bottom-20 left-4 text-white/40 text-xs hidden md:block">
         <span className="opacity-0 hover:opacity-100 transition-opacity">Shortcuts: Espaço=Play, F=Fullscreen, M=Mute, ←→=Seek, ↑↓=Volume, P=PiP, C=Cast</span>
       </div>
+
+      {/* Watch Together Chat */}
+      {watchTogetherEnabled && watchTogetherRoom && (
+        <WatchTogether
+          roomId={watchTogetherRoom}
+          currentUrl={url}
+          isHost={isHost}
+          username={username}
+          onPlaybackCommand={handlePlaybackCommand}
+          currentTime={currentTime}
+          isPlaying={isPlaying}
+        />
+      )}
     </div>
   );
 }

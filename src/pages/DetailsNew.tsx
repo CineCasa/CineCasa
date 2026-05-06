@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Play, Heart, Clock, ThumbsUp, ChevronLeft } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { Play, Plus, Heart, Info, Star, Clock, Calendar, Eye, ChevronLeft, ChevronRight, Share2, Download, Check, Users } from "lucide-react";
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/hooks/use-toast";
@@ -161,6 +162,33 @@ const DetailsNew = () => {
 
     console.log("[DetailsNew] Abrindo player com:", playerItem);
     openPlayer(playerItem);
+  };
+
+  // Criar sala de assistir juntos
+  const handleWatchTogether = async () => {
+    if (!data || !data.videoUrl) {
+      toast({ title: "Vídeo não disponível", description: "Este conteúdo ainda não possui link de reprodução." });
+      return;
+    }
+
+    try {
+      const roomId = `room-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      await supabase.from('watch_together_rooms').insert({
+        id: roomId,
+        current_url: data.videoUrl,
+        host_id: user?.id,
+        current_time: 0,
+        is_playing: false,
+        title: data.title,
+        poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : undefined
+      });
+
+      navigate(`/watch/${roomId}`);
+    } catch (error) {
+      console.error('Error creating watch together room:', error);
+      toast({ title: "Erro", description: "Não foi possível criar a sala de assistir juntos." });
+    }
   };
 
   // Bug #5 corrigido: Trailer abre o link do trailer
@@ -541,7 +569,24 @@ const DetailsNew = () => {
                 <Play size={18} fill="black" /> Assistir agora
               </button>
 
-              {/* Bug #5 corrigido: Trailer tem handler */}
+              <button
+                onClick={handleWatchTogether}
+                style={{
+                  background: "rgba(0, 183, 255, 0.2)",
+                  color: C.neon,
+                  border: `1px solid ${C.neon}`,
+                  padding: "12px 24px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Users size={18} /> Assistir Juntos
+              </button>
+
               <button
                 onClick={handleTrailer}
                 style={{

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import LoadingScreen from "./components/LoadingScreen";
+import WatchTogetherPage from "./pages/WatchTogetherPage";
 import SplashScreen from "./components/SplashScreen";
 import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
@@ -122,6 +123,7 @@ const AppRoutes = () => {
         <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
         <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
         <Route path="/details/:type/:id" element={<ProtectedRoute><DetailsNew /></ProtectedRoute>} />
+        <Route path="/watch/:roomId" element={<WatchTogetherPage />} />
         <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />
         <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
         <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
