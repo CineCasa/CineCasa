@@ -471,9 +471,6 @@ export default function VideoJSPlayer({
             </span>
           )}
         </div>
-        <button onClick={onClose} className="text-white hover:text-gray-300 transition-colors p-2 rounded-lg bg-white/10 hover:bg-white/20">
-          <X size={24} />
-        </button>
       </div>
       <div className="flex-1 flex items-center justify-center relative" onMouseMove={() => { setShowControls(true); if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current); if (isPlaying) controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000); }} onClick={() => { if (playerRef.current) { if (isPlaying) playerRef.current.pause(); else playerRef.current.play(); } }} onDoubleClick={() => { if (playerRef.current) { if (isFullscreen) playerRef.current.exitFullscreen(); else playerRef.current.requestFullscreen(); } }}>
         <div className="w-full h-full max-w-[100vw] max-h-[100vh]"><div ref={videoRef} className="w-full h-full" /></div>
@@ -553,6 +550,14 @@ export default function VideoJSPlayer({
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              {/* Close Button */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); onClose(); }} 
+                className="text-white hover:text-gray-300 transition-colors p-1"
+                title="Fechar (ESC)"
+              >
+                <X size={28} />
+              </button>
               {/* Play/Pause */}
               <button 
                 onClick={(e) => { e.stopPropagation(); if (playerRef.current) { if (isPlaying) playerRef.current.pause(); else playerRef.current.play(); } }} 
