@@ -21,6 +21,10 @@
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: blur(12px);
+  /* Cores da Marca (Brand) */
+  --brand: #00d9ff;
+  --brand-glow: rgba(0, 217, 255, 0.4);
+  --brand-soft: rgba(0, 217, 255, 0.15);
 }
 
 /* Forçar fundo preto puro em todos os elementos */
