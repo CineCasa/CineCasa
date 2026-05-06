@@ -14,7 +14,7 @@ export default function MobileBottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-lg border border-white/20 rounded-2xl md:hidden z-50 shadow-2xl">
+    <nav className="fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-lg border border-white/20 rounded-2xl md:hidden z-[100] shadow-2xl">
       <div className="flex justify-around items-center h-16 px-2">
         {navItems.map(({ icon: Icon, path, label }) => (
           <button
