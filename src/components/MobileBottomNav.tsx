@@ -1,31 +1,33 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, User } from 'lucide-react';
+import { Home, Film, Tv, Bell } from 'lucide-react';
 
 export default function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
-    { icon: Home, path: '/', label: 'Início' },
-    { icon: Search, path: '/search', label: 'Buscar' },
-    { icon: Heart, path: '/favorites', label: 'Favoritos' },
-    { icon: User, path: '/profile', label: 'Perfil' },
+    { icon: Home, path: '/', label: 'Home' },
+    { icon: Film, path: '/filmes', label: 'Filmes' },
+    { icon: Tv, path: '/series', label: 'Séries' },
+    { icon: Bell, path: '/notifications', label: 'Notificações' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-t border-white/10 md:hidden z-50">
-      <div className="flex justify-around items-center h-14">
+    <nav className="fixed bottom-4 left-4 right-4 bg-black/90 backdrop-blur-lg border border-white/20 rounded-2xl md:hidden z-50 shadow-2xl">
+      <div className="flex justify-around items-center h-16 px-2">
         {navItems.map(({ icon: Icon, path, label }) => (
           <button
             key={path}
             onClick={() => navigate(path)}
-            className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
-              location.pathname === path ? 'text-[#E53935]' : 'text-gray-400'
+            className={`flex flex-col items-center justify-center w-full h-full transition-all duration-300 rounded-xl ${
+              location.pathname === path
+                ? 'text-[#00d9ff] bg-white/10 scale-110'
+                : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
           >
             <Icon className="w-5 h-5" />
-            <span className="text-xs mt-1">{label}</span>
+            <span className="text-xs mt-1 font-medium">{label}</span>
           </button>
         ))}
       </div>
