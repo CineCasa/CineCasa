@@ -39,9 +39,9 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
         </h2>
       </div>
 
-      {/* Container Grid - 3 colunas mobile com scroll horizontal, 5 colunas desktop */}
+      {/* Container Grid - 5 colunas fixas, sem rolagem horizontal */}
       <div className="relative px-2 sm:px-4 md:px-6" data-nav-region="carousel">
-        <div className="grid grid-cols-3 md:grid-cols-5 gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="grid grid-cols-5 gap-4">
           {items.slice(0, 5).map((item, index) => {
             // Garantir que sempre tenha uma key válida
             const safeId = item.id || item.tmdbId || `${item.title}-${index}`;

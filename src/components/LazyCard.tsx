@@ -29,7 +29,7 @@ const LazyCard: React.FC<LazyCardProps> = ({
   return (
     <Link
       to={`/details/${routeType}/${id}`}
-      className="flex-shrink-0 w-[calc(33.333%-0.85rem)] md:w-full group"
+      className="w-full group"
     >
       <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 shadow-lg shadow-black/40 group-hover:shadow-xl group-hover:shadow-black/50 transition-shadow duration-300">
         {poster ? (

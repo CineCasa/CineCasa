@@ -32,12 +32,12 @@ export const BecauseYouWatchedRow: React.FC<BecauseYouWatchedRowProps> = ({ genr
         <ThumbsUp className="w-5 h-5" />
         Porque você assistiu {genre}
       </h2>
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-4 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="grid grid-cols-5 gap-4">
         {displayItems.map((item) => (
           <Link
             key={item.id}
             to={`/details/${item.type}/${item.id}`}
-            className="flex-shrink-0 w-[calc(33.333%-0.85rem)] md:w-full group"
+            className="w-full group"
           >
             <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
               {item.poster ? (
