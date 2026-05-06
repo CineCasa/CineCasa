@@ -11,6 +11,7 @@ import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
 import { SpatialNavigationProvider } from "./components/SpatialNavigationProvider";
 import MobileBottomNav from "./components/MobileBottomNav";
+import MobileTopNav from "./components/MobileTopNav";
 import PremiumNavbar from "./components/PremiumNavbar";
 import TVNavbar from "./components/TVNavbar";
 import ScrollToTop from "./components/ScrollToTop";
@@ -255,6 +256,7 @@ const AppContent = () => {
           </KeyboardNavigation>
           <PlayerContainer />
         </NotificationProvider>
+        {showNavbars && <MobileTopNav />}
         {showNavbars && <MobileBottomNav />}
         <PWAInstallPrompt />
         {/* <ExitConfirmationModal

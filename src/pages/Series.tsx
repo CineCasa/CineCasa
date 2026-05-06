@@ -214,7 +214,7 @@ const Series: React.FC = () => {
   return (
     <div className="min-h-screen bg-black pb-20">
       {/* Hero Banner - fixo no topo, começa após a navbar */}
-      <div className="pt-[80px]">
+      <div className="pt-[56px] md:pt-[80px]">
         <HeroBanner pageType="series" />
       </div>
 
