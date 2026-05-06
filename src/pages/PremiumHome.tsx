@@ -105,7 +105,7 @@ const PremiumHome: React.FC = () => {
         <div className="relative z-40 mt-6 mb-4">
           {continueWatchingItems.length > 0 ? (
             <ContinueWatching
-              items={continueWatchingItems.slice(0, 4).map(item => ({
+              items={continueWatchingItems.slice(0, 5).map(item => ({
                 id: item.id,
                 title: item.title,
                 poster: item.poster,
@@ -154,7 +154,7 @@ const PremiumHome: React.FC = () => {
               year: item.year,
               rating: item.rating,
               isNew: true
-            })), 10)}
+            })), 5)}
             onCardClick={handleCardClick}
           />
         ) : (

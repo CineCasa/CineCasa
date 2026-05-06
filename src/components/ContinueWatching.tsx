@@ -31,6 +31,9 @@ const ContinueWatching: React.FC<ContinueWatchingProps> = ({ items, onRemove }) 
     return null;
   }
 
+  // Limitar a 5 itens
+  const displayItems = items.slice(0, 5);
+
   // Bug #2 corrigido: navega para a página de detalhes em vez de /watch/ inexistente
   const handlePlay = (item: ContinueWatchingItem) => {
     const routeType = item.type === 'movie' ? 'cinema' : 'series';
@@ -50,11 +53,11 @@ const ContinueWatching: React.FC<ContinueWatchingProps> = ({ items, onRemove }) 
         <Clock className="w-5 h-5 text-[#00d9ff]" />
         Continuar Assistindo
       </h2>
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-        {items.map((item) => (
+      <div className="grid grid-cols-5 gap-4">
+        {displayItems.map((item) => (
           <div
             key={item.id}
-            className="flex-shrink-0 w-36 md:w-44 group cursor-pointer"
+            className="group cursor-pointer"
             onClick={() => handlePlay(item)}
           >
             {/* Poster */}

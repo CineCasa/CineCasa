@@ -23,18 +23,21 @@ export const BecauseYouWatchedRow: React.FC<BecauseYouWatchedRowProps> = ({ genr
     return null;
   }
 
+  // Limitar a 5 itens
+  const displayItems = items.slice(0, 5);
+
   return (
-    <div className="mb-8">
+    <div className="mb-8 px-4 md:px-6">
       <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
         <ThumbsUp className="w-5 h-5" />
         Porque você assistiu {genre}
       </h2>
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {items.map((item) => (
+      <div className="grid grid-cols-5 gap-4">
+        {displayItems.map((item) => (
           <Link
             key={item.id}
             to={`/details/${item.type}/${item.id}`}
-            className="flex-shrink-0 w-40 group"
+            className="group"
           >
             <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
               {item.poster ? (
