@@ -238,6 +238,7 @@ const AppContent = () => {
           minDuration={2500}
         />
       )}
+      {showNavbars && <MobileTopNav />}
       <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
         <NotificationProvider>
           <NotificationContainer />
@@ -256,8 +257,6 @@ const AppContent = () => {
           </KeyboardNavigation>
           <PlayerContainer />
         </NotificationProvider>
-        {showNavbars && <MobileTopNav />}
-        {showNavbars && <MobileBottomNav />}
         <PWAInstallPrompt />
         {/* <ExitConfirmationModal
           isOpen={showExitConfirmation}
@@ -265,6 +264,7 @@ const AppContent = () => {
           onCancel={cancelExit}
         /> */}
       </div>
+      {showNavbars && <MobileBottomNav />}
     </>
   );
 };
