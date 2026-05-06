@@ -39,9 +39,9 @@ const DetailsNew = () => {
         const table = type === "series" ? "series" : "cinema";
         const idColumn = table === "series" ? "id_n" : "id";
         const { data: local } = await supabase
-          .from(table)
+          .from(table as any)
           .select("*")
-          .eq(idColumn, id)
+          .eq(idColumn as any, id)
           .maybeSingle();
 
         if (!local) {
@@ -61,45 +61,45 @@ const DetailsNew = () => {
             setData({
               ...local,
               ...tmdb,
-              title: tmdb.title || tmdb.name || local.titulo,
-              backdrop_path: tmdb.backdrop_path || local.banner || local.capa,
+              title: tmdb.title || tmdb.name || (local as any).titulo,
+              backdrop_path: tmdb.backdrop_path || (local as any).banner || (local as any).capa,
               year:
                 tmdb.release_date?.substring(0, 4) ||
                 tmdb.first_air_date?.substring(0, 4) ||
-                local.year ||
-                local.ano,
+                (local as any).year ||
+                (local as any).ano,
               director: d,
               writer: w,
               studio: s,
               certification: cert,
-              videoUrl: local.url || local.trailer || null,
-              trailerUrl: local.trailer || null,
+              videoUrl: (local as any).url || (local as any).trailer || null,
+              trailerUrl: (local as any).trailer || null,
             });
             setCast(tmdb.credits?.cast?.slice(0, 15) || []);
           } else {
             setData({
               ...local,
-              title: local.titulo,
-              year: local.year || local.ano,
-              videoUrl: local.url || null,
-              trailerUrl: local.trailer || null,
+              title: (local as any).titulo,
+              year: (local as any).year || (local as any).ano,
+              videoUrl: (local as any).url || null,
+              trailerUrl: (local as any).trailer || null,
             });
           }
         } else {
           setData({
             ...local,
-            title: local.titulo,
-            year: local.year || local.ano,
-            videoUrl: local.url || null,
-            trailerUrl: local.trailer || null,
+            title: (local as any).titulo,
+            year: (local as any).year || (local as any).ano,
+            videoUrl: (local as any).url || null,
+            trailerUrl: (local as any).trailer || null,
           });
         }
 
         // Buscar recomendações
         const { data: r } = await supabase
-          .from(table)
+          .from(table as any)
           .select(`id, ${idColumn === "id_n" ? "id_n," : ""}titulo, ${table === "series" ? "capa" : "poster"}, rating`)
-          .neq(idColumn, id)
+          .neq(idColumn as any, id)
           .limit(10);
         setRecs(
           r?.map((i: any) => ({
@@ -117,16 +117,16 @@ const DetailsNew = () => {
             .from("favorites")
             .select("id")
             .eq("user_id", user.id)
-            .eq("content_id", id)
+            .eq("content_id", Number(id))
             .eq("content_type", table)
             .maybeSingle();
           setIsFav(!!f);
 
           const { data: wl } = await supabase
-            .from("watchlist")
+            .from("watchlist" as any)
             .select("id")
             .eq("user_id", user.id)
-            .eq("content_id", id)
+            .eq("content_id", Number(id))
             .eq("content_type", table)
             .maybeSingle();
           setIsWatch(!!wl);
@@ -189,17 +189,17 @@ const DetailsNew = () => {
         .from("favorites")
         .delete()
         .eq("user_id", user.id)
-        .eq("content_id", id)
+        .eq("content_id", Number(id))
         .eq("content_type", table);
       setIsFav(false);
       toast({ title: "Removido dos favoritos" });
     } else {
       await supabase.from("favorites").insert({
         user_id: user.id,
-        content_id: id,
+        content_id: Number(id),
         content_type: table,
         titulo: data.title,
-        poster: data.poster_path || data.poster || data.capa || null,
+        poster: data.poster_path || (data as any).poster || (data as any).capa || null,
       });
       setIsFav(true);
       toast({ title: "Adicionado aos favoritos! ❤️" });
@@ -211,20 +211,20 @@ const DetailsNew = () => {
     const table = type === "series" ? "series" : "cinema";
     if (isWatch) {
       await supabase
-        .from("watchlist")
+        .from("watchlist" as any)
         .delete()
         .eq("user_id", user.id)
-        .eq("content_id", id)
+        .eq("content_id", Number(id))
         .eq("content_type", table);
       setIsWatch(false);
       toast({ title: "Removido da lista" });
     } else {
-      await supabase.from("watchlist").insert({
+      await supabase.from("watchlist" as any).insert({
         user_id: user.id,
-        content_id: id,
+        content_id: Number(id),
         content_type: table,
         titulo: data.title,
-        poster: data.poster_path || data.poster || data.capa || null,
+        poster: data.poster_path || (data as any).poster || (data as any).capa || null,
       });
       setIsWatch(true);
       toast({ title: "Adicionado à lista ✅" });
@@ -241,9 +241,9 @@ const DetailsNew = () => {
     try {
       // Salvar like na tabela de ratings se existir, ou só no estado local
       const table = type === "series" ? "series" : "cinema";
-      await supabase.from("ratings").upsert({
+      await supabase.from("ratings" as any).upsert({
         user_id: user.id,
-        content_id: id,
+        content_id: Number(id),
         content_type: table,
         rating: 1,
       }, { onConflict: "user_id,content_id,content_type" }).select();
@@ -317,7 +317,7 @@ const DetailsNew = () => {
 
   const backdrop = data.backdrop_path
     ? `https://image.tmdb.org/t/p/original${data.backdrop_path}`
-    : data.banner || data.capa || data.poster;
+    : (data as any).banner || (data as any).capa || (data as any).poster;
   const a = age(data.certification);
 
   return (
