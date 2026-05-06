@@ -73,7 +73,21 @@
     "commit": "./scripts/auto-commit.sh",
     "commit:all": "./scripts/auto-commit.sh \"feat: atualização automática\"",
     "push": "git push origin main",
-    "sync": "git pull origin main && git add . && git commit -m \"sync: atualização automática\" && git push origin main"
+    "sync": "git pull origin main && git add . && git commit -m \"sync: atualização automática\" && git push origin main",
+    "update:all": "./scripts/update-all-platforms.sh",
+    "update:vercel": "./scripts/update-all-platforms.sh --skip-github --skip-cloudflare",
+    "update:cloudflare": "./scripts/update-all-platforms.sh --skip-github --skip-vercel",
+    "sync:local": "./scripts/sync-local.sh sync",
+    "sync:watch": "./scripts/sync-local.sh watch",
+    "dev:sync": "./scripts/sync-local.sh dev",
+    "sync:health": "./scripts/sync-local.sh health",
+    "upload:all": "./scripts/upload-all-configs.sh",
+    "upload:configs": "./scripts/upload-all-configs.sh",
+    "silent:update": "./scripts/silent-auto-update.sh once",
+    "silent:daemon": "./scripts/silent-auto-update.sh daemon",
+    "silent:install": "./scripts/silent-auto-update.sh install",
+    "silent:status": "./scripts/silent-auto-update.sh status",
+    "silent:stop": "./scripts/silent-auto-update.sh stop"
   },
   "dependencies": {
     "@clappr/core": "^0.13.2",

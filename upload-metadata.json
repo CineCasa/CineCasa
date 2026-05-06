@@ -1,0 +1,8 @@
+{
+    "upload_version": "20260506-003825-UPLOAD-ad399a55",
+    "upload_hash": "30270320875a4c2e",
+    "timestamp": "2026-05-06T03:38:25Z",
+    "files_uploaded": 13,
+    "platforms": ["vercel", "cloudflare", "github", "local"],
+    "description": "Upload completo de configurações e personalizações"
+}

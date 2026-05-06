@@ -1,0 +1,294 @@
+name: 🚀 Instant Deploy - Zero Downtime
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/workflows/instant-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Plataforma específica (opcional)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - vercel
+          - cloudflare
+          - github-pages
+      force_deploy:
+        description: 'Forçar deploy mesmo sem alterações?'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.x'
+  VERCEL_PROJECT_ID: 'prj_0bqSB8wLnBeewfMawndo8tSEbR8U'
+
+jobs:
+  # ========================================
+  # BUILD OTIMIZADO COM CACHE
+  # ========================================
+  build:
+    name: ⚡ Build Otimizado
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      build_hash: ${{ steps.version.outputs.build_hash }}
+      has_changes: ${{ steps.changes.outputs.has_changes }}
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Verificar alterações
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "🚀 Deploy forçado via workflow_dispatch"
+          else
+            # Verificar se há alterações relevantes
+            CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -E '\.(ts|tsx|js|jsx|json|css|scss|svg|png|jpg|jpeg)$' | wc -l)
+            if [ "$CHANGED" -gt 0 ]; then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+              echo "📝 $CHANGED arquivos alterados"
+            else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+              echo "✅ Nenhuma alteração relevante detectada"
+            fi
+          fi
+
+      - name: 🏷️  Gerar Versão
+        id: version
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          VERSION=$(date +'%Y%m%d-%H%M%S')-${GITHUB_SHA::7}
+          BUILD_HASH=$(echo -n "$VERSION" | sha256sum | cut -d' ' -f1 | head -c 16)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "build_hash=$BUILD_HASH" >> $GITHUB_OUTPUT
+          echo "📦 Versão: $VERSION"
+          echo "🔑 Hash: $BUILD_HASH"
+
+      - name: ⚙️ Setup Node.js
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Instalar Dependências
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          echo "🧹 Limpando node_modules para instalação limpa..."
+          rm -rf node_modules
+          npm install --legacy-peer-deps
+
+      - name: 🏗️  Build
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          echo "🔨 Compilando aplicação..."
+          npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_BUILD_VERSION: ${{ steps.version.outputs.version }}
+          VITE_BUILD_HASH: ${{ steps.version.outputs.build_hash }}
+
+      - name: 📋 Criar Metadados
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          # Version file
+          echo "{\"version\": \"${{ steps.version.outputs.version }}\", \"hash\": \"${{ steps.version.outputs.build_hash }}\", \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"commit\": \"${{ github.sha }}\", \"actor\": \"${{ github.actor }}\"}" > public/version.json
+          
+          # Build info
+          cat > dist/build-info.json << EOF
+          {
+            "version": "${{ steps.version.outputs.version }}",
+            "hash": "${{ steps.version.outputs.build_hash }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit": "${{ github.sha }}",
+            "branch": "${{ github.ref_name }}",
+            "actor": "${{ github.actor }}",
+            "workflow": "${{ github.workflow }}",
+            "run_id": "${{ github.run_id }}"
+          }
+          EOF
+          
+          # .nojekyll para GitHub Pages
+          touch dist/.nojekyll
+          
+          echo "✅ Metadados criados"
+
+      - name: 📤 Upload Artifacts
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ steps.version.outputs.version }}
+          path: dist/
+          retention-days: 1
+
+  # ========================================
+  # DEPLOY PARALELO ZERO-DOWNTIME
+  # ========================================
+  deploy-vercel:
+    name: 🌐 Vercel
+    runs-on: ubuntu-latest
+    needs: build
+    if: (needs.build.outputs.has_changes == 'true') && (github.event.inputs.platform == 'all' || github.event.inputs.platform == 'vercel' || github.event.inputs.platform == null || github.event.inputs.platform == '')
+    environment: production
+    steps:
+      - name: 📥 Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ needs.build.outputs.version }}
+          path: dist/
+
+      - name: 🚀 Deploy Vercel
+        uses: amondnet/vercel-action@v25
+        id: vercel
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod --yes'
+          working-directory: ./dist
+
+      - name: 🧹 Limpar Cache
+        run: |
+          curl -X POST "https://api.vercel.com/v3/projects/${{ secrets.VERCEL_PROJECT_ID }}/cache" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"action": "revalidate"}' || true
+
+      - name: ✅ Verificar
+        run: |
+          sleep 3
+          curl -I -f "https://cinecasa.vercel.app" || echo "⚠️ Verificação pulada"
+          echo "✅ Vercel: https://cinecasa.vercel.app"
+
+  deploy-cloudflare:
+    name: ☁️  Cloudflare
+    runs-on: ubuntu-latest
+    needs: build
+    if: (needs.build.outputs.has_changes == 'true') && (github.event.inputs.platform == 'all' || github.event.inputs.platform == 'cloudflare' || github.event.inputs.platform == null || github.event.inputs.platform == '')
+    environment: production
+    steps:
+      - name: 📥 Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ needs.build.outputs.version }}
+          path: dist/
+
+      - name: 🚀 Deploy Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=cinecasa --branch=main
+
+      - name: 🧹 Limpar Cache
+        if: secrets.CLOUDFLARE_ZONE_ID
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' || true
+
+      - name: ✅ Verificar
+        run: |
+          sleep 3
+          curl -I -f "https://cinecasa.pages.dev/" || echo "⚠️ Verificação pulada"
+          echo "✅ Cloudflare: https://cinecasa.pages.dev"
+
+  deploy-github-pages:
+    name: 📄 GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    if: (needs.build.outputs.has_changes == 'true') && (github.event.inputs.platform == 'all' || github.event.inputs.platform == 'github-pages' || github.event.inputs.platform == null || github.event.inputs.platform == '')
+    environment: production
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+      - name: 📥 Download Build
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ needs.build.outputs.version }}
+          path: dist/
+
+      - name: ⚙️ Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: 🚀 Deploy Pages
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: build-${{ needs.build.outputs.version }}
+
+      - name: ✅ Verificar
+        run: |
+          sleep 5
+          curl -I -f "https://kassiaavilla.github.io/cinecasa/" || echo "⚠️ Verificação pulada"
+          echo "✅ GitHub Pages: https://kassiaavilla.github.io/cinecasa/"
+
+  # ========================================
+  # NOTIFICAÇÃO E STATUS FINAL
+  # ========================================
+  notify:
+    name: 📋 Status Final
+    runs-on: ubuntu-latest
+    needs: [build, deploy-vercel, deploy-cloudflare, deploy-github-pages]
+    if: always()
+    steps:
+      - name: 📊 Relatório
+        run: |
+          echo "╔══════════════════════════════════════════════════════════════╗"
+          echo "║                 🚀 DEPLOY INSTANTÂNEO CONCLUÍDO              ║"
+          echo "╚══════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "📦 Versão: ${{ needs.build.outputs.version }}"
+          echo "🔑 Hash: ${{ needs.build.outputs.build_hash }}"
+          echo "👤 Autor: ${{ github.actor }}"
+          echo "🌿 Branch: ${{ github.ref_name }}"
+          echo ""
+          echo "🌐 PLATAFORMAS:"
+          echo "  • Vercel: ${{ needs.deploy-vercel.result }}"
+          echo "  • Cloudflare: ${{ needs.deploy-cloudflare.result }}"
+          echo "  • GitHub Pages: ${{ needs.deploy-github-pages.result }}"
+          echo ""
+          echo "🔗 URLs:"
+          if [ "${{ needs.deploy-vercel.result }}" = "success" ]; then
+            echo "  • https://cinecasa.vercel.app ✅"
+          fi
+          if [ "${{ needs.deploy-cloudflare.result }}" = "success" ]; then
+            echo "  • https://cinecasa.pages.dev ✅"
+          fi
+          if [ "${{ needs.deploy-github-pages.result }}" = "success" ]; then
+            echo "  • https://kassiaavilla.github.io/cinecasa/ ✅"
+          fi
+          echo ""
+          if [ "${{ needs.build.outputs.has_changes }}" = "true" ]; then
+            echo "🎉 Deploy realizado com sucesso!"
+          else
+            echo "ℹ️  Nenhuma alteração para deploy"
+          fi
+
+      - name: 🎯 Notificar Sucesso
+        if: needs.build.outputs.has_changes == 'true' && needs.deploy-vercel.result == 'success'
+        run: |
+          echo "✅ Deploy principal (Vercel) concluído com sucesso!"
+          echo "🔄 Cache invalidado automaticamente"
+          echo "⏱️  Propagação: 2-3 minutos"

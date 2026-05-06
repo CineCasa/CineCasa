@@ -48,6 +48,7 @@ import { useGlobalTVNavigation } from "./hooks/useGlobalTVNavigation";
 import { ExitConfirmationModal } from "./components/ExitConfirmationModal";
 import { useProjectionMode } from "./hooks/useProjectionMode";
 import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
+import { useSilentUpdater } from "@/hooks/useSilentUpdater";
 import { useMobileViewportHeight } from "@/hooks/useMobileViewportHeight";
 import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
@@ -230,6 +231,7 @@ const AppContent = () => {
 
   // useGlobalTVNavigation();
   useAutoCacheCleanup();
+  useSilentUpdater();
   useMobileViewportHeight();
 
   const showNavbars = !isLoginPage && !isPlayerPage;
