@@ -141,19 +141,26 @@ const DetailsNew = () => {
   // Bug #1 corrigido: Assistir agora usa PlayerContext
   const handleWatch = () => {
     if (!data) return;
+    console.log("[DetailsNew] handleWatch chamado", { data, id, type });
+    console.log("[DetailsNew] videoUrl:", data.videoUrl);
+
     if (!data.videoUrl) {
       toast({ title: "Vídeo não disponível", description: "Este conteúdo ainda não possui link de reprodução." });
       return;
     }
-    openPlayer({
+
+    const playerItem = {
       id: id!,
       title: data.title,
-      type: type === "series" ? "series" : "movie",
+      type: (type === "series" ? "series" : "movie") as 'movie' | 'series',
       videoUrl: data.videoUrl,
       poster: data.poster_path
         ? `https://image.tmdb.org/t/p/w500${data.poster_path}`
-        : data.poster || data.capa || undefined,
-    });
+        : (data as any).poster || (data as any).capa || undefined,
+    };
+
+    console.log("[DetailsNew] Abrindo player com:", playerItem);
+    openPlayer(playerItem);
   };
 
   // Bug #5 corrigido: Trailer abre o link do trailer
