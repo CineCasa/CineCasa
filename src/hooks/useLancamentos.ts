@@ -9,9 +9,11 @@ export const useLancamentos = (email?: string) => {
   useEffect(() => {
     const fetchLancamentos = async () => {
       try {
+        // Buscar filmes das categorias "Lançamento 2026" e "Lançamento 2025"
         const { data } = await supabase
           .from('cinema')
           .select('*')
+          .in('genre', ['Lançamento 2026', 'Lançamento 2025'])
           .order('created_at', { ascending: false })
           .limit(20);
         
@@ -22,6 +24,7 @@ export const useLancamentos = (email?: string) => {
           year: item.year,
           rating: item.rating,
           type: 'movie',
+          genre: item.genre, // Adicionar genre para identificar o tipo de lançamento
         }));
         
         setLancamentos(mapped);

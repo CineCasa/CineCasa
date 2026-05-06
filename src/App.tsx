@@ -189,6 +189,7 @@ const PlayerContainer = () => {
 const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
+  const [showPWAInstall, setShowPWAInstall] = useState(false);
   const location = useLocation();
   const { isPlayerOpen, closePlayer } = usePlayer();
   const { user } = useAuth();
@@ -234,6 +235,25 @@ const AppContent = () => {
   useSilentUpdater();
   useMobileViewportHeight();
 
+  // PWA Install Prompt Handler
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      window.deferredPrompt = e;
+      
+      // Mostrar popup se usuário estiver logado
+      if (user) {
+        setShowPWAInstall(true);
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, [user]);
+
   const showNavbars = !isLoginPage && !isPlayerPage;
 
   return (
@@ -245,7 +265,7 @@ const AppContent = () => {
         />
       )}
       {showNavbars && <MobileTopNav />}
-      <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
+      <div className={`min-h-screen bg-black ${showNavbars ? 'pt-14 pb-14 md:pt-0 md:pb-0' : ''}`}>
         <NotificationProvider>
           <NotificationContainer />
           {showNotificationPrompt && (
@@ -263,7 +283,9 @@ const AppContent = () => {
           </KeyboardNavigation>
           <PlayerContainer />
         </NotificationProvider>
-        <PWAInstallPrompt />
+        {showPWAInstall && (
+          <PWAInstallPrompt onClose={() => setShowPWAInstall(false)} />
+        )}
         {/* <ExitConfirmationModal
           isOpen={showExitConfirmation}
           onConfirm={confirmExit}

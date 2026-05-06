@@ -9,10 +9,12 @@ export const useRomances = () => {
   useEffect(() => {
     const fetchRomances = async () => {
       try {
+        // Buscar filmes da categoria "Romances"
         const { data } = await supabase
           .from('cinema')
           .select('*')
-          .ilike('genre', '%Romance%')
+          .eq('genre', 'Romances')
+          .order('created_at', { ascending: false })
           .limit(20);
         
         const mapped = (data || []).map((item: any) => ({
@@ -22,6 +24,7 @@ export const useRomances = () => {
           year: item.year,
           rating: item.rating,
           type: 'movie',
+          genre: item.genre // Adicionar genre para identificação
         }));
         
         setMovies(mapped);

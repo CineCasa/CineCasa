@@ -304,51 +304,34 @@ const DetailsNew = () => {
   const flag = (c?: string) =>
     c ? `https://flagcdn.com/w40/${c.toLowerCase()}.png` : "";
 
-  if (load)
+  if (load) {
     return (
-      <div
-        style={{
-          background: C.bg,
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div style={{ color: C.neon }}>Carregando...</div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#00B7FF] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60">Carregando...</p>
+        </div>
       </div>
     );
+  }
 
-  if (!data)
+  if (!data) {
     return (
-      <div
-        style={{
-          background: C.bg,
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: "16px",
-        }}
-      >
-        <div style={{ color: C.text, fontSize: "20px" }}>Conteúdo não encontrado</div>
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            background: C.neon,
-            color: "black",
-            border: "none",
-            borderRadius: "12px",
-            padding: "10px 20px",
-            cursor: "pointer",
-            fontWeight: 700,
-          }}
-        >
-          Voltar
-        </button>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-white text-2xl font-bold mb-2">Conteúdo não encontrado</h1>
+          <p className="text-gray-400 mb-4">O conteúdo que você está procurando não está disponível.</p>
+          <button 
+            onClick={() => navigate(-1)} 
+            className="flex items-center gap-2 px-6 py-3 bg-[#00B7FF] text-black rounded font-medium hover:bg-[#00E5FF] transition-colors mx-auto"
+          >
+            <ChevronLeft size={20} />
+            Voltar
+          </button>
+        </div>
       </div>
     );
+  }
 
   const backdrop = data.backdrop_path
     ? `https://image.tmdb.org/t/p/original${data.backdrop_path}`

@@ -156,3 +156,19 @@ export function useOfflineContent() {
     } catch (error) {
       console.error('Erro ao fazer cache do conteúdo:', error);
       return { success: false, error };
+    } finally {
+      setIsCaching(false);
+    }
+  }, [storage, isOnline, cacheSize, saveStorage]);
+
+  return {
+    storage,
+    isOnline,
+    isCaching,
+    cacheSize,
+    clearCache,
+    getOfflineContent,
+    cacheContent,
+    removeContent
+  };
+}

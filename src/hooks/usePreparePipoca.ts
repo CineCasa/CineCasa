@@ -9,12 +9,39 @@ export const usePreparePipoca = () => {
   useEffect(() => {
     const fetchSeries = async () => {
       try {
-        const { data } = await supabase
+        // Fetch all series to get unique series names
+        const { data: allSeries } = await supabase
           .from('series')
           .select('*')
-          .limit(15);
+          .order('rating', { ascending: false });
         
-        const mapped = (data || []).map((item: any) => ({
+        if (!allSeries || allSeries.length === 0) {
+          setSeries([]);
+          return;
+        }
+
+        // Group series by name to avoid duplicates (same series, different seasons)
+        const seriesByName = new Map();
+        allSeries.forEach((item: any) => {
+          const seriesName = item.titulo?.toLowerCase().trim();
+          if (seriesName && !seriesByName.has(seriesName)) {
+            seriesByName.set(seriesName, item);
+          }
+        });
+
+        // Convert to array and shuffle randomly
+        const uniqueSeries = Array.from(seriesByName.values());
+        
+        // Fisher-Yates shuffle algorithm for true randomness
+        for (let i = uniqueSeries.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [uniqueSeries[i], uniqueSeries[j]] = [uniqueSeries[j], uniqueSeries[i]];
+        }
+
+        // Take first 5 series
+        const selectedSeries = uniqueSeries.slice(0, 5);
+        
+        const mapped = selectedSeries.map((item: any) => ({
           id: item.id,
           title: item.titulo,
           poster: item.poster ? tmdbImageUrl(item.poster, 'w500') : '',

@@ -80,7 +80,6 @@ export const useWatchPartyChat = ({
       if (isMountedRef.current) {
         setError('Erro ao carregar mensagens');
       }
-      }
     }
   }, [roomId, userId]);
 

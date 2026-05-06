@@ -9,11 +9,13 @@ export const useFinancas = () => {
   useEffect(() => {
     const fetchFinancas = async () => {
       try {
+        // Buscar filmes da categoria "Finanças" (exato)
         const { data } = await supabase
           .from('cinema')
           .select('*')
-          .ilike('category', '%Finanças%')
-          .limit(15);
+          .eq('genre', 'Finanças')
+          .order('rating', { ascending: false })
+          .limit(5);
         
         const mapped = (data || []).map((item: any) => ({
           id: item.id,
@@ -22,6 +24,7 @@ export const useFinancas = () => {
           year: item.year,
           rating: item.rating,
           type: 'movie',
+          genre: item.genre // Adicionar genre para identificação
         }));
         
         setMovies(mapped);

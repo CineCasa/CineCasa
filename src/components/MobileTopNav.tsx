@@ -11,6 +11,8 @@ export default function MobileTopNav() {
       style={{
         fontFamily: 'Inter, sans-serif',
         paddingTop: 'env(safe-area-inset-top)',
+        position: 'fixed',
+        bottom: 'auto',
       }}
     >
       <div

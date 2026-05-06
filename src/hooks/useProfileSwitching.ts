@@ -290,3 +290,17 @@ export function useProfileSwitching({
     } catch (error) {
       console.error('❌ Erro ao alternar perfil:', error);
       // Notificar usuário do erro (pode ser implementado via toast)
+    } finally {
+      clearTimeout(safetyTimeout);
+      setIsSwitching(false);
+    }
+  }, [userId, isSwitching, switchDelay, queryClient]);
+
+  return {
+    switchToProfile,
+    isSwitching,
+    deleteProfileMutation,
+    createProfileMutation,
+    updateProfileMutation
+  };
+}

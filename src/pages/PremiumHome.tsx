@@ -22,7 +22,7 @@ import { useHistoriasEsperanca } from '../hooks/useHistoriasEsperanca';
 import { useOrgulhoNacional } from '../hooks/useOrgulhoNacional';
 import { useBaseadoEmFatosReais } from '../hooks/useBaseadoEmFatosReais';
 import { usePrepareParaMedo } from '../hooks/usePrepareParaMedo';
-import { useRecomendacoes } from '../hooks/useRecomendacoes';
+import { useRecomendacoesExclusivas } from '../hooks/useRecomendacoesExclusivas';
 import { useRecommendedForYou } from '../hooks/useRecommendedForYou';
 import { useWatchlistSection } from '../hooks/useWatchlistSection';
 import { useAuth } from '../components/AuthProvider';
@@ -41,7 +41,7 @@ const PremiumHome: React.FC = () => {
   const { items: continueWatchingItems, isLoading: isLoadingContinue, removeItem } = useContinueWatching();
   const { user } = useAuth();
   const { lancamentos, isLoading: isLoadingLancamentos } = useLancamentos(user?.email);
-  const { recomendacoes, isLoading: isLoadingRecomendacoes, topGenres } = useRecomendacoes(user?.email);
+  const { recomendacoes, isLoading: isLoadingRecomendacoes, topGenres } = useRecomendacoesExclusivas(user?.email);
   const { romances, isLoading: isLoadingRomances } = useRomances(user?.email);
   const { financas, isLoading: isLoadingFinancas } = useFinancas(user?.email);
   const { content: adrenalinaContent, isLoading: isLoadingAdrenalina } = useAdrenalinaPura();
@@ -72,7 +72,7 @@ const PremiumHome: React.FC = () => {
   const isCineNoiteVisible = currentTime >= (23 * 60 + 58) || currentTime <= (5 * 60 + 59);
 
   // Sistema para evitar duplicatas apenas DENTRO de cada seção (não entre seções)
-  const filterUniqueItems = (items: any[], limit: number = 20) => {
+  const filterUniqueItems = (items: any[], limit: number = 5) => {
     const usedIds = new Set<string>();
     const unique = items.filter(item => {
       const id = item.tmdbId || item.id;
@@ -197,10 +197,10 @@ const PremiumHome: React.FC = () => {
 
       {/* Content Sections - no margin on mobile, keep margin on desktop */}
       <div className="mt-0 md:mt-[70px] relative z-30">
-        {/* Exclusivos para Você - Inteligente: baseado nos 5 gêneros mais vistos */}
-        {!isLoadingRecomendacoes && recomendacoes.length > 0 && (
+        {/* Exclusivos para Você - Inteligente: baseado nos gêneros mais assistidos */}
+        {user && !isLoadingRecomendacoes && recomendacoes.length > 0 && (
           <ContentCarousel
-            title={`Exclusivos para Você${topGenres.length > 0 ? ` • ${topGenres.slice(0, 2).map(g => g.genre).join(', ')}` : ''}`}
+            title={`Exclusivos para Você${topGenres.length > 0 ? ` • ${topGenres.slice(0, 2).join(', ')}` : ''}`}
             items={filterUniqueItems((recomendacoes || []).map(item => ({
               id: item.id,
               tmdbId: item.tmdbId,
@@ -208,7 +208,7 @@ const PremiumHome: React.FC = () => {
               poster: item.poster,
               type: item.type,
               year: item.year,
-              rating: `${Math.round(item.matchScore * 10)}% match`,
+              rating: `${Math.round(item.matchScore * 10)}% compatível`,
               isNew: true
             })), 5)}
             onCardClick={handleCardClick}

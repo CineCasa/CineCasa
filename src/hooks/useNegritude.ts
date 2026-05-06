@@ -9,11 +9,13 @@ export const useNegritude = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
+        // Buscar filmes da categoria "Negritude" (exato)
         const { data } = await supabase
           .from('cinema')
           .select('*')
-          .ilike('category', '%Negritude%')
-          .limit(15);
+          .eq('genre', 'Negritude')
+          .order('rating', { ascending: false })
+          .limit(5);
         
         const mapped = (data || []).map((item: any) => ({
           id: item.id,
@@ -22,6 +24,7 @@ export const useNegritude = () => {
           year: item.year,
           rating: item.rating,
           type: 'movie',
+          genre: item.genre // Adicionar genre para identificação
         }));
         
         setContent(mapped);

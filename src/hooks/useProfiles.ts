@@ -88,3 +88,17 @@ export function useProfiles() {
     } catch (err) {
       console.error('[useProfiles] Error:', err);
       setError('Erro ao carregar perfis');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return {
+    profiles,
+    currentProfile,
+    loading,
+    error,
+    fetchProfiles,
+    setCurrentProfile
+  };
+}
