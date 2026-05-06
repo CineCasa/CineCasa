@@ -18,8 +18,10 @@ import {
   Hd, 
   MoreVertical,
   Rewind,
-  FastForward
+  FastForward,
+  Cast
 } from 'lucide-react';
+import screenCastService, { CastDevice } from '../services/screenCastService';
 
 interface VideoJSPlayerProps {
   url: string;
@@ -88,6 +90,9 @@ export default function VideoJSPlayer({
   const [previewTime, setPreviewTime] = useState(0);
   const [subtitleTracks, setSubtitleTracks] = useState<any[]>([]);
   const [currentSubtitle, setCurrentSubtitle] = useState<string>('off');
+  const [castDevices, setCastDevices] = useState<CastDevice[]>([]);
+  const [isCasting, setIsCasting] = useState(false);
+  const [showCastMenu, setShowCastMenu] = useState(false);
 
   useEffect(() => {
     if (!videoRef.current) return;
@@ -227,6 +232,28 @@ export default function VideoJSPlayer({
     };
   }, [url, poster, resumeFrom]);
 
+  // Initialize screen cast service
+  useEffect(() => {
+    screenCastService.initialize().then(() => {
+      setCastDevices(screenCastService.getAvailableDevices());
+    });
+
+    const handleCastStateChange = () => {
+      setCastDevices(screenCastService.getAvailableDevices());
+      setIsCasting(screenCastService.isCasting());
+    };
+
+    screenCastService.on('castStateChanged', handleCastStateChange);
+    screenCastService.on('connected', handleCastStateChange);
+    screenCastService.on('disconnected', handleCastStateChange);
+
+    return () => {
+      screenCastService.off('castStateChanged', handleCastStateChange);
+      screenCastService.off('connected', handleCastStateChange);
+      screenCastService.off('disconnected', handleCastStateChange);
+    };
+  }, []);
+
   const togglePiP = useCallback(() => {
     if (!playerRef.current) return;
     const videoElement = playerRef.current.el().querySelector('video');
@@ -280,6 +307,27 @@ export default function VideoJSPlayer({
     setShowSettings({ ...showSettings, speed: false });
   }, [showSettings]);
 
+  const handleCastConnect = useCallback(async (deviceId: string) => {
+    const success = await screenCastService.connect(deviceId);
+    if (success) {
+      // Load media on cast device
+      await screenCastService.loadMedia({
+        contentId: url,
+        contentType: getVideoType(url),
+        title: title,
+        poster: poster,
+        duration: duration,
+        currentTime: currentTime
+      });
+    }
+    setShowCastMenu(false);
+  }, [url, title, poster, duration, currentTime]);
+
+  const handleCastDisconnect = useCallback(async () => {
+    await screenCastService.disconnect();
+    setShowCastMenu(false);
+  }, []);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -313,6 +361,12 @@ export default function VideoJSPlayer({
         case 'p':
           e.preventDefault();
           togglePiP();
+          break;
+        case 'c':
+          e.preventDefault();
+          if (castDevices.length > 0) {
+            setShowCastMenu(!showCastMenu);
+          }
           break;
         case 'arrowright':
         case 'l':
@@ -369,7 +423,7 @@ export default function VideoJSPlayer({
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, isFullscreen, isPlaying, currentTime, volume, isMuted, duration, playbackRate, togglePiP, onNext, onPrevious]);
+  }, [onClose, isFullscreen, isPlaying, currentTime, volume, isMuted, duration, playbackRate, togglePiP, onNext, onPrevious, castDevices, showCastMenu]);
 
   const fmt = (s: number) => { if (!s || isNaN(s)) return '0:00'; const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = Math.floor(s%60); return h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}` : `${m}:${sec.toString().padStart(2,'0')}`; };
 
@@ -577,6 +631,46 @@ export default function VideoJSPlayer({
                 <PictureInPicture size={22} />
               </button>
 
+              {/* Cast */}
+              {castDevices.length > 0 && (
+                <div className="relative">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowCastMenu(!showCastMenu); }} 
+                    className={`text-white hover:text-gray-300 transition-colors p-1 ${isCasting ? 'text-red-500' : ''}`}
+                    title="Compartilhar tela"
+                  >
+                    <Cast size={22} />
+                  </button>
+
+                  {/* Cast Menu */}
+                  {showCastMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 bg-black/95 rounded-lg p-2 min-w-[180px] shadow-2xl border border-white/10">
+                      <div className="text-white text-xs mb-2 px-2 font-semibold opacity-60">Dispositivos</div>
+                      {isCasting ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleCastDisconnect(); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-white/10 text-red-500"
+                        >
+                          <Cast size={16} />
+                          Desconectar
+                        </button>
+                      ) : (
+                        castDevices.map(device => (
+                          <button
+                            key={device.id}
+                            onClick={(e) => { e.stopPropagation(); handleCastConnect(device.id); }}
+                            className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded hover:bg-white/10 ${device.status === 'connected' ? 'text-red-500' : 'text-white'}`}
+                          >
+                            <Cast size={16} />
+                            {device.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Settings */}
               <div className="relative">
                 <button 
@@ -707,7 +801,7 @@ export default function VideoJSPlayer({
 
       {/* Keyboard Shortcuts Info */}
       <div className="absolute bottom-20 left-4 text-white/40 text-xs hidden md:block">
-        <span className="opacity-0 hover:opacity-100 transition-opacity">Shortcuts: Espaço=Play, F=Fullscreen, M=Mute, ←→=Seek, ↑↓=Volume, P=PiP</span>
+        <span className="opacity-0 hover:opacity-100 transition-opacity">Shortcuts: Espaço=Play, F=Fullscreen, M=Mute, ←→=Seek, ↑↓=Volume, P=PiP, C=Cast</span>
       </div>
     </div>
   );
