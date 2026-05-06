@@ -53,11 +53,11 @@ const ContinueWatching: React.FC<ContinueWatchingProps> = ({ items, onRemove }) 
         <Clock className="w-5 h-5 text-[#00d9ff]" />
         Continuar Assistindo
       </h2>
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-4 overflow-x-auto pb-4 scrollbar-hide">
         {displayItems.map((item) => (
           <div
             key={item.id}
-            className="w-full group cursor-pointer"
+            className="flex-shrink-0 w-[calc(33.333%-0.85rem)] md:w-full group cursor-pointer"
             onClick={() => handlePlay(item)}
           >
             {/* Poster */}
