@@ -15,7 +15,7 @@ interface YouTubePlayerProps {
 
 export default function YouTubePlayer({ url, title, onClose }: YouTubePlayerProps) {
   return (
-    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black z-[9999] flex items-center justify-center">
       <div className="w-full max-w-4xl aspect-video">
         <iframe
           src={url}

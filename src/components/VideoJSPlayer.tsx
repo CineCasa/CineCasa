@@ -211,7 +211,7 @@ export default function VideoJSPlayer({
 
   const fmt = (s: number) => { if (!s || isNaN(s)) return '0:00'; const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60); const sec = Math.floor(s%60); return h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}` : `${m}:${sec.toString().padStart(2,'0')}`; };
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col" ref={containerRef}>
+    <div className="fixed inset-0 bg-black z-[9999] flex flex-col" ref={containerRef}>
       <div className={`flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
         <h2 className="text-white text-lg font-semibold truncate max-w-md">{title}</h2>
         <button onClick={onClose} className="text-white hover:text-gray-300 transition-colors p-2 rounded-lg bg-white/10 hover:bg-white/20"><X size={24} /></button>

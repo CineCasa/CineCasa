@@ -143,6 +143,8 @@ const AppRoutes = () => {
 const PlayerContainer = () => {
   const { isPlayerOpen, currentItem, closePlayer } = usePlayer();
 
+  console.log('[PlayerContainer] isPlayerOpen:', isPlayerOpen, 'currentItem:', currentItem);
+
   if (!isPlayerOpen || !currentItem) return null;
 
   const videoUrl = currentItem.videoUrl || '';
