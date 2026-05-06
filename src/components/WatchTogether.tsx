@@ -80,7 +80,7 @@ export default function WatchTogether({
           id: roomId,
           current_url: currentUrl,
           host_id: isHost ? username : null,
-          current_time: currentTime,
+          current_video_time: currentTime,
           is_playing: isPlaying,
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
@@ -227,7 +227,7 @@ export default function WatchTogether({
       await supabase
         .from('watch_together_rooms')
         .update({
-          current_time: data?.currentTime || currentTime,
+          current_video_time: data?.currentTime || currentTime,
           is_playing: command === 'play',
           updated_at: new Date().toISOString()
         })

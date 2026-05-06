@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS watch_together_rooms (
   id TEXT PRIMARY KEY,
   current_url TEXT NOT NULL,
   host_id TEXT,
-  current_time FLOAT DEFAULT 0,
+  current_video_time FLOAT DEFAULT 0,
   is_playing BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

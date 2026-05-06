@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VideoJSPlayer from '../components/VideoJSPlayer';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '@/components/AuthProvider';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -89,10 +89,10 @@ export default function WatchTogetherPage() {
         title={roomData.title || 'Assistir Juntos'}
         poster={roomData.poster}
         onClose={handleClose}
-        resumeFrom={roomData.current_time || 0}
+        resumeFrom={roomData.current_video_time || 0}
         watchTogetherRoom={roomId}
         isHost={roomData.host_id === user?.id}
-        username={user?.username || `Guest-${Math.random().toString(36).substr(2, 6)}`}
+        username={(user?.email as string) || `Guest-${Math.random().toString(36).substr(2, 6)}`}
       />
     </div>
   );

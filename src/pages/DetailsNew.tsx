@@ -178,7 +178,7 @@ const DetailsNew = () => {
         id: roomId,
         current_url: data.videoUrl,
         host_id: user?.id,
-        current_time: 0,
+        current_video_time: 0,
         is_playing: false,
         title: data.title,
         poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : undefined
