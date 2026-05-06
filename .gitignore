@@ -56,3 +56,4 @@ Thumbs.db
 build.log
 vercel.json.bak
 wrangler.toml.bak
+.vercel

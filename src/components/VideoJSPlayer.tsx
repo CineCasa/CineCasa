@@ -15,7 +15,7 @@ import {
   X, 
   PictureInPicture, 
   Subtitles, 
-  Hd, 
+  Monitor,
   MoreVertical,
   Rewind,
   FastForward,
@@ -162,8 +162,8 @@ export default function VideoJSPlayer({
       setIsLoading(false);
       
       // Carregar quality levels
-      if (player.qualityLevels) {
-        const ql = player.qualityLevels();
+      if ((player as any).qualityLevels && typeof (player as any).qualityLevels === 'function') {
+        const ql = (player as any).qualityLevels();
         const levels: QualityLevel[] = [];
         for (let i = 0; i < ql.length; i++) {
           const level = ql[i];
@@ -507,7 +507,7 @@ export default function VideoJSPlayer({
           <h2 className="text-white text-lg font-semibold truncate max-w-md">{title}</h2>
           {qualityLevels.length > 0 && (
             <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded flex items-center gap-1">
-              <Hd size={12} />
+              <Monitor size={12} />
               {currentQuality}
             </span>
           )}
