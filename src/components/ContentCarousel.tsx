@@ -39,36 +39,73 @@ const ContentCarousel: React.FC<ContentCarouselProps> = ({
         </h2>
       </div>
 
-      {/* Container Grid - 5 colunas mobile com scroll horizontal, 5 colunas desktop */}
+      {/* Container Mobile: 3 visíveis por vez, 5 totais com scroll | Desktop: 5 visíveis */}
       <div className="relative px-2 sm:px-4 md:px-6" data-nav-region="carousel">
-        <div className="grid grid-cols-5 gap-0 overflow-x-auto pb-4 scrollbar-hide w-max md:w-full">
-          {items.slice(0, 5).map((item, index) => {
-            // Garantir que sempre tenha uma key válida
-            const safeId = item.id || item.tmdbId || `${item.title}-${index}`;
-            return (
-              <LazyCard
-                key={safeId}
-                {...item}
-                id={safeId}
-                index={index}
-                onClick={() => onCardClick?.(item)}
-              />
-            );
-          })}
+        {/* Mobile: 3 cards visíveis por vez com scroll horizontal */}
+        <div className="md:hidden">
+          <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide snap-x snap-mandatory">
+            {items.slice(0, 5).map((item, index) => {
+              // Garantir que sempre tenha uma key válida
+              const safeId = item.id || item.tmdbId || `${item.title}-${index}`;
+              return (
+                <div key={safeId} className="flex-shrink-0 w-[calc(33.333%-0.667rem)] snap-start">
+                  <LazyCard
+                    {...item}
+                    id={safeId}
+                    index={index}
+                    onClick={() => onCardClick?.(item)}
+                  />
+                </div>
+              );
+            })}
 
-          {/* Cards Vazios para "Em Breve" - apenas se não houver itens e não estiver carregando */}
-          {items.length === 0 && !isLoading && (
-            <div className="col-span-5 flex items-center justify-center py-8">
-              <p className="text-white/60 text-center">Nenhum conteúdo encontrado</p>
-            </div>
-          )}
+            {/* Cards Vazios para "Em Breve" - apenas se não houver itens e não estiver carregando */}
+            {items.length === 0 && !isLoading && (
+              <div className="flex-shrink-0 w-full flex items-center justify-center py-8">
+                <p className="text-white/60 text-center">Nenhum conteúdo encontrado</p>
+              </div>
+            )}
 
-          {/* Estado de carregamento */}
-          {isLoading && (
-            <div className="col-span-5 flex items-center justify-center py-8">
-              <div className="w-8 h-8 border-2 border-[#00A8E1] border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
+            {/* Estado de carregamento */}
+            {isLoading && (
+              <div className="flex-shrink-0 w-full flex items-center justify-center py-8">
+                <div className="w-8 h-8 border-2 border-[#00A8E1] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop: 5 cards visíveis */}
+        <div className="hidden md:block">
+          <div className="grid grid-cols-5 gap-0">
+            {items.slice(0, 5).map((item, index) => {
+              // Garantir que sempre tenha uma key válida
+              const safeId = item.id || item.tmdbId || `${item.title}-${index}`;
+              return (
+                <LazyCard
+                  key={safeId}
+                  {...item}
+                  id={safeId}
+                  index={index}
+                  onClick={() => onCardClick?.(item)}
+                />
+              );
+            })}
+
+            {/* Cards Vazios para "Em Breve" - apenas se não houver itens e não estiver carregando */}
+            {items.length === 0 && !isLoading && (
+              <div className="col-span-5 flex items-center justify-center py-8">
+                <p className="text-white/60 text-center">Nenhum conteúdo encontrado</p>
+              </div>
+            )}
+
+            {/* Estado de carregamento */}
+            {isLoading && (
+              <div className="col-span-5 flex items-center justify-center py-8">
+                <div className="w-8 h-8 border-2 border-[#00A8E1] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

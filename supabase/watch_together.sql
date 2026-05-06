@@ -87,3 +87,26 @@ BEGIN
   );
 END;
 $$;
+
+-- Trigger para limpar mensagens antigas
+CREATE OR REPLACE FUNCTION trigger_cleanup_messages()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  PERFORM cleanup_old_messages();
+  RETURN NEW;
+END;
+$$;
+
+-- Disparar limpeza a cada nova mensagem
+CREATE TRIGGER auto_cleanup_messages
+AFTER INSERT ON watch_together_messages
+FOR EACH ROW
+EXECUTE FUNCTION trigger_cleanup_messages();
+
+-- Disparar limpeza de participantes a cada novo comando
+CREATE TRIGGER auto_cleanup_participants
+AFTER INSERT ON watch_together_commands
+FOR EACH ROW
+EXECUTE FUNCTION trigger_cleanup_participants();
