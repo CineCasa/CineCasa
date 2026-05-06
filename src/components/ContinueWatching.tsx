@@ -57,7 +57,7 @@ const ContinueWatching: React.FC<ContinueWatchingProps> = ({ items, onRemove }) 
         {displayItems.map((item) => (
           <div
             key={item.id}
-            className="group cursor-pointer"
+            className="w-full group cursor-pointer"
             onClick={() => handlePlay(item)}
           >
             {/* Poster */}

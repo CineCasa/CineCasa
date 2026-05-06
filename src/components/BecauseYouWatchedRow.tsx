@@ -37,7 +37,7 @@ export const BecauseYouWatchedRow: React.FC<BecauseYouWatchedRowProps> = ({ genr
           <Link
             key={item.id}
             to={`/details/${item.type}/${item.id}`}
-            className="group"
+            className="w-full group"
           >
             <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-800">
               {item.poster ? (
