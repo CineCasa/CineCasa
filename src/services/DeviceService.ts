@@ -1,6 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
-import { getFullDeviceInfo, getOrCreateDeviceId, generateFingerprint } from '@/utils/deviceFingerprint';
-import type { DeviceInfo, DeviceType } from '@/utils/deviceFingerprint';
+import { getFullDeviceInfo, getOrCreateDeviceId } from '@/utils/deviceFingerprint';
+import type { DeviceType } from '@/utils/deviceFingerprint';
+
+/**
+ * CORREÇÕES:
+ * - Todas as RPCs (register_device, get_user_devices, remove_device,
+ *   logout_other_devices, etc.) não existem no banco
+ * - Substituído por queries diretas à tabela user_devices
+ *
+ * Colunas reais da tabela user_devices:
+ * id (uuid), user_id, device_name, device_type (tv|mobile|web),
+ * device_id, location, last_active, is_current, created_at,
+ * updated_at, is_active, ip_address, user_agent, os, browser,
+ * screen_resolution, timezone, language, fingerprint
+ */
 
 export interface UserDevice {
   id: string;
@@ -22,68 +35,132 @@ export interface UserDevice {
 class DeviceService {
   private static instance: DeviceService;
   private activityDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-  private readonly ACTIVITY_DEBOUNCE_MS = 30000; // 30 segundos
+  private readonly ACTIVITY_DEBOUNCE_MS = 30000;
 
   static getInstance(): DeviceService {
-    if (!DeviceService.instance) {
-      DeviceService.instance = new DeviceService();
-    }
+    if (!DeviceService.instance) DeviceService.instance = new DeviceService();
     return DeviceService.instance;
   }
 
+  getCurrentDeviceId(): string {
+    return getOrCreateDeviceId();
+  }
+
+  // ── Registrar dispositivo atual na tabela user_devices ───────
   async registerDevice(userId: string): Promise<{ success: boolean; deviceId: string | null; error?: string }> {
     try {
       const deviceInfo = await getFullDeviceInfo();
-      const { data, error } = await supabase.rpc('register_device', {
-        p_user_id: userId,
-        p_device_id: deviceInfo.deviceId,
-        p_device_name: deviceInfo.deviceName,
-        p_device_type: deviceInfo.deviceType,
-        p_location: null, // Será preenchido pelo backend ou próxima atualização
-        p_ip_address: null,
-        p_user_agent: navigator.userAgent,
-        p_os: deviceInfo.os,
-        p_browser: deviceInfo.browser,
-        p_screen_resolution: deviceInfo.screenResolution,
-        p_timezone: deviceInfo.timezone,
-        p_language: deviceInfo.language,
-        p_fingerprint: deviceInfo.fingerprint,
-      });
 
-      if (error) {
-        console.error('[DeviceService] Erro ao registrar dispositivo:', error);
-        return { success: false, deviceId: null, error: error.message };
-      }
+      // Normaliza device_type para os valores aceitos pelo banco: tv | mobile | web
+      const rawType = (deviceInfo.deviceType || 'web').toLowerCase();
+      const deviceType: DeviceType =
+        rawType === 'tv' ? 'tv' : rawType === 'mobile' ? 'mobile' : 'web';
 
-      console.log('[DeviceService] Dispositivo registrado:', deviceInfo.deviceName, deviceInfo.deviceId);
+      const payload = {
+        user_id: userId,
+        device_id: deviceInfo.deviceId,
+        device_name: deviceInfo.deviceName || 'Dispositivo desconhecido',
+        device_type: deviceType,
+        last_active: new Date().toISOString(),
+        is_current: true,
+        is_active: true,
+        user_agent: navigator.userAgent,
+        os: deviceInfo.os ?? null,
+        browser: deviceInfo.browser ?? null,
+        screen_resolution: deviceInfo.screenResolution ?? null,
+        timezone: deviceInfo.timezone ?? null,
+        language: deviceInfo.language ?? null,
+        fingerprint: deviceInfo.fingerprint ?? null,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('user_devices')
+        .upsert(payload, { onConflict: 'user_id,device_id' });
+
+      if (error) return { success: false, deviceId: null, error: error.message };
+
+      // Marcar outros como não-current
+      await supabase
+        .from('user_devices')
+        .update({ is_current: false, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .neq('device_id', deviceInfo.deviceId);
+
       return { success: true, deviceId: deviceInfo.deviceId };
     } catch (err: any) {
-      console.error('[DeviceService] Exceção ao registrar:', err);
       return { success: false, deviceId: null, error: err.message };
     }
   }
 
-  async updateLastActivity(userId?: string): Promise<boolean> {
-    // Debounce: só atualiza após 30s da última chamada
-    if (this.activityDebounceTimer) {
-      clearTimeout(this.activityDebounceTimer);
-    }
+  // ── Buscar todos os dispositivos do usuário ──────────────────
+  async getUserDevices(userId: string): Promise<{ devices: UserDevice[]; error?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('user_devices')
+        .select(
+          'id, device_id, device_name, device_type, location, last_active, is_current, is_active, created_at, ip_address, os, browser, screen_resolution, timezone'
+        )
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .order('last_active', { ascending: false });
 
-    return new Promise((resolve) => {
+      if (error) return { devices: [], error: error.message };
+
+      return { devices: (data as UserDevice[]) || [] };
+    } catch (err: any) {
+      return { devices: [], error: err.message };
+    }
+  }
+
+  // ── Remover dispositivo ──────────────────────────────────────
+  async removeDevice(deviceId: string, userId: string): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('user_devices')
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .eq('device_id', deviceId)
+        .eq('user_id', userId);
+
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
+  // ── Desconectar todos os outros dispositivos ─────────────────
+  async logoutOtherDevices(currentDeviceId: string, userId: string): Promise<number> {
+    try {
+      const { data, error } = await supabase
+        .from('user_devices')
+        .update({ is_active: false, is_current: false, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .neq('device_id', currentDeviceId)
+        .eq('is_active', true)
+        .select('id');
+
+      if (error) return 0;
+      return data?.length || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  // ── Atualizar last_active (debounced) ────────────────────────
+  async updateLastActivity(userId?: string): Promise<boolean> {
+    if (this.activityDebounceTimer) clearTimeout(this.activityDebounceTimer);
+
+    return new Promise(resolve => {
       this.activityDebounceTimer = setTimeout(async () => {
         try {
           const deviceId = getOrCreateDeviceId();
-          const { error } = await supabase.rpc('update_device_activity', {
-            p_device_id: deviceId,
-            p_user_id: userId || null,
-          });
+          const { error } = await supabase
+            .from('user_devices')
+            .update({ last_active: new Date().toISOString(), updated_at: new Date().toISOString() })
+            .eq('device_id', deviceId)
+            .eq('user_id', userId || '');
 
-          if (error) {
-            console.warn('[DeviceService] Erro ao atualizar atividade:', error.message);
-            resolve(false);
-          } else {
-            resolve(true);
-          }
+          resolve(!error);
         } catch {
           resolve(false);
         }
@@ -91,103 +168,19 @@ class DeviceService {
     });
   }
 
-  async getUserDevices(userId: string): Promise<{ devices: UserDevice[]; error?: string }> {
-    try {
-      const { data, error } = await supabase.rpc('get_user_devices', {
-        p_user_id: userId,
-      });
-
-      if (error) {
-        console.error('[DeviceService] Erro ao buscar dispositivos:', error);
-        return { devices: [], error: error.message };
-      }
-
-      return { devices: (data as UserDevice[]) || [] };
-    } catch (err: any) {
-      console.error('[DeviceService] Exceção ao buscar:', err);
-      return { devices: [], error: err.message };
-    }
-  }
-
-  async removeDevice(deviceId: string, userId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase.rpc('remove_device', {
-        p_device_id: deviceId,
-        p_user_id: userId,
-      });
-
-      if (error) {
-        console.error('[DeviceService] Erro ao remover:', error);
-        return false;
-      }
-
-      console.log('[DeviceService] Dispositivo removido:', deviceId);
-      return true;
-    } catch (err) {
-      console.error('[DeviceService] Exceção ao remover:', err);
-      return false;
-    }
-  }
-
-  async markCurrentDevice(deviceId: string, userId: string): Promise<boolean> {
-    try {
-      const { error } = await supabase.rpc('mark_current_device', {
-        p_device_id: deviceId,
-        p_user_id: userId,
-      });
-
-      if (error) {
-        console.error('[DeviceService] Erro ao marcar atual:', error);
-        return false;
-      }
-
-      return true;
-    } catch (err) {
-      console.error('[DeviceService] Exceção ao marcar atual:', err);
-      return false;
-    }
-  }
-
-  async logoutOtherDevices(currentDeviceId: string, userId: string): Promise<number> {
-    try {
-      const { data, error } = await supabase.rpc('logout_other_devices', {
-        p_current_device_id: currentDeviceId,
-        p_user_id: userId,
-      });
-
-      if (error) {
-        console.error('[DeviceService] Erro no logout remoto:', error);
-        return 0;
-      }
-
-      const count = data as number;
-      console.log('[DeviceService] Logout remoto em', count, 'dispositivos');
-      return count;
-    } catch (err) {
-      console.error('[DeviceService] Exceção no logout remoto:', err);
-      return 0;
-    }
-  }
-
+  // ── Contar dispositivos ativos ───────────────────────────────
   async countActiveDevices(userId: string): Promise<number> {
     try {
-      const { data, error } = await supabase.rpc('count_active_devices', {
-        p_user_id: userId,
-      });
+      const { count, error } = await supabase
+        .from('user_devices')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_active', true);
 
-      if (error) {
-        console.error('[DeviceService] Erro ao contar:', error);
-        return 0;
-      }
-
-      return (data as number) || 0;
+      return error ? 0 : count || 0;
     } catch {
       return 0;
     }
-  }
-
-  getCurrentDeviceId(): string {
-    return getOrCreateDeviceId();
   }
 }
 

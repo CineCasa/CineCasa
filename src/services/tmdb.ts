@@ -1,6 +1,5 @@
-// TMDB API Configuration
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || "";
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+// TMDB API Configuration via Cloudflare Worker
+const WORKER_URL = "https://cinecasa-worker.cinecasa-worker.workers.dev";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
 // Tamanhos de imagem otimizados para diferentes usos
@@ -47,18 +46,14 @@ export const tmdbPosterUrl = (path: string, highQuality: boolean = false): strin
 
 export const fetchTmdbDetails = async (tmdbId: string, type: "movie" | "tv") => {
   try {
-    const endpoint = type === "movie" ? `/movie/${tmdbId}` : `/tv/${tmdbId}`;
     const res = await fetch(
-      `${TMDB_BASE_URL}${endpoint}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos,external_ids`,
+      `${WORKER_URL}/tmdb/details?tmdb=${tmdbId}&type=${type}`,
       {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }
     );
-    if (!res.ok) {
-      console.error(`TMDB API error: ${res.status} for ${type} ${tmdbId}`);
-      return null;
-    }
+    if (!res.ok) return null;
     return res.json();
   } catch (error) {
     console.error("Error fetching TMDB details:", error);
@@ -69,16 +64,13 @@ export const fetchTmdbDetails = async (tmdbId: string, type: "movie" | "tv") => 
 export const fetchTmdbSeason = async (tmdbId: string, seasonNumber: number) => {
   try {
     const res = await fetch(
-      `${TMDB_BASE_URL}/tv/${tmdbId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`,
+      `${WORKER_URL}/tmdb/season?tmdb=${tmdbId}&season=${seasonNumber}`,
       {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }
     );
-    if (!res.ok) {
-      console.error(`TMDB API error: ${res.status} for season ${seasonNumber}`);
-      return null;
-    }
+    if (!res.ok) return null;
     return res.json();
   } catch (error) {
     console.error(`Error fetching TMDB season ${seasonNumber}:`, error);
@@ -104,4 +96,42 @@ export const getTmdbTrailerUrl = (videos: any) => {
   
   if (trailer) return `https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&loop=1&playlist=${trailer.key}`;
   return null;
+};
+
+// ── Busca thumbnails do worker para preview na scrubber ──────────────────────
+const SCRUBBER_WORKER_URL = "https://cinecasa-worker.cinecasa-worker.workers.dev";
+
+export const fetchScrubberThumbnails = async (
+  tmdbId: string,
+  tmdbType: 'movie' | 'tv',
+  duration: number
+): Promise<{ time: number; url: string }[]> => {
+  if (!tmdbId || !duration) return [];
+  try {
+    const endpoint = `${SCRUBBER_WORKER_URL}/tmdb/images?tmdb=${tmdbId}&type=${tmdbType}&duration=${Math.round(duration)}`;
+    const res = await fetch(endpoint);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.thumbnails || [];
+  } catch {
+    return [];
+  }
+};
+
+export const fetchEpisodeThumbnails = async (
+  tmdbId: string,
+  season: number,
+  episode: number,
+  duration: number
+): Promise<{ time: number; url: string }[]> => {
+  if (!tmdbId) return [];
+  try {
+    const endpoint = `${SCRUBBER_WORKER_URL}/tmdb/episode-images?tmdb=${tmdbId}&season=${season}&episode=${episode}&duration=${Math.round(duration)}`;
+    const res = await fetch(endpoint);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.thumbnails || [];
+  } catch {
+    return [];
+  }
 };

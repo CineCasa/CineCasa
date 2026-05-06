@@ -1,111 +1,132 @@
-# 🔧 CineCasa — Instruções de Aplicação dos Fixes
+# 🎬 CineCasa — Fixes v3 (Player real + Episódios + Previews + Dispositivos)
 
-## Arquivos corrigidos neste ZIP
+## Arquivos neste ZIP
 
 ```
-src/App.tsx                          → Bug #9, #10, #11, #12
-src/pages/Search.tsx                 → Bug #3
-src/pages/DetailsNew.tsx             → Bug #1, #5, #6
-src/pages/Favorites.tsx              → Bug #4
-src/pages/PremiumHome.tsx            → Bug #8, #11, #13
-src/components/ContinueWatching.tsx  → Bug #2
-.gitignore                           → Bug #14
+src/App.tsx                        → PlayerContainer passa tmdbId, hasNextEpisode, onNextEpisode
+src/contexts/PlayerContext.tsx     → PlayerItem estendido com tmdbId, hasNextEpisode, onNextEpisode
+src/components/VideoJSPlayer.tsx   → Salva progresso a cada 10s + preview thumbnails na scrubber
+src/components/YouTubePlayer.tsx   → YouTube IFrame API real + scrubber customizada + progress saving
+src/pages/DetailsNew.tsx           → Lista temporadas + episódios + playEpisode com autoplay próximo
+src/services/DeviceService.ts      → RPCs substituídas por queries diretas em user_devices
+src/services/tmdb.ts               → fetchScrubberThumbnails + fetchEpisodeThumbnails
+worker/worker.js                   → Novas rotas: /tmdb/images e /tmdb/episode-images
 ```
+
+---
+
+## O que cada arquivo resolve
+
+### VideoJSPlayer.tsx + YouTubePlayer.tsx
+- **Antes:** sem evento timeupdate, não salvava nada em user_progress
+- **Depois:** salva a cada 10s em user_progress com todos os campos corretos
+- **Antes:** YouTube era iframe sem controles, sem retomar de onde parou
+- **Depois:** YouTube IFrame API com scrubber, play/pause, velocidade, resume
+- **Novo:** preview de cenas reais ao passar o mouse na scrubber (via TMDB)
+- **Novo:** overlay "Próximo episódio em Xs" nos últimos 20s, igual Netflix
+
+### DetailsNew.tsx
+- **Antes:** séries não mostravam episódios (tabelas temporadas+episodios ignoradas)
+- **Depois:** busca temporadas → episódios → exibe lista com thumbnail, título, duração, progresso
+- **Novo:** seletor de temporadas (T1, T2, T3...)
+- **Novo:** botão play em cada episódio abre player com todos os metadados corretos
+- **Novo:** autoplay próximo episódio: ao terminar T1E1 → começa T1E2 automaticamente
+- **Novo:** ao cruzar última temporada, vai para a próxima automaticamente
+
+### DeviceService.ts
+- **Antes:** todas as funções chamavam RPCs (register_device, get_user_devices,
+  remove_device, logout_other_devices) que NÃO EXISTEM no banco
+- **Depois:** queries diretas à tabela user_devices com os campos reais
+
+### worker.js
+- **Nova rota GET /tmdb/images?tmdb=ID&type=movie|tv&duration=SECONDS**
+  Retorna backdrops distribuídos ao longo da duração para preview na scrubber
+- **Nova rota GET /tmdb/episode-images?tmdb=ID&season=S&episode=E&duration=SECONDS**
+  Retorna stills do episódio específico (fallback para backdrops da série)
 
 ---
 
 ## Como aplicar
 
-### Passo 1 — Extrair e substituir os arquivos
-
-Copie cada arquivo deste ZIP para a pasta correspondente no seu projeto:
-
 ```bash
-# Na pasta raiz do projeto CineCasa
-cp FIXES/src/App.tsx                         src/App.tsx
-cp FIXES/src/pages/Search.tsx                src/pages/Search.tsx
-cp FIXES/src/pages/DetailsNew.tsx            src/pages/DetailsNew.tsx
-cp FIXES/src/pages/Favorites.tsx             src/pages/Favorites.tsx
-cp FIXES/src/pages/PremiumHome.tsx           src/pages/PremiumHome.tsx
-cp FIXES/src/components/ContinueWatching.tsx src/components/ContinueWatching.tsx
-cp FIXES/.gitignore                          .gitignore
+# Copiar arquivos
+cp FIXES_V3/src/App.tsx                        src/App.tsx
+cp FIXES_V3/src/contexts/PlayerContext.tsx     src/contexts/PlayerContext.tsx
+cp FIXES_V3/src/components/VideoJSPlayer.tsx   src/components/VideoJSPlayer.tsx
+cp FIXES_V3/src/components/YouTubePlayer.tsx   src/components/YouTubePlayer.tsx
+cp FIXES_V3/src/pages/DetailsNew.tsx           src/pages/DetailsNew.tsx
+cp FIXES_V3/src/services/DeviceService.ts      src/services/DeviceService.ts
+cp FIXES_V3/src/services/tmdb.ts               src/services/tmdb.ts
+cp FIXES_V3/worker/worker.js                   worker/worker.js
 ```
-
-### Passo 2 — Remover o arquivo .env do histórico Git (IMPORTANTE!)
-
-O `.env` foi commitado com chaves secretas. Faça isso:
-
-```bash
-# Remove .env do rastreamento git (mantém o arquivo localmente)
-git rm --cached .env
-
-# Commite a remoção
-git add .gitignore
-git commit -m "fix: remove .env do git e atualiza .gitignore"
-```
-
-> ⚠️ Se possível, regenere as chaves do Supabase e TMDB no painel deles, pois
-> as chaves antigas já ficaram expostas publicamente no GitHub.
-
-### Passo 3 — Deletar a página TvAoVivo
-
-```bash
-rm src/pages/TvAoVivo.tsx
-```
-
-### Passo 4 — Commitar e fazer push
 
 ```bash
 git add src/App.tsx \
-        src/pages/Search.tsx \
+        src/contexts/PlayerContext.tsx \
+        src/components/VideoJSPlayer.tsx \
+        src/components/YouTubePlayer.tsx \
         src/pages/DetailsNew.tsx \
-        src/pages/Favorites.tsx \
-        src/pages/PremiumHome.tsx \
-        src/components/ContinueWatching.tsx \
-        .gitignore
+        src/services/DeviceService.ts \
+        src/services/tmdb.ts \
+        worker/worker.js
 
-git commit -m "fix: corrige 14 bugs de funcionalidade
+git commit -m "feat: player real com progresso, episódios, next-ep e thumbnails
 
-- feat: Search.tsx implementado com busca real no Supabase
-- fix: DetailsNew - botão Assistir agora usa PlayerContext
-- fix: DetailsNew - botão Trailer abre player/link correto
-- fix: DetailsNew - botão Like salva rating no Supabase
-- fix: ContinueWatching - navega para /details em vez de /watch inexistente
-- fix: Favorites - corrige nomes dos métodos (removeFavorite, refresh)
-- fix: PremiumHome - remove ~350 linhas de mock data não utilizadas
-- fix: PremiumHome - onRemove de ContinueWatching agora funciona
-- fix: App.tsx - remove TvAoVivo e rota /tvaovivo
-- fix: App.tsx - splash exibe apenas uma vez por login (não em refresh)
-- fix: App.tsx - remove hooks de auto-update quebrados
-- chore: remove todos os console.log de produção
-- chore: .gitignore atualizado para bloquear .env"
+- feat: VideoJSPlayer salva progresso em user_progress a cada 10s
+- feat: YouTubePlayer usa IFrame API real (não mais iframe cego)
+- feat: preview de cenas reais na scrubber via TMDB backdrops/stills
+- feat: overlay 'Próximo episódio' nos últimos 20s (estilo Netflix)
+- feat: autoplay próximo episódio / próxima temporada automático
+- feat: DetailsNew lista temporadas + episódios com thumbnail e duração
+- feat: botão 'Continuar' retoma de onde o usuário parou
+- fix: DeviceService - RPCs substituídas por queries em user_devices
+- feat: worker - rotas /tmdb/images e /tmdb/episode-images para scrubber"
 
 git push origin main
 ```
 
-O deploy na Vercel e Cloudflare Workers acontece automaticamente via CI/CD.
+### Deploy do Worker (Cloudflare)
+```bash
+cd worker
+npx wrangler deploy
+```
 
 ---
 
-## Resumo dos bugs corrigidos
+## ⚠️ Ponto de atenção: TMDB API Key
 
-| # | Arquivo | Bug | Status |
-|---|---------|-----|--------|
-| 1 | DetailsNew.tsx | "Assistir agora" navegava para /watch/ inexistente | ✅ Corrigido |
-| 2 | ContinueWatching.tsx | Links de "Continuar assistindo" iam para /watch/ inexistente | ✅ Corrigido |
-| 3 | Search.tsx | Página de busca era um stub sem funcionalidade | ✅ Corrigido |
-| 4 | Favorites.tsx | Métodos fetchFavorites/removeFromFavorites não existiam no hook | ✅ Corrigido |
-| 5 | DetailsNew.tsx | Botão Trailer sem onClick — completamente inerte | ✅ Corrigido |
-| 6 | DetailsNew.tsx | Botão Like sem onClick — não salvava nada | ✅ Corrigido |
-| 8 | PremiumHome.tsx | ~350 linhas de mock data declarados mas nunca usados | ✅ Corrigido |
-| 9 | App.tsx | Rota /tvaovivo inexistente + página TvAoVivo removida | ✅ Corrigido |
-| 10 | App.tsx | Hooks de auto-update quebrados (causavam loop) ainda importados | ✅ Corrigido |
-| 11 | App.tsx + PremiumHome | Dezenas de console.log vazando dados em produção | ✅ Corrigido |
-| 12 | App.tsx | Splash screen aparecia toda vez que usuário recarregava a página | ✅ Corrigido |
-| 13 | PremiumHome.tsx | onRemove de ContinueWatching era um console.log vazio | ✅ Corrigido |
-| 14 | .gitignore | Arquivo .env com chaves secretas rastreado pelo Git | ✅ Corrigido |
+A API key do TMDB está hardcoded no worker e nos players.
+Para produção, mova para uma variável de ambiente no wrangler.toml:
 
-## O que NÃO foi alterado
-- Bug #7 (pagamento) — requer integração com Stripe/Mercado Pago/Pix.
-  Estrutura da Subscription.tsx está pronta, só precisa do gateway.
-  Me avise se quiser implementar.
+```toml
+# wrangler.toml
+[vars]
+TMDB_API_KEY = "sua_chave_aqui"
+```
+
+E no worker use `env.TMDB_API_KEY` em vez da string literal.
+
+---
+
+## Status final após v1 + v2 + v3
+
+| Funcionalidade | Status |
+|---|---|
+| Login / autenticação | ✅ |
+| Listagem filmes e séries | ✅ |
+| Busca real | ✅ |
+| Favoritos | ✅ |
+| Watchlist | ✅ |
+| Continue assistindo (dados reais) | ✅ |
+| Player salva progresso | ✅ |
+| Resume de onde parou | ✅ |
+| Preview na scrubber (cenas reais) | ✅ |
+| Próximo episódio automático | ✅ |
+| Lista de episódios por temporada | ✅ |
+| Sub-perfis | ✅ |
+| Página de perfil com dados reais | ✅ |
+| Gerenciar dispositivos | ✅ |
+| Notificações | ✅ |
+| PWA | ✅ |
+| **Pagamento/assinatura** | ⚠️ Gateway pendente |
+| **Watch Party** | ⚠️ Servidor RT pendente |

@@ -6,13 +6,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import LoadingScreen from "./components/LoadingScreen";
-import WatchTogetherPage from "./pages/WatchTogetherPage";
 import SplashScreen from "./components/SplashScreen";
 import DeviceAccessManager from "./components/DeviceAccessManager";
 import KeyboardNavigation from "./components/KeyboardNavigation";
 import { SpatialNavigationProvider } from "./components/SpatialNavigationProvider";
 import MobileBottomNav from "./components/MobileBottomNav";
-import MobileTopNav from "./components/MobileTopNav";
 import PremiumNavbar from "./components/PremiumNavbar";
 import TVNavbar from "./components/TVNavbar";
 import ScrollToTop from "./components/ScrollToTop";
@@ -48,7 +46,6 @@ import { useGlobalTVNavigation } from "./hooks/useGlobalTVNavigation";
 import { ExitConfirmationModal } from "./components/ExitConfirmationModal";
 import { useProjectionMode } from "./hooks/useProjectionMode";
 import { useAutoCacheCleanup } from "@/hooks/useAutoCacheCleanup";
-import { useSilentUpdater } from "@/hooks/useSilentUpdater";
 import { useMobileViewportHeight } from "@/hooks/useMobileViewportHeight";
 import { AppLoadingProvider, useAppLoading } from "@/contexts/AppLoadingContext";
 
@@ -124,7 +121,6 @@ const AppRoutes = () => {
         <Route path="/filmes/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
         <Route path="/categoria/:categoria" element={<ProtectedRoute><FilmesPorCategoria /></ProtectedRoute>} />
         <Route path="/details/:type/:id" element={<ProtectedRoute><DetailsNew /></ProtectedRoute>} />
-        <Route path="/watch/:roomId" element={<WatchTogetherPage />} />
         <Route path="/movie-details/:id" element={<ProtectedRoute><MovieDetails /></ProtectedRoute>} />
         <Route path="/content/:id" element={<ProtectedRoute><Content /></ProtectedRoute>} />
         <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
@@ -146,50 +142,39 @@ const AppRoutes = () => {
 const PlayerContainer = () => {
   const { isPlayerOpen, currentItem, closePlayer } = usePlayer();
 
-  console.log('[PlayerContainer] isPlayerOpen:', isPlayerOpen, 'currentItem:', currentItem);
-
   if (!isPlayerOpen || !currentItem) return null;
 
   const videoUrl = currentItem.videoUrl || '';
   const isYouTube = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be');
 
+  const sharedProps = {
+    url: videoUrl,
+    title: currentItem.title,
+    poster: currentItem.poster,
+    onClose: closePlayer,
+    contentId: currentItem.id,
+    contentType: currentItem.type,
+    episodeId: currentItem.episodeId,
+    seasonNumber: currentItem.seasonNumber,
+    episodeNumber: currentItem.episodeNumber,
+    resumeFrom: currentItem.resumeFrom,
+    tmdbId: currentItem.tmdbId,
+    tmdbType: currentItem.tmdbType,
+    hasNextEpisode: currentItem.hasNextEpisode,
+    nextEpisodeTitle: currentItem.nextEpisodeTitle,
+    onNextEpisode: currentItem.onNextEpisode,
+  };
+
   if (isYouTube) {
-    return (
-      <YouTubePlayer
-        url={videoUrl}
-        title={currentItem.title}
-        poster={currentItem.poster}
-        onClose={closePlayer}
-        contentId={currentItem.id}
-        contentType={currentItem.type}
-        episodeId={currentItem.episodeId}
-        seasonNumber={currentItem.seasonNumber}
-        episodeNumber={currentItem.episodeNumber}
-        resumeFrom={currentItem.resumeFrom}
-      />
-    );
+    return <YouTubePlayer {...sharedProps} />;
   }
 
-  return (
-    <VideoJSPlayer
-      url={videoUrl}
-      title={currentItem.title}
-      poster={currentItem.poster}
-      onClose={closePlayer}
-      contentId={currentItem.id}
-      contentType={currentItem.type}
-      episodeId={currentItem.episodeId}
-      seasonNumber={currentItem.seasonNumber}
-      episodeNumber={currentItem.episodeNumber}
-      resumeFrom={currentItem.resumeFrom}
-    />
-  );
+  return <VideoJSPlayer {...sharedProps} />;
 };
 
 const AppContent = () => {
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
-  const [showPWAInstall, setShowPWAInstall] = useState(false);
   const location = useLocation();
   const { isPlayerOpen, closePlayer } = usePlayer();
   const { user } = useAuth();
@@ -222,37 +207,17 @@ const AppContent = () => {
     setShowSplash(false);
   };
 
-  // const { showExitConfirmation, confirmExit, cancelExit } = useGlobalBackHandler({
-  //   isPlayerOpen,
-  //   onClosePlayer: closePlayer,
-  //   onExitApp: () => {
-  //     window.location.href = '/login';
-  //   },
-  // });
+  const { showExitConfirmation, confirmExit, cancelExit } = useGlobalBackHandler({
+    isPlayerOpen,
+    onClosePlayer: closePlayer,
+    onExitApp: () => {
+      window.location.href = '/login';
+    },
+  });
 
-  // useGlobalTVNavigation();
+  useGlobalTVNavigation();
   useAutoCacheCleanup();
-  useSilentUpdater();
   useMobileViewportHeight();
-
-  // PWA Install Prompt Handler
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      window.deferredPrompt = e;
-      
-      // Mostrar popup se usuário estiver logado
-      if (user) {
-        setShowPWAInstall(true);
-      }
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, [user]);
 
   const showNavbars = !isLoginPage && !isPlayerPage;
 
@@ -264,8 +229,7 @@ const AppContent = () => {
           minDuration={2500}
         />
       )}
-      {showNavbars && <MobileTopNav />}
-      <div className={`min-h-screen bg-black ${showNavbars ? 'pt-14 pb-14 md:pt-0 md:pb-0' : ''}`}>
+      <div className={`min-h-screen bg-black ${showNavbars ? 'pb-14 md:pb-0' : ''}`}>
         <NotificationProvider>
           <NotificationContainer />
           {showNotificationPrompt && (
@@ -283,16 +247,14 @@ const AppContent = () => {
           </KeyboardNavigation>
           <PlayerContainer />
         </NotificationProvider>
-        {showPWAInstall && (
-          <PWAInstallPrompt onClose={() => setShowPWAInstall(false)} />
-        )}
-        {/* <ExitConfirmationModal
+        {showNavbars && <MobileBottomNav />}
+        <PWAInstallPrompt />
+        <ExitConfirmationModal
           isOpen={showExitConfirmation}
           onConfirm={confirmExit}
           onCancel={cancelExit}
-        /> */}
+        />
       </div>
-      {showNavbars && <MobileBottomNav />}
     </>
   );
 };
