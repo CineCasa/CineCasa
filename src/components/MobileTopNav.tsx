@@ -6,7 +6,7 @@ export default function MobileTopNav() {
   const navigate = useNavigate();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-b border-white/10 md:hidden z-50">
+    <nav className="fixed top-0 left-0 right-0 bg-black/90 backdrop-blur-lg border-b border-white/10 md:hidden z-[100]">
       <div className="flex items-center justify-between px-4 h-14">
         {/* Logo */}
         <button
