@@ -23,26 +23,26 @@ export const TMDB_IMAGE_SIZES = {
   STILL_W185: 'w185',
 };
 
-// Generate TMDB image URL com alta qualidade para banners
-export const tmdbImageUrl = (path: string, size: string = 'w500'): string => {
+// Generate TMDB image URL com qualidade 4K máxima
+export const tmdbImageUrl = (path: string, size: string = 'original'): string => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 };
 
-// URL otimizada para banners hero - usa original para máxima qualidade (1080p+)
+// URL otimizada para banners hero - usa original para máxima qualidade 4K
 export const tmdbBannerUrl = (path: string): string => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  // Usar original para banners garantir qualidade máxima (acima de 1080p)
+  // Usar original para banners garantir qualidade 4K máxima
   return `${TMDB_IMAGE_BASE_URL}/original${path}`;
 };
 
-// URL para posters com fallback de qualidade
-export const tmdbPosterUrl = (path: string, highQuality: boolean = false): string => {
+// URL para posters com qualidade 4K máxima
+export const tmdbPosterUrl = (path: string, highQuality: boolean = true): string => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  const size = highQuality ? TMDB_IMAGE_SIZES.POSTER_W780 : TMDB_IMAGE_SIZES.POSTER_W500;
+  const size = highQuality ? TMDB_IMAGE_SIZES.POSTER_ORIGINAL : TMDB_IMAGE_SIZES.POSTER_W780;
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 };
 

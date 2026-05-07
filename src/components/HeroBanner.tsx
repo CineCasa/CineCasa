@@ -430,11 +430,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({ pageType, className = ''
         </motion.div>
       </AnimatePresence>
 
-      {/* Overlay Gradient - Lateral esquerdo - Escurecido 20% */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent" />
+      {/* Overlay Gradient - Lateral esquerdo - Escurecido 30% para melhor legibilidade */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent" />
 
-      {/* Overlay Gradient - Bottom fade - Escurecido 20% */}
-      <div className="absolute inset-x-0 bottom-0 h-[200px] bg-gradient-to-t from-black via-black/60 to-transparent" />
+      {/* Overlay Gradient - Bottom fade - Escurecido 30% */}
+      <div className="absolute inset-x-0 bottom-0 h-[250px] bg-gradient-to-t from-black via-black/80 to-transparent" />
 
       {/* Conteúdo */}
       <div className="absolute inset-0 flex items-end">

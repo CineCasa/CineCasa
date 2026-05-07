@@ -69,7 +69,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
             baseClasses,
             variantClasses[variant],
             sizeClasses[inputSize],
-            error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
+            error && 'border-[#00D9FF] focus:border-[#00D9FF] focus:ring-[#00D9FF]',
             leftIcon && 'pl-10',
             rightIcon && 'pr-10',
             fullWidth && 'w-full',

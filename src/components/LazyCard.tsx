@@ -31,7 +31,7 @@ const LazyCard: React.FC<LazyCardProps> = ({
       to={`/details/${routeType}/${id}`}
       className="block w-full group"
     >
-      <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 shadow-lg shadow-black/40 group-hover:shadow-xl group-hover:shadow-black/50 transition-shadow duration-300">
+      <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 shadow-2xl shadow-black/60 group-hover:shadow-3xl group-hover:shadow-black/80 transition-all duration-300 group-hover:scale-105">
         {poster ? (
           <>
             {/* Loading placeholder */}
@@ -43,7 +43,7 @@ const LazyCard: React.FC<LazyCardProps> = ({
             <img
               src={poster.startsWith('http') ? poster : tmdbImageUrl(poster, 'w500')}
               alt={title}
-              className={`w-full h-full object-cover group-hover:scale-105 transition-all duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`w-full h-full object-cover transition-all duration-300 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
               loading="lazy"
               onLoad={() => setIsLoaded(true)}
             />

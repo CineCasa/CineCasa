@@ -21,6 +21,11 @@ export default function MobileBottomNav() {
         paddingBottom: 'env(safe-area-inset-bottom)',
         position: 'fixed',
         top: 'auto',
+        background: 'rgba(0, 0, 0, 0.95)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(0, 217, 255, 0.2)',
+        boxShadow: '0 -4px 20px rgba(0, 217, 255, 0.1)',
       }}
     >
       <div
@@ -29,8 +34,8 @@ export default function MobileBottomNav() {
           background: 'rgba(0, 0, 0, 0.75)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 217, 255, 0.05)',
+          border: '1px solid rgba(0, 217, 255, 0.3)',
+          boxShadow: '0 8px 32px rgba(0, 217, 255, 0.2), 0 0 0 1px rgba(0, 217, 255, 0.1)',
         }}
       >
         <div className="flex justify-around items-center h-16 px-2">
@@ -42,16 +47,16 @@ export default function MobileBottomNav() {
                 onClick={() => navigate(path)}
                 className="flex flex-col items-center justify-center w-full h-full transition-all duration-300 ease-out"
                 style={{
-                  color: isActive ? 'var(--brand)' : 'rgba(255, 255, 255, 0.6)',
+                  color: isActive ? '#00D9FF' : 'rgba(255, 255, 255, 0.6)',
                   fontWeight: isActive ? '600' : '400',
                   transform: isActive ? 'scale(1.05)' : 'scale(1)',
-                  textShadow: isActive ? '0 0 20px var(--brand-glow)' : 'none',
+                  textShadow: isActive ? '0 0 20px rgba(0, 217, 255, 0.8)' : 'none',
                 }}
               >
                 <div
                   className="relative"
                   style={{
-                    filter: isActive ? `drop-shadow(0 0 8px var(--brand-glow))` : 'none',
+                    filter: isActive ? `drop-shadow(0 0 8px rgba(0, 217, 255, 0.8))` : 'none',
                   }}
                 >
                   <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
