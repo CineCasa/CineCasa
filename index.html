@@ -1,52 +1,43 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <!-- NUCLEAR CACHE BUSTER v28 - Inline para evitar cache -->
+    <!-- NUCLEAR CACHE BUSTER v35 - Força limpeza total -->
     <script>
       (function() {
-        const NUCLEAR_VERSION = 'v28-nuclear-20260426-2200';
+        const NUCLEAR_VERSION = 'v35-forced-clear-20260506-2215';
         const stored = localStorage.getItem('nuclear_cache_version');
         
+        // Sempre limpar se versão mudou
         if (stored !== NUCLEAR_VERSION) {
-          console.log('[NUCLEAR] Nova versão detectada:', NUCLEAR_VERSION, 'Limpando tudo...');
+          console.log('[NUCLEAR] Limpando tudo para v35...');
           
-          // Limpar localStorage (exceto auth)
-          const keysToKeep = ['supabase.auth.token'];
-          const allKeys = Object.keys(localStorage);
-          allKeys.forEach(key => {
-            if (!keysToKeep.includes(key)) {
-              localStorage.removeItem(key);
-            }
-          });
+          // Limpar TODO localStorage
+          localStorage.clear();
           
           // Limpar sessionStorage
           sessionStorage.clear();
           
-          // Limpar todos os caches
+          // Limpar TODOS os caches
           if ('caches' in window) {
             caches.keys().then(names => {
               return Promise.all(names.map(name => caches.delete(name)));
-            }).then(() => {
-              console.log('[NUCLEAR] Todos os caches limpos');
-            });
+            }).catch(() => {});
           }
           
           // Limpar Service Workers
           if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(registrations => {
               return Promise.all(registrations.map(r => r.unregister()));
-            }).then(() => {
-              console.log('[NUCLEAR] Service Workers desregistrados');
-            });
+            }).catch(() => {});
           }
           
           // Marcar como limpo
           localStorage.setItem('nuclear_cache_version', NUCLEAR_VERSION);
-          localStorage.setItem('app_version', '20260426-2200');
           
-          // Recarregar imediatamente sem cache
-          console.log('[NUCLEAR] Recarregando página...');
-          window.location.reload(true);
+          // Recarregar sem cache
+          setTimeout(() => {
+            window.location.reload(true);
+          }, 100);
         }
       })();
     </script>
