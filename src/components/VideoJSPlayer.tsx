@@ -240,7 +240,7 @@ export default function VideoJSPlayer({
 
     // ─── SCRUBBER PREVIEW ──────────────────────────────────────
     player.ready(() => {
-      const progressControl = player.controls?.progressControl?.seekBar;
+      const progressControl = player.controlBar?.progressControl?.seekBar;
       if (!progressControl) return;
 
       const seekBarEl = progressControl.el() as HTMLElement;
