@@ -17,7 +17,7 @@ export default function MobileBottomNav() {
 
   useEffect(() => {
     // Implementar lógica de active state
-    const handleNavClick = (clickedItem: HTMLElement) => {
+    const handleNavClick = (clickedItem: Element) => {
       // Remover active de todos
       document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
@@ -59,7 +59,7 @@ export default function MobileBottomNav() {
           display:flex;
           justify-content:center;
           align-items:flex-end;
-          padding-bottom:30px;
+          padding:0 10px 30px 10px;
           font-family:'Inter', sans-serif;
           position: fixed;
           bottom: 0;
@@ -71,6 +71,8 @@ export default function MobileBottomNav() {
         
         .cinecasa-navbar-wrapper{
           pointer-events: auto;
+          width: 100%;
+          max-width: none;
         }
         
         /* ========================= */
@@ -80,8 +82,7 @@ export default function MobileBottomNav() {
         .cinecasa-navbar{
           position:relative;
           
-          width:95%;
-          max-width:520px;
+          width:100%;
           height:95px;
           
           display:flex;
@@ -162,10 +163,10 @@ export default function MobileBottomNav() {
           z-index:2;
         }
         
-        /* icones */
+        /* icones maiores */
         
         .nav-item i{
-          font-size:28px;
+          font-size:32px;
           
           transition:
             transform .35s ease,
@@ -191,7 +192,7 @@ export default function MobileBottomNav() {
           transform:translateY(-28px);
         }
         
-        /* botão central */
+        /* foco curvo apenas no icone ativo */
         
         .nav-item.active::before{
           content:"";
@@ -213,6 +214,9 @@ export default function MobileBottomNav() {
             );
           
           z-index:-2;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
         }
         
         /* circulo principal */
@@ -241,6 +245,9 @@ export default function MobileBottomNav() {
             inset 0 -2px 8px rgba(0,0,0,.8);
           
           z-index:-1;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
         }
         
         /* cor ativa */
@@ -313,10 +320,11 @@ export default function MobileBottomNav() {
           
           .nav-item{
             width:75px;
+            height:75px;
           }
           
           .nav-item i{
-            font-size:24px;
+            font-size:28px;
           }
           
           .nav-item span{
