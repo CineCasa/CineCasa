@@ -122,7 +122,7 @@ export default function VideoJSPlayer({
 
       const progress = Math.min(Math.round((currentTime / duration) * 100), 100);
 
-      await supabase.from('user_progress').upsert(
+      await (supabase as any).from('user_progress').upsert(
         {
           user_id: user.id,
           content_id: contentId,
@@ -240,7 +240,7 @@ export default function VideoJSPlayer({
 
     // ─── SCRUBBER PREVIEW ──────────────────────────────────────
     player.ready(() => {
-      const progressControl = player.controlBar?.progressControl?.seekBar;
+      const progressControl = player.controls?.progressControl?.seekBar;
       if (!progressControl) return;
 
       const seekBarEl = progressControl.el() as HTMLElement;
