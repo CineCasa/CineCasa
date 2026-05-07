@@ -48,7 +48,7 @@ async function fetchTmdbThumbnails(
     const res = await fetch(endpoint, {
       headers: {
         Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3ODZhZmQ3ZjM5ZjRkNzQ4YjQ3ZDk4ZDc5NjMzZDZhNyIsInN1YiI6IjY3ODM5ZmFkM2Q4ZDQ5MDJhOWJkNGU4ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1nCqkKQk6JX5N7Y8Z9T3mB1q2L3p4r5s6t7u8v9w0x',
+          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlMzU4NjY5ZmU3ZjY5M2U4ZjFiNzY5ZTc1NjMzZDZhNyIsInN1YiI6IjY3ODM5ZmFkM2Q4ZDQ5MDJhOWJkNGU4ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1nCqkKQk6JX5N7Y8Z9T3mB1q2L3p4r5s6t7u8v9w0x',
       },
     });
     if (!res.ok) return [];
