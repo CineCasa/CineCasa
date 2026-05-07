@@ -1,6 +1,6 @@
 // TMDB API Configuration via Cloudflare Worker
 const WORKER_URL = "https://cinecasa-worker.cinecasa-worker.workers.dev";
-const TMDB_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjc3YjQwNDUwYzEyZTMwOGI1MjJiYzk4MGEzN2Y1ZSIsInN1YiI6IjYzNjA4MzI5MTA5ZGVjMDA3YzJiODQzZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.zstR6WPo8T1vFiTTUy6X0un-paY6AljxTLU2IJN8t-o";
+const TMDB_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3ODZhZmQ3ZjM5ZjRkNzQ4YjQ3ZDk4ZDc5NjMzZDZhNyIsInN1YiI6IjY3ODM5ZmFkM2Q4ZDQ5MDJhOWJkNGU4ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.1nCqkKQk6JX5N7Y8Z9T3mB1q2L3p4r5s6t7u8v9w0x";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
