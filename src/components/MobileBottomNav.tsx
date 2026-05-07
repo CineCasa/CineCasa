@@ -59,7 +59,7 @@ export default function MobileBottomNav() {
           display:flex;
           justify-content:center;
           align-items:flex-end;
-          padding:0 10px 30px 10px;
+          padding:0 10px 0 10px;
           font-family:'Inter', sans-serif;
           position: fixed;
           bottom: 0;
@@ -163,10 +163,10 @@ export default function MobileBottomNav() {
           z-index:2;
         }
         
-        /* icones maiores */
+        /* icones maiores ainda */
         
         .nav-item i{
-          font-size:32px;
+          font-size:36px;
           
           transition:
             transform .35s ease,
@@ -192,15 +192,15 @@ export default function MobileBottomNav() {
           transform:translateY(-28px);
         }
         
-        /* foco curvo apenas no icone ativo */
+        /* foco curvo dentro da barra */
         
         .nav-item.active::before{
           content:"";
           
           position:absolute;
           
-          width:110px;
-          height:110px;
+          width:90px;
+          height:90px;
           
           border-radius:50%;
           
@@ -224,8 +224,8 @@ export default function MobileBottomNav() {
         .nav-item.active .active-glow{
           position:absolute;
           
-          width:102px;
-          height:102px;
+          width:82px;
+          height:82px;
           
           border-radius:50%;
           
@@ -324,7 +324,7 @@ export default function MobileBottomNav() {
           }
           
           .nav-item i{
-            font-size:28px;
+            font-size:32px;
           }
           
           .nav-item span{
