@@ -103,7 +103,7 @@ async function getTmdbEpisodeImages(params) {
     fetch(seriesImagesUrl,  { headers: { 'Authorization': `Bearer ${TMDB_API_KEY}` } }),
   ]);
 
-  let images: any[] = [];
+  let images = [];
 
   if (stillsRes.status === 'fulfilled' && stillsRes.value.ok) {
     const d = await stillsRes.value.json();

@@ -1,5 +1,7 @@
 // TMDB API Configuration via Cloudflare Worker
 const WORKER_URL = "https://cinecasa-worker.cinecasa-worker.workers.dev";
+const TMDB_API_KEY = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiYjc3YjQwNDUwYzEyZTMwOGI1MjJiYzk4MGEzN2Y1ZSIsInN1YiI6IjYzNjA4MzI5MTA5ZGVjMDA3YzJiODQzZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.zstR6WPo8T1vFiTTUy6X0un-paY6AljxTLU2IJN8t-o";
+const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
 // Tamanhos de imagem otimizados para diferentes usos
@@ -46,13 +48,26 @@ export const tmdbPosterUrl = (path: string, highQuality: boolean = false): strin
 
 export const fetchTmdbDetails = async (tmdbId: string, type: "movie" | "tv") => {
   try {
-    const res = await fetch(
+    // Tentar Worker primeiro
+    let res = await fetch(
       `${WORKER_URL}/tmdb/details?tmdb=${tmdbId}&type=${type}`,
       {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }
     );
+    
+    // Fallback para API direta se Worker falhar
+    if (!res.ok) {
+      console.log('[TMDB] Worker falhou, usando API direta');
+      res = await fetch(
+        `${TMDB_BASE_URL}/${type}/${tmdbId}?language=pt-BR`,
+        {
+          headers: { 'Authorization': `Bearer ${TMDB_API_KEY}` }
+        }
+      );
+    }
+    
     if (!res.ok) return null;
     return res.json();
   } catch (error) {
@@ -63,13 +78,26 @@ export const fetchTmdbDetails = async (tmdbId: string, type: "movie" | "tv") => 
 
 export const fetchTmdbSeason = async (tmdbId: string, seasonNumber: number) => {
   try {
-    const res = await fetch(
+    // Tentar Worker primeiro
+    let res = await fetch(
       `${WORKER_URL}/tmdb/season?tmdb=${tmdbId}&season=${seasonNumber}`,
       {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }
     );
+    
+    // Fallback para API direta se Worker falhar
+    if (!res.ok) {
+      console.log('[TMDB] Worker falhou, usando API direta para season');
+      res = await fetch(
+        `${TMDB_BASE_URL}/tv/${tmdbId}/season/${seasonNumber}?language=pt-BR`,
+        {
+          headers: { 'Authorization': `Bearer ${TMDB_API_KEY}` }
+        }
+      );
+    }
+    
     if (!res.ok) return null;
     return res.json();
   } catch (error) {
