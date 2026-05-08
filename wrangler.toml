@@ -50,3 +50,23 @@ for = "/sw.js"
 [headers.values]
 Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
 Pragma = "no-cache"
+
+# CDN Worker Configuration
+[env.production]
+name = "cinecasa-cdn"
+main = "worker/cdn-worker.js"
+vars = { ENVIRONMENT = "production" }
+
+[env.staging]
+name = "cinecasa-cdn-staging"
+main = "worker/cdn-worker.js"
+vars = { ENVIRONMENT = "staging" }
+
+# CDN Routes
+[[env.production.routes]]
+pattern = "cinecasa.paixaoflix.vip/*"
+zone_name = "paixaoflix.vip"
+
+[[env.production.routes]]
+pattern = "cdn.cinecasa.com.br/*"
+zone_name = "cinecasa.com.br"

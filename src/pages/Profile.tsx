@@ -1,558 +1,396 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  User, Play, Tv, Clock, Trophy, Edit3, ChevronRight, Heart, 
-  MonitorPlay, History, Star, Download, Smartphone, Crown, 
-  Settings, Bell, Shield, FileText, LogOut, Crown as CrownIcon,
-  CheckCircle2, TrendingUp, Zap, Target, Award
+import {
+  Camera, Image as ImageIcon, Edit3, LogOut, ChevronRight,
+  Heart, MonitorPlay, Clock, Trophy, Bell, Shield, Settings,
+  Star, TrendingUp, Zap, Crown, Check, X
 } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { XPBar, AchievementsList, getLevelFromXP } from '@/components/GamificationSystem';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
-// ============================================
-// PREMIUM PROFILE - CENTRAL DE COMANDO
-// Neon Cyan Design System
-// ============================================
+const NEON = '#00d4ff';
+const BG = '#000000';
 
-const neonCyan = '#00d4ff';
-const neonBlue = '#0099ff';
-const darkBg = '#000000';
-const cardBg = '#0a0a0f';
-
-// Mock Data
-const mockStats = {
-  moviesWatched: 128,
-  seriesWatched: 34,
-  totalHours: 512,
-  achievements: 27,
-  level: 12,
-  isPremium: true,
-  memberSince: 'Maio de 2024'
-};
-
-const mockMonthlyActivity = [
-  { month: 'Jan', hours: 45 },
-  { month: 'Fev', hours: 52 },
-  { month: 'Mar', hours: 48 },
-  { month: 'Abr', hours: 65 },
-  { month: 'Mai', hours: 58 },
-  { month: 'Jun', hours: 72 },
-  { month: 'Jul', hours: 82 },
-];
-
-const recentActivity = [
-  { title: 'Duna: Parte 2', type: 'Filme', progress: 95, image: 'https://image.tmdb.org/t/p/w200/1pdfLvkbY9wzJlB0WK8jnKBh8RJ.jpg' },
-  { title: 'The Last of Us', type: 'Série • T1:E6', progress: 90, image: 'https://image.tmdb.org/t/p/w200/uKvVjHNqB5V8lFYJ5QC7Nuo7yAg.jpg' },
-  { title: 'Oppenheimer', type: 'Filme', progress: 85, image: 'https://image.tmdb.org/t/p/w200/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg' },
-  { title: 'Stranger Things', type: 'Série • T4:E8', progress: 100, image: 'https://image.tmdb.org/t/p/w200/49WJfeN0moxb9IPfGn8AI0AMj6A.jpg' },
-];
-
-const achievements = [
-  { icon: <Trophy className="w-6 h-6" />, title: 'Maratonista', desc: '10 séries completas' },
-  { icon: <Target className="w-6 h-6" />, title: 'Explorador', desc: '50 gêneros diferentes' },
-  { icon: <Star className="w-6 h-6" />, title: 'Crítico', desc: '100 avaliações' },
-  { icon: <Award className="w-6 h-6" />, title: 'Veterano', desc: '1 ano de plataforma' },
-];
-
-// ============================================
-// NEON CARD COMPONENT
-// ============================================
-const NeonCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className={`bg-[#0a0a0f] rounded-[12px] border border-white/5 overflow-hidden ${className}`}
-    style={{
-      boxShadow: '0 0 20px rgba(0, 212, 255, 0.05), 0 4px 20px rgba(0, 0, 0, 0.4)'
-    }}
-  >
-    {children}
-  </motion.div>
-);
-
-// ============================================
-// NEON BUTTON COMPONENT
-// ============================================
-const NeonButton = ({ 
-  children, 
-  variant = 'primary', 
-  onClick, 
-  className = '' 
-}: { 
-  children: React.ReactNode; 
-  variant?: 'primary' | 'secondary' | 'danger'; 
-  onClick?: () => void;
-  className?: string;
-}) => {
-  const baseStyles = 'px-4 py-2 rounded-[10px] font-medium transition-all duration-300 flex items-center gap-2';
-  
-  const variants = {
-    primary: 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/30 hover:shadow-[0_0_20px_rgba(0,212,255,0.3)]',
-    secondary: 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white',
-    danger: 'bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20'
-  };
-  
-  return (
-    <button onClick={onClick} className={`${baseStyles} ${variants[variant]} ${className}`}>
-      {children}
-    </button>
-  );
-};
-
-// ============================================
-// SIDEBAR COMPONENT
-// ============================================
-const Sidebar = ({ activeItem = 'Perfil' }: { activeItem?: string }) => {
-  const navigate = useNavigate();
-  
-  const menuItems = [
-    { icon: <Play className="w-5 h-5" />, label: 'Início', path: '/' },
-    { icon: <User className="w-5 h-5" />, label: 'Filmes', path: '/movies' },
-    { icon: <Tv className="w-5 h-5" />, label: 'Séries', path: '/series' },
-    { icon: <Zap className="w-5 h-5" />, label: 'Explorar', path: '/explore' },
-    { icon: <Heart className="w-5 h-5" />, label: 'Minha Lista', path: '/watchlist' },
-    { icon: <History className="w-5 h-5" />, label: 'Assistidos', path: '/history' },
-    { icon: <Star className="w-5 h-5" />, label: 'Favoritos', path: '/favorites' },
-  ];
-  
-  const accountItems = [
-    { icon: <User className="w-5 h-5" />, label: 'Perfil', path: '/profile' },
-    { icon: <Crown className="w-5 h-5" />, label: 'Assinatura', path: '/subscription' },
-    { icon: <Shield className="w-5 h-5" />, label: 'Segurança', path: '/security' },
-    { icon: <Bell className="w-5 h-5" />, label: 'Notificações', path: '/notifications' },
-    { icon: <Smartphone className="w-5 h-5" />, label: 'Dispositivos', path: '/devices' },
-  ];
-  
-  return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-black border-r border-white/5 hidden lg:flex flex-col z-50">
-      {/* Logo */}
-      <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-          <Play className="w-5 h-5 text-white fill-white" />
-        </div>
-        <div>
-          <h1 className="text-[#E53935] font-bold text-lg tracking-tight">CINECASA</h1>
-          <p className="text-[10px] text-gray-500 uppercase tracking-wider">Entretenimento</p>
-        </div>
-      </div>
-      
-      {/* Main Menu */}
-      <nav className="flex-1 px-4 py-2">
-        <div className="space-y-1">
-          {menuItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm ${
-                activeItem === item.label
-                  ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border-l-2 border-cyan-500'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {item.icon}
-              {item.label}
-            </button>
-          ))}
-        </div>
-        
-        {/* Account Section */}
-        <div className="mt-8">
-          <p className="px-4 text-xs text-gray-500 uppercase tracking-wider mb-2">Conta</p>
-          <div className="space-y-1">
-            {accountItems.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-sm ${
-                  activeItem === item.label
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-400 border-l-2 border-cyan-500'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </nav>
-      
-      {/* Premium Card */}
-      <div className="p-4">
-        <div className="bg-gradient-to-br from-cyan-500/20 to-blue-600/20 rounded-xl p-4 border border-cyan-500/30">
-          <CrownIcon className="w-8 h-8 text-cyan-400 mb-2" />
-          <h3 className="text-[#E53935] font-bold text-sm">CineCasa Premium</h3>
-          <p className="text-gray-400 text-xs mt-1">Acesse todo o conteúdo</p>
-          <button className="mt-3 w-full py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs rounded-lg transition-colors">
-            Ver planos
-          </button>
-        </div>
-      </div>
-    </aside>
-  );
-};
-
-// ============================================
-// MAIN PROFILE PAGE
-// ============================================
 export default function Profile() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const [bio, setBio] = useState('Apaixonado por cinema, séries e boas histórias. Sempre em busca de algo novo para assistir!');
-  
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/login');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const [activeTab, setActiveTab] = useState<'perfil' | 'conquistas' | 'atividade'>('perfil');
+  const [profile, setProfile] = useState<any>(null);
+  const [stats, setStats] = useState({ movies: 0, series: 0, minutes: 0, favorites: 0 });
+  const [xpData, setXpData] = useState<any>(null);
+  const [streakData, setStreakData] = useState<any>(null);
+  const [activity, setActivity] = useState<{ month: string; hours: number }[]>([]);
+  const [recentItems, setRecentItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Edição de perfil
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editBio, setEditBio] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  useEffect(() => { if (user?.id) loadAll(); }, [user?.id]);
+
+  const loadAll = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const [profRes, xpRes, streakRes, progressRes, favRes] = await Promise.all([
+        supabase.from('user_profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('user_xp').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('user_streaks').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('user_progress').select('content_id, content_type, progress, duration, updated_at, title').eq('user_id', user.id).order('updated_at', { ascending: false }),
+        supabase.from('favorites').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      ]);
+
+      setProfile(profRes.data);
+      setXpData(xpRes.data);
+      setStreakData(streakRes.data);
+      setEditName(profRes.data?.name || user.email?.split('@')[0] || '');
+      setEditBio(profRes.data?.bio || '');
+
+      const prog = progressRes.data || [];
+      const movies = prog.filter(p => p.content_type === 'movie' && p.progress >= 80).length;
+      const series = prog.filter(p => p.content_type === 'series' && p.progress >= 80).length;
+      const minutes = prog.reduce((acc, p) => acc + Math.round(((p.duration || 0) / 60) * Math.min(p.progress || 0, 100) / 100), 0);
+      setStats({ movies, series, minutes, favorites: favRes.count || 0 });
+      setRecentItems(prog.slice(0, 6));
+
+      // Atividade mensal
+      const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      const now = new Date();
+      const map: Record<string, number> = {};
+      prog.forEach(p => {
+        if (!p.updated_at) return;
+        const m = months[new Date(p.updated_at).getMonth()];
+        map[m] = (map[m] || 0) + ((p.duration || 0) / 3600);
+      });
+      const act = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const label = months[d.getMonth()];
+        act.push({ month: label, hours: Math.round(map[label] || 0) });
+      }
+      setActivity(act);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
-  
+
+  // ── Upload de foto ──────────────────────────────────────────
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('Foto deve ter no máximo 5MB'); return; }
+
+    setUploadingPhoto(true);
+    const localUrl = URL.createObjectURL(file);
+    setPreviewUrl(localUrl);
+
+    try {
+      // Upload para Supabase Storage
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `avatars/${user.id}/profile.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+
+      if (uploadErr) throw uploadErr;
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+
+      await supabase.from('user_profiles').upsert({
+        user_id: user.id, avatar_url: publicUrl, updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+
+      setProfile((p: any) => ({ ...p, avatar_url: publicUrl }));
+      toast.success('Foto atualizada! 📸');
+    } catch (err: any) {
+      // Fallback: salvar como base64 se storage não estiver configurado
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        const base64 = ev.target?.result as string;
+        await supabase.from('user_profiles').upsert({
+          user_id: user.id, avatar_url: base64, updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+        setProfile((p: any) => ({ ...p, avatar_url: base64 }));
+        toast.success('Foto atualizada!');
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }, [user?.id]);
+
+  const saveProfile = async () => {
+    if (!user?.id || !editName.trim()) return;
+    const { error } = await supabase.from('user_profiles').upsert({
+      user_id: user.id, name: editName.trim(), bio: editBio.trim(), updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    if (error) { toast.error('Erro ao salvar'); return; }
+    setProfile((p: any) => ({ ...p, name: editName, bio: editBio }));
+    setIsEditing(false);
+    toast.success('Perfil atualizado!');
+  };
+
+  const handleSignOut = async () => { await signOut(); navigate('/login'); };
+
+  const level = xpData ? getLevelFromXP(xpData.total_xp) : null;
+  const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
+  const avatarUrl = previewUrl || profile?.avatar_url;
+  const memberSince = user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : '';
+
+  const TABS = [
+    { key: 'perfil', label: 'Perfil' },
+    { key: 'conquistas', label: 'Conquistas' },
+    { key: 'atividade', label: 'Atividade' },
+  ];
+
+  if (loading) return (
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 44, height: 44, border: `3px solid ${NEON}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-black">
-      <Sidebar activeItem="Perfil" />
-      
-      <main className="lg:ml-64 min-h-screen">
-        {/* Top Search Bar */}
-        <header className="sticky top-0 z-40 bg-black/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
-          <div className="flex items-center justify-between max-w-7xl mx-auto">
-            <div className="flex-1 max-w-xl">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Buscar filmes, séries, gêneros..."
-                  className="w-full pl-4 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/50 transition-colors text-sm"
-                />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.3-4.3"/>
-                  </svg>
+    <div style={{ minHeight: '100vh', background: BG, color: 'white', paddingBottom: 80 }}>
+      {/* ── Header banner + avatar ── */}
+      <div style={{ position: 'relative', height: 200, background: `linear-gradient(135deg, #0a0a1a 0%, #0d1a2e 50%, #071020 100%)`, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 30% 50%, ${NEON}20 0%, transparent 60%)` }} />
+        {/* Bokeh decorativo */}
+        {[...Array(6)].map((_, i) => (
+          <div key={i} style={{ position: 'absolute', borderRadius: '50%', background: `${NEON}08`, width: 40 + i * 30, height: 40 + i * 30, top: `${10 + i * 12}%`, left: `${5 + i * 15}%`, filter: 'blur(20px)' }} />
+        ))}
+
+        {/* Avatar */}
+        <div style={{ position: 'absolute', bottom: -50, left: 24, zIndex: 10 }}>
+          <div style={{ position: 'relative', width: 100, height: 100 }}>
+            <div style={{ width: 100, height: 100, borderRadius: '50%', border: `3px solid ${NEON}`, overflow: 'hidden', background: '#1a1a2e', boxShadow: `0 0 20px ${NEON}40` }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 700, color: NEON, background: `${NEON}15` }}>
+                  {displayName[0]?.toUpperCase()}
                 </div>
-              </div>
+              )}
+              {uploadingPhoto && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}>
+                  <div style={{ width: 24, height: 24, border: `2px solid ${NEON}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-4 ml-4">
-              <button className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-cyan-500 rounded-full" />
+
+            {/* Botões de câmera */}
+            <div style={{ position: 'absolute', bottom: 0, right: 0, display: 'flex', gap: 4 }}>
+              {/* Câmera (capture) */}
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                style={{ width: 30, height: 30, borderRadius: '50%', background: NEON, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+                title="Tirar foto"
+              >
+                <Camera size={14} color="black" />
               </button>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 overflow-hidden border border-cyan-500/50 shadow-[0_0_15px_rgba(0,212,255,0.4)]">
-                <img 
-                  src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas&backgroundColor=b6e3f4" 
-                  alt="Avatar" 
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-          {/* HEADER E STATUS DO MEMBRO */}
-          <NeonCard className="p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              {/* Avatar */}
-              <div className="relative">
-                <div className="w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden border-2 border-cyan-500 shadow-[0_0_30px_rgba(0,212,255,0.4)]">
-                  <img 
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas&backgroundColor=b6e3f4" 
-                    alt="Lucas Martins" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-cyan-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Edit3 className="w-4 h-4 text-black" />
-                </div>
-              </div>
-              
-              {/* Info */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl md:text-3xl font-bold text-white">Lucas Martins</h1>
-                  <CheckCircle2 className="w-6 h-6 text-cyan-400" />
-                </div>
-                <p className="text-gray-400 text-sm mb-4">Membro desde {mockStats.memberSince}</p>
-                
-                {/* Badges */}
-                <div className="flex flex-wrap gap-3">
-                  <span className="px-4 py-1.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 text-cyan-400 rounded-full text-sm font-medium flex items-center gap-2">
-                    <Crown className="w-4 h-4" /> Premium
-                  </span>
-                  <span className="px-4 py-1.5 bg-white/5 border border-white/20 text-white rounded-full text-sm font-medium flex items-center gap-2">
-                    <Star className="w-4 h-4 text-yellow-400" /> Nível {mockStats.level}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Métricas */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/5">
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-cyan-400 mb-1">
-                  <Play className="w-5 h-5" />
-                  <span className="text-2xl font-bold text-white">{mockStats.moviesWatched}</span>
-                </div>
-                <p className="text-gray-500 text-xs">Filmes assistidos</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-cyan-400 mb-1">
-                  <Tv className="w-5 h-5" />
-                  <span className="text-2xl font-bold text-white">{mockStats.seriesWatched}</span>
-                </div>
-                <p className="text-gray-500 text-xs">Séries assistidas</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-cyan-400 mb-1">
-                  <Clock className="w-5 h-5" />
-                  <span className="text-2xl font-bold text-white">{mockStats.totalHours}h</span>
-                </div>
-                <p className="text-gray-500 text-xs">Tempo assistido</p>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 text-cyan-400 mb-1">
-                  <Trophy className="w-5 h-5" />
-                  <span className="text-2xl font-bold text-white">{mockStats.achievements}</span>
-                </div>
-                <p className="text-gray-500 text-xs">Conquistas</p>
-              </div>
-            </div>
-          </NeonCard>
-
-          {/* MAIN GRID */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* COLUNA ESQUERDA - 5 cols */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Sobre Você */}
-              <NeonCard className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <User className="w-5 h-5 text-cyan-400" />
-                  <h2 className="text-white font-semibold">Sobre você</h2>
-                </div>
-                <p className="text-gray-400 text-sm mb-4">Conte um pouco sobre você</p>
-                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-                  <p className="text-gray-300 text-sm leading-relaxed">{bio}</p>
-                </div>
-                <button className="mt-4 w-full py-2.5 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-lg text-sm font-medium hover:bg-cyan-500/20 transition-colors flex items-center justify-center gap-2">
-                  <Edit3 className="w-4 h-4" /> Editar perfil
-                </button>
-              </NeonCard>
-
-              {/* Preferências */}
-              <NeonCard className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Settings className="w-5 h-5 text-cyan-400" />
-                  <h2 className="text-white font-semibold">Preferências</h2>
-                </div>
-                <p className="text-gray-400 text-sm mb-4">Personalize sua experiência</p>
-                
-                <div className="space-y-3">
-                  {[
-                    { icon: <Heart className="w-4 h-4" />, label: 'Gêneros favoritos', value: 'Ação, Ficção, Drama, Suspense' },
-                    { icon: <MonitorPlay className="w-4 h-4" />, label: 'Qualidade de vídeo', value: 'Automático' },
-                    { icon: <FileText className="w-4 h-4" />, label: 'Idioma de áudio', value: 'Português' },
-                    { icon: <FileText className="w-4 h-4" />, label: 'Idioma das legendas', value: 'Português' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer group">
-                      <div className="flex items-center gap-3">
-                        <span className="text-cyan-400">{item.icon}</span>
-                        <div>
-                          <p className="text-white text-sm">{item.label}</p>
-                          <p className="text-gray-500 text-xs">{item.value}</p>
-                        </div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-cyan-400 transition-colors" />
-                    </div>
-                  ))}
-                </div>
-              </NeonCard>
-
-              {/* Estatísticas */}
-              <NeonCard className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="w-5 h-5 text-cyan-400" />
-                  <h2 className="text-white font-semibold">Estatísticas</h2>
-                </div>
-                <p className="text-gray-400 text-sm mb-4">Seu resumo de atividade</p>
-                
-                <div className="h-40 mb-4">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={mockMonthlyActivity}>
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#6b7280', fontSize: 12 }} />
-                      <YAxis hide />
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#0a0a0f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                        itemStyle={{ color: '#00d4ff' }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="hours" 
-                        stroke="#00d4ff" 
-                        strokeWidth={3}
-                        dot={{ fill: '#00d4ff', strokeWidth: 0, r: 4 }}
-                        activeDot={{ r: 6, fill: '#00d4ff' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                  <div>
-                    <p className="text-3xl font-bold text-white">520h</p>
-                    <p className="text-gray-500 text-xs">Este mês</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-cyan-400 text-sm font-medium flex items-center gap-1">
-                      <TrendingUp className="w-4 h-4" /> +12%
-                    </p>
-                    <p className="text-gray-500 text-xs">vs mês anterior</p>
-                  </div>
-                </div>
-              </NeonCard>
+              {/* Galeria */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{ width: 30, height: 30, borderRadius: '50%', background: '#1a1a2e', border: `1px solid ${NEON}50`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+                title="Escolher da galeria"
+              >
+                <ImageIcon size={12} color={NEON} />
+              </button>
             </div>
 
-            {/* COLUNA DIREITA - 7 cols */}
-            <div className="lg:col-span-7 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Avatar */}
-                <NeonCard className="p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <User className="w-5 h-5 text-cyan-400" />
-                    <h2 className="text-white font-semibold">Avatar</h2>
-                  </div>
-                  <p className="text-gray-400 text-sm mb-4">Personalize seu avatar</p>
-                  
-                  <div className="flex justify-center mb-4">
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-cyan-500/50 shadow-[0_0_20px_rgba(0,212,255,0.3)]">
-                      <img 
-                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Lucas&backgroundColor=b6e3f4" 
-                        alt="Avatar" 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                  
-                  <button className="w-full py-2.5 bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 rounded-lg text-sm font-medium hover:bg-cyan-500/20 transition-colors">
-                    Personalizar avatar
-                  </button>
-                </NeonCard>
-
-                {/* Ações Rápidas */}
-                <NeonCard className="p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Zap className="w-5 h-5 text-cyan-400" />
-                    <h2 className="text-white font-semibold">Ações rápidas</h2>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {[
-                      { icon: <Heart className="w-4 h-4" />, label: 'Minha Lista' },
-                      { icon: <History className="w-4 h-4" />, label: 'Histórico' },
-                      { icon: <Star className="w-4 h-4" />, label: 'Avaliações' },
-                      { icon: <Download className="w-4 h-4" />, label: 'Downloads' },
-                      { icon: <Smartphone className="w-4 h-4" />, label: 'Dispositivos conectados' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer group">
-                        <div className="flex items-center gap-3">
-                          <span className="text-gray-400 group-hover:text-cyan-400 transition-colors">{item.icon}</span>
-                          <span className="text-gray-300 text-sm group-hover:text-white transition-colors">{item.label}</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-gray-500" />
-                      </div>
-                    ))}
-                  </div>
-                </NeonCard>
-              </div>
-
-              {/* Atividade Recente */}
-              <NeonCard className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <History className="w-5 h-5 text-cyan-400" />
-                    <h2 className="text-white font-semibold">Atividade recente</h2>
-                  </div>
-                  <span className="text-gray-500 text-xs">Últimos 7 dias</span>
-                </div>
-                
-                <div className="space-y-3">
-                  {recentActivity.map((item, i) => (
-                    <div key={i} className="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
-                      <div className="w-16 h-10 rounded bg-gray-800 overflow-hidden flex-shrink-0">
-                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white text-sm font-medium truncate">{item.title}</h3>
-                        <p className="text-gray-500 text-xs">{item.type}</p>
-                      </div>
-                      <div className="w-20">
-                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"
-                            style={{ width: `${item.progress}%` }}
-                          />
-                        </div>
-                        <p className="text-cyan-400 text-xs text-right mt-1">{item.progress}%</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </NeonCard>
-
-              {/* Conquistas */}
-              <NeonCard className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5 text-cyan-400" />
-                    <h2 className="text-white font-semibold">Conquistas</h2>
-                  </div>
-                  <button className="text-cyan-400 text-sm hover:text-cyan-300 transition-colors">Ver todas</button>
-                </div>
-                <p className="text-gray-400 text-sm mb-4">Veja suas conquistas</p>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {achievements.map((item, i) => (
-                    <div key={i} className="text-center p-4 bg-white/5 rounded-xl border border-white/5 hover:border-cyan-500/30 transition-all group">
-                      <div className="w-14 h-14 mx-auto mb-3 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl flex items-center justify-center border border-cyan-500/30 text-cyan-400 group-hover:shadow-[0_0_15px_rgba(0,212,255,0.3)] transition-shadow">
-                        {item.icon}
-                      </div>
-                      <h3 className="text-white text-sm font-medium mb-1">{item.title}</h3>
-                      <p className="text-gray-500 text-xs">{item.desc}</p>
-                    </div>
-                  ))}
-                </div>
-              </NeonCard>
-
-              {/* Configurações da Conta */}
-              <NeonCard className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Shield className="w-5 h-5 text-cyan-400" />
-                  <h2 className="text-white font-semibold">Configurações da conta</h2>
-                </div>
-                <p className="text-gray-400 text-sm mb-4">Gerencie sua conta e segurança</p>
-                
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <NeonButton variant="secondary">
-                    <User className="w-4 h-4" /> Dados pessoais
-                  </NeonButton>
-                  <NeonButton variant="secondary">
-                    <Shield className="w-4 h-4" /> Segurança
-                  </NeonButton>
-                  <NeonButton variant="secondary">
-                    <Bell className="w-4 h-4" /> Notificações
-                  </NeonButton>
-                  <NeonButton variant="secondary">
-                    <FileText className="w-4 h-4" /> Privacidade
-                  </NeonButton>
-                </div>
-                
-                <div className="pt-4 border-t border-white/5">
-                  <NeonButton variant="danger" onClick={handleLogout}>
-                    <LogOut className="w-4 h-4" /> Excluir conta
-                  </NeonButton>
-                </div>
-              </NeonCard>
-            </div>
+            {/* Inputs ocultos */}
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="user" onChange={handleFileChange} style={{ display: 'none' }} />
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* ── Info do usuário ── */}
+      <div style={{ padding: '60px 24px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+          <div>
+            {isEditing ? (
+              <input value={editName} onChange={e => setEditName(e.target.value)} maxLength={40} style={{ fontSize: 22, fontWeight: 700, background: 'rgba(255,255,255,0.08)', border: `1px solid ${NEON}50`, borderRadius: 8, padding: '4px 12px', color: 'white', outline: 'none', marginBottom: 4 }} />
+            ) : (
+              <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>{displayName}</h1>
+            )}
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: '4px 0' }}>Membro desde {memberSince}</p>
+          </div>
+          {isEditing ? (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setIsEditing(false)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: `1px solid rgba(255,255,255,0.15)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.6)' }}><X size={16} /></button>
+              <button onClick={saveProfile} style={{ width: 36, height: 36, borderRadius: '50%', background: NEON, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={16} color="black" /></button>
+            </div>
+          ) : (
+            <button onClick={() => setIsEditing(true)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: `1px solid rgba(255,255,255,0.15)`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.6)' }}>
+              <Edit3 size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Bio */}
+        {isEditing ? (
+          <textarea value={editBio} onChange={e => setEditBio(e.target.value)} maxLength={160} placeholder="Escreva uma bio..." rows={2} style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: 8, padding: '8px 12px', color: 'white', fontSize: 13, resize: 'none', outline: 'none', marginBottom: 12, boxSizing: 'border-box' }} />
+        ) : profile?.bio ? (
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', marginBottom: 12, lineHeight: 1.5 }}>{profile.bio}</p>
+        ) : null}
+
+        {/* Badges nível + streak */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+          {level && (
+            <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: `${NEON}20`, color: NEON, border: `1px solid ${NEON}40` }}>
+              <Zap size={11} style={{ display: 'inline', marginRight: 4 }} />Nível {level.level}
+            </span>
+          )}
+          {xpData?.total_xp > 0 && (
+            <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: 'rgba(250,204,21,0.15)', color: '#facc15', border: '1px solid rgba(250,204,21,0.3)' }}>
+              {xpData.total_xp.toLocaleString()} XP
+            </span>
+          )}
+          {streakData?.watch_streak_days > 0 && (
+            <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: 'rgba(249,115,22,0.15)', color: '#f97316', border: '1px solid rgba(249,115,22,0.3)' }}>
+              🔥 {streakData.watch_streak_days} dias seguidos
+            </span>
+          )}
+          {profile?.plan && profile.plan !== 'free' && (
+            <span style={{ fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 20, background: 'rgba(168,85,247,0.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.3)' }}>
+              <Crown size={11} style={{ display: 'inline', marginRight: 4 }} />{profile.plan}
+            </span>
+          )}
+        </div>
+
+        {/* XP Bar */}
+        {user?.id && <div style={{ marginBottom: 20 }}><XPBar userId={user.id} /></div>}
+
+        {/* Stats */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 24 }}>
+          {[
+            { label: 'Filmes', value: stats.movies, icon: '🎬', color: '#3b82f6' },
+            { label: 'Séries', value: stats.series, icon: '📺', color: '#8b5cf6' },
+            { label: 'Horas', value: Math.round(stats.minutes / 60), icon: '⏱️', color: NEON },
+            { label: 'Favoritos', value: stats.favorites, icon: '❤️', color: '#ef4444' },
+          ].map((s, i) => (
+            <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 8px', textAlign: 'center' }}>
+              <div style={{ fontSize: 20 }}>{s.icon}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: s.color, marginTop: 4 }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 24 }}>
+          {TABS.map(t => (
+            <button key={t.key} onClick={() => setActiveTab(t.key as any)} style={{ flex: 1, padding: '12px 8px', background: 'none', border: 'none', borderBottom: `2px solid ${activeTab === t.key ? NEON : 'transparent'}`, color: activeTab === t.key ? NEON : 'rgba(255,255,255,0.4)', fontWeight: 600, fontSize: 13, cursor: 'pointer', transition: 'all 0.2s' }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Tab: Perfil ── */}
+        {activeTab === 'perfil' && (
+          <div>
+            {/* Últimos assistidos */}
+            {recentItems.length > 0 && (
+              <div style={{ marginBottom: 28 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, color: NEON }}>Assistidos recentemente</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {recentItems.map((item, i) => (
+                    <div key={i} onClick={() => navigate(`/details/${item.content_type === 'movie' ? 'cinema' : 'series'}/${item.content_id}`)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, cursor: 'pointer' }}>
+                      <span style={{ fontSize: 18 }}>{item.content_type === 'movie' ? '🎬' : '📺'}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.title || 'Sem título'}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                          <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>
+                            <div style={{ width: `${item.progress}%`, height: '100%', background: NEON, borderRadius: 4 }} />
+                          </div>
+                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{item.progress}%</span>
+                        </div>
+                      </div>
+                      <ChevronRight size={16} color="rgba(255,255,255,0.3)" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Menu */}
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, overflow: 'hidden', marginBottom: 16 }}>
+              {[
+                { icon: <Heart size={18} />, label: 'Meus Favoritos', path: '/favorites', color: '#ef4444' },
+                { icon: <Bell size={18} />, label: 'Notificações', path: '/notifications', color: NEON },
+                { icon: <Shield size={18} />, label: 'Dispositivos', path: '/devices', color: '#f59e0b' },
+                { icon: <Settings size={18} />, label: 'Configurações', path: '/settings/notifications', color: 'rgba(255,255,255,0.5)' },
+                { icon: <Shield size={18} />, label: 'Termos e Privacidade', path: '/termos', color: 'rgba(255,255,255,0.5)' },
+              ].map((item, i) => (
+                <button key={i} onClick={() => navigate(item.path)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', color: item.color }}>
+                  {item.icon}
+                  <span style={{ flex: 1, textAlign: 'left', fontSize: 14, fontWeight: 500, color: 'white' }}>{item.label}</span>
+                  <ChevronRight size={16} color="rgba(255,255,255,0.25)" />
+                </button>
+              ))}
+            </div>
+
+            <button onClick={handleSignOut} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 14, background: 'rgba(239,68,68,0.06)', color: '#ef4444', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+              <LogOut size={16} /> Sair da conta
+            </button>
+          </div>
+        )}
+
+        {/* ── Tab: Conquistas ── */}
+        {activeTab === 'conquistas' && user?.id && (
+          <div>
+            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: NEON }}>Suas Conquistas</h3>
+            <AchievementsList userId={user.id} />
+          </div>
+        )}
+
+        {/* ── Tab: Atividade ── */}
+        {activeTab === 'atividade' && (
+          <div>
+            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: NEON }}>Atividade — últimos 6 meses</h3>
+            {activity.some(a => a.hours > 0) ? (
+              <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: 16, border: '1px solid rgba(255,255,255,0.06)' }}>
+                <ResponsiveContainer width="100%" height={160}>
+                  <LineChart data={activity}>
+                    <XAxis dataKey="month" tick={{ fill: '#888', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: '#888', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: '#0a0a0f', border: `1px solid ${NEON}30`, borderRadius: 8 }} labelStyle={{ color: 'white' }} formatter={(v: number) => [`${v}h`, 'Horas']} />
+                    <Line type="monotone" dataKey="hours" stroke={NEON} strokeWidth={2} dot={{ fill: NEON, r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.3)' }}>
+                <TrendingUp size={40} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
+                <p>Nenhuma atividade registrada ainda</p>
+              </div>
+            )}
+            {/* Streaks */}
+            {streakData && (
+              <div style={{ marginTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.25)', borderRadius: 14, padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 28 }}>🔥</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#f97316' }}>{streakData.watch_streak_days}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>Dias seguidos</div>
+                </div>
+                <div style={{ background: 'rgba(250,204,21,0.1)', border: '1px solid rgba(250,204,21,0.25)', borderRadius: 14, padding: '16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 28 }}>🏆</div>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#facc15' }}>{streakData.watch_streak_max}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>Recorde pessoal</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

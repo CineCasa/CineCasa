@@ -41,7 +41,7 @@
         }
       })();
     </script>
-    <meta name="app-version" content="20260426-2200">
+    <meta name="app-version" content="20260508-hotreload-v4">
     <meta charset="UTF-8" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -51,7 +51,7 @@
     <script>
       // Força limpeza de cache se versão mudou
       (function() {
-        const CURRENT_VERSION = '20260426-2200';
+        const CURRENT_VERSION = '20260508-hotreload-v4';
         const cachedVersion = localStorage.getItem('app_version');
         if (cachedVersion !== CURRENT_VERSION) {
           console.log('[CacheBusting] Nova versão detectada:', CURRENT_VERSION);
@@ -481,6 +481,14 @@
     
     <!-- Google Cast SDK para Screen Casting (gratuito) -->
     <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" async></script>
+
+    <!-- Analytics - Umami (anonimas) -->
+    <script async src="https://cloud.umami.is/script.js" data-website-id="__UMAMI_WEBSITE_ID__"></script>
+
+    <!-- Analytics - PostHog (feature flags + behavioral) -->
+    <script>
+      !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("PostHog snippet included twice.");else{analytics.invoked=!0,analytics.methods=["trackSubmit","trackClick","trackLink","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware"],analytics.factory=function(e){return function(){var t=Array.prototype.slice.call(arguments);return t.unshift(e),analytics.push(t),analytics}};for(var e=0;e<analytics.methods.length;e++){var key=analytics.methods[e];analytics[key]=analytics.factory(key)}analytics.load=function(e,t){var n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src="https://us.posthog.com/static/array.js";var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(n,a),analytics._loadOptions=t},analytics._sv=!1,analytics.init=function(e,t,n){var a=!1;if(!n||"init"===n){if(analytics._sv=!0,!t||""===t)return void console.error("PostHog: API key required");var o={api_host:"https://us.posthog.com",request_timeout:3e3,...t};if(e){var r=!1;try{r=localStorage.getItem("ph_preview_"+e)}catch(e){}o.capture_markup=e,analytics._preview=r,analytics._loaded=!0,analytics.init(e,o,"init")}else analytics.load(e,o)}};var e=function(){var e=function(e){return function(){e.initialized=!0,e._initCalled=!0,console.log("PostHog app initialized")}};return{init:function(t,n,a){return e(this),this}}();analytics.User=function(){function e(){this.initialized=!1}return e.prototype.init=function(e,t){return this.initialized=!0,this},e.prototype.identify=function(e,t){return console.log("identify",e,t),this},e.prototype.anonymousId=function(e){return console.log("anonymousId",e),this},e.prototype.reset=function(){return console.log("reset"),this},e},analytics}();var p=posthog.init("__POSTHOG_KEY__",{api_host:"https://us.posthog.com"});window.posthog=p,window.__phg=function(){p.capture.apply(p,arguments)}}();
+    </script>
   </head>
 
   <body>

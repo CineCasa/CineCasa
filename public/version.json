@@ -1,11 +1,14 @@
 {
-  "version": "20260503-hero-banner",
-  "hash": "herobanner-v1",
-  "timestamp": "2026-05-03T21:15:00Z",
+  "version": "20260508-hotreload-v4",
+  "hash": "hotreload-instant-update",
+  "timestamp": "2026-05-08T04:05:00Z",
   "features": [
-    "hero_banner",
-    "youtube_style_banner",
-    "auto_rotation",
-    "deploy_automation"
-  ]
+    "hot_reload_system",
+    "achievements_integration",
+    "videojs_simplified",
+    "admin_panel_simple",
+    "realtime_updates",
+    "zero_downtime_deploy"
+  ],
+  "force_update": true
 }
