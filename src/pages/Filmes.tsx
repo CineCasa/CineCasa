@@ -253,35 +253,11 @@ const Filmes: React.FC = () => {
                   <span className="text-sm font-normal text-gray-500">
                     ({categories[categoryName].length})
                   </span>
-                  <ChevronRight 
-                    size={20} 
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-[#00d9ff]"
-                  />
                 </h2>
               </div>
 
               {/* Container do Scroll Horizontal */}
               <div className="relative">
-                {/* Botão Scroll Left */}
-                <button
-                  onClick={() => scrollRow(categoryName, 'left')}
-                  className={`absolute left-0 top-0 bottom-0 z-20 w-16 bg-black/80 hover:bg-black/90 flex items-center justify-center transition-opacity duration-300 ${
-                    hoveredRow === categoryName ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
-                  <ChevronLeft size={40} className="text-white" />
-                </button>
-
-                {/* Botão Scroll Right */}
-                <button
-                  onClick={() => scrollRow(categoryName, 'right')}
-                  className={`absolute right-0 top-0 bottom-0 z-20 w-16 bg-black/80 hover:bg-black/90 flex items-center justify-center transition-opacity duration-300 ${
-                    hoveredRow === categoryName ? 'opacity-100' : 'opacity-0'
-                  }`}
-                >
-                  <ChevronRight size={40} className="text-white" />
-                </button>
-
                 {/* Row de Filmes - 5 cards por view */}
                 <div
                   ref={(el) => { rowRefs.current[categoryName] = el; }}
@@ -315,8 +291,7 @@ const Filmes: React.FC = () => {
               </div>
             </motion.div>
           ))
-        )}
-      </div>
+        )}      </div>
     </div>
   );
 };

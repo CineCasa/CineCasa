@@ -43,9 +43,28 @@ export default function MobileBottomNav() {
   return (
     <>
       <style>{`
-        /* ========================= */
+        /* ========================================= */
+        /* SCROLLBARS REMOVIDAS */
+        /* ========================================= */
+        
+        .cinecasa-mobile-nav::-webkit-scrollbar,
+        .cinecasa-topbar-wrapper::-webkit-scrollbar,
+        .cinecasa-navbar::-webkit-scrollbar,
+        .nav-item::-webkit-scrollbar{
+          display: none;
+        }
+        
+        .cinecasa-mobile-nav,
+        .cinecasa-topbar-wrapper,
+        .cinecasa-navbar,
+        .nav-item{
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        
+        /* ========================================= */
         /* RESET */
-        /* ========================= */
+        /* ========================================= */
         
         .cinecasa-mobile-nav *{
           margin:0;

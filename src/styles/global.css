@@ -1,0 +1,83 @@
+/* ========================================= */
+/* REMOVER TODAS AS BARRAS DE ROLAGEM E SETAS */
+/* ========================================= */
+
+/* Firefox */
+* {
+  scrollbar-width: none !important;
+}
+
+/* IE and Edge */
+* {
+  -ms-overflow-style: none !important;
+}
+
+/* Chrome, Safari, Opera */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Remover todas as setas de navegação */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield !important;
+}
+
+/* Remover setas de select */
+select::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
+
+/* Remover setas de detalhes/summary */
+details summary::-webkit-details-marker {
+  display: none !important;
+}
+
+details summary {
+  list-style: none !important;
+}
+
+/* Remover setas de carousel e navegação */
+.carousel::-webkit-scrollbar,
+.scroll-container::-webkit-scrollbar,
+.overflow-x-auto::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Global - sem scrollbars em nenhum elemento */
+body,
+html,
+div,
+section,
+article,
+main,
+aside,
+nav,
+header,
+footer {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+body::-webkit-scrollbar,
+html::-webkit-scrollbar,
+div::-webkit-scrollbar,
+section::-webkit-scrollbar,
+article::-webkit-scrollbar,
+main::-webkit-scrollbar,
+aside::-webkit-scrollbar,
+nav::-webkit-scrollbar,
+header::-webkit-scrollbar,
+footer::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
